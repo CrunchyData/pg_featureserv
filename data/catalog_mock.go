@@ -69,7 +69,10 @@ func (cat *catalogMock) LayerByName(name string) (*Layer, error) {
 }
 
 func (cat *catalogMock) LayerFeatures(name string) ([]string, error) {
-	features := layerData[name]
+	features, ok := layerData[name]
+	if !ok {
+		return []string{}, fmt.Errorf("Invalid collection name: %v", name)
+	}
 	//fmt.Println("LayerFeatures: " + name)
 	//fmt.Println(layerData)
 	return features, nil
@@ -78,11 +81,11 @@ func (cat *catalogMock) LayerFeatures(name string) ([]string, error) {
 func (cat *catalogMock) LayerFeature(name string, id string) (string, error) {
 	features, ok := layerData[name]
 	if !ok {
-		return "", errors.New("No such layer: " + name)
+		return "", fmt.Errorf("Invalid collection name: %v", name)
 	}
 	index, err := strconv.Atoi(id)
 	if err != nil {
-		return "", errors.New("No such feature id: " + id)
+		return "", errors.New("Invalid feature id: " + id)
 	}
 
 	//fmt.Println("LayerFeatures: " + name)
