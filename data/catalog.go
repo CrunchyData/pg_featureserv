@@ -5,6 +5,7 @@ type Catalog interface {
 	Layers() ([]*Layer, error)
 	LayerByName(name string) (*Layer, error)
 	LayerFeatures(name string) ([]string, error)
+	LayerFeature(name string, id string) (string, error)
 }
 
 // Layer tbd

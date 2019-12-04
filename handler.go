@@ -276,6 +276,79 @@ func linksItems(name string, urlBase string, format string) []*api.Link {
 	return links
 }
 
+func handleItem(w http.ResponseWriter, r *http.Request) {
+	logRequest(r)
+	// TODO: determine content from request header?
+	format := api.PathFormat(r.RequestURI)
+	urlBase := serveURLBase(r)
+
+	//--- extract request parameters
+	name := getRequestVar(varCollectionID, r)
+	fid := getRequestVar(varFeatureID, r)
+
+	switch format {
+	case api.FormatJSON:
+		writeItemJSON(w, name, fid, urlBase)
+	case api.FormatHTML:
+		writeItemHTML(w, name, fid, urlBase)
+	}
+}
+
+func writeItemHTML(w http.ResponseWriter, name string, fid string, urlBase string) {
+	//--- query data for request
+	layer, err1 := catalogInstance.LayerByName(name)
+	if err1 != nil {
+		writeError(w, "UnableToGetFeature", err1.Error(), http.StatusInternalServerError)
+		return
+	}
+	feature, err2 := catalogInstance.LayerFeature(name, fid)
+	if err2 != nil {
+		writeError(w, "UnableToGetFeature", err2.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	//--- assemble resonse
+	content := feature
+
+	// --- encoding
+	context := ui.PageContext{}
+	context.UrlHome = urlPathFormat(urlBase, "", api.FormatHTML)
+	context.UrlCollections = urlPathFormat(urlBase, api.TagCollections, api.FormatHTML)
+	context.UrlCollection = urlPathFormat(urlBase, api.PathCollection(name), api.FormatHTML)
+	context.UrlItems = urlPathFormat(urlBase, api.PathItems(name), api.FormatHTML)
+	context.UrlJSON = urlPathFormat(urlBase, api.PathItem(name, fid), api.FormatJSON)
+	context.CollectionTitle = layer.Title
+	context.FeatureID = fid
+	context.UseMap = true
+
+	encodedContent, err := encodeHTML(content, context, ui.HTMLTemplate.Item)
+
+	if err != nil {
+		writeError(w, "EncodingError", err.Error(), http.StatusInternalServerError)
+		return
+	}
+	writeResponse(w, api.ContentTypeHTML, encodedContent)
+}
+
+func writeItemJSON(w http.ResponseWriter, name string, fid string, urlBase string) {
+	//--- query data for request
+	feature, err := catalogInstance.LayerFeature(name, fid)
+	if err != nil {
+		writeError(w, "UnableToGetFeatures", err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	//--- assemble resonse
+	//content := feature
+	// for now can't add links to feature JSON
+	//content.Links = linksItems(name, urlBase, api.FormatJSON)
+
+	// --- encoding
+	var encodedContent []byte
+	encodedContent = []byte(feature)
+	writeResponse(w, api.ContentTypeGeoJSON, encodedContent)
+}
+
 func handleConformance(w http.ResponseWriter, r *http.Request) {
 	logRequest(r)
 	// TODO: determine content from request header?

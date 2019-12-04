@@ -58,8 +58,8 @@ func serveRequests() {
 	myRouter.HandleFunc("/collections/{cid}/items", handleCollectionItems)
 	myRouter.HandleFunc("/collections/{cid}/items.{fmt}", handleCollectionItems)
 
-	//myRouter.HandleFunc("/collections/{cid}/items/{fid}", handleItem)
-	//myRouter.HandleFunc("/collections/{cid}/items/{fid}.{fmt}", handleItem)
+	myRouter.HandleFunc("/collections/{cid}/items/{fid}", handleItem)
+	myRouter.HandleFunc("/collections/{cid}/items/{fid}.{fmt}", handleItem)
 
 	log.Fatal(http.ListenAndServe(bindAddress, myRouter))
 }

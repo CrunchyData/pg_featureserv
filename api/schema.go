@@ -144,3 +144,7 @@ func PathCollection(name string) string {
 func PathItems(name string) string {
 	return fmt.Sprintf("%v/%v/%v", TagCollections, name, TagItems)
 }
+
+func PathItem(name string, fid string) string {
+	return fmt.Sprintf("%v/%v/%v/%v", TagCollections, name, TagItems, fid)
+}

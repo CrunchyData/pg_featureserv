@@ -2,7 +2,9 @@ package data
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
+	"strconv"
 	"text/template"
 )
 
@@ -71,6 +73,21 @@ func (cat *catalogMock) LayerFeatures(name string) ([]string, error) {
 	//fmt.Println("LayerFeatures: " + name)
 	//fmt.Println(layerData)
 	return features, nil
+}
+
+func (cat *catalogMock) LayerFeature(name string, id string) (string, error) {
+	features, ok := layerData[name]
+	if !ok {
+		return "", errors.New("No such layer: " + name)
+	}
+	index, err := strconv.Atoi(id)
+	if err != nil {
+		return "", errors.New("No such feature id: " + id)
+	}
+
+	//fmt.Println("LayerFeatures: " + name)
+	//fmt.Println(layerData)
+	return features[index], nil
 }
 
 type featurePointMock struct {

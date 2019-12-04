@@ -177,7 +177,7 @@ var templateItem = `
 <div class='crumbs'><a href="{{ .context.UrlHome }}">Home</a>
 / <a href="{{ .context.UrlCollections }}">Collections</a>
 / <a href="{{ .context.UrlCollection }}">{{ .context.CollectionTitle }}</a>
-/ <a href="{{ .context.UrlCollection }}">Items</a>
+/ <a href="{{ .context.UrlItems }}">Items</a>
 / {{ .context.FeatureID }}
 <a style='margin-left: 20px' class='json-link' href='{{ .context.UrlJSON }}' title='JSON document for this page'>JSON</a>
 </div>
