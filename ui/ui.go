@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"html/template"
 
-	"github.com/dr-jts/pg_featureserv/config"
+	"github.com/CrunchyData/pg_featureserv/config"
 )
 
 // PageContext - data used on the HTML pages

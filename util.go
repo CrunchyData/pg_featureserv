@@ -6,8 +6,8 @@ import (
 	"html/template"
 	"net/http"
 
-	"github.com/dr-jts/pg_featureserv/api"
-	"github.com/dr-jts/pg_featureserv/ui"
+	"github.com/CrunchyData/pg_featureserv/api"
+	"github.com/CrunchyData/pg_featureserv/ui"
 )
 
 // Provides a link for the given content type

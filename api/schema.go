@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/dr-jts/pg_featureserv/config"
-	"github.com/dr-jts/pg_featureserv/data"
+	"github.com/CrunchyData/pg_featureserv/config"
+	"github.com/CrunchyData/pg_featureserv/data"
 )
 
 const (

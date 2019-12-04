@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/dr-jts/pg_featureserv/api"
-	"github.com/dr-jts/pg_featureserv/config"
-	"github.com/dr-jts/pg_featureserv/ui"
+	"github.com/CrunchyData/pg_featureserv/api"
+	"github.com/CrunchyData/pg_featureserv/config"
+	"github.com/CrunchyData/pg_featureserv/ui"
 )
 
 const (
