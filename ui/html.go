@@ -85,6 +85,7 @@ a:hover, a:focus { text-decoration: underline; }
 	</header>
 	{{ .body }}
 	<hr/>
+	<div style='font-size: 10px; font-style: italic;'>{{ .context.AppName }} - Version {{ .context.AppVersion }}</div>
 </body>
 </html>`
 

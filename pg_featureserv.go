@@ -15,7 +15,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 
@@ -23,7 +22,11 @@ import (
 	"github.com/CrunchyData/pg_featureserv/config"
 	"github.com/CrunchyData/pg_featureserv/data"
 	"github.com/gorilla/mux"
+	log "github.com/sirupsen/logrus"
 )
+
+const AppName = "pg_featureserv"
+const AppVersion = "0.1"
 
 // CatalogInstance mock
 var catalogInstance data.Catalog

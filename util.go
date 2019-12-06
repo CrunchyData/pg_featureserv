@@ -21,6 +21,7 @@ import (
 
 	"github.com/CrunchyData/pg_featureserv/api"
 	"github.com/CrunchyData/pg_featureserv/ui"
+	log "github.com/sirupsen/logrus"
 )
 
 // Provides a link for the given content type
@@ -91,5 +92,13 @@ func writeError(w http.ResponseWriter, code string, msg string, status int) {
 }
 
 func logRequest(r *http.Request) {
-	fmt.Printf("%v Request: %v\n", r.RemoteAddr, r.URL)
+	log.Printf("%v Request: %v\n", r.RemoteAddr, r.URL)
+}
+
+// NewPageContext create a page context initialized with globals
+func NewPageContext() *ui.PageContext {
+	con := ui.PageContext{}
+	con.AppName = AppName
+	con.AppVersion = AppVersion
+	return &con
 }
