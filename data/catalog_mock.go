@@ -23,13 +23,13 @@ import (
 
 type catalogMock struct {
 	collectionsData []*Layer
+	layerData       map[string][]string
 }
 
-var layers []*Layer
-var layerData map[string][]string
-var catMock Catalog
+//var catMock Catalog
 
-func init() {
+func newCatalogMock() Catalog {
+	var layers []*Layer
 	layers = append(layers, &Layer{
 		Name:        "mock_a",
 		Title:       "Mock A",
@@ -44,9 +44,6 @@ func init() {
 		Extent:      Extent{Minx: -130, Miny: 40, Maxx: -120, Maxy: 60},
 		Crs:         "crs1",
 	})
-	catMock = &catalogMock{
-		collectionsData: layers,
-	}
 
 	features := []string{
 		`{ "type": "Feature", "id": 1,  "geometry": {"type": "Point","coordinates": [  -75,	  45]  },
@@ -56,15 +53,22 @@ func init() {
 		`{ "type": "Feature", "id": 3,  "geometry": {"type": "Point","coordinates": [  -75,	  35]  },
 		  "properties": { "value": "89.9"  } }`,
 	}
-	layerData = map[string][]string{}
+	layerData := map[string][]string{}
 	layerData["mock_a"] = features
 	//layerData["mock_b"] = features
 	layerData["mock_b"] = makeFeatures(10, 10)
+
+	catMock := catalogMock{
+		collectionsData: layers,
+		layerData:       layerData,
+	}
+
+	return &catMock
 }
 
-// InstanceCatMock tbd
-func InstanceCatMock() Catalog {
-	return catMock
+// CatMockInstance tbd
+func CatMockInstance() Catalog {
+	return newCatalogMock()
 }
 
 func (cat *catalogMock) Layers() ([]*Layer, error) {
@@ -82,7 +86,7 @@ func (cat *catalogMock) LayerByName(name string) (*Layer, error) {
 }
 
 func (cat *catalogMock) LayerFeatures(name string) ([]string, error) {
-	features, ok := layerData[name]
+	features, ok := cat.layerData[name]
 	if !ok {
 		return []string{}, fmt.Errorf("Invalid collection name: %v", name)
 	}
@@ -92,7 +96,7 @@ func (cat *catalogMock) LayerFeatures(name string) ([]string, error) {
 }
 
 func (cat *catalogMock) LayerFeature(name string, id string) (string, error) {
-	features, ok := layerData[name]
+	features, ok := cat.layerData[name]
 	if !ok {
 		return "", fmt.Errorf("Invalid collection name: %v", name)
 	}

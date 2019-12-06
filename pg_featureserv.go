@@ -25,14 +25,18 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const AppName = "pg_featureserv"
-const AppVersion = "0.1"
+const (
+	// AppName name of the software
+	AppName = "pg_featureserv"
+	// AppVersion version number of the software
+	AppVersion = "0.1"
+)
 
 // CatalogInstance mock
 var catalogInstance data.Catalog
 
 func init() {
-	catalogInstance = data.InstanceCatMock()
+	catalogInstance = data.CatMockInstance()
 }
 
 func serveURLBase(r *http.Request) string {
