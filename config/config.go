@@ -23,8 +23,8 @@ func init() {
 			BindPort: 10000,
 		},
 		Metadata: Metadata{
-			Title:       "PG-FeatureServ",
-			Description: "A PostGIS Feature Server",
+			Title:       "Demo pg-featureServ",
+			Description: "Demo of Crunchy Data PostGIS Feature Server",
 		},
 		Database: Database{
 			ConnectString: "",

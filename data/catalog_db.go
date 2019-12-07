@@ -62,13 +62,12 @@ func (cat *catalogDB) Layers() ([]*Layer, error) {
 }
 
 func (cat *catalogDB) LayerByName(name string) (*Layer, error) {
-	for _, lyr := range cat.layers {
-		if lyr.ID == name {
-			return lyr, nil
-		}
+	layer, ok := cat.layers[name]
+	if !ok {
+		return nil, fmt.Errorf(errMsgBadLayerName, name)
 	}
 	// not found
-	return nil, fmt.Errorf(errMsgBadLayerName, name)
+	return layer, nil
 }
 
 func (cat *catalogDB) LayerFeatures(name string) ([]string, error) {
@@ -108,40 +107,7 @@ func layersSorted(layers map[string]*Layer) []*Layer {
 
 func loadLayerTables(db *pgxpool.Pool) map[string]*Layer {
 
-	sqlLayer := `
-		SELECT
-			n.nspname AS schema,
-			c.relname AS table,
-			coalesce(d.description, '') AS description,
-			a.attname AS geometry_column,
-			postgis_typmod_srid(a.atttypmod) AS srid,
-			postgis_typmod_type(a.atttypmod) AS geometry_type,
-			coalesce(ia.attname, '') AS id_column,
-			(
-				SELECT array_agg(ARRAY[sa.attname, st.typname]::text[])
-				FROM pg_attribute sa
-				JOIN pg_type st ON sa.atttypid = st.oid
-				WHERE sa.attrelid = c.oid
-				AND sa.attnum > 0
-				AND NOT sa.attisdropped
-				AND st.typname NOT IN ('geometry', 'geography')
-			) AS props
-		FROM pg_class c
-		JOIN pg_namespace n ON (c.relnamespace = n.oid)
-		JOIN pg_attribute a ON (a.attrelid = c.oid)
-		JOIN pg_type t ON (a.atttypid = t.oid)
-		LEFT JOIN pg_description d ON (c.oid = d.objoid)
-		LEFT JOIN pg_index i ON (c.oid = i.indrelid AND i.indisprimary
-		AND i.indnatts = 1)
-		LEFT JOIN pg_attribute ia ON (ia.attrelid = i.indexrelid)
-		LEFT JOIN pg_type it ON (ia.atttypid = it.oid AND it.typname in ('int2', 'int4', 'int8'))
-		WHERE c.relkind = 'r'
-		AND t.typname = 'geometry'
-		AND has_table_privilege(c.oid, 'select')
-		AND postgis_typmod_srid(a.atttypmod) > 0
-		`
-
-	rows, err := db.Query(context.Background(), sqlLayer)
+	rows, err := db.Query(context.Background(), sqlLayers)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -149,22 +115,21 @@ func loadLayerTables(db *pgxpool.Pool) map[string]*Layer {
 	// Reset array of layers
 	layers := make(map[string]*Layer)
 	for rows.Next() {
-
 		var (
-			schema, table, description, geometry_column string
-			srid                                        int
-			geometry_type, id_column                    string
-			// props                                       [][]string
+			schema, table, description, geometryCol string
+			srid                                    int
+			geometryType, idColumn                  string
+			//props                                   [][]string
 			props pgtype.TextArray
 		)
 
-		err := rows.Scan(&schema, &table, &description, &geometry_column,
-			&srid, &geometry_type, &id_column, &props)
+		err := rows.Scan(&schema, &table, &description, &geometryCol,
+			&srid, &geometryType, &idColumn, &props)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		// We use https://godoc.org/github.com/jackc/pgtype#TextArray
+		// Use https://godoc.org/github.com/jackc/pgtype#TextArray
 		// here to scan the text[][] map of attribute name/type
 		// created in the query. It gets a little ugly demapping the
 		// pgx TextArray type, but it is at least native handling of
@@ -180,29 +145,28 @@ func loadLayerTables(db *pgxpool.Pool) map[string]*Layer {
 			properties[props.Elements[elmPos].String] = props.Elements[elmPos+1].String
 		}
 
-		// "schema.tablename" is our unique key for table layers
+		// "schema.tablename" is the unique key for table layers
 		id := fmt.Sprintf("%s.%s", schema, table)
 
+		// Synthesize a title for now
+		title := id
 		// synthesize a description if none provided
 		if description == "" {
 			description = fmt.Sprintf("Data for table %v", id)
 		}
-		title := id
 
-		lyr := Layer{
+		layers[id] = &Layer{
 			ID:             id,
 			Schema:         schema,
 			Table:          table,
 			Title:          title,
 			Description:    description,
-			GeometryColumn: geometry_column,
+			GeometryColumn: geometryCol,
 			Srid:           srid,
-			GeometryType:   geometry_type,
-			IDColumn:       id_column,
+			GeometryType:   geometryType,
+			IDColumn:       idColumn,
 			//Properties:     properties,
 		}
-
-		layers[id] = &lyr
 	}
 	// Check for errors from iterating over rows.
 	if err := rows.Err(); err != nil {
