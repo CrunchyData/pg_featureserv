@@ -222,14 +222,14 @@ var styles = {
 	}),
 	'LineString': new ol.style.Style({
 		stroke: new ol.style.Stroke({
-			color: 'green',
-			width: 1
+			color: 'red',
+			width: 2
 		})
 	}),
 	'MultiLineString': new ol.style.Style({
 		stroke: new ol.style.Stroke({
-			color: 'green',
-			width: 1
+			color: 'red',
+			width: 2
 		})
 	}),
 	'MultiPoint': new ol.style.Style({
