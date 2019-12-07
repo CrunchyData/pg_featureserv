@@ -95,7 +95,7 @@ var conformance = Conformance{
 
 func toBbox(cc *data.Layer) *Bbox {
 	return &Bbox{
-		Crs:    cc.Crs,
+		Crs:    fmt.Sprintf("EPSG:%v", cc.Srid),
 		Extent: []float64{cc.Extent.Minx, cc.Extent.Miny, cc.Extent.Maxx, cc.Extent.Maxy},
 	}
 }
@@ -118,7 +118,7 @@ func NewCollectionsInfo(layers []*data.Layer) *CollectionsInfo {
 
 func NewCollectionInfo(lyr *data.Layer) *CollectionInfo {
 	doc := CollectionInfo{
-		Name:        lyr.Name,
+		Name:        lyr.ID,
 		Title:       lyr.Title,
 		Description: lyr.Description,
 		Extent:      toBbox(lyr),

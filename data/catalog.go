@@ -23,14 +23,25 @@ type Catalog interface {
 
 // Layer tbd
 type Layer struct {
-	Name        string
-	Title       string
-	Description string
-	Extent      Extent
-	Crs         string
+	ID           string
+	Schema       string
+	Table        string
+	Title        string
+	Description  string
+	GeometryType string
+	//Properties     map[string]string
+	GeometryColumn string
+	Srid           int
+	IDColumn       string
+	Extent         Extent
 }
 
 // Extent of a layer
 type Extent struct {
 	Minx, Miny, Maxx, Maxy float64
 }
+
+const (
+	errMsgBadLayerName   = "Invalid collection name: %v"
+	errMsgNoBadFeatureID = "Invalid collection name: %v"
+)

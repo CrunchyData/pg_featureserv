@@ -36,7 +36,8 @@ const (
 var catalogInstance data.Catalog
 
 func init() {
-	catalogInstance = data.CatMockInstance()
+	//catalogInstance = data.CatMockInstance()
+	catalogInstance = data.CatDBInstance()
 }
 
 func serveURLBase(r *http.Request) string {
