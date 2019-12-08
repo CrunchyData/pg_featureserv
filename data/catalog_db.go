@@ -60,11 +60,12 @@ func dbConnect() *pgxpool.Pool {
 }
 
 func (cat *catalogDB) Layers() ([]*Layer, error) {
-	instanceDB.loadLayers()
+	cat.refreshLayers()
 	return cat.layersSort, nil
 }
 
 func (cat *catalogDB) LayerByName(name string) (*Layer, error) {
+	cat.refreshLayers()
 	layer, ok := cat.layers[name]
 	if !ok {
 		return nil, fmt.Errorf(errMsgBadLayerName, name)
@@ -102,6 +103,15 @@ func (cat *catalogDB) LayerFeature(name string, id string) (string, error) {
 	//fmt.Println("LayerFeatures: " + name)
 	//fmt.Println(layerData)
 	return featuresMock[index], nil
+}
+
+func (cat *catalogDB) refreshLayers() {
+	// TODO: refresh on timed basis?
+	// for now this just loads the layers once
+	if cat.layers == nil {
+		cat.loadLayers()
+	}
+	instanceDB.loadLayers()
 }
 
 func (cat *catalogDB) loadLayers() {
@@ -201,7 +211,7 @@ func readFeatures(db *pgxpool.Pool, layer *Layer, sqlFeatures string) []string {
 	var features []string
 	for rows.Next() {
 		feature := readFeature(rows)
-		log.Println(feature)
+		//log.Println(feature)
 		features = append(features, feature)
 	}
 	// Check for errors from iterating over rows.
@@ -233,6 +243,7 @@ var templateFeature = `{ "type": "Feature", "id": {{ .ID }},
 `
 
 func makeFeature(id string, geom string) string {
+	// TODO: only do this once
 	tmpl, err := template.New("feature").Parse(templateFeature)
 	if err != nil {
 		panic(err)
