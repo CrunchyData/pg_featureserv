@@ -64,11 +64,16 @@ func (cat *catalogDB) Layers() ([]*Layer, error) {
 	return cat.layersSort, nil
 }
 
+func (cat *catalogDB) IsLayer(name string) (bool, error) {
+	lyr, _ := cat.LayerByName(name)
+	return lyr != nil, nil
+}
+
 func (cat *catalogDB) LayerByName(name string) (*Layer, error) {
 	cat.refreshLayers()
 	layer, ok := cat.layers[name]
 	if !ok {
-		return nil, fmt.Errorf(errMsgLayerNotFound, name)
+		return nil, nil
 	}
 	return layer, nil
 }

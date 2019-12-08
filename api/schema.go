@@ -90,6 +90,10 @@ const (
 	ErrMsgFeatureNotFound = "Feature not found: %v"
 )
 
+const (
+	ErrCodeLayerNotFound = "NoCollectionFound"
+)
+
 var conformance = Conformance{
 	ConformsTo: []string{
 		"http://www.opengis.net/spec/wfs-1/3.0/req/core",
