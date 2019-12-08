@@ -48,8 +48,12 @@ func TestCollectionNoFound(t *testing.T) {
 	execHTTPRequestStatus(t, "/collections/missing", handleCollection, http.StatusNotFound)
 }
 
+func TestCollectionItemsNoFound(t *testing.T) {
+	execHTTPRequestStatus(t, "/collections/missing/items", handleCollectionItems, http.StatusNotFound)
+}
+
 func TestFeatureNotFound(t *testing.T) {
-	execHTTPRequestStatus(t, "/collections/mock_a/items/999", handleCollection, http.StatusNotFound)
+	execHTTPRequestStatus(t, "/collections/mock_a/items/999", handleItem, http.StatusNotFound)
 }
 
 func execHTTPRequest(t *testing.T, url string,
