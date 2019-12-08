@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"log"
 	"sort"
-	"strconv"
 	"text/template"
 
 	"github.com/jackc/pgtype"
@@ -34,6 +33,15 @@ type catalogDB struct {
 }
 
 var instanceDB catalogDB
+var templateFeature *template.Template
+
+func init() {
+	var err error
+	templateFeature, err = template.New("feature").Parse(tempFeature)
+	if err != nil {
+		panic(err)
+	}
+}
 
 // CatDBInstance tbd
 func CatDBInstance() Catalog {
@@ -91,23 +99,13 @@ func (cat *catalogDB) LayerFeatures(name string) ([]string, error) {
 	return features, nil
 }
 
-func (cat *catalogDB) LayerFeaturesOLD(name string) ([]string, error) {
-	_, err := cat.LayerByName(name)
-	if err != nil {
-		return []string{}, err
-	}
-	return featuresMock, nil
-}
-
 func (cat *catalogDB) LayerFeature(name string, id string) (string, error) {
-	index, err := strconv.Atoi(id)
-	if err != nil {
-		return "", fmt.Errorf(errMsgFeatureNotFound, id)
-	}
 
 	//fmt.Println("LayerFeatures: " + name)
 	//fmt.Println(layerData)
-	return featuresMock[index], nil
+
+	// TODO: read a single feature from DB
+	return "", nil
 }
 
 func (cat *catalogDB) refreshLayers() {
@@ -233,7 +231,7 @@ func readFeature(rows pgx.Rows) string {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return makeFeature(id, geom)
+	return makeFeatureJSON(id, geom)
 }
 
 type featureData struct {
@@ -242,22 +240,16 @@ type featureData struct {
 	Val  string
 }
 
-var templateFeature = `{ "type": "Feature", "id": {{ .ID }},
+var tempFeature = `{ "type": "Feature", "id": {{ .ID }},
 "geometry": {{ .Geom }},
 "properties": { "value": "{{ .Val }}"  } }
 `
 
-func makeFeature(id string, geom string) string {
-	// TODO: only do this once
-	tmpl, err := template.New("feature").Parse(templateFeature)
-	if err != nil {
-		panic(err)
-	}
+func makeFeatureJSON(id string, geom string) string {
 	val := fmt.Sprintf("data value %v", id)
 	featData := featureData{id, geom, val}
 	var tempOut bytes.Buffer
-	tmpl.Execute(&tempOut, featData)
+	templateFeature.Execute(&tempOut, featData)
 	feature := tempOut.String()
-	//fmt.Println(features[index])
 	return feature
 }
