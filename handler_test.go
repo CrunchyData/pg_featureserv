@@ -47,8 +47,7 @@ func TestRootHandler(t *testing.T) {
 func TestCollectionMissing(t *testing.T) {
 	execHTTPRequestStatus(t, "/collections/missing", handleCollection, http.StatusNotFound)
 
-	fmt.Println("Response ==>")
-
+	//fmt.Println("Response ==>")
 	/*
 		if rr.Body.String() != expected {
 			t.Errorf("handler returned unexpected body: got %v want %v",

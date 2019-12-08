@@ -42,6 +42,6 @@ type Extent struct {
 }
 
 const (
-	errMsgBadLayerName   = "Invalid collection name: %v"
-	errMsgNoBadFeatureID = "Invalid collection name: %v"
+	errMsgLayerNotFound   = "Layer not found: %v"
+	errMsgFeatureNotFound = "Feature not found: %v"
 )

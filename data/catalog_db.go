@@ -68,7 +68,7 @@ func (cat *catalogDB) LayerByName(name string) (*Layer, error) {
 	cat.refreshLayers()
 	layer, ok := cat.layers[name]
 	if !ok {
-		return nil, fmt.Errorf(errMsgBadLayerName, name)
+		return nil, fmt.Errorf(errMsgLayerNotFound, name)
 	}
 	return layer, nil
 }
@@ -97,7 +97,7 @@ func (cat *catalogDB) LayerFeaturesOLD(name string) ([]string, error) {
 func (cat *catalogDB) LayerFeature(name string, id string) (string, error) {
 	index, err := strconv.Atoi(id)
 	if err != nil {
-		return "", fmt.Errorf(errMsgNoBadFeatureID, id)
+		return "", fmt.Errorf(errMsgFeatureNotFound, id)
 	}
 
 	//fmt.Println("LayerFeatures: " + name)

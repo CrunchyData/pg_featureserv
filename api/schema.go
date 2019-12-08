@@ -85,6 +85,11 @@ type Conformance struct {
 	ConformsTo []string `json:"conformsTo"`
 }
 
+const (
+	ErrMsgLayerNotFound   = "Layer not found: %v"
+	ErrMsgFeatureNotFound = "Feature not found: %v"
+)
+
 var conformance = Conformance{
 	ConformsTo: []string{
 		"http://www.opengis.net/spec/wfs-1/3.0/req/core",

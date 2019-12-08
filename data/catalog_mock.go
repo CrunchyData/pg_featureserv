@@ -74,28 +74,33 @@ func (cat *catalogMock) LayerByName(name string) (*Layer, error) {
 			return lyr, nil
 		}
 	}
-	// not found
-	return nil, fmt.Errorf(errMsgBadLayerName, name)
+	// not found - indicated by nil value returned
+	return nil, nil
 }
 
 func (cat *catalogMock) LayerFeatures(name string) ([]string, error) {
 	features, ok := cat.layerData[name]
 	if !ok {
-		return []string{}, fmt.Errorf(errMsgBadLayerName, name)
+		//		return []string{}, fmt.Errorf(errMsgBadLayerName, name)
+		// layer ot found - indicated by nil value returned
+		return nil, nil
 	}
 	//fmt.Println("LayerFeatures: " + name)
 	//fmt.Println(layerData)
 	return features, nil
 }
 
+// LayerFeature returns the JSON test for a feature in a layer
+// It returns an empty string if the layer does not exist
 func (cat *catalogMock) LayerFeature(name string, id string) (string, error) {
 	features, ok := cat.layerData[name]
 	if !ok {
-		return "", fmt.Errorf(errMsgBadLayerName, name)
+		// layer ot found - indicated by empty value returned
+		return "", nil
 	}
 	index, err := strconv.Atoi(id)
 	if err != nil {
-		return "", fmt.Errorf(errMsgNoBadFeatureID, id)
+		return "", fmt.Errorf(errMsgFeatureNotFound, id)
 	}
 
 	//fmt.Println("LayerFeatures: " + name)

@@ -175,8 +175,9 @@ func handleCollection(w http.ResponseWriter, r *http.Request) {
 	name := getRequestVar(varCollectionID, r)
 
 	layer, err := catalogInstance.LayerByName(name)
-	if err != nil {
-		writeError(w, "NoCollectionFound", err.Error(), http.StatusInternalServerError)
+	if layer == nil && err == nil {
+		msg := fmt.Sprintf(api.ErrMsgLayerNotFound, name)
+		writeError(w, "NoCollectionFound", msg, http.StatusNotFound)
 		return
 	}
 	content := api.NewCollectionInfo(layer)
