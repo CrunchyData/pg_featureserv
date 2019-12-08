@@ -44,16 +44,12 @@ func TestRootHandler(t *testing.T) {
 	*/
 }
 
-func TestCollectionMissing(t *testing.T) {
+func TestCollectionNoFound(t *testing.T) {
 	execHTTPRequestStatus(t, "/collections/missing", handleCollection, http.StatusNotFound)
+}
 
-	//fmt.Println("Response ==>")
-	/*
-		if rr.Body.String() != expected {
-			t.Errorf("handler returned unexpected body: got %v want %v",
-				rr.Body.String(), expected)
-		}
-	*/
+func TestFeatureNotFound(t *testing.T) {
+	execHTTPRequestStatus(t, "/collections/mock_a/items/999", handleCollection, http.StatusNotFound)
 }
 
 func execHTTPRequest(t *testing.T, url string,
@@ -64,7 +60,7 @@ func execHTTPRequest(t *testing.T, url string,
 func execHTTPRequestStatus(t *testing.T, url string,
 	handler http.HandlerFunc,
 	statusExpected int) *httptest.ResponseRecorder {
-	req, err := http.NewRequest("GET", "/", nil)
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

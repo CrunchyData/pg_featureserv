@@ -95,8 +95,6 @@ func (cat *catalogMock) LayerFeatures(name string) ([]string, error) {
 	return features, nil
 }
 
-// LayerFeature returns the JSON test for a feature in a layer
-// It returns an empty string if the layer does not exist
 func (cat *catalogMock) LayerFeature(name string, id string) (string, error) {
 	features, ok := cat.layerData[name]
 	if !ok {
@@ -105,11 +103,17 @@ func (cat *catalogMock) LayerFeature(name string, id string) (string, error) {
 	}
 	index, err := strconv.Atoi(id)
 	if err != nil {
-		return "", fmt.Errorf(errMsgFeatureNotFound, id)
+		// a malformed int is treated as feature not found
+		return "", nil
 	}
 
 	//fmt.Println("LayerFeatures: " + name)
 	//fmt.Println(layerData)
+
+	// TODO: return not found if index out of range
+	if index < 0 || index >= len(features) {
+		return "", nil
+	}
 	return features[index], nil
 }
 

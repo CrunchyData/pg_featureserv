@@ -16,9 +16,19 @@ package data
 // Catalog tbd
 type Catalog interface {
 	Layers() ([]*Layer, error)
+
 	IsLayer(name string) (bool, error)
+
+	// LayerFeatures returns the layer with given name.
+	// It returns nil if the layer does not exist
 	LayerByName(name string) (*Layer, error)
+
+	// LayerFeatures returns an array of the JSON for the features in a layer
+	// It returns nil if the layer does not exist
 	LayerFeatures(name string) ([]string, error)
+
+	// LayerFeature returns the JSON text for a layer feature with given id
+	// It returns an empty string if the layer or feature does not exist
 	LayerFeature(name string, id string) (string, error)
 }
 
