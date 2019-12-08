@@ -260,6 +260,11 @@ func writeItemsHTML(w http.ResponseWriter, name string, urlBase string) {
 func writeItemsJSON(w http.ResponseWriter, name string, urlBase string) {
 	//--- query data for request
 	features, err := catalogInstance.LayerFeatures(name)
+	if features == nil {
+		msg := fmt.Sprintf(api.ErrMsgLayerNotFound, name)
+		writeError(w, api.ErrCodeLayerNotFound, msg, http.StatusNotFound)
+		return
+	}
 	if err != nil {
 		writeError(w, "UnableToGetFeatures", err.Error(), http.StatusInternalServerError)
 		return
@@ -349,6 +354,11 @@ func writeItemJSON(w http.ResponseWriter, name string, fid string, urlBase strin
 	feature, err := catalogInstance.LayerFeature(name, fid)
 	if err != nil {
 		writeError(w, "UnableToGetFeatures", err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if len(feature) == 0 {
+		msg := fmt.Sprintf(api.ErrMsgFeatureNotFound, name)
+		writeError(w, api.ErrCodeFeatureNotFound, msg, http.StatusNotFound)
 		return
 	}
 

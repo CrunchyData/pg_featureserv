@@ -91,7 +91,8 @@ const (
 )
 
 const (
-	ErrCodeLayerNotFound = "NoCollectionFound"
+	ErrCodeLayerNotFound   = "CollectionNotFound"
+	ErrCodeFeatureNotFound = "FeatureNotFound"
 )
 
 var conformance = Conformance{
