@@ -38,26 +38,31 @@ func CatMockInstance() Catalog {
 }
 
 func newCatalogMock() Catalog {
-	var layers []*Layer
-	layers = append(layers, &Layer{
+
+	layerA := &Layer{
 		ID:          "mock_a",
 		Title:       "Mock A",
 		Description: "This dataset contains mock data about A",
-		Extent:      Extent{Minx: 0, Miny: 0, Maxx: 80, Maxy: 90},
+		Extent:      Extent{Minx: -120, Miny: 40, Maxx: -74, Maxy: 50},
 		Srid:        999,
-	})
-	layers = append(layers, &Layer{
+	}
+
+	layerB := &Layer{
 		ID:          "mock_b",
 		Title:       "Mock B",
 		Description: "This dataset contains mock data about B (100 points)",
-		Extent:      Extent{Minx: -130, Miny: 40, Maxx: -120, Maxy: 60},
+		Extent:      Extent{Minx: -75, Miny: 45, Maxx: -74, Maxy: 46},
 		Srid:        999,
-	})
+	}
 
 	layerData := map[string][]string{}
-	layerData["mock_a"] = featuresMock
+	layerData["mock_a"] = makePointFeatures(layerA.Extent, 3, 3)
 	//layerData["mock_b"] = features
-	layerData["mock_b"] = makeFeatures(10, 10)
+	layerData["mock_b"] = makePointFeatures(layerB.Extent, 10, 10)
+
+	var layers []*Layer
+	layers = append(layers, layerA)
+	layers = append(layers, layerB)
 
 	catMock := catalogMock{
 		layers:    layers,
@@ -140,19 +145,24 @@ var templateFeaturePoint = `{ "type": "Feature", "id": {{ .ID }},
 "geometry": {"type": "Point","coordinates": [  {{ .X }}, {{ .Y }} ]  },
 "properties": { "value": "{{ .Val }}"  } }`
 
-func makeFeatures(nx int, ny int) []string {
+func makePointFeatures(extent Extent, nx int, ny int) []string {
 	tmpl, err := template.New("feature").Parse(templateFeaturePoint)
 	if err != nil {
 		panic(err)
 	}
+	basex := extent.Minx
+	basey := extent.Miny
+	dx := (extent.Maxx - extent.Minx) / float64(nx)
+	dy := (extent.Maxy - extent.Miny) / float64(ny)
+
 	n := nx * ny
 	features := make([]string, n)
 	var tempOut bytes.Buffer
 	index := 0
 	for ix := 0; ix < nx; ix++ {
 		for iy := 0; iy < ny; iy++ {
-			x := -75 + 0.01*float64(ix)
-			y := 45 + 0.01*float64(iy)
+			x := basex + dx*float64(ix)
+			y := basey + dy*float64(iy)
 			val := fmt.Sprintf("data value %v", index)
 			feat := featurePointMock{index, x, y, val}
 			tempOut.Reset()
