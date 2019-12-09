@@ -16,7 +16,6 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/CrunchyData/pg_featureserv/api"
 	"github.com/CrunchyData/pg_featureserv/config"
@@ -25,63 +24,52 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const (
-	// AppName name of the software
-	AppName = "pg_featureserv"
-	// AppVersion version number of the software
-	AppVersion = "0.1"
-)
-
 // CatalogInstance mock
 var catalogInstance data.Catalog
 
 func init() {
-	catalogInstance = data.CatMockInstance()
-	//catalogInstance = data.CatDBInstance()
 }
 
-func serveURLBase(r *http.Request) string {
-	// Preferred host:port
-	php := r.Host
-	php = strings.TrimRight(php, "/")
+func main() {
+	log.Printf("%s %s\n", config.AppConfig.Name, config.AppConfig.Version)
 
-	// Preferred scheme
-	ps := "http"
+	//catalogInstance = data.CatMockInstance()
+	catalogInstance = data.CatDBInstance()
 
-	// Preferred base path
-	pbp := "/"
-
-	// Preferred scheme / host / port / base
-	pshpb := fmt.Sprintf("%v://%v%v", ps, php, pbp)
-	return pshpb
+	serve()
 }
 
-func serveRequests() {
+func serve() {
+
 	confServ := config.Configuration.Server
 	bindAddress := fmt.Sprintf("%v:%v", confServ.BindHost, confServ.BindPort)
-	fmt.Printf("Serving at: %v\n", bindAddress)
+	log.Printf("Serving at: %v\n", bindAddress)
 
-	myRouter := mux.NewRouter().StrictSlash(true)
+	router := makeRouter()
+	log.Fatal(http.ListenAndServe(bindAddress, router))
+}
 
-	myRouter.HandleFunc("/", handleRootJSON)
-	myRouter.HandleFunc("/home{.fmt}", handleHome)
+func makeRouter() *mux.Router {
+	router := mux.NewRouter().StrictSlash(true)
 
-	myRouter.HandleFunc("/conformance", handleConformance)
-	myRouter.HandleFunc("/conformance.{fmt}", handleConformance)
+	router.HandleFunc("/", handleRootJSON)
+	router.HandleFunc("/home{.fmt}", handleHome)
 
-	myRouter.HandleFunc("/collections", handleCollections)
-	myRouter.HandleFunc("/collections.{fmt}", handleCollections)
+	router.HandleFunc("/conformance", handleConformance)
+	router.HandleFunc("/conformance.{fmt}", handleConformance)
 
-	myRouter.HandleFunc("/collections/{cid}", handleCollection)
-	myRouter.HandleFunc("/collections/{cid}.{fmt}", handleCollection)
+	router.HandleFunc("/collections", handleCollections)
+	router.HandleFunc("/collections.{fmt}", handleCollections)
 
-	myRouter.HandleFunc("/collections/{cid}/items", handleCollectionItems)
-	myRouter.HandleFunc("/collections/{cid}/items.{fmt}", handleCollectionItems)
+	router.HandleFunc("/collections/{cid}", handleCollection)
+	router.HandleFunc("/collections/{cid}.{fmt}", handleCollection)
 
-	myRouter.HandleFunc("/collections/{cid}/items/{fid}", handleItem)
-	myRouter.HandleFunc("/collections/{cid}/items/{fid}.{fmt}", handleItem)
+	router.HandleFunc("/collections/{cid}/items", handleCollectionItems)
+	router.HandleFunc("/collections/{cid}/items.{fmt}", handleCollectionItems)
 
-	log.Fatal(http.ListenAndServe(bindAddress, myRouter))
+	router.HandleFunc("/collections/{cid}/items/{fid}", handleItem)
+	router.HandleFunc("/collections/{cid}/items/{fid}.{fmt}", handleItem)
+	return router
 }
 
 func getRequestVar(varname string, r *http.Request) string {
@@ -89,8 +77,4 @@ func getRequestVar(varname string, r *http.Request) string {
 	nameFull := vars[varname]
 	name := api.PathStripFormat(nameFull)
 	return name
-}
-
-func main() {
-	serveRequests()
 }

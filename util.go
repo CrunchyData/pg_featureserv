@@ -18,11 +18,29 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"strings"
 
 	"github.com/CrunchyData/pg_featureserv/api"
+	"github.com/CrunchyData/pg_featureserv/config"
 	"github.com/CrunchyData/pg_featureserv/ui"
 	log "github.com/sirupsen/logrus"
 )
+
+func serveURLBase(r *http.Request) string {
+	// Preferred host:port
+	php := r.Host
+	php = strings.TrimRight(php, "/")
+
+	// Preferred scheme
+	ps := "http"
+
+	// Preferred base path
+	pbp := "/"
+
+	// Preferred scheme / host / port / base
+	pshpb := fmt.Sprintf("%v://%v%v", ps, php, pbp)
+	return pshpb
+}
 
 // Provides a link for the given content type
 func urlPathFormat(urlBase string, path string, format string) string {
@@ -95,10 +113,10 @@ func logRequest(r *http.Request) {
 	log.Printf("%v Request: %v\n", r.RemoteAddr, r.URL)
 }
 
-// NewPageContext create a page context initialized with globals.
+// NewPageData create a page context initialized with globals.
 func NewPageData() *ui.PageData {
 	con := ui.PageData{}
-	con.AppName = AppName
-	con.AppVersion = AppVersion
+	con.AppName = config.AppConfig.Name
+	con.AppVersion = config.AppConfig.Version
 	return &con
 }

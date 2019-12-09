@@ -17,13 +17,15 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"log"
+	"os"
 	"sort"
 	"text/template"
 
+	"github.com/CrunchyData/pg_featureserv/config"
 	"github.com/jackc/pgtype"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
+	log "github.com/sirupsen/logrus"
 )
 
 type catalogDB struct {
@@ -55,11 +57,16 @@ func newCatalogDB() catalogDB {
 }
 
 func dbConnect() *pgxpool.Pool {
-	var err error
-	db, err := pgxpool.Connect(context.Background(), "host=localhost")
+
+	// e.g. export PG_FS_DATABASE_URL="host=localhost"
+	config, err := pgxpool.ParseConfig(os.Getenv(config.AppConfig.EnvDBURL))
+	db, err := pgxpool.ConnectConfig(context.Background(), config)
 	if err != nil {
 		log.Fatal(err)
 	}
+	connLog := fmt.Sprintf("Connected to DB: host=%v, user=%v, database=%v",
+		config.ConnConfig.Host, config.ConnConfig.User, config.ConnConfig.Database)
+	log.Printf(connLog)
 	return db
 }
 
