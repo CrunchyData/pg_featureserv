@@ -30,10 +30,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/CrunchyData/pg_featureserv/api"
 	"github.com/CrunchyData/pg_featureserv/config"
 	"github.com/CrunchyData/pg_featureserv/data"
-	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -68,36 +66,6 @@ func serve() {
 	bindAddress := fmt.Sprintf("%v:%v", confServ.BindHost, confServ.BindPort)
 	log.Printf("Serving at: %v\n", bindAddress)
 
-	router := makeRouter()
+	router := initRouter()
 	log.Fatal(http.ListenAndServe(bindAddress, router))
-}
-
-func makeRouter() *mux.Router {
-	router := mux.NewRouter().StrictSlash(true)
-
-	router.HandleFunc("/", handleRootJSON)
-	router.HandleFunc("/home{.fmt}", handleHome)
-
-	router.HandleFunc("/conformance", handleConformance)
-	router.HandleFunc("/conformance.{fmt}", handleConformance)
-
-	router.HandleFunc("/collections", handleCollections)
-	router.HandleFunc("/collections.{fmt}", handleCollections)
-
-	router.HandleFunc("/collections/{cid}", handleCollection)
-	router.HandleFunc("/collections/{cid}.{fmt}", handleCollection)
-
-	router.HandleFunc("/collections/{cid}/items", handleCollectionItems)
-	router.HandleFunc("/collections/{cid}/items.{fmt}", handleCollectionItems)
-
-	router.HandleFunc("/collections/{cid}/items/{fid}", handleItem)
-	router.HandleFunc("/collections/{cid}/items/{fid}.{fmt}", handleItem)
-	return router
-}
-
-func getRequestVar(varname string, r *http.Request) string {
-	vars := mux.Vars(r)
-	nameFull := vars[varname]
-	name := api.PathStripFormat(nameFull)
-	return name
 }

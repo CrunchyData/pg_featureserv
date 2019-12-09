@@ -21,12 +21,43 @@ import (
 	"github.com/CrunchyData/pg_featureserv/api"
 	"github.com/CrunchyData/pg_featureserv/config"
 	"github.com/CrunchyData/pg_featureserv/ui"
+	"github.com/gorilla/mux"
 )
 
 const (
 	varCollectionID = "cid"
 	varFeatureID    = "fid"
 )
+
+func initRouter() *mux.Router {
+	router := mux.NewRouter().StrictSlash(true)
+
+	router.HandleFunc("/", handleRootJSON)
+	router.HandleFunc("/home{.fmt}", handleHome)
+
+	router.HandleFunc("/conformance", handleConformance)
+	router.HandleFunc("/conformance.{fmt}", handleConformance)
+
+	router.HandleFunc("/collections", handleCollections)
+	router.HandleFunc("/collections.{fmt}", handleCollections)
+
+	router.HandleFunc("/collections/{cid}", handleCollection)
+	router.HandleFunc("/collections/{cid}.{fmt}", handleCollection)
+
+	router.HandleFunc("/collections/{cid}/items", handleCollectionItems)
+	router.HandleFunc("/collections/{cid}/items.{fmt}", handleCollectionItems)
+
+	router.HandleFunc("/collections/{cid}/items/{fid}", handleItem)
+	router.HandleFunc("/collections/{cid}/items/{fid}.{fmt}", handleItem)
+	return router
+}
+
+func getRequestVar(varname string, r *http.Request) string {
+	vars := mux.Vars(r)
+	nameFull := vars[varname]
+	name := api.PathStripFormat(nameFull)
+	return name
+}
 
 func handleRootJSON(w http.ResponseWriter, r *http.Request) {
 	doRoot(w, r, api.FormatJSON)
