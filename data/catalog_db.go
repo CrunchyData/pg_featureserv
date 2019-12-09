@@ -58,7 +58,7 @@ func newCatalogDB() catalogDB {
 
 func dbConnect() *pgxpool.Pool {
 
-	// e.g. export PG_FS_DATABASE_URL="host=localhost"
+	// e.g. export DATABASE_URL_PGFS="host=localhost"
 	config, err := pgxpool.ParseConfig(os.Getenv(config.AppConfig.EnvDBURL))
 	db, err := pgxpool.ConnectConfig(context.Background(), config)
 	if err != nil {

@@ -13,6 +13,18 @@ package main
  limitations under the License.
 */
 
+/*
+# Running
+Usage: ./pg_featureserv
+
+# Configuration
+Database URL in env var `DATABASE_URL_PGFS`
+Example: `export DATABASE_URL_PGFS="host=localhost"``
+
+# Logging
+Logging to stdout
+*/
+
 import (
 	"fmt"
 	"net/http"
