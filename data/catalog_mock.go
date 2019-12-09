@@ -37,12 +37,18 @@ func CatMockInstance() Catalog {
 	return instance
 }
 
+var templateFeaturePoint *template.Template
+
+func init() {
+	templateFeaturePoint = template.Must(template.New("feature").Parse(templateStrFeaturePoint))
+}
+
 func newCatalogMock() Catalog {
 
 	layerA := &Layer{
 		ID:          "mock_a",
 		Title:       "Mock A",
-		Description: "This dataset contains mock data about A",
+		Description: "This dataset contains mock data about A (9 points)",
 		Extent:      Extent{Minx: -120, Miny: 40, Maxx: -74, Maxy: 50},
 		Srid:        999,
 	}
@@ -55,14 +61,23 @@ func newCatalogMock() Catalog {
 		Srid:        999,
 	}
 
+	layerC := &Layer{
+		ID:          "mock_c",
+		Title:       "Mock C",
+		Description: "This dataset contains mock data about C (10000 points)",
+		Extent:      Extent{Minx: -120, Miny: 40, Maxx: -74, Maxy: 60},
+		Srid:        999,
+	}
+
 	layerData := map[string][]string{}
 	layerData["mock_a"] = makePointFeatures(layerA.Extent, 3, 3)
-	//layerData["mock_b"] = features
 	layerData["mock_b"] = makePointFeatures(layerB.Extent, 10, 10)
+	layerData["mock_c"] = makePointFeatures(layerC.Extent, 100, 100)
 
 	var layers []*Layer
 	layers = append(layers, layerA)
 	layers = append(layers, layerB)
+	layers = append(layers, layerC)
 
 	catMock := catalogMock{
 		layers:    layers,
@@ -134,22 +149,7 @@ var featuresMock = []string{
 	  "properties": { "value": "89.9"  } }`,
 }
 
-type featurePointMock struct {
-	ID  int
-	X   float64
-	Y   float64
-	Val string
-}
-
-var templateFeaturePoint = `{ "type": "Feature", "id": {{ .ID }},
-"geometry": {"type": "Point","coordinates": [  {{ .X }}, {{ .Y }} ]  },
-"properties": { "value": "{{ .Val }}"  } }`
-
 func makePointFeatures(extent Extent, nx int, ny int) []string {
-	tmpl, err := template.New("feature").Parse(templateFeaturePoint)
-	if err != nil {
-		panic(err)
-	}
 	basex := extent.Minx
 	basey := extent.Miny
 	dx := (extent.Maxx - extent.Minx) / float64(nx)
@@ -157,21 +157,36 @@ func makePointFeatures(extent Extent, nx int, ny int) []string {
 
 	n := nx * ny
 	features := make([]string, n)
-	var tempOut bytes.Buffer
 	index := 0
 	for ix := 0; ix < nx; ix++ {
 		for iy := 0; iy < ny; iy++ {
 			x := basex + dx*float64(ix)
 			y := basey + dy*float64(iy)
 			val := fmt.Sprintf("data value %v", index)
-			feat := featurePointMock{index, x, y, val}
-			tempOut.Reset()
-			tmpl.Execute(&tempOut, feat)
-			features[index] = tempOut.String()
+			features[index] = makeFeaturePoint(index, x, y, val)
 			//fmt.Println(features[index])
 
 			index++
 		}
 	}
 	return features
+}
+
+type featurePointMock struct {
+	ID  int
+	X   float64
+	Y   float64
+	Val string
+}
+
+var templateStrFeaturePoint = `{ "type": "Feature", "id": {{ .ID }},
+"geometry": {"type": "Point","coordinates": [  {{ .X }}, {{ .Y }} ]  },
+"properties": { "value": "{{ .Val }}"  } }`
+
+func makeFeaturePoint(id int, x float64, y float64, val string) string {
+	feat := featurePointMock{id, x, y, val}
+	var tempOut bytes.Buffer
+	//	tempOut.Reset()
+	templateFeaturePoint.Execute(&tempOut, feat)
+	return tempOut.String()
 }
