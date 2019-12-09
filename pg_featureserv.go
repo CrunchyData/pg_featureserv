@@ -26,6 +26,7 @@ Logging to stdout
 */
 
 import (
+	"flag"
 	"fmt"
 	"net/http"
 
@@ -38,15 +39,25 @@ import (
 
 // CatalogInstance mock
 var catalogInstance data.Catalog
+var stateTest bool
 
 func init() {
+	initFlags()
+}
+
+func initFlags() {
+	flag.BoolVar(&stateTest, "test", false, "Run server with test data")
 }
 
 func main() {
+	flag.Parse()
 	log.Printf("%s %s\n", config.AppConfig.Name, config.AppConfig.Version)
 
-	//catalogInstance = data.CatMockInstance()
-	catalogInstance = data.CatDBInstance()
+	if stateTest {
+		catalogInstance = data.CatMockInstance()
+	} else {
+		catalogInstance = data.CatDBInstance()
+	}
 
 	serve()
 }

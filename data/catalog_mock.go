@@ -18,6 +18,8 @@ import (
 	"fmt"
 	"strconv"
 	"text/template"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type catalogMock struct {
@@ -29,6 +31,7 @@ var instance Catalog
 
 // CatMockInstance tbd
 func CatMockInstance() Catalog {
+	log.Printf("Using Test Catalog data")
 	// TODO: make a singleton
 	instance = newCatalogMock()
 	return instance
