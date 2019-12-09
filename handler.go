@@ -50,7 +50,7 @@ func doRoot(w http.ResponseWriter, r *http.Request, format string) {
 	var err error
 	switch format {
 	case api.FormatHTML:
-		context := NewPageContext()
+		context := NewPageData()
 		context.UrlHome = urlPathFormat(urlBase, "", api.FormatHTML)
 		context.UrlJSON = urlPathFormat(urlBase, "", api.FormatJSON)
 
@@ -127,7 +127,7 @@ func handleCollections(w http.ResponseWriter, r *http.Request) {
 	var encodedContent []byte
 	switch format {
 	case api.FormatHTML:
-		context := NewPageContext()
+		context := NewPageData()
 		context.UrlHome = urlPathFormat(urlBase, "", api.FormatHTML)
 		context.UrlJSON = urlPathFormat(urlBase, api.TagCollections, api.FormatJSON)
 
@@ -187,7 +187,7 @@ func handleCollection(w http.ResponseWriter, r *http.Request) {
 	var encodedContent []byte
 	switch format {
 	case api.FormatHTML:
-		context := NewPageContext()
+		context := NewPageData()
 		context.UrlHome = urlPathFormat(urlBase, "", api.FormatHTML)
 		context.UrlCollections = urlPathFormat(urlBase, api.TagCollections, api.FormatHTML)
 		context.UrlCollection = urlPathFormat(urlBase, api.PathCollection(name), api.FormatHTML)
@@ -239,7 +239,7 @@ func writeItemsHTML(w http.ResponseWriter, name string, urlBase string) {
 	content := api.NewFeatureCollectionInfo(features)
 
 	// --- encoding
-	context := NewPageContext()
+	context := NewPageData()
 	context.UrlHome = urlPathFormat(urlBase, "", api.FormatHTML)
 	context.UrlCollections = urlPathFormat(urlBase, api.TagCollections, api.FormatHTML)
 	context.UrlCollection = urlPathFormat(urlBase, api.PathCollection(name), api.FormatHTML)
@@ -330,7 +330,7 @@ func writeItemHTML(w http.ResponseWriter, name string, fid string, urlBase strin
 	content := feature
 
 	// --- encoding
-	context := NewPageContext()
+	context := NewPageData()
 	context.UrlHome = urlPathFormat(urlBase, "", api.FormatHTML)
 	context.UrlCollections = urlPathFormat(urlBase, api.TagCollections, api.FormatHTML)
 	context.UrlCollection = urlPathFormat(urlBase, api.PathCollection(name), api.FormatHTML)
@@ -386,7 +386,7 @@ func handleConformance(w http.ResponseWriter, r *http.Request) {
 	var encodedContent []byte
 	switch format {
 	case api.FormatHTML:
-		context := NewPageContext()
+		context := NewPageData()
 		context.UrlHome = urlPathFormat(urlBase, "", api.FormatHTML)
 		context.UrlJSON = urlPathFormat(urlBase, api.TagConformance, api.FormatJSON)
 

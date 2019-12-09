@@ -21,7 +21,7 @@ import (
 )
 
 // PageContext - data used on the HTML pages
-type PageContext struct {
+type PageData struct {
 	AppName    string
 	AppVersion string
 	// URLHome - URL for the service home page

@@ -95,9 +95,9 @@ func logRequest(r *http.Request) {
 	log.Printf("%v Request: %v\n", r.RemoteAddr, r.URL)
 }
 
-// NewPageContext create a page context initialized with globals
-func NewPageContext() *ui.PageContext {
-	con := ui.PageContext{}
+// NewPageContext create a page context initialized with globals.
+func NewPageData() *ui.PageData {
+	con := ui.PageData{}
 	con.AppName = AppName
 	con.AppVersion = AppVersion
 	return &con
