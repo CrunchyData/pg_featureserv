@@ -36,11 +36,7 @@ var instanceDB catalogDB
 var templateFeature *template.Template
 
 func init() {
-	var err error
-	templateFeature, err = template.New("feature").Parse(tempFeature)
-	if err != nil {
-		panic(err)
-	}
+	templateFeature = template.Must(template.New("feature").Parse(tempFeature))
 }
 
 // CatDBInstance tbd
