@@ -205,7 +205,7 @@ func readLayer(rows pgx.Rows) *Layer {
 		Srid:           srid,
 		GeometryType:   geometryType,
 		IDColumn:       idColumn,
-		//Properties:     properties,
+		Properties:     properties,
 	}
 }
 

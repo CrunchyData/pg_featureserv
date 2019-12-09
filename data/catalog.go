@@ -34,17 +34,17 @@ type Catalog interface {
 
 // Layer tbd
 type Layer struct {
-	ID           string
-	Schema       string
-	Table        string
-	Title        string
-	Description  string
-	GeometryType string
-	//Properties     map[string]string
+	ID             string
+	Schema         string
+	Table          string
+	Title          string
+	Description    string
+	GeometryType   string
 	GeometryColumn string
 	Srid           int
 	IDColumn       string
 	Extent         Extent
+	Properties     map[string]string
 }
 
 // Extent of a layer

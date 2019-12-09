@@ -224,6 +224,7 @@ func handleCollection(w http.ResponseWriter, r *http.Request) {
 		context.UrlCollection = urlPathFormat(urlBase, api.PathCollection(name), api.FormatHTML)
 		context.UrlJSON = urlPathFormat(urlBase, api.PathCollection(name), api.FormatJSON)
 		context.CollectionTitle = layer.Title
+		context.Layer = layer
 
 		encodedContent, err = encodeHTML(content, context, ui.HTMLTemplate.Collection)
 	default:

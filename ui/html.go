@@ -155,7 +155,15 @@ var templateCollection = `
 
 <div class='coll-desc'>{{ .data.Description }}</div>
 <p>
+<div ><span class='coll-meta-field'>ID column:</span> {{ .context.Layer.IDColumn }}</div>
+<div ><span class='coll-meta-field'>Geometry column:</span> {{ .context.Layer.GeometryColumn }}</div>
+<div ><span class='coll-meta-field'>Geometry type:</span> {{ .context.Layer.GeometryType }}</div>
+<div ><span class='coll-meta-field'>SRID:</span> {{ .context.Layer.Srid }}</div>
 <div ><span class='coll-meta-field'>Extent:</span> {{ .data.Extent }}</div>
+<div ><span class='coll-meta-field'>Columns:</span> </div>
+{{ range $name, $typ := .context.Layer.Properties }}
+<div><span style='padding-left: 10px;'>{{ $name }}</span> :: {{ $typ }}</div>
+{{ end }}
 </p>
 
 <h3>Features</h3>

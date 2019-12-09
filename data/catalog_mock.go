@@ -50,7 +50,7 @@ func newCatalogMock() Catalog {
 		Title:       "Mock A",
 		Description: "This dataset contains mock data about A (9 points)",
 		Extent:      Extent{Minx: -120, Miny: 40, Maxx: -74, Maxy: 50},
-		Srid:        999,
+		Srid:        4326,
 	}
 
 	layerB := &Layer{
@@ -58,7 +58,7 @@ func newCatalogMock() Catalog {
 		Title:       "Mock B",
 		Description: "This dataset contains mock data about B (100 points)",
 		Extent:      Extent{Minx: -75, Miny: 45, Maxx: -74, Maxy: 46},
-		Srid:        999,
+		Srid:        4326,
 	}
 
 	layerC := &Layer{
@@ -66,7 +66,7 @@ func newCatalogMock() Catalog {
 		Title:       "Mock C",
 		Description: "This dataset contains mock data about C (10000 points)",
 		Extent:      Extent{Minx: -120, Miny: 40, Maxx: -74, Maxy: 60},
-		Srid:        999,
+		Srid:        4326,
 	}
 
 	layerData := map[string][]string{}

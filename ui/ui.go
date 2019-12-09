@@ -18,6 +18,7 @@ import (
 	"html/template"
 
 	"github.com/CrunchyData/pg_featureserv/config"
+	"github.com/CrunchyData/pg_featureserv/data"
 )
 
 // PageContext - data used on the HTML pages
@@ -31,6 +32,7 @@ type PageData struct {
 	UrlItems        string
 	UrlJSON         string
 	CollectionTitle string
+	Layer           *data.Layer
 	FeatureID       string
 	UseMap          bool
 }
