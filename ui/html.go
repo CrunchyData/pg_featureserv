@@ -327,16 +327,15 @@ var overlay = new ol.Overlay({
 	offset: [0, -10]
 });
 map.addOverlay(overlay);
-map.on('click', function(e) {
+map.on('click', function(evt) {
 	overlay.setPosition();
-	var features = map.getFeaturesAtPixel(e.pixel);
+	var features = map.getFeaturesAtPixel(evt.pixel);
+	var loc = evt.coordinate
 	if (features) {
 		var identifier = features[0].getId();
-		var coords = features[0].getGeometry().getCoordinates();
-		var hdms = ol.coordinate.toStringHDMS(ol.proj.toLonLat(coords));
 		var popup = '<a href="items/' + identifier + '.html">' + 'Id: ' + identifier + '</a>';
 		overlay.getElement().innerHTML = popup;
-		overlay.setPosition(coords);
+		overlay.setPosition(loc);
 	}
 });
 </script>
