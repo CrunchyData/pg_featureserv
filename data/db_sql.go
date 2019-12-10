@@ -32,6 +32,6 @@ AND has_table_privilege(c.oid, 'select')
 AND postgis_typmod_srid(a.atttypmod) > 0
 `
 
-const sqlFeatures = `SELECT ST_AsGeoJSON( ST_Transform(%v,4326) ) AS geom, %v::text AS id FROM %v LIMIT %v;`
+const sqlFeatures = `SELECT ST_AsGeoJSON( ST_Transform(%v,4326) ) AS _geojson, %v::text AS id FROM %v LIMIT %v;`
 
-const sqlFeature = `SELECT ST_AsGeoJSON( ST_Transform(%v,4326) ) AS geom, %v::text AS id FROM %v WHERE %v = $1 LIMIT 1`
+const sqlFeature = `SELECT ST_AsGeoJSON( ST_Transform(%v,4326) ) AS _geojson, %v::text AS id FROM %v WHERE %v = $1 LIMIT 1`
