@@ -33,6 +33,6 @@ const sqlLayers = `
 		AND postgis_typmod_srid(a.atttypmod) > 0
 		`
 
-const sqlFeatures = `SELECT ST_AsGeoJSON( ST_Transform(%v,4326) ) AS geom, %v::text AS id FROM %v LIMIT 100;`
+const sqlFeatures = `SELECT ST_AsGeoJSON( ST_Transform(%v,4326) ) AS geom, %v::text AS id FROM %v LIMIT %v;`
 
-const sqlFeature = `SELECT ST_AsGeoJSON( ST_Transform(%v,4326) ) AS geom, %v::text AS id FROM %v`
+const sqlFeature = `SELECT ST_AsGeoJSON( ST_Transform(%v,4326) ) AS geom, %v::text AS id FROM %v WHERE %v = $1 LIMIT 1`

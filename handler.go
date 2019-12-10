@@ -20,6 +20,7 @@ import (
 
 	"github.com/CrunchyData/pg_featureserv/api"
 	"github.com/CrunchyData/pg_featureserv/config"
+	"github.com/CrunchyData/pg_featureserv/data"
 	"github.com/CrunchyData/pg_featureserv/ui"
 	"github.com/gorilla/mux"
 )
@@ -246,22 +247,23 @@ func handleCollectionItems(w http.ResponseWriter, r *http.Request) {
 	//--- extract request parameters
 	name := getRequestVar(varCollectionID, r)
 
+	param := NewQueryParam()
 	switch format {
 	case api.FormatJSON:
-		writeItemsJSON(w, name, urlBase)
+		writeItemsJSON(w, name, param, urlBase)
 	case api.FormatHTML:
-		writeItemsHTML(w, name, urlBase)
+		writeItemsHTML(w, name, param, urlBase)
 	}
 }
 
-func writeItemsHTML(w http.ResponseWriter, name string, urlBase string) {
+func writeItemsHTML(w http.ResponseWriter, name string, param data.QueryParam, urlBase string) {
 	//--- query data for request
 	layer, err1 := catalogInstance.LayerByName(name)
 	if err1 != nil {
 		writeError(w, "UnableToGetFeatures", err1.Error(), http.StatusInternalServerError)
 		return
 	}
-	features, err2 := catalogInstance.LayerFeatures(name)
+	features, err2 := catalogInstance.LayerFeatures(name, param)
 	if err2 != nil {
 		writeError(w, "UnableToGetFeatures", err2.Error(), http.StatusInternalServerError)
 		return
@@ -289,9 +291,9 @@ func writeItemsHTML(w http.ResponseWriter, name string, urlBase string) {
 	writeResponse(w, api.ContentTypeHTML, encodedContent)
 }
 
-func writeItemsJSON(w http.ResponseWriter, name string, urlBase string) {
+func writeItemsJSON(w http.ResponseWriter, name string, param data.QueryParam, urlBase string) {
 	//--- query data for request
-	features, err := catalogInstance.LayerFeatures(name)
+	features, err := catalogInstance.LayerFeatures(name, param)
 	if features == nil {
 		msg := fmt.Sprintf(api.ErrMsgLayerNotFound, name)
 		writeError(w, api.ErrCodeLayerNotFound, msg, http.StatusNotFound)

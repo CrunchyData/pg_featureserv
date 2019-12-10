@@ -101,7 +101,7 @@ func (cat *catalogMock) LayerByName(name string) (*Layer, error) {
 	return nil, nil
 }
 
-func (cat *catalogMock) LayerFeatures(name string) ([]string, error) {
+func (cat *catalogMock) LayerFeatures(name string, param QueryParam) ([]string, error) {
 	features, ok := cat.layerData[name]
 	if !ok {
 		//		return []string{}, fmt.Errorf(errMsgBadLayerName, name)

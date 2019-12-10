@@ -22,6 +22,7 @@ import (
 
 	"github.com/CrunchyData/pg_featureserv/api"
 	"github.com/CrunchyData/pg_featureserv/config"
+	"github.com/CrunchyData/pg_featureserv/data"
 	"github.com/CrunchyData/pg_featureserv/ui"
 	log "github.com/sirupsen/logrus"
 )
@@ -118,4 +119,10 @@ func NewPageData() *ui.PageData {
 	con.AppName = config.AppConfig.Name
 	con.AppVersion = config.AppConfig.Version
 	return &con
+}
+
+func NewQueryParam() data.QueryParam {
+	return data.QueryParam{
+		Limit: config.Configuration.Server.DefaultLimit,
+	}
 }
