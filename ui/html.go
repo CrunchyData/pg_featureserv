@@ -333,7 +333,10 @@ map.on('click', function(evt) {
 	var loc = evt.coordinate
 	if (features) {
 		var identifier = features[0].getId();
-		var popup = '<a href="items/' + identifier + '.html">' + 'Id: ' + identifier + '</a>';
+		var popup = 'Id: ' + identifier
+		if (! document.location.href.includes('/items/')) {
+			popup = '<a href="items/' + identifier + '.html">' + popup + '</a>'
+		}
 		overlay.getElement().innerHTML = popup;
 		overlay.setPosition(loc);
 	}
