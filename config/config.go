@@ -19,8 +19,10 @@ var Configuration Config
 func init() {
 	Configuration = Config{
 		Server: Server{
-			BindHost: "",
-			BindPort: 10000,
+			BindHost:     "",
+			BindPort:     10000,
+			DefaultLimit: 10,
+			MaxLimit:     1000,
 		},
 		Metadata: Metadata{
 			Title:       "pg-featureserv Demo",
@@ -41,8 +43,10 @@ type Config struct {
 
 // Server config
 type Server struct {
-	BindHost string `toml:"bind_host"`
-	BindPort int    `toml:"bind_port"`
+	BindHost     string `toml:"bind_host"`
+	BindPort     int    `toml:"bind_port"`
+	DefaultLimit int
+	MaxLimit     int
 }
 
 // Database config
