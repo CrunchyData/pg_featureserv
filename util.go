@@ -18,6 +18,8 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/CrunchyData/pg_featureserv/api"
@@ -121,8 +123,30 @@ func NewPageData() *ui.PageData {
 	return &con
 }
 
-func NewQueryParam() data.QueryParam {
-	return data.QueryParam{
+func parseRequestParams(r *http.Request) data.QueryParam {
+	param := data.QueryParam{
 		Limit: config.Configuration.Server.DefaultLimit,
 	}
+
+	queryValues := r.URL.Query()
+
+	//-- parse limit
+	param.Limit = parseLimit(queryValues)
+
+	return param
+}
+
+func parseLimit(values url.Values) int {
+	limitVal := values.Get("limit")
+	if len(limitVal) < 1 {
+		return config.Configuration.Server.DefaultLimit
+	}
+	limit, err := strconv.Atoi(limitVal)
+	if err != nil {
+		return config.Configuration.Server.DefaultLimit
+	}
+	if limit < 0 || limit > config.Configuration.Server.MaxLimit {
+		return config.Configuration.Server.MaxLimit
+	}
+	return limit
 }

@@ -13,7 +13,10 @@ package api
  limitations under the License.
 */
 
-import "strings"
+import (
+	"net/url"
+	"strings"
+)
 
 const (
 	// ContentTypeJSON tbd
@@ -41,7 +44,8 @@ func ContentType(format string) string {
 	return ""
 }
 
-func PathFormat(path string) string {
+func PathFormat(url *url.URL) string {
+	path := url.EscapedPath()
 	if strings.HasSuffix(path, ".html") {
 		return FormatHTML
 	}

@@ -65,7 +65,7 @@ func handleRootJSON(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleHome(w http.ResponseWriter, r *http.Request) {
-	format := api.PathFormat(r.RequestURI)
+	format := api.PathFormat(r.URL)
 	doRoot(w, r, format)
 }
 
@@ -140,7 +140,7 @@ func altFormat(format string) string {
 
 func handleCollections(w http.ResponseWriter, r *http.Request) {
 	logRequest(r)
-	format := api.PathFormat(r.RequestURI)
+	format := api.PathFormat(r.URL)
 	urlBase := serveURLBase(r)
 
 	colls, err := catalogInstance.Layers()
@@ -201,7 +201,7 @@ func linksCollection(name string, urlBase string, format string) []*api.Link {
 
 func handleCollection(w http.ResponseWriter, r *http.Request) {
 	logRequest(r)
-	format := api.PathFormat(r.RequestURI)
+	format := api.PathFormat(r.URL)
 	urlBase := serveURLBase(r)
 
 	name := getRequestVar(varCollectionID, r)
@@ -241,13 +241,14 @@ func handleCollection(w http.ResponseWriter, r *http.Request) {
 func handleCollectionItems(w http.ResponseWriter, r *http.Request) {
 	logRequest(r)
 	// TODO: determine content from request header?
-	format := api.PathFormat(r.RequestURI)
+	format := api.PathFormat(r.URL)
 	urlBase := serveURLBase(r)
 
 	//--- extract request parameters
 	name := getRequestVar(varCollectionID, r)
+	param := parseRequestParams(r)
 
-	param := NewQueryParam()
+	//param := NewQueryParam()
 	switch format {
 	case api.FormatJSON:
 		writeItemsJSON(w, name, param, urlBase)
@@ -332,7 +333,7 @@ func linksItems(name string, urlBase string, format string) []*api.Link {
 func handleItem(w http.ResponseWriter, r *http.Request) {
 	logRequest(r)
 	// TODO: determine content from request header?
-	format := api.PathFormat(r.RequestURI)
+	format := api.PathFormat(r.URL)
 	urlBase := serveURLBase(r)
 
 	//--- extract request parameters
@@ -410,7 +411,7 @@ func writeItemJSON(w http.ResponseWriter, name string, fid string, urlBase strin
 func handleConformance(w http.ResponseWriter, r *http.Request) {
 	logRequest(r)
 	// TODO: determine content from request header?
-	format := api.PathFormat(r.RequestURI)
+	format := api.PathFormat(r.URL)
 	urlBase := serveURLBase(r)
 
 	content := api.GetConformance()
