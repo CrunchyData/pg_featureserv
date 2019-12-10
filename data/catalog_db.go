@@ -91,7 +91,7 @@ func (cat *catalogDB) LayerByName(name string) (*Layer, error) {
 
 func (cat *catalogDB) LayerFeatures(name string) ([]string, error) {
 	layer, err := cat.LayerByName(name)
-	if err != nil {
+	if err != nil || layer == nil {
 		return nil, err
 	}
 
