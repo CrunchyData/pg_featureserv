@@ -16,6 +16,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/CrunchyData/pg_featureserv/config"
 	"github.com/CrunchyData/pg_featureserv/data"
@@ -76,7 +77,7 @@ type FeatureCollectionRaw struct {
 	Type           string             `json:"type"`
 	Features       []*json.RawMessage `json:"features"`
 	NumberMatched  uint               `json:"numberMatched,omitempty"`
-	NumberReturned uint               `json:"numberReturned,omitempty"`
+	NumberReturned uint               `json:"numberReturned"`
 	TimeStamp      string             `json:"timeStamp,omitempty"`
 	Links          []*Link            `json:"links"`
 }
@@ -137,12 +138,13 @@ func NewCollectionInfo(lyr *data.Layer) *CollectionInfo {
 }
 
 func NewFeatureCollectionInfo(featureJSON []string) *FeatureCollectionRaw {
+	ts := time.Now().Format(time.RFC3339)
 	doc := FeatureCollectionRaw{
 		Type:           GeoJSONFeatureCollection,
 		Features:       toRaw(featureJSON),
 		NumberMatched:  0,
-		NumberReturned: 0,
-		TimeStamp:      "now",
+		NumberReturned: uint(len(featureJSON)),
+		TimeStamp:      ts,
 	}
 	return &doc
 }
