@@ -103,12 +103,23 @@ func (cat *catalogDB) LayerFeatures(name string) ([]string, error) {
 }
 
 func (cat *catalogDB) LayerFeature(name string, id string) (string, error) {
+	layer, err := cat.LayerByName(name)
+	if err != nil {
+		return "", err
+	}
 
-	//fmt.Println("LayerFeatures: " + name)
-	//fmt.Println(layerData)
+	sqlQuery := fmt.Sprintf("%v WHERE %v = $1 LIMIT 1", sqlFeature, layer.IDColumn)
+	sql := fmt.Sprintf(sqlQuery, layer.GeometryColumn, layer.IDColumn, layer.ID)
+	log.Println(sql)
 
-	// TODO: read a single feature from DB
-	return "", nil
+	args := make([]interface{}, 0)
+	args = append(args, id)
+	features := readFeaturesWithArgs(cat.dbconn, layer, sql, args)
+
+	if len(features) == 0 {
+		return "", nil
+	}
+	return features[0], nil
 }
 
 func (cat *catalogDB) refreshLayers() {
@@ -211,6 +222,25 @@ func readLayer(rows pgx.Rows) *Layer {
 
 func readFeatures(db *pgxpool.Pool, layer *Layer, sqlFeatures string) []string {
 	rows, err := db.Query(context.Background(), sqlFeatures)
+	if err != nil {
+		log.Fatal(err)
+	}
+	var features []string
+	for rows.Next() {
+		feature := readFeature(rows)
+		//log.Println(feature)
+		features = append(features, feature)
+	}
+	// Check for errors from iterating over rows.
+	if err := rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+	rows.Close()
+	return features
+}
+
+func readFeaturesWithArgs(db *pgxpool.Pool, layer *Layer, sqlFeatures string, args []interface{}) []string {
+	rows, err := db.Query(context.Background(), sqlFeatures, args...)
 	if err != nil {
 		log.Fatal(err)
 	}

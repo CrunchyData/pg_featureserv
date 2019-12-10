@@ -67,8 +67,7 @@ func encodeJSON(content interface{}) ([]byte, error) {
 	if err != nil {
 		// TODO: encode error in format
 		//jsonError(w, "EncodeError", err.Error(), http.StatusInternalServerError)
-		fmt.Printf(err.Error())
-		//fmt.Printf(templateStr)
+		log.Printf("JSON encoding error: %v", err.Error())
 	}
 	return encodedContent, err
 }
@@ -78,7 +77,7 @@ func encodeHTML(content interface{}, context interface{}, templ *template.Templa
 	if err != nil {
 		// TODO: encode error in format
 		//jsonError(w, "EncodeError", err.Error(), http.StatusInternalServerError)
-		fmt.Printf(err.Error())
+		log.Printf("HTML encoding error: %v", err.Error())
 		//fmt.Printf(templateStr)
 	}
 	return encodedContent, err
