@@ -12,5 +12,5 @@ type AppConfiguration struct {
 var AppConfig = AppConfiguration{
 	Name:     "pg_featureserv",
 	Version:  "0.1",
-	EnvDBURL: "DATABASE_URL_PGFS",
+	EnvDBURL: "DATABASE_URL",
 }

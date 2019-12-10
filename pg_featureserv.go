@@ -18,8 +18,8 @@ package main
 Usage: ./pg_featureserv
 
 # Configuration
-Database URL in env var `DATABASE_URL_PGFS`
-Example: `export DATABASE_URL_PGFS="host=localhost"``
+Database URL in env var `DATABASE_URL`
+Example: `export DATABASE_URL="host=localhost"``
 
 # Logging
 Logging to stdout
