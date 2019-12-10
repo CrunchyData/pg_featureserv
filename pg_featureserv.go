@@ -32,6 +32,7 @@ import (
 
 	"github.com/CrunchyData/pg_featureserv/config"
 	"github.com/CrunchyData/pg_featureserv/data"
+	"github.com/gorilla/handlers"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -67,5 +68,7 @@ func serve() {
 	log.Printf("Serving at: %v\n", bindAddress)
 
 	router := initRouter()
-	log.Fatal(http.ListenAndServe(bindAddress, router))
+	// set CORS handling to allow all access
+	corsOpt := handlers.AllowedOrigins([]string{"*"})
+	log.Fatal(http.ListenAndServe(bindAddress, handlers.CORS(corsOpt)(router)))
 }
