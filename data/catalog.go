@@ -17,8 +17,6 @@ package data
 type Catalog interface {
 	Layers() ([]*Layer, error)
 
-	IsLayer(name string) (bool, error)
-
 	// LayerFeatures returns the layer with given name.
 	// It returns nil if the layer does not exist
 	LayerByName(name string) (*Layer, error)

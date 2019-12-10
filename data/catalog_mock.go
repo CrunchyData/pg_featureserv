@@ -91,11 +91,6 @@ func (cat *catalogMock) Layers() ([]*Layer, error) {
 	return cat.layers, nil
 }
 
-func (cat *catalogMock) IsLayer(name string) (bool, error) {
-	lyr, _ := cat.LayerByName(name)
-	return lyr != nil, nil
-}
-
 func (cat *catalogMock) LayerByName(name string) (*Layer, error) {
 	for _, lyr := range cat.layers {
 		if lyr.ID == name {
