@@ -23,6 +23,7 @@ import (
 	"github.com/CrunchyData/pg_featureserv/data"
 	"github.com/CrunchyData/pg_featureserv/ui"
 	"github.com/gorilla/mux"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -62,9 +63,21 @@ func addRoute(router *mux.Router, path string, handler func(http.ResponseWriter,
 	router.Handle(path, appHandler(handler))
 }
 
+// ServeHTTP is the base Handler for routed requests.
+// Common handling logic is placed here
 func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if e := fn(w, r); e != nil { // e is *appError, not os.Error.
+	// --- log the request
+	log.Printf("%v Request: %v\n", r.RemoteAddr, r.URL)
+
+	// execute the handler
+	e := fn(w, r)
+
+	if e != nil { // e is *appError, not os.Error.
 		// TODO: is this the desire behaviour?
+		// perhaps detect format and emit accordingly?
+		// log error here?
+		// should log attached error?
+		// panic on severe error?
 		http.Error(w, e.Message, e.Code)
 	}
 }
@@ -79,7 +92,6 @@ func handleHome(w http.ResponseWriter, r *http.Request) *appError {
 }
 
 func doRoot(w http.ResponseWriter, r *http.Request, format string) *appError {
-	logRequest(r)
 	urlBase := serveURLBase(r)
 
 	// --- create content
@@ -140,13 +152,12 @@ func altFormat(format string) string {
 }
 
 func handleCollections(w http.ResponseWriter, r *http.Request) *appError {
-	logRequest(r)
 	format := api.PathFormat(r.URL)
 	urlBase := serveURLBase(r)
 
 	colls, err := catalogInstance.Layers()
 	if err != nil {
-		return AppErrorInternal(err, errMsgNoCollections)
+		return appErrorInternal(err, errMsgNoCollections)
 	}
 
 	content := api.NewCollectionsInfo(colls)
@@ -193,7 +204,6 @@ func linksCollection(name string, urlBase string, format string) []*api.Link {
 }
 
 func handleCollection(w http.ResponseWriter, r *http.Request) *appError {
-	logRequest(r)
 	format := api.PathFormat(r.URL)
 	urlBase := serveURLBase(r)
 
@@ -201,7 +211,7 @@ func handleCollection(w http.ResponseWriter, r *http.Request) *appError {
 
 	layer, err := catalogInstance.LayerByName(name)
 	if layer == nil && err == nil {
-		return AppErrorNotFoundFmt(err, api.ErrMsgLayerNotFound, name)
+		return appErrorNotFoundFmt(err, api.ErrMsgLayerNotFound, name)
 	}
 	content := api.NewCollectionInfo(layer)
 	content.Links = linksCollection(name, urlBase, format)
@@ -224,7 +234,6 @@ func handleCollection(w http.ResponseWriter, r *http.Request) *appError {
 }
 
 func handleCollectionItems(w http.ResponseWriter, r *http.Request) *appError {
-	logRequest(r)
 	// TODO: determine content from request header?
 	format := api.PathFormat(r.URL)
 	urlBase := serveURLBase(r)
@@ -247,14 +256,14 @@ func writeItemsHTML(w http.ResponseWriter, name string, param data.QueryParam, u
 	//--- query data for request
 	layer, err1 := catalogInstance.LayerByName(name)
 	if err1 != nil {
-		return AppErrorInternal(err1, errMsgFailData)
+		return appErrorInternal(err1, errMsgFailData)
 	}
 	if layer == nil {
-		return AppErrorNotFoundFmt(err1, api.ErrMsgLayerNotFound, name)
+		return appErrorNotFoundFmt(err1, api.ErrMsgLayerNotFound, name)
 	}
 	features, err2 := catalogInstance.LayerFeatures(name, param)
 	if err2 != nil {
-		return AppErrorInternal(err2, errMsgFailData)
+		return appErrorInternal(err2, errMsgFailData)
 	}
 
 	//--- assemble resonse
@@ -277,10 +286,10 @@ func writeItemsJSON(w http.ResponseWriter, name string, param data.QueryParam, u
 	//--- query data for request
 	features, err := catalogInstance.LayerFeatures(name, param)
 	if err != nil {
-		return AppErrorInternal(err, errMsgFailData)
+		return appErrorInternal(err, errMsgFailData)
 	}
 	if features == nil {
-		return AppErrorNotFoundFmt(err, api.ErrMsgLayerNotFound, name)
+		return appErrorNotFoundFmt(err, api.ErrMsgLayerNotFound, name)
 	}
 
 	//--- assemble resonse
@@ -301,7 +310,6 @@ func linksItems(name string, urlBase string, format string) []*api.Link {
 }
 
 func handleItem(w http.ResponseWriter, r *http.Request) *appError {
-	logRequest(r)
 	// TODO: determine content from request header?
 	format := api.PathFormat(r.URL)
 	urlBase := serveURLBase(r)
@@ -324,14 +332,14 @@ func writeItemHTML(w http.ResponseWriter, name string, fid string, param data.Qu
 	//--- query data for request
 	layer, err1 := catalogInstance.LayerByName(name)
 	if err1 != nil {
-		return AppErrorInternal(err1, errMsgFailData)
+		return appErrorInternal(err1, errMsgFailData)
 	}
 	if layer == nil {
-		return AppErrorNotFoundFmt(err1, api.ErrMsgLayerNotFound, name)
+		return appErrorNotFoundFmt(err1, api.ErrMsgLayerNotFound, name)
 	}
 	feature, err2 := catalogInstance.LayerFeature(name, fid, param)
 	if err2 != nil {
-		return AppErrorInternal(err2, errMsgFailData)
+		return appErrorInternal(err2, errMsgFailData)
 	}
 
 	//--- assemble resonse
@@ -355,10 +363,10 @@ func writeItemJSON(w http.ResponseWriter, name string, fid string, param data.Qu
 	//--- query data for request
 	feature, err := catalogInstance.LayerFeature(name, fid, param)
 	if err != nil {
-		return AppErrorInternal(err, errMsgFailData)
+		return appErrorInternal(err, errMsgFailData)
 	}
 	if len(feature) == 0 {
-		return AppErrorNotFoundFmt(nil, api.ErrCodeFeatureNotFound, fid)
+		return appErrorNotFoundFmt(nil, api.ErrCodeFeatureNotFound, fid)
 	}
 
 	//--- assemble resonse
@@ -370,7 +378,6 @@ func writeItemJSON(w http.ResponseWriter, name string, fid string, param data.Qu
 }
 
 func handleConformance(w http.ResponseWriter, r *http.Request) *appError {
-	logRequest(r)
 	// TODO: determine content from request header?
 	format := api.PathFormat(r.URL)
 	urlBase := serveURLBase(r)

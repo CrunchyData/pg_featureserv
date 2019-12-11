@@ -41,19 +41,19 @@ type appError struct {
 
 type appHandler func(http.ResponseWriter, *http.Request) *appError
 
-func AppError(err error, msg string, code int) *appError {
+func appErrorMsg(err error, msg string, code int) *appError {
 	return &appError{err, msg, code}
 }
 
-func AppErrorInternal(err error, msg string) *appError {
+func appErrorInternal(err error, msg string) *appError {
 	return &appError{err, msg, http.StatusInternalServerError}
 }
 
-func AppErrorNoFound(err error, msg string) *appError {
+func appErrorNoFound(err error, msg string) *appError {
 	return &appError{err, msg, http.StatusNotFound}
 }
 
-func AppErrorNotFoundFmt(err error, format string, v string) *appError {
+func appErrorNotFoundFmt(err error, format string, v string) *appError {
 	msg := fmt.Sprintf(format, v)
 	return &appError{err, msg, http.StatusNotFound}
 }
@@ -83,7 +83,7 @@ func getRequestVar(varname string, r *http.Request) string {
 	return name
 }
 
-// Provides a link for the given content type
+// Provides a URL for the given base, path and format
 func urlPathFormat(urlBase string, path string, format string) string {
 	var pathType string
 	if path == "" {
@@ -107,37 +107,20 @@ func writeJSON(w http.ResponseWriter, contype string, content interface{}) *appE
 	encodedContent, err := json.Marshal(content)
 	if err != nil {
 		log.Printf("JSON encoding error: %v", err.Error())
-		return AppErrorInternal(err, errMsgEncoding)
+		return appErrorInternal(err, errMsgEncoding)
 	}
 	writeResponse(w, contype, encodedContent)
 	return nil
-}
-
-func encodeJSON(content interface{}) ([]byte, error) {
-	encodedContent, err := json.Marshal(content)
-	if err != nil {
-		log.Printf("JSON encoding error: %v", err.Error())
-	}
-	return encodedContent, err
 }
 
 func writeHTML(w http.ResponseWriter, content interface{}, context interface{}, templ *template.Template) *appError {
 	encodedContent, err := ui.RenderHTML(templ, content, context)
 	if err != nil {
 		log.Printf("HTML encoding error: %v", err.Error())
-		return AppErrorInternal(err, errMsgEncoding)
+		return appErrorInternal(err, errMsgEncoding)
 	}
 	writeResponse(w, api.ContentTypeHTML, encodedContent)
 	return nil
-}
-
-func encodeHTML(content interface{}, context interface{}, templ *template.Template) ([]byte, error) {
-	encodedContent, err := ui.RenderHTML(templ, content, context)
-	if err != nil {
-		log.Printf("HTML encoding error: %v", err.Error())
-		//fmt.Printf(templateStr)
-	}
-	return encodedContent, err
 }
 
 func writeResponse(w http.ResponseWriter, contype string, encodedContent []byte) {
@@ -163,10 +146,6 @@ func writeError(w http.ResponseWriter, code string, msg string, status int) {
 	} else {
 		w.Write(result)
 	}
-}
-
-func logRequest(r *http.Request) {
-	log.Printf("%v Request: %v\n", r.RemoteAddr, r.URL)
 }
 
 // NewPageData create a page context initialized with globals.
