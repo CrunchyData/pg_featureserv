@@ -183,6 +183,14 @@ var templateItems = `
 / <a href="{{ .context.UrlCollection }}">{{ .context.CollectionTitle }}</a>
 / Items
 <a style='margin-left: 20px' class='json-link' href='{{ .context.UrlJSON }}' title='JSON document for this page'>JSON</a>
+<span style='padding-left:10px;'>Limit:</span>
+<select id='item-limit' onchange="chgLimit()">
+<option>10</option>
+<option>50</option>
+<option>100</option>
+<option>500</option>
+<option>1000</option>
+</select>
 </div>
 <hr>
 <h2>Features: {{ .context.CollectionTitle }}</h2>
@@ -192,6 +200,15 @@ var templateItems = `
 
 <script>
 var geojsonObject = {{ .data }};
+</script>
+<script>
+function chgLimit() {
+	var select = document.getElementById('item-limit');
+	var lim = select.options[select.selectedIndex].value;
+	var url = window.location.pathname;
+	var newurl = url + '?limit=' + lim;
+	window.location.assign(newurl);
+}
 </script>
 `
 
