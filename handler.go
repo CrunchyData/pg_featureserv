@@ -28,48 +28,57 @@ import (
 const (
 	varCollectionID = "cid"
 	varFeatureID    = "fid"
+
+	errMsgEncoding      = "Error encoding response"
+	errMsgNoCollections = "No collections loaded"
+	errMsgFailData      = "Error loading data"
 )
 
 func initRouter() *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
 
-	router.HandleFunc("/", handleRootJSON)
-	router.HandleFunc("/home{.fmt}", handleHome)
+	addRoute(router, "/", handleRootJSON)
+	addRoute(router, "/home{.fmt}", handleHome)
 
-	router.HandleFunc("/conformance", handleConformance)
-	router.HandleFunc("/conformance.{fmt}", handleConformance)
+	addRoute(router, "/conformance", handleConformance)
+	addRoute(router, "/conformance.{fmt}", handleConformance)
 
-	router.HandleFunc("/collections", handleCollections)
-	router.HandleFunc("/collections.{fmt}", handleCollections)
+	addRoute(router, "/collections", handleCollections)
+	addRoute(router, "/collections.{fmt}", handleCollections)
 
-	router.HandleFunc("/collections/{cid}", handleCollection)
-	router.HandleFunc("/collections/{cid}.{fmt}", handleCollection)
+	addRoute(router, "/collections/{cid}", handleCollection)
+	addRoute(router, "/collections/{cid}.{fmt}", handleCollection)
 
-	router.HandleFunc("/collections/{cid}/items", handleCollectionItems)
-	router.HandleFunc("/collections/{cid}/items.{fmt}", handleCollectionItems)
+	addRoute(router, "/collections/{cid}/items", handleCollectionItems)
+	addRoute(router, "/collections/{cid}/items.{fmt}", handleCollectionItems)
 
-	router.HandleFunc("/collections/{cid}/items/{fid}", handleItem)
-	router.HandleFunc("/collections/{cid}/items/{fid}.{fmt}", handleItem)
+	addRoute(router, "/collections/{cid}/items/{fid}", handleItem)
+	addRoute(router, "/collections/{cid}/items/{fid}.{fmt}", handleItem)
+
 	return router
 }
 
-func getRequestVar(varname string, r *http.Request) string {
-	vars := mux.Vars(r)
-	nameFull := vars[varname]
-	name := api.PathStripFormat(nameFull)
-	return name
+func addRoute(router *mux.Router, path string, handler func(http.ResponseWriter, *http.Request) *appError) {
+	router.Handle(path, appHandler(handler))
 }
 
-func handleRootJSON(w http.ResponseWriter, r *http.Request) {
-	doRoot(w, r, api.FormatJSON)
+func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if e := fn(w, r); e != nil { // e is *appError, not os.Error.
+		// TODO: is this the desire behaviour?
+		http.Error(w, e.Message, e.Code)
+	}
 }
 
-func handleHome(w http.ResponseWriter, r *http.Request) {
+func handleRootJSON(w http.ResponseWriter, r *http.Request) *appError {
+	return doRoot(w, r, api.FormatJSON)
+}
+
+func handleHome(w http.ResponseWriter, r *http.Request) *appError {
 	format := api.PathFormat(r.URL)
-	doRoot(w, r, format)
+	return doRoot(w, r, format)
 }
 
-func doRoot(w http.ResponseWriter, r *http.Request, format string) {
+func doRoot(w http.ResponseWriter, r *http.Request, format string) *appError {
 	logRequest(r)
 	urlBase := serveURLBase(r)
 
@@ -77,24 +86,16 @@ func doRoot(w http.ResponseWriter, r *http.Request, format string) {
 	content := api.NewRootInfo(&config.Configuration)
 	content.Links = linksRoot(urlBase, format)
 
-	// --- encoding
-	var encodedContent []byte
-	var err error
 	switch format {
 	case api.FormatHTML:
 		context := NewPageData()
 		context.URLHome = urlPathFormat(urlBase, "", api.FormatHTML)
 		context.URLJSON = urlPathFormat(urlBase, "", api.FormatJSON)
 
-		encodedContent, err = encodeHTML(content, context, ui.HTMLTemplate.Home)
+		return writeHTML(w, content, context, ui.HTMLTemplate.Home)
 	default:
-		encodedContent, err = encodeJSON(content)
+		return writeJSON(w, api.ContentTypeJSON, content)
 	}
-	if err != nil {
-		writeError(w, "EncodingError", err.Error(), http.StatusInternalServerError)
-		return
-	}
-	writeResponse(w, api.ContentType(format), encodedContent)
 }
 
 func linksRoot(urlBase string, format string) []*api.Link {
@@ -138,15 +139,14 @@ func altFormat(format string) string {
 	return ""
 }
 
-func handleCollections(w http.ResponseWriter, r *http.Request) {
+func handleCollections(w http.ResponseWriter, r *http.Request) *appError {
 	logRequest(r)
 	format := api.PathFormat(r.URL)
 	urlBase := serveURLBase(r)
 
 	colls, err := catalogInstance.Layers()
 	if err != nil {
-		writeError(w, "NoCollections", err.Error(), http.StatusInternalServerError)
-		return
+		return AppErrorInternal(err, errMsgNoCollections)
 	}
 
 	content := api.NewCollectionsInfo(colls)
@@ -155,23 +155,16 @@ func handleCollections(w http.ResponseWriter, r *http.Request) {
 		coll.Links = linksCollection(coll.Name, urlBase, format)
 	}
 
-	// --- encoding
-	var encodedContent []byte
 	switch format {
 	case api.FormatHTML:
 		context := NewPageData()
 		context.URLHome = urlPathFormat(urlBase, "", api.FormatHTML)
 		context.URLJSON = urlPathFormat(urlBase, api.TagCollections, api.FormatJSON)
 
-		encodedContent, err = encodeHTML(content, context, ui.HTMLTemplate.Collections)
+		return writeHTML(w, content, context, ui.HTMLTemplate.Collections)
 	default:
-		encodedContent, err = encodeJSON(content)
+		return writeJSON(w, api.ContentTypeJSON, content)
 	}
-	if err != nil {
-		writeError(w, "EncodingError", err.Error(), http.StatusInternalServerError)
-		return
-	}
-	writeResponse(w, api.ContentType(format), encodedContent)
 }
 
 func linksCollections(urlBase string, format string) []*api.Link {
@@ -199,7 +192,7 @@ func linksCollection(name string, urlBase string, format string) []*api.Link {
 	return links
 }
 
-func handleCollection(w http.ResponseWriter, r *http.Request) {
+func handleCollection(w http.ResponseWriter, r *http.Request) *appError {
 	logRequest(r)
 	format := api.PathFormat(r.URL)
 	urlBase := serveURLBase(r)
@@ -208,15 +201,12 @@ func handleCollection(w http.ResponseWriter, r *http.Request) {
 
 	layer, err := catalogInstance.LayerByName(name)
 	if layer == nil && err == nil {
-		msg := fmt.Sprintf(api.ErrMsgLayerNotFound, name)
-		writeError(w, api.ErrCodeLayerNotFound, msg, http.StatusNotFound)
-		return
+		return AppErrorNotFoundFmt(err, api.ErrMsgLayerNotFound, name)
 	}
 	content := api.NewCollectionInfo(layer)
 	content.Links = linksCollection(name, urlBase, format)
 
 	// --- encoding
-	var encodedContent []byte
 	switch format {
 	case api.FormatHTML:
 		context := NewPageData()
@@ -227,18 +217,13 @@ func handleCollection(w http.ResponseWriter, r *http.Request) {
 		context.CollectionTitle = layer.Title
 		context.Layer = layer
 
-		encodedContent, err = encodeHTML(content, context, ui.HTMLTemplate.Collection)
+		return writeHTML(w, content, context, ui.HTMLTemplate.Collection)
 	default:
-		encodedContent, err = encodeJSON(content)
+		return writeJSON(w, api.ContentTypeJSON, content)
 	}
-	if err != nil {
-		writeError(w, "EncodingError", err.Error(), http.StatusInternalServerError)
-		return
-	}
-	writeResponse(w, api.ContentType(format), encodedContent)
 }
 
-func handleCollectionItems(w http.ResponseWriter, r *http.Request) {
+func handleCollectionItems(w http.ResponseWriter, r *http.Request) *appError {
 	logRequest(r)
 	// TODO: determine content from request header?
 	format := api.PathFormat(r.URL)
@@ -251,23 +236,25 @@ func handleCollectionItems(w http.ResponseWriter, r *http.Request) {
 	//param := NewQueryParam()
 	switch format {
 	case api.FormatJSON:
-		writeItemsJSON(w, name, param, urlBase)
+		return writeItemsJSON(w, name, param, urlBase)
 	case api.FormatHTML:
-		writeItemsHTML(w, name, param, urlBase)
+		return writeItemsHTML(w, name, param, urlBase)
 	}
+	return nil
 }
 
-func writeItemsHTML(w http.ResponseWriter, name string, param data.QueryParam, urlBase string) {
+func writeItemsHTML(w http.ResponseWriter, name string, param data.QueryParam, urlBase string) *appError {
 	//--- query data for request
 	layer, err1 := catalogInstance.LayerByName(name)
 	if err1 != nil {
-		writeError(w, "UnableToGetFeatures", err1.Error(), http.StatusInternalServerError)
-		return
+		return AppErrorInternal(err1, errMsgFailData)
+	}
+	if layer == nil {
+		return AppErrorNotFoundFmt(err1, api.ErrMsgLayerNotFound, name)
 	}
 	features, err2 := catalogInstance.LayerFeatures(name, param)
 	if err2 != nil {
-		writeError(w, "UnableToGetFeatures", err2.Error(), http.StatusInternalServerError)
-		return
+		return AppErrorInternal(err2, errMsgFailData)
 	}
 
 	//--- assemble resonse
@@ -283,41 +270,24 @@ func writeItemsHTML(w http.ResponseWriter, name string, param data.QueryParam, u
 	context.CollectionTitle = layer.Title
 	context.UseMap = true
 
-	encodedContent, err := encodeHTML(content, context, ui.HTMLTemplate.Items)
-
-	if err != nil {
-		writeError(w, "EncodingError", err.Error(), http.StatusInternalServerError)
-		return
-	}
-	writeResponse(w, api.ContentTypeHTML, encodedContent)
+	return writeHTML(w, content, context, ui.HTMLTemplate.Items)
 }
 
-func writeItemsJSON(w http.ResponseWriter, name string, param data.QueryParam, urlBase string) {
+func writeItemsJSON(w http.ResponseWriter, name string, param data.QueryParam, urlBase string) *appError {
 	//--- query data for request
 	features, err := catalogInstance.LayerFeatures(name, param)
-	if features == nil {
-		msg := fmt.Sprintf(api.ErrMsgLayerNotFound, name)
-		writeError(w, api.ErrCodeLayerNotFound, msg, http.StatusNotFound)
-		return
-	}
 	if err != nil {
-		writeError(w, "UnableToGetFeatures", err.Error(), http.StatusInternalServerError)
-		return
+		return AppErrorInternal(err, errMsgFailData)
+	}
+	if features == nil {
+		return AppErrorNotFoundFmt(err, api.ErrMsgLayerNotFound, name)
 	}
 
 	//--- assemble resonse
 	content := api.NewFeatureCollectionInfo(features)
 	content.Links = linksItems(name, urlBase, api.FormatJSON)
 
-	// --- encoding
-	var encodedContent []byte
-	encodedContent, err = encodeJSON(content)
-
-	if err != nil {
-		writeError(w, "EncodingError", err.Error(), http.StatusInternalServerError)
-		return
-	}
-	writeResponse(w, api.ContentTypeGeoJSON, encodedContent)
+	return writeJSON(w, api.ContentTypeGeoJSON, content)
 }
 
 func linksItems(name string, urlBase string, format string) []*api.Link {
@@ -330,7 +300,7 @@ func linksItems(name string, urlBase string, format string) []*api.Link {
 	return links
 }
 
-func handleItem(w http.ResponseWriter, r *http.Request) {
+func handleItem(w http.ResponseWriter, r *http.Request) *appError {
 	logRequest(r)
 	// TODO: determine content from request header?
 	format := api.PathFormat(r.URL)
@@ -343,23 +313,25 @@ func handleItem(w http.ResponseWriter, r *http.Request) {
 
 	switch format {
 	case api.FormatJSON:
-		writeItemJSON(w, name, fid, param, urlBase)
+		return writeItemJSON(w, name, fid, param, urlBase)
 	case api.FormatHTML:
-		writeItemHTML(w, name, fid, param, urlBase)
+		return writeItemHTML(w, name, fid, param, urlBase)
 	}
+	return nil
 }
 
-func writeItemHTML(w http.ResponseWriter, name string, fid string, param data.QueryParam, urlBase string) {
+func writeItemHTML(w http.ResponseWriter, name string, fid string, param data.QueryParam, urlBase string) *appError {
 	//--- query data for request
 	layer, err1 := catalogInstance.LayerByName(name)
 	if err1 != nil {
-		writeError(w, "UnableToGetFeature", err1.Error(), http.StatusInternalServerError)
-		return
+		return AppErrorInternal(err1, errMsgFailData)
+	}
+	if layer == nil {
+		return AppErrorNotFoundFmt(err1, api.ErrMsgLayerNotFound, name)
 	}
 	feature, err2 := catalogInstance.LayerFeature(name, fid, param)
 	if err2 != nil {
-		writeError(w, "UnableToGetFeature", err2.Error(), http.StatusInternalServerError)
-		return
+		return AppErrorInternal(err2, errMsgFailData)
 	}
 
 	//--- assemble resonse
@@ -376,26 +348,17 @@ func writeItemHTML(w http.ResponseWriter, name string, fid string, param data.Qu
 	context.FeatureID = fid
 	context.UseMap = true
 
-	encodedContent, err := encodeHTML(content, context, ui.HTMLTemplate.Item)
-
-	if err != nil {
-		writeError(w, "EncodingError", err.Error(), http.StatusInternalServerError)
-		return
-	}
-	writeResponse(w, api.ContentTypeHTML, encodedContent)
+	return writeHTML(w, content, context, ui.HTMLTemplate.Item)
 }
 
-func writeItemJSON(w http.ResponseWriter, name string, fid string, param data.QueryParam, urlBase string) {
+func writeItemJSON(w http.ResponseWriter, name string, fid string, param data.QueryParam, urlBase string) *appError {
 	//--- query data for request
 	feature, err := catalogInstance.LayerFeature(name, fid, param)
 	if err != nil {
-		writeError(w, "UnableToGetFeatures", err.Error(), http.StatusInternalServerError)
-		return
+		return AppErrorInternal(err, errMsgFailData)
 	}
 	if len(feature) == 0 {
-		msg := fmt.Sprintf(api.ErrMsgFeatureNotFound, name)
-		writeError(w, api.ErrCodeFeatureNotFound, msg, http.StatusNotFound)
-		return
+		return AppErrorNotFoundFmt(nil, api.ErrCodeFeatureNotFound, fid)
 	}
 
 	//--- assemble resonse
@@ -403,13 +366,10 @@ func writeItemJSON(w http.ResponseWriter, name string, fid string, param data.Qu
 	// for now can't add links to feature JSON
 	//content.Links = linksItems(name, urlBase, api.FormatJSON)
 
-	// --- encoding
-	var encodedContent []byte
-	encodedContent = []byte(feature)
-	writeResponse(w, api.ContentTypeGeoJSON, encodedContent)
+	return writeJSON(w, api.ContentTypeGeoJSON, feature)
 }
 
-func handleConformance(w http.ResponseWriter, r *http.Request) {
+func handleConformance(w http.ResponseWriter, r *http.Request) *appError {
 	logRequest(r)
 	// TODO: determine content from request header?
 	format := api.PathFormat(r.URL)
@@ -417,22 +377,14 @@ func handleConformance(w http.ResponseWriter, r *http.Request) {
 
 	content := api.GetConformance()
 
-	// --- encoding
-	var err error
-	var encodedContent []byte
 	switch format {
 	case api.FormatHTML:
 		context := NewPageData()
 		context.URLHome = urlPathFormat(urlBase, "", api.FormatHTML)
 		context.URLJSON = urlPathFormat(urlBase, api.TagConformance, api.FormatJSON)
 
-		encodedContent, err = encodeHTML(content, context, ui.HTMLTemplate.Conformance)
+		return writeHTML(w, content, context, ui.HTMLTemplate.Conformance)
 	default:
-		encodedContent, err = encodeJSON(content)
+		return writeJSON(w, api.ContentTypeJSON, content)
 	}
-	if err != nil {
-		writeError(w, "EncodingError", err.Error(), http.StatusInternalServerError)
-		return
-	}
-	writeResponse(w, api.ContentType(format), encodedContent)
 }

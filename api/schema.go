@@ -91,7 +91,7 @@ type Conformance struct {
 }
 
 const (
-	ErrMsgLayerNotFound   = "Layer not found: %v"
+	ErrMsgLayerNotFound   = "Collection not found: %v"
 	ErrMsgFeatureNotFound = "Feature not found: %v"
 )
 
