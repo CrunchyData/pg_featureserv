@@ -132,11 +132,7 @@ func parseRequestParams(r *http.Request) data.QueryParam {
 
 	//-- parse limit
 	param.Limit = parseLimit(queryValues)
-
-	// testing only
-	//param.TransformFunc = "ST_PointOnSurface"
-	param.TransformFun, param.TransformArg = parseTransform(queryValues, 0)
-	param.TransformFun2, param.TransformArg2 = parseTransform(queryValues, 1)
+	param.TransformFuns = parseTransform(queryValues, 0)
 
 	return param
 }
@@ -157,24 +153,33 @@ func parseLimit(values url.Values) int {
 }
 
 const transformParamSep = ","
+const transformFunSep = "|"
 
-// parseTransform parses a transform function and optional argument:  transform=ST_Fun,arg
-func parseTransform(values url.Values, index int) (string, string) {
-	vals, ok := values[api.ParamTransform]
-	if !ok || len(vals) <= index {
-		return "", ""
-	}
-	val := vals[index]
+func parseTransform(values url.Values, index int) []data.TransformFunction {
+	val := values.Get(api.ParamTransform)
 	if len(val) < 1 {
-		return "", ""
+		return nil
 	}
-	funName := val
+	funDefs := strings.Split(val, transformFunSep)
+
+	funList := make([]data.TransformFunction, 0)
+	for _, fun := range funDefs {
+		name, arg := parseTransformFun(fun)
+		if name != "" {
+			funList = append(funList, data.TransformFunction{Name: name, Arg: arg})
+		}
+	}
+	return funList
+}
+
+func parseTransformFun(def string) (string, string) {
+	funName := def
 	arg := ""
 	// check for function parameter
-	sepIndex := strings.Index(val, transformParamSep)
+	sepIndex := strings.Index(def, transformParamSep)
 	if sepIndex >= 0 {
-		funName = val[:sepIndex]
-		arg = val[sepIndex+1:]
+		funName = def[:sepIndex]
+		arg = def[sepIndex+1:]
 	}
 	// TODO: harden this by checking arg is a valid number
 	// TODO: have whitelist for function names?

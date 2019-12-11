@@ -88,7 +88,7 @@ func (cat *catalogDB) LayerFeatures(name string, param QueryParam) ([]string, er
 		return nil, err
 	}
 
-	geomExpr := geometryExpr2(layer.GeometryColumn, param.TransformFun, param.TransformArg, param.TransformFun2, param.TransformArg2)
+	geomExpr := applyFunctions(param.TransformFuns, layer.GeometryColumn)
 	sql := fmt.Sprintf(sqlFeatures, geomExpr, layer.IDColumn, layer.ID, param.Limit)
 	log.Println(sql)
 

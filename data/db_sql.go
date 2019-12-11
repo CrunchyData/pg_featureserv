@@ -51,20 +51,22 @@ const sqlFeatures = `SELECT ST_AsGeoJSON( ST_Transform(%v,4326) ) AS _geojson, %
 
 const sqlFeature = `SELECT ST_AsGeoJSON( ST_Transform(%v,4326) ) AS _geojson, %v::text AS id FROM %v WHERE %v = $1 LIMIT 1`
 
-func geometryExpr(col string, fun string, arg string) string {
-	if len(fun) == 0 {
-		return col
+func applyFunctions(funs []TransformFunction, expr string) string {
+	if funs == nil {
+		return expr
 	}
-	if len(arg) == 0 {
-		return fmt.Sprintf("%v( %v )", fun, col)
-	}
-	return fmt.Sprintf("%v( %v, %v )", fun, col, arg)
-}
-
-func geometryExpr2(col string, fun string, arg string, fun2 string, arg2 string) string {
-	expr := geometryExpr(col, fun, arg)
-	if fun2 != "" {
-		expr = geometryExpr(expr, fun2, arg2)
+	for _, fun := range funs {
+		expr = applyFun(fun, expr)
 	}
 	return expr
+}
+
+func applyFun(fun TransformFunction, expr string) string {
+	if fun.Name == "" {
+		return expr
+	}
+	if fun.Arg == "" {
+		return fmt.Sprintf("%v( %v )", fun.Name, expr)
+	}
+	return fmt.Sprintf("%v( %v, %v )", fun.Name, expr, fun.Arg)
 }

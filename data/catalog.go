@@ -30,16 +30,16 @@ type Catalog interface {
 	LayerFeature(name string, id string, param QueryParam) (string, error)
 }
 
+type TransformFunction struct {
+	Name string
+	Arg  string
+}
+
 // QueryParam holds the optional parameters for an items query
 type QueryParam struct {
-	Limit        int
-	Bbox         Extent
-	TransformFun string
-
-	// TransformArg is an optional argument for the transform function, or blank
-	TransformArg  string
-	TransformFun2 string
-	TransformArg2 string
+	Limit         int
+	Bbox          Extent
+	TransformFuns []TransformFunction
 }
 
 // Layer tbd
