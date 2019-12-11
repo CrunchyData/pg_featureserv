@@ -81,7 +81,7 @@ a:hover, a:focus { text-decoration: underline; }
 
 <body>
 	<header style='color: white; padding: 6px; background-color: #0167B4'>
-		<div class='page-title'><a href="{{ .context.UrlHome }}"><span style='color:white'>{{ .config.Metadata.Title }}</span></a></div>
+		<div class='page-title'><a href="{{ .context.URLHome }}"><span style='color:white'>{{ .config.Metadata.Title }}</span></a></div>
 	</header>
 	{{ .body }}
 	<hr/>
@@ -91,7 +91,7 @@ a:hover, a:focus { text-decoration: underline; }
 
 var templateHome = `
 <div class='crumbs'>Home
-<a style='margin-left: 20px' class='json-link' href='{{ .context.UrlJSON }}' title='JSON document for this page'>JSON</a>
+<a style='margin-left: 20px' class='json-link' href='{{ .context.URLJSON }}' title='JSON document for this page'>JSON</a>
 </div>
 <hr>
 <div>{{ .config.Metadata.Description }}</div>
@@ -103,9 +103,9 @@ var templateHome = `
 `
 
 var templateConformance = `
-<div class='crumbs'><a href="{{ .context.UrlHome }}">Home</a>
+<div class='crumbs'><a href="{{ .context.URLHome }}">Home</a>
 / Conformance
-<a style='margin-left: 20px' class='json-link' href='{{ .context.UrlJSON }}' title='JSON document for this page'>JSON</a>
+<a style='margin-left: 20px' class='json-link' href='{{ .context.URLJSON }}' title='JSON document for this page'>JSON</a>
 </div>
 <hr>
 <h2>Conformance</h2>
@@ -117,9 +117,9 @@ var templateConformance = `
 `
 
 var templateCollections = `
-<div class='crumbs'><a href="{{ .context.UrlHome }}">Home</a>
+<div class='crumbs'><a href="{{ .context.URLHome }}">Home</a>
 / Collections
-<a style='margin-left: 20px' class='json-link' href='{{ .context.UrlJSON }}' title='JSON document for this page'>JSON</a>
+<a style='margin-left: 20px' class='json-link' href='{{ .context.URLJSON }}' title='JSON document for this page'>JSON</a>
 </div>
 <hr>
 <h2>Feature Collections</h2>
@@ -145,10 +145,10 @@ var templateCollections = `
 `
 
 var templateCollection = `
-<div class='crumbs'><a href="{{ .context.UrlHome }}">Home</a>
-/ <a href="{{ .context.UrlCollections }}">Collections</a>
+<div class='crumbs'><a href="{{ .context.URLHome }}">Home</a>
+/ <a href="{{ .context.URLCollections }}">Collections</a>
 / {{ .data.Title }}
-<a style='margin-left: 20px' class='json-link' href='{{ .context.UrlJSON }}' title='JSON document for this page'>JSON</a>
+<a style='margin-left: 20px' class='json-link' href='{{ .context.URLJSON }}' title='JSON document for this page'>JSON</a>
 </div>
 <hr>
 <h2>Feature Collection: {{ .data.Title }}</h2>
@@ -178,11 +178,11 @@ var templateCollection = `
 `
 
 var templateItems = `
-<div class='crumbs'><a href="{{ .context.UrlHome }}">Home</a>
-/ <a href="{{ .context.UrlCollections }}">Collections</a>
-/ <a href="{{ .context.UrlCollection }}">{{ .context.CollectionTitle }}</a>
+<div class='crumbs'><a href="{{ .context.URLHome }}">Home</a>
+/ <a href="{{ .context.URLCollections }}">Collections</a>
+/ <a href="{{ .context.URLCollection }}">{{ .context.CollectionTitle }}</a>
 / Items
-<a style='margin-left: 20px' class='json-link' href='{{ .context.UrlJSON }}' title='JSON document for this page'>JSON</a>
+<a style='margin-left: 20px' class='json-link' href='{{ .context.URLJSON }}' title='JSON document for this page'>JSON</a>
 <span style='padding-left:10px;'>Limit:</span>
 <select id='item-limit' onchange="chgLimit()">
 <option>10</option>
@@ -213,12 +213,12 @@ function chgLimit() {
 `
 
 var templateItem = `
-<div class='crumbs'><a href="{{ .context.UrlHome }}">Home</a>
-/ <a href="{{ .context.UrlCollections }}">Collections</a>
-/ <a href="{{ .context.UrlCollection }}">{{ .context.CollectionTitle }}</a>
-/ <a href="{{ .context.UrlItems }}">Items</a>
+<div class='crumbs'><a href="{{ .context.URLHome }}">Home</a>
+/ <a href="{{ .context.URLCollections }}">Collections</a>
+/ <a href="{{ .context.URLCollection }}">{{ .context.CollectionTitle }}</a>
+/ <a href="{{ .context.URLItems }}">Items</a>
 / {{ .context.FeatureID }}
-<a style='margin-left: 20px' class='json-link' href='{{ .context.UrlJSON }}' title='JSON document for this page'>JSON</a>
+<a style='margin-left: 20px' class='json-link' href='{{ .context.URLJSON }}' title='JSON document for this page'>JSON</a>
 </div>
 <hr>
 <h2>Feature: {{ .context.FeatureID }}</h2>

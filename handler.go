@@ -83,8 +83,8 @@ func doRoot(w http.ResponseWriter, r *http.Request, format string) {
 	switch format {
 	case api.FormatHTML:
 		context := NewPageData()
-		context.UrlHome = urlPathFormat(urlBase, "", api.FormatHTML)
-		context.UrlJSON = urlPathFormat(urlBase, "", api.FormatJSON)
+		context.URLHome = urlPathFormat(urlBase, "", api.FormatHTML)
+		context.URLJSON = urlPathFormat(urlBase, "", api.FormatJSON)
 
 		encodedContent, err = encodeHTML(content, context, ui.HTMLTemplate.Home)
 	default:
@@ -160,8 +160,8 @@ func handleCollections(w http.ResponseWriter, r *http.Request) {
 	switch format {
 	case api.FormatHTML:
 		context := NewPageData()
-		context.UrlHome = urlPathFormat(urlBase, "", api.FormatHTML)
-		context.UrlJSON = urlPathFormat(urlBase, api.TagCollections, api.FormatJSON)
+		context.URLHome = urlPathFormat(urlBase, "", api.FormatHTML)
+		context.URLJSON = urlPathFormat(urlBase, api.TagCollections, api.FormatJSON)
 
 		encodedContent, err = encodeHTML(content, context, ui.HTMLTemplate.Collections)
 	default:
@@ -220,10 +220,10 @@ func handleCollection(w http.ResponseWriter, r *http.Request) {
 	switch format {
 	case api.FormatHTML:
 		context := NewPageData()
-		context.UrlHome = urlPathFormat(urlBase, "", api.FormatHTML)
-		context.UrlCollections = urlPathFormat(urlBase, api.TagCollections, api.FormatHTML)
-		context.UrlCollection = urlPathFormat(urlBase, api.PathCollection(name), api.FormatHTML)
-		context.UrlJSON = urlPathFormat(urlBase, api.PathCollection(name), api.FormatJSON)
+		context.URLHome = urlPathFormat(urlBase, "", api.FormatHTML)
+		context.URLCollections = urlPathFormat(urlBase, api.TagCollections, api.FormatHTML)
+		context.URLCollection = urlPathFormat(urlBase, api.PathCollection(name), api.FormatHTML)
+		context.URLJSON = urlPathFormat(urlBase, api.PathCollection(name), api.FormatJSON)
 		context.CollectionTitle = layer.Title
 		context.Layer = layer
 
@@ -275,11 +275,11 @@ func writeItemsHTML(w http.ResponseWriter, name string, param data.QueryParam, u
 
 	// --- encoding
 	context := NewPageData()
-	context.UrlHome = urlPathFormat(urlBase, "", api.FormatHTML)
-	context.UrlCollections = urlPathFormat(urlBase, api.TagCollections, api.FormatHTML)
-	context.UrlCollection = urlPathFormat(urlBase, api.PathCollection(name), api.FormatHTML)
-	context.UrlItems = urlPathFormat(urlBase, api.PathItems(name), api.FormatHTML)
-	context.UrlJSON = urlPathFormat(urlBase, api.PathItems(name), api.FormatJSON)
+	context.URLHome = urlPathFormat(urlBase, "", api.FormatHTML)
+	context.URLCollections = urlPathFormat(urlBase, api.TagCollections, api.FormatHTML)
+	context.URLCollection = urlPathFormat(urlBase, api.PathCollection(name), api.FormatHTML)
+	context.URLItems = urlPathFormat(urlBase, api.PathItems(name), api.FormatHTML)
+	context.URLJSON = urlPathFormat(urlBase, api.PathItems(name), api.FormatJSON)
 	context.CollectionTitle = layer.Title
 	context.UseMap = true
 
@@ -367,11 +367,11 @@ func writeItemHTML(w http.ResponseWriter, name string, fid string, param data.Qu
 
 	// --- encoding
 	context := NewPageData()
-	context.UrlHome = urlPathFormat(urlBase, "", api.FormatHTML)
-	context.UrlCollections = urlPathFormat(urlBase, api.TagCollections, api.FormatHTML)
-	context.UrlCollection = urlPathFormat(urlBase, api.PathCollection(name), api.FormatHTML)
-	context.UrlItems = urlPathFormat(urlBase, api.PathItems(name), api.FormatHTML)
-	context.UrlJSON = urlPathFormat(urlBase, api.PathItem(name, fid), api.FormatJSON)
+	context.URLHome = urlPathFormat(urlBase, "", api.FormatHTML)
+	context.URLCollections = urlPathFormat(urlBase, api.TagCollections, api.FormatHTML)
+	context.URLCollection = urlPathFormat(urlBase, api.PathCollection(name), api.FormatHTML)
+	context.URLItems = urlPathFormat(urlBase, api.PathItems(name), api.FormatHTML)
+	context.URLJSON = urlPathFormat(urlBase, api.PathItem(name, fid), api.FormatJSON)
 	context.CollectionTitle = layer.Title
 	context.FeatureID = fid
 	context.UseMap = true
@@ -423,8 +423,8 @@ func handleConformance(w http.ResponseWriter, r *http.Request) {
 	switch format {
 	case api.FormatHTML:
 		context := NewPageData()
-		context.UrlHome = urlPathFormat(urlBase, "", api.FormatHTML)
-		context.UrlJSON = urlPathFormat(urlBase, api.TagConformance, api.FormatJSON)
+		context.URLHome = urlPathFormat(urlBase, "", api.FormatHTML)
+		context.URLJSON = urlPathFormat(urlBase, api.TagConformance, api.FormatJSON)
 
 		encodedContent, err = encodeHTML(content, context, ui.HTMLTemplate.Conformance)
 	default:

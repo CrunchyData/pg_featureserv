@@ -21,16 +21,16 @@ import (
 	"github.com/CrunchyData/pg_featureserv/data"
 )
 
-// PageContext - data used on the HTML pages
+// PageData - data used on the HTML pages
 type PageData struct {
 	AppName    string
 	AppVersion string
 	// URLHome - URL for the service home page
-	UrlHome         string
-	UrlCollections  string
-	UrlCollection   string
-	UrlItems        string
-	UrlJSON         string
+	URLHome         string
+	URLCollections  string
+	URLCollection   string
+	URLItems        string
+	URLJSON         string
 	CollectionTitle string
 	Layer           *data.Layer
 	FeatureID       string
