@@ -28,6 +28,10 @@ const (
 	TagConformance = "conformance"
 	TagAPI         = "api"
 
+	ParamLimit     = "limit"
+	ParamBbox      = "bbox"
+	ParamTransform = "transform"
+
 	RelSelf = "self"
 	RelAlt  = "alternate"
 	RelData = "data"

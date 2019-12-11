@@ -113,7 +113,7 @@ func (cat *catalogMock) LayerFeatures(name string, param QueryParam) ([]string, 
 	return features, nil
 }
 
-func (cat *catalogMock) LayerFeature(name string, id string) (string, error) {
+func (cat *catalogMock) LayerFeature(name string, id string, param QueryParam) (string, error) {
 	features, ok := cat.layerData[name]
 	if !ok {
 		// layer ot found - indicated by empty value returned

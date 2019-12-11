@@ -88,20 +88,20 @@ func (cat *catalogDB) LayerFeatures(name string, param QueryParam) ([]string, er
 		return nil, err
 	}
 
-	sql := fmt.Sprintf(sqlFeatures, layer.GeometryColumn, layer.IDColumn, layer.ID, param.Limit)
+	geomExpr := geometryExpr(layer.GeometryColumn, param.TransformFunc, param.TransformArg)
+	sql := fmt.Sprintf(sqlFeatures, geomExpr, layer.IDColumn, layer.ID, param.Limit)
 	log.Println(sql)
 
 	features := readFeatures(cat.dbconn, layer, sql)
 	return features, nil
 }
 
-func (cat *catalogDB) LayerFeature(name string, id string) (string, error) {
+func (cat *catalogDB) LayerFeature(name string, id string, param QueryParam) (string, error) {
 	layer, err := cat.LayerByName(name)
 	if err != nil {
 		return "", err
 	}
 
-	//sqlQuery := fmt.Sprintf("%v WHERE %v = $1 LIMIT 1", sqlFeature)
 	sql := fmt.Sprintf(sqlFeature, layer.GeometryColumn, layer.IDColumn, layer.ID, layer.IDColumn)
 	log.Println(sql)
 
@@ -216,26 +216,7 @@ func readLayer(rows pgx.Rows) *Layer {
 func readFeatures(db *pgxpool.Pool, layer *Layer, sqlFeatures string) []string {
 	rows, err := db.Query(context.Background(), sqlFeatures)
 	if err != nil {
-		log.Fatal(err)
-	}
-	var features []string
-	for rows.Next() {
-		feature := readFeature(rows)
-		//log.Println(feature)
-		features = append(features, feature)
-	}
-	// Check for errors from iterating over rows.
-	if err := rows.Err(); err != nil {
-		log.Fatal(err)
-	}
-	rows.Close()
-	return features
-}
-
-func readFeaturesWithParam(db *pgxpool.Pool, layer *Layer, sqlFeatures string, args []interface{}) []string {
-	rows, err := db.Query(context.Background(), sqlFeatures, args...)
-	if err != nil {
-		log.Fatal(err)
+		log.Warn(err)
 		return nil
 	}
 	var features []string
@@ -246,7 +227,28 @@ func readFeaturesWithParam(db *pgxpool.Pool, layer *Layer, sqlFeatures string, a
 	}
 	// Check for errors from iterating over rows.
 	if err := rows.Err(); err != nil {
-		log.Fatal(err)
+		log.Warn(err)
+		return nil
+	}
+	rows.Close()
+	return features
+}
+
+func readFeaturesWithParam(db *pgxpool.Pool, layer *Layer, sqlFeatures string, args []interface{}) []string {
+	rows, err := db.Query(context.Background(), sqlFeatures, args...)
+	if err != nil {
+		log.Warn(err)
+		return nil
+	}
+	var features []string
+	for rows.Next() {
+		feature := readFeature(rows)
+		//log.Println(feature)
+		features = append(features, feature)
+	}
+	// Check for errors from iterating over rows.
+	if err := rows.Err(); err != nil {
+		log.Warn(err)
 	}
 	rows.Close()
 	return features
@@ -256,7 +258,7 @@ func readFeature(rows pgx.Rows) string {
 	var id, geom string
 	err := rows.Scan(&geom, &id)
 	if err != nil {
-		log.Fatal(err)
+		log.Warn(err)
 		return ""
 	}
 	return makeFeatureJSON(id, geom)

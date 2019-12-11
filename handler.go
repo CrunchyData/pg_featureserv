@@ -339,23 +339,24 @@ func handleItem(w http.ResponseWriter, r *http.Request) {
 	//--- extract request parameters
 	name := getRequestVar(varCollectionID, r)
 	fid := getRequestVar(varFeatureID, r)
+	param := parseRequestParams(r)
 
 	switch format {
 	case api.FormatJSON:
-		writeItemJSON(w, name, fid, urlBase)
+		writeItemJSON(w, name, fid, param, urlBase)
 	case api.FormatHTML:
-		writeItemHTML(w, name, fid, urlBase)
+		writeItemHTML(w, name, fid, param, urlBase)
 	}
 }
 
-func writeItemHTML(w http.ResponseWriter, name string, fid string, urlBase string) {
+func writeItemHTML(w http.ResponseWriter, name string, fid string, param data.QueryParam, urlBase string) {
 	//--- query data for request
 	layer, err1 := catalogInstance.LayerByName(name)
 	if err1 != nil {
 		writeError(w, "UnableToGetFeature", err1.Error(), http.StatusInternalServerError)
 		return
 	}
-	feature, err2 := catalogInstance.LayerFeature(name, fid)
+	feature, err2 := catalogInstance.LayerFeature(name, fid, param)
 	if err2 != nil {
 		writeError(w, "UnableToGetFeature", err2.Error(), http.StatusInternalServerError)
 		return
@@ -384,9 +385,9 @@ func writeItemHTML(w http.ResponseWriter, name string, fid string, urlBase strin
 	writeResponse(w, api.ContentTypeHTML, encodedContent)
 }
 
-func writeItemJSON(w http.ResponseWriter, name string, fid string, urlBase string) {
+func writeItemJSON(w http.ResponseWriter, name string, fid string, param data.QueryParam, urlBase string) {
 	//--- query data for request
-	feature, err := catalogInstance.LayerFeature(name, fid)
+	feature, err := catalogInstance.LayerFeature(name, fid, param)
 	if err != nil {
 		writeError(w, "UnableToGetFeatures", err.Error(), http.StatusInternalServerError)
 		return

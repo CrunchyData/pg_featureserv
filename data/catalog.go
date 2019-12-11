@@ -27,13 +27,17 @@ type Catalog interface {
 
 	// LayerFeature returns the JSON text for a layer feature with given id
 	// It returns an empty string if the layer or feature does not exist
-	LayerFeature(name string, id string) (string, error)
+	LayerFeature(name string, id string, param QueryParam) (string, error)
 }
 
 // QueryParam holds the optional parameters for an items query
 type QueryParam struct {
-	Limit int
-	Bbox  Extent
+	Limit         int
+	Bbox          Extent
+	TransformFunc string
+
+	// TransformArg is an optional argument for the transform function, or blank
+	TransformArg string
 }
 
 // Layer tbd

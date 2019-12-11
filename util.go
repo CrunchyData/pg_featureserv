@@ -133,15 +133,19 @@ func parseRequestParams(r *http.Request) data.QueryParam {
 	//-- parse limit
 	param.Limit = parseLimit(queryValues)
 
+	// testing only
+	//param.TransformFunc = "ST_PointOnSurface"
+	param.TransformFunc, param.TransformArg = parseTransform(queryValues)
+
 	return param
 }
 
 func parseLimit(values url.Values) int {
-	limitVal := values.Get("limit")
-	if len(limitVal) < 1 {
+	val := values.Get(api.ParamLimit)
+	if len(val) < 1 {
 		return config.Configuration.Server.DefaultLimit
 	}
-	limit, err := strconv.Atoi(limitVal)
+	limit, err := strconv.Atoi(val)
 	if err != nil {
 		return config.Configuration.Server.DefaultLimit
 	}
@@ -149,4 +153,25 @@ func parseLimit(values url.Values) int {
 		return config.Configuration.Server.MaxLimit
 	}
 	return limit
+}
+
+const transformParamSep = ","
+
+// parseTransform parses a transform function and optional argument:  transform=ST_Fun,arg
+func parseTransform(values url.Values) (string, string) {
+	val := values.Get(api.ParamTransform)
+	if len(val) < 1 {
+		return "", ""
+	}
+	funName := val
+	arg := ""
+	// check for function parameter
+	sepIndex := strings.Index(val, transformParamSep)
+	if sepIndex >= 0 {
+		funName = val[:sepIndex]
+		arg = val[sepIndex+1:]
+	}
+	// TODO: harden this by checking arg is a valid number
+	// TODO: have whitelist for function names?
+	return funName, arg
 }

@@ -1,5 +1,7 @@
 package data
 
+import "fmt"
+
 /*
  Copyright 2019 Crunchy Data Solutions, Inc.
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -48,3 +50,13 @@ AND postgis_typmod_srid(a.atttypmod) > 0
 const sqlFeatures = `SELECT ST_AsGeoJSON( ST_Transform(%v,4326) ) AS _geojson, %v::text AS id FROM %v LIMIT %v;`
 
 const sqlFeature = `SELECT ST_AsGeoJSON( ST_Transform(%v,4326) ) AS _geojson, %v::text AS id FROM %v WHERE %v = $1 LIMIT 1`
+
+func geometryExpr(col string, fun string, arg string) string {
+	if len(fun) == 0 {
+		return col
+	}
+	if len(arg) == 0 {
+		return fmt.Sprintf("%v( %v )", fun, col)
+	}
+	return fmt.Sprintf("%v( %v, %v )", fun, col, arg)
+}
