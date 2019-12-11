@@ -88,7 +88,7 @@ func (cat *catalogDB) LayerFeatures(name string, param QueryParam) ([]string, er
 		return nil, err
 	}
 
-	geomExpr := geometryExpr(layer.GeometryColumn, param.TransformFunc, param.TransformArg)
+	geomExpr := geometryExpr2(layer.GeometryColumn, param.TransformFun, param.TransformArg, param.TransformFun2, param.TransformArg2)
 	sql := fmt.Sprintf(sqlFeatures, geomExpr, layer.IDColumn, layer.ID, param.Limit)
 	log.Println(sql)
 
@@ -107,7 +107,7 @@ func (cat *catalogDB) LayerFeature(name string, id string, param QueryParam) (st
 
 	args := make([]interface{}, 0)
 	args = append(args, id)
-	features := readFeaturesWithParam(cat.dbconn, layer, sql, args)
+	features := readFeaturesWithArgs(cat.dbconn, layer, sql, args)
 
 	if len(features) == 0 {
 		return "", nil
@@ -213,29 +213,12 @@ func readLayer(rows pgx.Rows) *Layer {
 	}
 }
 
-func readFeatures(db *pgxpool.Pool, layer *Layer, sqlFeatures string) []string {
-	rows, err := db.Query(context.Background(), sqlFeatures)
-	if err != nil {
-		log.Warn(err)
-		return nil
-	}
-	var features []string
-	for rows.Next() {
-		feature := readFeature(rows)
-		//log.Println(feature)
-		features = append(features, feature)
-	}
-	// Check for errors from iterating over rows.
-	if err := rows.Err(); err != nil {
-		log.Warn(err)
-		return nil
-	}
-	rows.Close()
-	return features
+func readFeatures(db *pgxpool.Pool, layer *Layer, sql string) []string {
+	return readFeaturesWithArgs(db, layer, sql, nil)
 }
 
-func readFeaturesWithParam(db *pgxpool.Pool, layer *Layer, sqlFeatures string, args []interface{}) []string {
-	rows, err := db.Query(context.Background(), sqlFeatures, args...)
+func readFeaturesWithArgs(db *pgxpool.Pool, layer *Layer, sql string, args []interface{}) []string {
+	rows, err := db.Query(context.Background(), sql, args...)
 	if err != nil {
 		log.Warn(err)
 		return nil

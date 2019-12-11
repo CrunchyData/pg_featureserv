@@ -60,3 +60,11 @@ func geometryExpr(col string, fun string, arg string) string {
 	}
 	return fmt.Sprintf("%v( %v, %v )", fun, col, arg)
 }
+
+func geometryExpr2(col string, fun string, arg string, fun2 string, arg2 string) string {
+	expr := geometryExpr(col, fun, arg)
+	if fun2 != "" {
+		expr = geometryExpr(expr, fun2, arg2)
+	}
+	return expr
+}

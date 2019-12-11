@@ -135,7 +135,8 @@ func parseRequestParams(r *http.Request) data.QueryParam {
 
 	// testing only
 	//param.TransformFunc = "ST_PointOnSurface"
-	param.TransformFunc, param.TransformArg = parseTransform(queryValues)
+	param.TransformFun, param.TransformArg = parseTransform(queryValues, 0)
+	param.TransformFun2, param.TransformArg2 = parseTransform(queryValues, 1)
 
 	return param
 }
@@ -158,8 +159,12 @@ func parseLimit(values url.Values) int {
 const transformParamSep = ","
 
 // parseTransform parses a transform function and optional argument:  transform=ST_Fun,arg
-func parseTransform(values url.Values) (string, string) {
-	val := values.Get(api.ParamTransform)
+func parseTransform(values url.Values, index int) (string, string) {
+	vals, ok := values[api.ParamTransform]
+	if !ok || len(vals) <= index {
+		return "", ""
+	}
+	val := vals[index]
 	if len(val) < 1 {
 		return "", ""
 	}

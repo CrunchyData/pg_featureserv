@@ -32,12 +32,14 @@ type Catalog interface {
 
 // QueryParam holds the optional parameters for an items query
 type QueryParam struct {
-	Limit         int
-	Bbox          Extent
-	TransformFunc string
+	Limit        int
+	Bbox         Extent
+	TransformFun string
 
 	// TransformArg is an optional argument for the transform function, or blank
-	TransformArg string
+	TransformArg  string
+	TransformFun2 string
+	TransformArg2 string
 }
 
 // Layer tbd
