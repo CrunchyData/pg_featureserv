@@ -19,7 +19,7 @@ Usage: ./pg_featureserv
 
 # Configuration
 Database URL in env var `DATABASE_URL`
-Example: `export DATABASE_URL="host=localhost"``
+Example: `export DATABASE_URL="host=localhost"`
 
 # Logging
 Logging to stdout

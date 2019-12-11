@@ -20,7 +20,7 @@ func init() {
 	Configuration = Config{
 		Server: Server{
 			BindHost:     "",
-			BindPort:     10000,
+			BindPort:     9000,
 			DefaultLimit: 10,
 			MaxLimit:     1000,
 		},
