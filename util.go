@@ -83,7 +83,7 @@ func getRequestVar(varname string, r *http.Request) string {
 	return name
 }
 
-// Provides a URL for the given base, path and format
+// urlPathFormat provides a URL for the given base, path and format
 func urlPathFormat(urlBase string, path string, format string) string {
 	var pathType string
 	if path == "" {
@@ -100,6 +100,14 @@ func urlPathFormat(urlBase string, path string, format string) string {
 			panic(fmt.Sprintf("unsupported content type: %v", contentType))
 		}
 	*/
+	return url
+}
+
+func urlPathFormatQuery(urlBase string, path string, format string, query string) string {
+	url := urlPathFormat(urlBase, path, format)
+	if query != "" {
+		url = fmt.Sprintf("%v?%v", url, query)
+	}
 	return url
 }
 

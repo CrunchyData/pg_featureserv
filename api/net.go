@@ -58,3 +58,13 @@ func PathStripFormat(path string) string {
 	}
 	return path
 }
+
+func URLQuery(url *url.URL) string {
+	uri := url.RequestURI()
+	qloc := strings.Index(uri, "?")
+	if qloc < 0 {
+		return ""
+	}
+	query := uri[qloc+1:]
+	return query
+}
