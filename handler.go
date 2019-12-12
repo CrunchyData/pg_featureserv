@@ -373,8 +373,9 @@ func writeItemJSON(w http.ResponseWriter, name string, fid string, param data.Qu
 	//content := feature
 	// for now can't add links to feature JSON
 	//content.Links = linksItems(name, urlBase, api.FormatJSON)
-
-	return writeJSON(w, api.ContentTypeGeoJSON, feature)
+	encodedContent := []byte(feature)
+	writeResponse(w, api.ContentTypeGeoJSON, encodedContent)
+	return nil
 }
 
 func handleConformance(w http.ResponseWriter, r *http.Request) *appError {
