@@ -20,7 +20,7 @@ var templatePage = `<!doctype html>
 <title>{{ .config.Metadata.Title }}</title>
 
 {{ if .context.UseMap }}
-<link rel="stylesheet" href="https://openlayers.org/en/v4.6.5/css/ol.css" type="text/css">
+<link rel="stylesheet" href="https://openlayers.org/en/v6.1.1/css/ol.css" type="text/css">
 <style>
 .map {
 	height: 400px;
@@ -199,7 +199,7 @@ var templateItems = `
 <div id="popup-container" class="arrow_box"></div>
 
 <script>
-var geojsonObject = {{ .data }};
+var DATA_URL = "{{ .context.URLJSON }}";
 </script>
 <script>
 function chgLimit() {
@@ -227,12 +227,12 @@ var templateItem = `
 <div id="popup-container" class="arrow_box"></div>
 
 <script>
-var geojsonObject = {{ .data }};
+var DATA_URL = "{{ .context.URLJSON }}";
 </script>
 `
 
 var mapCode = `
-<script src="https://openlayers.org/en/v4.6.5/build/ol.js"></script>
+<script src="https://openlayers.org/en/v6.1.1/build/ol.js"></script>
 <script>
 var image = new ol.style.Circle({
 	radius: 5,
@@ -308,16 +308,13 @@ var styles = {
 var styleFunction = function(feature) {
 	return styles[feature.getGeometry().getType()];
 };
-var vectorSource = new ol.source.Vector({
-	features: (new ol.format.GeoJSON()).readFeatures(geojsonObject, {
-		dataProjection: "EPSG:4326",
-		featureProjection: "EPSG:3857"
-	})
-});
 var vectorLayer = new ol.layer.Vector({
-	source: vectorSource,
-	style: styleFunction,
-});
+	source: new ol.source.Vector({
+	  url: DATA_URL,
+	  format: new ol.format.GeoJSON()
+	}),
+	style: styleFunction
+  });
 var map = new ol.Map({
 	layers: [
 		new ol.layer.Tile({
@@ -325,7 +322,7 @@ var map = new ol.Map({
 				"url" : "https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png"
 			})
 		}),
-		vectorLayer
+//		vectorLayer
 	],
 	target: 'map',
 	controls: ol.control.defaults({
@@ -334,10 +331,15 @@ var map = new ol.Map({
 		}
 	}),
 	view: new ol.View({
-		zoom: -10
+		center: [0,0],
+		zoom: 10
 	})
 });
-map.getView().fit(vectorLayer.getSource().getExtent(), map.getSize());
+map.addLayer(vectorLayer);
+
+map.once('rendercomplete', function(event) {
+    map.getView().fit(vectorLayer.getSource().getExtent(), map.getSize());
+});
 var overlay = new ol.Overlay({
 	element: document.getElementById('popup-container'),
 	positioning: 'bottom-center',
