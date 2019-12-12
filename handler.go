@@ -241,19 +241,18 @@ func handleCollectionItems(w http.ResponseWriter, r *http.Request) *appError {
 	//--- extract request parameters
 	name := getRequestVar(varCollectionID, r)
 	param := parseRequestParams(r)
-
 	query := api.URLQuery(r.URL)
-	//param := NewQueryParam()
+
 	switch format {
 	case api.FormatJSON:
 		return writeItemsJSON(w, name, param, urlBase)
 	case api.FormatHTML:
-		return writeItemsHTML(w, name, query, param, urlBase)
+		return writeItemsHTML(w, name, query, urlBase)
 	}
 	return nil
 }
 
-func writeItemsHTML(w http.ResponseWriter, name string, query string, param data.QueryParam, urlBase string) *appError {
+func writeItemsHTML(w http.ResponseWriter, name string, query string, urlBase string) *appError {
 	//--- get layer info (and check if layer exists)
 	layer, err1 := catalogInstance.LayerByName(name)
 	if err1 != nil {
@@ -312,17 +311,18 @@ func handleItem(w http.ResponseWriter, r *http.Request) *appError {
 	name := getRequestVar(varCollectionID, r)
 	fid := getRequestVar(varFeatureID, r)
 	param := parseRequestParams(r)
+	query := api.URLQuery(r.URL)
 
 	switch format {
 	case api.FormatJSON:
 		return writeItemJSON(w, name, fid, param, urlBase)
 	case api.FormatHTML:
-		return writeItemHTML(w, name, fid, param, urlBase)
+		return writeItemHTML(w, name, fid, query, urlBase)
 	}
 	return nil
 }
 
-func writeItemHTML(w http.ResponseWriter, name string, fid string, param data.QueryParam, urlBase string) *appError {
+func writeItemHTML(w http.ResponseWriter, name string, fid string, query string, urlBase string) *appError {
 	//--- query data for request
 	layer, err1 := catalogInstance.LayerByName(name)
 	if err1 != nil {
@@ -331,13 +331,6 @@ func writeItemHTML(w http.ResponseWriter, name string, fid string, param data.Qu
 	if layer == nil {
 		return appErrorNotFoundFmt(err1, api.ErrMsgLayerNotFound, name)
 	}
-	feature, err2 := catalogInstance.LayerFeature(name, fid, param)
-	if err2 != nil {
-		return appErrorInternal(err2, errMsgFailData)
-	}
-
-	//--- assemble resonse
-	content := feature
 
 	// --- encoding
 	context := NewPageData()
@@ -345,12 +338,12 @@ func writeItemHTML(w http.ResponseWriter, name string, fid string, param data.Qu
 	context.URLCollections = urlPathFormat(urlBase, api.TagCollections, api.FormatHTML)
 	context.URLCollection = urlPathFormat(urlBase, api.PathCollection(name), api.FormatHTML)
 	context.URLItems = urlPathFormat(urlBase, api.PathItems(name), api.FormatHTML)
-	context.URLJSON = urlPathFormat(urlBase, api.PathItem(name, fid), api.FormatJSON)
+	context.URLJSON = urlPathFormatQuery(urlBase, api.PathItem(name, fid), api.FormatJSON, query)
 	context.CollectionTitle = layer.Title
 	context.FeatureID = fid
 	context.UseMap = true
-
-	return writeHTML(w, content, context, ui.HTMLTemplate.Item)
+	// feature is not needed for item page (page queries for them)
+	return writeHTML(w, nil, context, ui.HTMLTemplate.Item)
 }
 
 func writeItemJSON(w http.ResponseWriter, name string, fid string, param data.QueryParam, urlBase string) *appError {
