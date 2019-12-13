@@ -15,7 +15,9 @@ package main
 
 /*
 # Running
-Usage: ./pg_featureserv
+Usage: ./pg_featureserv [ -test ]
+
+Browser: e.g. http://localhost:9000/home.html
 
 # Configuration
 Database URL in env var `DATABASE_URL`
@@ -26,35 +28,34 @@ Logging to stdout
 */
 
 import (
-	"flag"
 	"fmt"
 	"net/http"
 
 	"github.com/CrunchyData/pg_featureserv/config"
 	"github.com/CrunchyData/pg_featureserv/data"
 	"github.com/gorilla/handlers"
+	"github.com/pborman/getopt/v2"
 	log "github.com/sirupsen/logrus"
 )
 
-// CatalogInstance mock
 var catalogInstance data.Catalog
-var stateTest bool
+var flagTestMode bool
 
 func init() {
 	initFlags()
 }
 
 func initFlags() {
-	flag.BoolVar(&stateTest, "test", false, "Run server with test data")
+	getopt.FlagLong(&flagTestMode, "test", 't', "Serve test data")
 }
 
 func main() {
-	flag.Parse()
+	getopt.Parse()
 	log.Infof("%s %s\n", config.AppConfig.Name, config.AppConfig.Version)
 
 	config.InitConfig("config")
 
-	if stateTest {
+	if flagTestMode {
 		catalogInstance = data.CatMockInstance()
 	} else {
 		catalogInstance = data.CatDBInstance()
