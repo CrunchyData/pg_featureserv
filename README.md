@@ -19,12 +19,16 @@ It supports the [OGC API - Features](http://docs.opengeospatial.org/is/17-069r3/
 
 * Set environment variable `DATABASE_URL` with a Postgres [connection string](https://www.postgresql.org/docs/12/libpq-connect.html#LIBPQ-CONNSTRING)
   * Example: `export DATABASE_URL="host=localhost"`
-* (FUTURE) Edit configuration file
+* Edit configuration file `config.toml`
 
 ## Running
 
 * Start server: `./pg_featureserv`
 * Open in a browser: `http:/localhost:9000/home.html`
+
+### Command-line options
+
+* `-test` - run in test mode, with an internal catalog of layers and data
 
 ## Requests Overview
 
