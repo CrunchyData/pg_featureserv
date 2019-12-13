@@ -50,7 +50,7 @@ func initFlags() {
 
 func main() {
 	flag.Parse()
-	log.Printf("%s %s\n", config.AppConfig.Name, config.AppConfig.Version)
+	log.Infof("%s %s\n", config.AppConfig.Name, config.AppConfig.Version)
 
 	config.InitConfig("config")
 
@@ -66,11 +66,17 @@ func main() {
 func serve() {
 
 	confServ := config.Configuration.Server
+	log.Infof("%s\n", config.Configuration.Metadata.Title)
+
 	bindAddress := fmt.Sprintf("%v:%v", confServ.BindHost, confServ.BindPort)
-	log.Printf("Serving at: %v\n", bindAddress)
+	log.Infof("Serving at %v\n", bindAddress)
+	log.Infof("CORS Allowed Origins: %v\n", config.Configuration.Server.CORSOrigins)
 
 	router := initRouter()
+
 	// set CORS handling to allow all access
-	corsOpt := handlers.AllowedOrigins([]string{"*"})
+	// TODO: make this runtime configurable?
+	corsOpt := handlers.AllowedOrigins([]string{config.Configuration.Server.CORSOrigins})
+
 	log.Fatal(http.ListenAndServe(bindAddress, handlers.CORS(corsOpt)(router)))
 }
