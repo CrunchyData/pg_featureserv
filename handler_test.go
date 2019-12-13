@@ -19,10 +19,17 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/CrunchyData/pg_featureserv/api"
+	"github.com/CrunchyData/pg_featureserv/data"
 )
+
+func TestMain(m *testing.M) {
+	catalogInstance = data.CatMockInstance()
+	os.Exit(m.Run())
+}
 
 func TestRootHandler(t *testing.T) {
 	resp := execHTTPRequest(t, "/", handleRootJSON)
@@ -56,13 +63,12 @@ func TestFeatureNotFound(t *testing.T) {
 	execHTTPRequestStatus(t, "/collections/mock_a/items/999", handleItem, http.StatusNotFound)
 }
 
-func execHTTPRequest(t *testing.T, url string,
-	handler http.HandlerFunc) *httptest.ResponseRecorder {
+func execHTTPRequest(t *testing.T, url string, handler appHandler) *httptest.ResponseRecorder {
 	return execHTTPRequestStatus(t, url, handler, http.StatusOK)
 }
 
 func execHTTPRequestStatus(t *testing.T, url string,
-	handler http.HandlerFunc,
+	handler appHandler,
 	statusExpected int) *httptest.ResponseRecorder {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -70,8 +76,7 @@ func execHTTPRequestStatus(t *testing.T, url string,
 	}
 
 	rr := httptest.NewRecorder()
-	h := http.HandlerFunc(handler)
-	h.ServeHTTP(rr, req)
+	handler.ServeHTTP(rr, req)
 
 	// Check the status code
 	fmt.Println("Status:", rr.Code)
