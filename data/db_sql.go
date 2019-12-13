@@ -1,7 +1,5 @@
 package data
 
-import "fmt"
-
 /*
  Copyright 2019 Crunchy Data Solutions, Inc.
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -56,11 +54,12 @@ func applyFunctions(funs []TransformFunction, expr string) string {
 		return expr
 	}
 	for _, fun := range funs {
-		expr = applyFun(fun, expr)
+		expr = fun.apply(expr)
 	}
 	return expr
 }
 
+/*
 func applyFun(fun TransformFunction, expr string) string {
 	if fun.Name == "" {
 		return expr
@@ -70,3 +69,4 @@ func applyFun(fun TransformFunction, expr string) string {
 	}
 	return fmt.Sprintf("%v( %v, %v )", fun.Name, expr, fun.Arg)
 }
+*/

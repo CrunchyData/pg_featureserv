@@ -1,5 +1,10 @@
 package data
 
+import (
+	"fmt"
+	"strings"
+)
+
 /*
  Copyright 2019 Crunchy Data Solutions, Inc.
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,7 +37,7 @@ type Catalog interface {
 
 type TransformFunction struct {
 	Name string
-	Arg  string
+	Arg  []string
 }
 
 // QueryParam holds the optional parameters for an items query
@@ -66,3 +71,14 @@ const (
 	errMsgLayerNotFound   = "Layer not found: %v"
 	errMsgFeatureNotFound = "Feature not found: %v"
 )
+
+func (fun *TransformFunction) apply(expr string) string {
+	if fun.Name == "" {
+		return expr
+	}
+	if len(fun.Arg) == 0 {
+		return fmt.Sprintf("%v( %v )", fun.Name, expr)
+	}
+	args := strings.Join(fun.Arg, ",")
+	return fmt.Sprintf("%v( %v, %v )", fun.Name, expr, args)
+}

@@ -193,8 +193,8 @@ func parseLimit(values url.Values) int {
 	return limit
 }
 
-const transformParamSep = ","
 const transformFunSep = "|"
+const transformParamSep = ","
 
 func parseTransform(values url.Values, index int) []data.TransformFunction {
 	val := values.Get(api.ParamTransform)
@@ -205,24 +205,20 @@ func parseTransform(values url.Values, index int) []data.TransformFunction {
 
 	funList := make([]data.TransformFunction, 0)
 	for _, fun := range funDefs {
-		name, arg := parseTransformFun(fun)
-		if name != "" {
-			funList = append(funList, data.TransformFunction{Name: name, Arg: arg})
+		tf := parseTransformFun(fun)
+		if tf.Name != "" {
+			funList = append(funList, tf)
 		}
 	}
 	return funList
 }
 
-func parseTransformFun(def string) (string, string) {
-	funName := def
-	arg := ""
+func parseTransformFun(def string) data.TransformFunction {
 	// check for function parameter
-	sepIndex := strings.Index(def, transformParamSep)
-	if sepIndex >= 0 {
-		funName = def[:sepIndex]
-		arg = def[sepIndex+1:]
-	}
+	atoms := strings.Split(def, transformParamSep)
+	name := atoms[0]
+	args := atoms[1:]
 	// TODO: harden this by checking arg is a valid number
 	// TODO: have whitelist for function names?
-	return funName, arg
+	return data.TransformFunction{Name: name, Arg: args}
 }
