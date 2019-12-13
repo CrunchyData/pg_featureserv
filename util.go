@@ -166,7 +166,7 @@ func NewPageData() *ui.PageData {
 
 func parseRequestParams(r *http.Request) data.QueryParam {
 	param := data.QueryParam{
-		Limit: config.Configuration.Server.DefaultLimit,
+		Limit: config.Configuration.Paging.LimitDefault,
 	}
 
 	queryValues := r.URL.Query()
@@ -181,14 +181,14 @@ func parseRequestParams(r *http.Request) data.QueryParam {
 func parseLimit(values url.Values) int {
 	val := values.Get(api.ParamLimit)
 	if len(val) < 1 {
-		return config.Configuration.Server.DefaultLimit
+		return config.Configuration.Paging.LimitDefault
 	}
 	limit, err := strconv.Atoi(val)
 	if err != nil {
-		return config.Configuration.Server.DefaultLimit
+		return config.Configuration.Paging.LimitDefault
 	}
-	if limit < 0 || limit > config.Configuration.Server.MaxLimit {
-		return config.Configuration.Server.MaxLimit
+	if limit < 0 || limit > config.Configuration.Paging.LimitMax {
+		return config.Configuration.Paging.LimitMax
 	}
 	return limit
 }

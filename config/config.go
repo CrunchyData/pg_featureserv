@@ -13,40 +13,43 @@ package config
  limitations under the License.
 */
 
+import (
+	"fmt"
+
+	"github.com/spf13/viper"
+)
+
 // Configuration for system
 var Configuration Config
 
-func init() {
-	Configuration = Config{
-		Server: Server{
-			BindHost:     "",
-			BindPort:     9000,
-			DefaultLimit: 10,
-			MaxLimit:     1000,
-		},
-		Metadata: Metadata{
-			Title:       "pg-featureserv Demo",
-			Description: "Demo of Crunchy Data PostGIS Feature Server",
-		},
-		Database: Database{
-			ConnectString: "",
-		},
-	}
+func setDefaultConfig() {
+	viper.SetDefault("Server.BindHost", "")
+	viper.SetDefault("Server.BindPort", 9000)
+	viper.SetDefault("Paging.LimitDefault", 10)
+	viper.SetDefault("Paging.LimitMax", 1000)
+
+	viper.SetDefault("Metadata.Title", "pg-featureserv Demo")
+	viper.SetDefault("Metadata.Description", "Demo of Crunchy Data PostGIS Feature Server")
 }
 
 // Config for system
 type Config struct {
 	Server   Server
+	Paging   Paging
 	Metadata Metadata
-	Database Database
+	//Database Database
 }
 
 // Server config
 type Server struct {
-	BindHost     string `toml:"bind_host"`
-	BindPort     int    `toml:"bind_port"`
-	DefaultLimit int
-	MaxLimit     int
+	BindHost string
+	BindPort int
+}
+
+// Paging config
+type Paging struct {
+	LimitDefault int
+	LimitMax     int
 }
 
 // Database config
@@ -58,4 +61,23 @@ type Database struct {
 type Metadata struct {
 	Title       string
 	Description string
+}
+
+// InitConfig initializes the configuration from the config file
+func InitConfig(configName string) {
+	// --- defaults
+	setDefaultConfig()
+
+	viper.SetConfigName(configName)
+	viper.AddConfigPath(".")
+
+	err := viper.ReadInConfig() // Find and read the config file
+	if err != nil {             // Handle errors reading the config file
+		panic(fmt.Errorf("fatal error config file: %s", err))
+	}
+
+	viper.Unmarshal(&Configuration)
+
+	//fmt.Printf("Viper: %v\n", viper.AllSettings())
+	//fmt.Printf("Config: %v\n", Configuration)
 }

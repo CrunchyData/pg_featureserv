@@ -1,0 +1,11 @@
+[Server]
+    BindHost = "localhost"
+    BindPort = 9000
+
+[Paging]
+    LimitDefault = 10
+    LimitMax = 1000
+
+[Metadata]
+	Title = "pg-featureserv Demo"
+	Description = "Demo of Crunchy Data PostGIS Feature Server"

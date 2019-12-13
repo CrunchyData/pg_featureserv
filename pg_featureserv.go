@@ -52,6 +52,8 @@ func main() {
 	flag.Parse()
 	log.Printf("%s %s\n", config.AppConfig.Name, config.AppConfig.Version)
 
+	config.InitConfig("config")
+
 	if stateTest {
 		catalogInstance = data.CatMockInstance()
 	} else {
