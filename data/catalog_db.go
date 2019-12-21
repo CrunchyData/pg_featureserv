@@ -28,10 +28,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const (
-	pgTypeNumeric = "numeric"
-)
-
 type catalogDB struct {
 	dbconn     *pgxpool.Pool
 	layers     map[string]*Layer
@@ -180,6 +176,8 @@ func readLayer(rows pgx.Rows) *Layer {
 	arrStart := props.Dimensions[0].LowerBound - 1
 	elmLen := props.Dimensions[1].Length
 
+	// TODO: query columns in table-defined order
+
 	// Since Go map order is random, list columns in array
 	columns := make([]string, arrLen)
 	datatypes := make(map[string]string)
@@ -243,7 +241,6 @@ func readFeaturesWithArgs(db *pgxpool.Pool, layer *Layer, sql string, args []int
 
 func readFeature(rows pgx.Rows, layer *Layer) string {
 	var id, geom string
-	//err := rows.Scan(&geom, &id)
 	vals, err := rows.Values()
 	if err != nil {
 		log.Warn(err)
@@ -262,19 +259,21 @@ func extractProperties(vals []interface{}, layer *Layer) map[string]interface{} 
 	for i := range layer.Columns {
 		name := layer.Columns[i]
 		// offset vals index by 2 to skip geom, id
-		val := convertPG(vals[i+2], layer.Types[name])
-		props[name] = val
+		props[name] = toJSONValue(vals[i+2])
 		//fmt.Printf("%v: %v\n", name, val)
 	}
 	return props
 }
 
-func convertPG(value interface{}, pgType string) interface{} {
-	if pgType == pgTypeNumeric {
+// toJSONValue convert PG types to JSON values if needed
+func toJSONValue(value interface{}) interface{} {
+	switch v := value.(type) {
+	case *pgtype.Numeric:
 		var num float64
-		v := value.(*pgtype.Numeric)
+		// TODO: handle error
 		v.AssignTo(&num)
 		return num
+		// TODO: handle other conversions?
 	}
 	// for now all other values are returned  as is
 	return value
@@ -288,7 +287,6 @@ type featureData struct {
 }
 
 func makeFeatureJSON(id string, geom string, props map[string]interface{}) string {
-	//geom = "[]"
 	geomRaw := json.RawMessage(geom)
 	featData := featureData{"Feature", id, &geomRaw, props}
 	json, err := json.Marshal(featData)
