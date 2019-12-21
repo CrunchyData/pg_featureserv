@@ -54,12 +54,19 @@ const sqlFeatures = `SELECT ST_AsGeoJSON( ST_Transform(%v,4326) ) AS _geojson, %
 
 func makeSQLFeatures(layer *Layer, param QueryParam) string {
 	geomExpr := applyFunctions(param.TransformFuns, layer.GeometryColumn)
-	props := strings.Join(layer.Columns, ",")
-	sql := fmt.Sprintf(sqlFeatures, geomExpr, layer.IDColumn, props, layer.ID, param.Limit)
+	propCols := strings.Join(layer.Columns, ",")
+	sql := fmt.Sprintf(sqlFeatures, geomExpr, layer.IDColumn, propCols, layer.ID, param.Limit)
 	return sql
 }
 
-const sqlFeature = `SELECT ST_AsGeoJSON( ST_Transform(%v,4326) ) AS _geojson, %v::text AS id FROM %v WHERE %v = $1 LIMIT 1`
+const sqlFeature = `SELECT ST_AsGeoJSON( ST_Transform(%v,4326) ) AS _geojson, %v::text AS id, %v FROM %v WHERE %v = $1 LIMIT 1`
+
+func makeSQLFeature(layer *Layer, param QueryParam) string {
+	geomExpr := applyFunctions(param.TransformFuns, layer.GeometryColumn)
+	propCols := strings.Join(layer.Columns, ",")
+	sql := fmt.Sprintf(sqlFeature, geomExpr, layer.IDColumn, propCols, layer.ID, layer.IDColumn)
+	return sql
+}
 
 func applyFunctions(funs []TransformFunction, expr string) string {
 	if funs == nil {

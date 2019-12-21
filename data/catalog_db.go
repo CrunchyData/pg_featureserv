@@ -94,8 +94,7 @@ func (cat *catalogDB) LayerFeature(name string, id string, param QueryParam) (st
 	if err != nil {
 		return "", err
 	}
-
-	sql := fmt.Sprintf(sqlFeature, layer.GeometryColumn, layer.IDColumn, layer.ID, layer.IDColumn)
+	sql := makeSQLFeature(layer, param)
 	log.Println(sql)
 
 	args := make([]interface{}, 0)
