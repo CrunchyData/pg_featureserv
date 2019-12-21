@@ -14,7 +14,6 @@ package data
 */
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -41,10 +40,6 @@ type catalogDB struct {
 
 var instanceDB catalogDB
 var templateFeature *template.Template
-
-func init() {
-	templateFeature = template.Must(template.New("feature").Parse(tempFeature))
-}
 
 // CatDBInstance tbd
 func CatDBInstance() Catalog {
@@ -254,12 +249,12 @@ func readFeature(rows pgx.Rows, layer *Layer) string {
 		log.Warn(err)
 		return ""
 	}
-	fmt.Println(vals)
+	//fmt.Println(vals)
 	id = fmt.Sprintf("%v", vals[1])
 	geom = fmt.Sprintf("%v", vals[0])
 	//fmt.Println(geom)
 	props := extractProperties(vals, layer)
-	return makeFeatureJSON2(id, geom, props)
+	return makeFeatureJSON(id, geom, props)
 }
 
 func extractProperties(vals []interface{}, layer *Layer) map[string]interface{} {
@@ -285,23 +280,17 @@ func convertPG(value interface{}, pgType string) interface{} {
 	return value
 }
 
-type featureData2 struct {
+type featureData struct {
 	Type  string                 `json:"type"`
 	ID    string                 `json:"id"`
 	Geom  *json.RawMessage       `json:"geometry"`
 	Props map[string]interface{} `json:"properties"`
 }
 
-type featureData struct {
-	ID   string
-	Geom string
-	Val  string
-}
-
-func makeFeatureJSON2(id string, geom string, props map[string]interface{}) string {
+func makeFeatureJSON(id string, geom string, props map[string]interface{}) string {
 	//geom = "[]"
 	geomRaw := json.RawMessage(geom)
-	featData := featureData2{"Feature", id, &geomRaw, props}
+	featData := featureData{"Feature", id, &geomRaw, props}
 	json, err := json.Marshal(featData)
 	if err != nil {
 		log.Error(err)
@@ -310,18 +299,4 @@ func makeFeatureJSON2(id string, geom string, props map[string]interface{}) stri
 	jsonStr := string(json)
 	//fmt.Println(jsonStr)
 	return jsonStr
-}
-
-var tempFeature = `{ "type": "Feature", "id": {{ .ID }},
-"geometry": {{ .Geom }},
-"properties": { "value": "{{ .Val }}"  } }
-`
-
-func makeFeatureJSON(id string, geom string) string {
-	val := fmt.Sprintf("data value %v", id)
-	featData := featureData{id, geom, val}
-	var tempOut bytes.Buffer
-	templateFeature.Execute(&tempOut, featData)
-	feature := tempOut.String()
-	return feature
 }
