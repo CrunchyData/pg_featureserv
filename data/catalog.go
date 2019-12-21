@@ -59,7 +59,8 @@ type Layer struct {
 	Srid           int
 	IDColumn       string
 	Extent         Extent
-	Properties     map[string]string
+	Columns        []string
+	Types          map[string]string
 }
 
 // Extent of a layer

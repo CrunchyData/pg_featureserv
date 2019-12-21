@@ -16,6 +16,7 @@ package data
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"sort"
@@ -87,11 +88,8 @@ func (cat *catalogDB) LayerFeatures(name string, param QueryParam) ([]string, er
 	if err != nil || layer == nil {
 		return nil, err
 	}
-
-	geomExpr := applyFunctions(param.TransformFuns, layer.GeometryColumn)
-	sql := fmt.Sprintf(sqlFeatures, geomExpr, layer.IDColumn, layer.ID, param.Limit)
+	sql := makeSQLFeatures(layer, param)
 	log.Println(sql)
-
 	features := readFeatures(cat.dbconn, layer, sql)
 	return features, nil
 }
@@ -163,8 +161,7 @@ func readLayer(rows pgx.Rows) *Layer {
 		schema, table, description, geometryCol string
 		srid                                    int
 		geometryType, idColumn                  string
-		//props                                   [][]string
-		props pgtype.TextArray
+		props                                   pgtype.TextArray
 	)
 
 	err := rows.Scan(&schema, &table, &description, &geometryCol,
@@ -179,14 +176,21 @@ func readLayer(rows pgx.Rows) *Layer {
 	// pgx TextArray type, but it is at least native handling of
 	// the array. It's complex because of PgSQL ARRAY generality
 	// really, no fault of pgx
-	properties := make(map[string]string)
 
 	arrLen := props.Dimensions[0].Length
 	arrStart := props.Dimensions[0].LowerBound - 1
 	elmLen := props.Dimensions[1].Length
+
+	// Since Go map order is random, list columns in array
+	columns := make([]string, arrLen)
+	datatypes := make(map[string]string)
+
 	for i := arrStart; i < arrLen; i++ {
 		elmPos := i * elmLen
-		properties[props.Elements[elmPos].String] = props.Elements[elmPos+1].String
+		name := props.Elements[elmPos].String
+		datatype := props.Elements[elmPos+1].String
+		columns[i] = name
+		datatypes[name] = datatype
 	}
 
 	// "schema.tablename" is the unique key for table layers
@@ -209,7 +213,8 @@ func readLayer(rows pgx.Rows) *Layer {
 		Srid:           srid,
 		GeometryType:   geometryType,
 		IDColumn:       idColumn,
-		Properties:     properties,
+		Columns:        columns,
+		Types:          datatypes,
 	}
 }
 
@@ -225,7 +230,7 @@ func readFeaturesWithArgs(db *pgxpool.Pool, layer *Layer, sql string, args []int
 	}
 	var features []string
 	for rows.Next() {
-		feature := readFeature(rows)
+		feature := readFeature(rows, layer)
 		//log.Println(feature)
 		features = append(features, feature)
 	}
@@ -237,20 +242,59 @@ func readFeaturesWithArgs(db *pgxpool.Pool, layer *Layer, sql string, args []int
 	return features
 }
 
-func readFeature(rows pgx.Rows) string {
+func readFeature(rows pgx.Rows, layer *Layer) string {
 	var id, geom string
-	err := rows.Scan(&geom, &id)
+	//err := rows.Scan(&geom, &id)
+	vals, err := rows.Values()
 	if err != nil {
 		log.Warn(err)
 		return ""
 	}
-	return makeFeatureJSON(id, geom)
+	fmt.Println(vals)
+	id = fmt.Sprintf("%v", vals[1])
+	geom = fmt.Sprintf("%v", vals[0])
+	//fmt.Println(geom)
+	props := extractProps(layer.Columns, vals)
+	return makeFeatureJSON2(id, geom, props)
+}
+
+func extractProps(propNames []string, vals []interface{}) map[string]interface{} {
+	props := make(map[string]interface{})
+	for i := range propNames {
+		name := propNames[i]
+		// offset vals index by 2 to skip geom, id
+		val := vals[i+2]
+		props[name] = val
+		//fmt.Printf("%v: %v\n", name, val)
+	}
+	return props
+}
+
+type featureData2 struct {
+	Type  string                 `json:"type"`
+	ID    string                 `json:"id"`
+	Geom  *json.RawMessage       `json:"geometry"`
+	Props map[string]interface{} `json:"properties"`
 }
 
 type featureData struct {
 	ID   string
 	Geom string
 	Val  string
+}
+
+func makeFeatureJSON2(id string, geom string, props map[string]interface{}) string {
+	//geom = "[]"
+	geomRaw := json.RawMessage(geom)
+	featData := featureData2{"Feature", id, &geomRaw, props}
+	json, err := json.Marshal(featData)
+	if err != nil {
+		log.Error(err)
+		return ""
+	}
+	jsonStr := string(json)
+	//fmt.Println(jsonStr)
+	return jsonStr
 }
 
 var tempFeature = `{ "type": "Feature", "id": {{ .ID }},

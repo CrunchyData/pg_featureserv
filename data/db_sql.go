@@ -1,5 +1,10 @@
 package data
 
+import (
+	"fmt"
+	"strings"
+)
+
 /*
  Copyright 2019 Crunchy Data Solutions, Inc.
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -45,7 +50,14 @@ AND has_table_privilege(c.oid, 'select')
 AND postgis_typmod_srid(a.atttypmod) > 0
 `
 
-const sqlFeatures = `SELECT ST_AsGeoJSON( ST_Transform(%v,4326) ) AS _geojson, %v::text AS id FROM %v LIMIT %v;`
+const sqlFeatures = `SELECT ST_AsGeoJSON( ST_Transform(%v,4326) ) AS _geojson, %v::text AS id, %v FROM %v LIMIT %v;`
+
+func makeSQLFeatures(layer *Layer, param QueryParam) string {
+	geomExpr := applyFunctions(param.TransformFuns, layer.GeometryColumn)
+	props := strings.Join(layer.Columns, ",")
+	sql := fmt.Sprintf(sqlFeatures, geomExpr, layer.IDColumn, props, layer.ID, param.Limit)
+	return sql
+}
 
 const sqlFeature = `SELECT ST_AsGeoJSON( ST_Transform(%v,4326) ) AS _geojson, %v::text AS id FROM %v WHERE %v = $1 LIMIT 1`
 
@@ -58,15 +70,3 @@ func applyFunctions(funs []TransformFunction, expr string) string {
 	}
 	return expr
 }
-
-/*
-func applyFun(fun TransformFunction, expr string) string {
-	if fun.Name == "" {
-		return expr
-	}
-	if fun.Arg == "" {
-		return fmt.Sprintf("%v( %v )", fun.Name, expr)
-	}
-	return fmt.Sprintf("%v( %v, %v )", fun.Name, expr, fun.Arg)
-}
-*/
