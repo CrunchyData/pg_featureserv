@@ -29,6 +29,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const (
+	pgTypeNumeric = "numeric"
+)
+
 type catalogDB struct {
 	dbconn     *pgxpool.Pool
 	layers     map[string]*Layer
@@ -254,20 +258,31 @@ func readFeature(rows pgx.Rows, layer *Layer) string {
 	id = fmt.Sprintf("%v", vals[1])
 	geom = fmt.Sprintf("%v", vals[0])
 	//fmt.Println(geom)
-	props := extractProps(layer.Columns, vals)
+	props := extractProperties(vals, layer)
 	return makeFeatureJSON2(id, geom, props)
 }
 
-func extractProps(propNames []string, vals []interface{}) map[string]interface{} {
+func extractProperties(vals []interface{}, layer *Layer) map[string]interface{} {
 	props := make(map[string]interface{})
-	for i := range propNames {
-		name := propNames[i]
+	for i := range layer.Columns {
+		name := layer.Columns[i]
 		// offset vals index by 2 to skip geom, id
-		val := vals[i+2]
+		val := convertPG(vals[i+2], layer.Types[name])
 		props[name] = val
 		//fmt.Printf("%v: %v\n", name, val)
 	}
 	return props
+}
+
+func convertPG(value interface{}, pgType string) interface{} {
+	if pgType == pgTypeNumeric {
+		var num float64
+		v := value.(*pgtype.Numeric)
+		v.AssignTo(&num)
+		return num
+	}
+	// for now all other values are returned  as is
+	return value
 }
 
 type featureData2 struct {

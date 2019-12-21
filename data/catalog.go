@@ -35,6 +35,7 @@ type Catalog interface {
 	LayerFeature(name string, id string, param QueryParam) (string, error)
 }
 
+// TransformFunction denotes a geometry function with arguments
 type TransformFunction struct {
 	Name string
 	Arg  []string
