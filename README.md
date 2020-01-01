@@ -10,14 +10,14 @@ It supports the [OGC API - Features](http://docs.opengeospatial.org/is/17-069r3/
 * Provides a simple HTML user interface, with web maps to view feature spatial data
 * Uses the power of Postgres to reduce the amount of code
   and to make data definition easy and familiar.
-  Feature collections are defined by database tables and views
+  * Feature collections are defined by database objects (tables and views)
 * Uses PostGIS to provide geospatial functionality:
   * Transforming geometry data into the output coordinate system
   * Marshalling feature data into GeoJSON
 
 ## Building from Source
 
-pg_featurserv is developed under Go 1.13, although it may work with earlier versions.
+pg_featurserv is developed under Go 1.13.  It may also work with earlier versions.
 
 * Ensure the Go compiler is installed
 * Download or clone this repository into `$GOPATH/src/github.com/CrunchyData/pg_featureserv`
@@ -30,7 +30,7 @@ go build
 
 ## Configuring the service
 
-* Set environment variable `DATABASE_URL` with a Postgres [connection string](https://www.postgresql.org/docs/12/libpq-connect.html#LIBPQ-CONNSTRING)
+* Set the environment variable `DATABASE_URL` with a Postgres [connection string](https://www.postgresql.org/docs/12/libpq-connect.html#LIBPQ-CONNSTRING)
   * Example: `export DATABASE_URL="host=localhost"`
 * Edit the configuration file `config.toml`, located in the application directory
 
@@ -38,9 +38,9 @@ go build
 
 * If not already done, move to the application directory:
   * `cd $GOPATH/src/github.com/CrunchyData/pg_featureserv`
-* Start server
+* Start the server:
   * `./pg_featureserv`
-* Open in a browser
+* Open the service home page in a browser:
   * `http:/localhost:9000/home.html`
 
 ### Command-line options
