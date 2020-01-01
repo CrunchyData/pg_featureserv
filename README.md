@@ -11,9 +11,12 @@ It supports the [OGC API - Features](http://docs.opengeospatial.org/is/17-069r3/
 * Uses Postgres and PostGIS to manage the data catalog
 * Uses PostGIS to marshall features as GeoJSON
 
-## Building
+## Building from Source
 
-* `go build` in application root directory
+* Execute the following commands:
+  * `cd $GOPATH/src/github.com/CrunchyData/pg_featureserv/`
+  * `go build`
+* This should create a `pg_featureserv` executable in tha current directory
 
 ## Configuration
 
@@ -23,8 +26,12 @@ It supports the [OGC API - Features](http://docs.opengeospatial.org/is/17-069r3/
 
 ## Running
 
-* Start server: `./pg_featureserv`
-* Open in a browser: `http:/localhost:9000/home.html`
+* If not already there, move to the application directory:
+  * `cd $GOPATH/src/github.com/CrunchyData/pg_featureserv/`
+* Start server
+  * `./pg_featureserv`
+* Open in a browser
+  * `http:/localhost:9000/home.html`
 
 ### Command-line options
 
