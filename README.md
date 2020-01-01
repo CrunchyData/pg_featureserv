@@ -1,33 +1,43 @@
 # pg_featureserv
 
-A lightweight RESTful feature server for [PostGIS](https://postgis.net/), written in [Go](https://golang.org/).
-It supports the [OGC API - Features](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html) standard.
+A lightweight RESTful geospatial feature server for [PostGIS](https://postgis.net/), written in [Go](https://golang.org/).
+It supports the [OGC API - Features](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html) REST API standard.
 
 ## Features
 
 * Implements the [OGC API for Features](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html) standard.
-* Emits JSON / GeoJSON
-* Provides a simple HTML user interface, with maps to view geometry data
-* Uses Postgres and PostGIS to manage the data catalog
-* Uses PostGIS to marshall features as GeoJSON
+* Data reponses are formatted in JSON and GeoJSON
+* Provides a simple HTML user interface, with web maps to view feature spatial data
+* Uses the power of Postgres to reduce the amount of code
+  and to make data definition easy and familiar.
+  Feature collections are defined by database tables and views
+* Uses PostGIS to provide geospatial functionality:
+  * Transforming geometry data into the output coordinate system
+  * Marshalling feature data into GeoJSON
 
 ## Building from Source
 
-* Execute the following commands:
-  * `cd $GOPATH/src/github.com/CrunchyData/pg_featureserv/`
-  * `go build`
-* This should create a `pg_featureserv` executable in tha current directory
+pg_featurserv is developed under Go 1.13, although it may work with earlier versions.
 
-## Configuration
+* Ensure the Go compiler is installed
+* Download or clone this repository into `$GOPATH/src/github.com/CrunchyData/pg_featureserv`
+* To build the executable, run the following commands:
+```bash
+cd $GOPATH/src/github.com/CrunchyData/pg_featureserv/
+go build
+```
+* This should create a `pg_featureserv` executable in the application directory
+
+## Configuring the service
 
 * Set environment variable `DATABASE_URL` with a Postgres [connection string](https://www.postgresql.org/docs/12/libpq-connect.html#LIBPQ-CONNSTRING)
   * Example: `export DATABASE_URL="host=localhost"`
-* Edit configuration file `config.toml`
+* Edit the configuration file `config.toml`, located in the application directory
 
-## Running
+## Running the service
 
-* If not already there, move to the application directory:
-  * `cd $GOPATH/src/github.com/CrunchyData/pg_featureserv/`
+* If not already done, move to the application directory:
+  * `cd $GOPATH/src/github.com/CrunchyData/pg_featureserv`
 * Start server
   * `./pg_featureserv`
 * Open in a browser
@@ -35,12 +45,19 @@ It supports the [OGC API - Features](http://docs.opengeospatial.org/is/17-069r3/
 
 ### Command-line options
 
-* `-test` - run in test mode, with an internal catalog of layers and data
+One command-line option is provided, for testing purposes:
+
+* `--test` - run in test mode, with an internal catalog of layers and data
 
 ## Requests Overview
 
 Features are identified by a _collection name_ and _feature id_ pair.
-Append `.html` to request path to see UI.
+
+The default response is in JSON/GeoJSON format.
+Append `.html` to the request path to see the UI page for the resource.
+
+The example requests assume that the service is running locally and configured
+to listen on port 9000.
 
 - API landing: http://localhost:9000/
 - API definition: http://localhost:9000/api
