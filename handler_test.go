@@ -30,16 +30,17 @@ import (
 	"github.com/CrunchyData/pg_featureserv/data"
 )
 
+// testConfir is a config spec for using in running tests
 var testConfig config.Config = config.Config{
-	config.Server{
+	Server: config.Server{
 		BindHost: "",
 		BindPort: 9000,
 	},
-	config.Paging{
+	Paging: config.Paging{
 		LimitDefault: 10,
 		LimitMax:     1000,
 	},
-	config.Metadata{
+	Metadata: config.Metadata{
 		Title:       "test",
 		Description: "test",
 	},
@@ -84,20 +85,26 @@ func TestCollectionResponse(t *testing.T) {
 	equals(t, 9, len(v.Features), "# features")
 }
 
-func TestCollectionResponseLimit(t *testing.T) {
-	resp := doRequest(t, "/collections/mock_a/items?limit=3")
-	body, _ := ioutil.ReadAll(resp.Body)
+func TestLimit(t *testing.T) {
+	rr := doRequest(t, "/collections/mock_a/items?limit=3")
 
-	// Check the response body
-	//var v map[string]interface{}
 	var v api.FeatureCollectionRaw
-	json.Unmarshal(body, &v)
+	json.Unmarshal(readBody(rr), &v)
 
 	equals(t, 3, len(v.Features), "# features")
 }
 
+func TestLimitInvalid(t *testing.T) {
+	doRequestStatus(t, "/collections/mock_a/items?limit=x", http.StatusBadRequest)
+}
+
 func TestBBox(t *testing.T) {
 	doRequest(t, "/collections/mock_a/items?bbox=1,2,3,4")
+	// TODO: add some tests
+}
+
+func TestBBoxInvalid(t *testing.T) {
+	doRequestStatus(t, "/collections/mock_a/items?bbox=1,2,3,x", http.StatusBadRequest)
 }
 
 func TestCollectionNoFound(t *testing.T) {
@@ -112,8 +119,11 @@ func TestFeatureNotFound(t *testing.T) {
 	doRequestStatus(t, "/collections/mock_a/items/999", http.StatusNotFound)
 }
 
-func TestInvalidBBox(t *testing.T) {
-	doRequestStatus(t, "/collections/mock_a/items?bbox=1,2,3,x", http.StatusBadRequest)
+//===================================================
+
+func readBody(resp *httptest.ResponseRecorder) []byte {
+	body, _ := ioutil.ReadAll(resp.Body)
+	return body
 }
 
 func doRequest(t *testing.T, url string) *httptest.ResponseRecorder {

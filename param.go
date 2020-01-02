@@ -32,31 +32,39 @@ func parseRequestParams(r *http.Request) (data.QueryParam, error) {
 
 	queryValues := r.URL.Query()
 
-	param.Limit = parseLimit(queryValues)
+	// --- limit parameter
+	limit, err := parseLimit(queryValues)
+	if err != nil {
+		return param, err
+	}
+	param.Limit = limit
+
+	// --- bbox parameter
 	bbox, err := parseBbox(queryValues)
 	if err != nil {
 		return param, err
 	}
 	param.Bbox = bbox
+
+	// --- transform parameter
 	param.TransformFuns = parseTransform(queryValues, 0)
 
 	return param, nil
 }
 
-func parseLimit(values url.Values) int {
+func parseLimit(values url.Values) (int, error) {
 	val := values.Get(api.ParamLimit)
 	if len(val) < 1 {
-		return config.Configuration.Paging.LimitDefault
+		return config.Configuration.Paging.LimitDefault, nil
 	}
 	limit, err := strconv.Atoi(val)
 	if err != nil {
-		// TODO: return an error instead
-		return config.Configuration.Paging.LimitDefault
+		return 0, fmt.Errorf(api.ErrMsgInvalidParameterValue, api.ParamLimit, val)
 	}
 	if limit < 0 || limit > config.Configuration.Paging.LimitMax {
-		return config.Configuration.Paging.LimitMax
+		limit = config.Configuration.Paging.LimitMax
 	}
-	return limit
+	return limit, nil
 }
 
 /*
