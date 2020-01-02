@@ -8,7 +8,7 @@ It supports the [OGC API - Features](http://docs.opengeospatial.org/is/17-069r3/
 * Implements the [OGC API for Features](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html) standard.
 * Data reponses are formatted in JSON and GeoJSON
 * Provides a simple HTML user interface, with web maps to view feature spatial data
-* Uses the power of Postgres to reduce the amount of code
+* Uses the power of PostgreSQL to reduce the amount of code
   and to make data definition easy and familiar.
   * Feature collections are defined by database objects (tables and views)
 * Uses PostGIS to provide geospatial functionality:
