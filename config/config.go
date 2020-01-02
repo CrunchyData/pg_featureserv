@@ -45,8 +45,8 @@ type Config struct {
 
 // Server config
 type Server struct {
-	BindHost           string
-	BindPort           int
+	BindHost    string
+	BindPort    int
 	CORSOrigins string
 }
 

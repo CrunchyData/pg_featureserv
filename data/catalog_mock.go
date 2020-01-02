@@ -108,6 +108,10 @@ func (cat *catalogMock) LayerFeatures(name string, param QueryParam) ([]string, 
 		// layer ot found - indicated by nil value returned
 		return nil, nil
 	}
+	if param.Limit < len(features) {
+		featLim := features[:param.Limit]
+		return featLim, nil
+	}
 	//fmt.Println("LayerFeatures: " + name)
 	//fmt.Println(layerData)
 	return features, nil

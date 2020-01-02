@@ -34,11 +34,13 @@ import (
 	"github.com/CrunchyData/pg_featureserv/config"
 	"github.com/CrunchyData/pg_featureserv/data"
 	"github.com/gorilla/handlers"
+	"github.com/gorilla/mux"
 	"github.com/pborman/getopt/v2"
 	log "github.com/sirupsen/logrus"
 )
 
 var catalogInstance data.Catalog
+var router *mux.Router
 var flagTestMode bool
 
 func init() {
@@ -73,7 +75,7 @@ func serve() {
 	log.Infof("Serving at %v\n", bindAddress)
 	log.Infof("CORS Allowed Origins: %v\n", config.Configuration.Server.CORSOrigins)
 
-	router := initRouter()
+	router = initRouter()
 
 	// set CORS handling to allow all access
 	// TODO: make this runtime configurable?

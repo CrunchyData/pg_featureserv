@@ -240,7 +240,10 @@ func handleCollectionItems(w http.ResponseWriter, r *http.Request) *appError {
 
 	//--- extract request parameters
 	name := getRequestVar(varCollectionID, r)
-	param := parseRequestParams(r)
+	param, err := parseRequestParams(r)
+	if err != nil {
+		return appErrorMsg(err, err.Error(), http.StatusBadRequest)
+	}
 	query := api.URLQuery(r.URL)
 
 	switch format {
@@ -310,7 +313,10 @@ func handleItem(w http.ResponseWriter, r *http.Request) *appError {
 	//--- extract request parameters
 	name := getRequestVar(varCollectionID, r)
 	fid := getRequestVar(varFeatureID, r)
-	param := parseRequestParams(r)
+	param, err := parseRequestParams(r)
+	if err != nil {
+		return appErrorMsg(err, err.Error(), http.StatusBadRequest)
+	}
 	query := api.URLQuery(r.URL)
 
 	switch format {

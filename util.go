@@ -18,13 +18,10 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
-	"net/url"
-	"strconv"
 	"strings"
 
 	"github.com/CrunchyData/pg_featureserv/api"
 	"github.com/CrunchyData/pg_featureserv/config"
-	"github.com/CrunchyData/pg_featureserv/data"
 	"github.com/CrunchyData/pg_featureserv/ui"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
@@ -162,63 +159,4 @@ func NewPageData() *ui.PageData {
 	con.AppName = config.AppConfig.Name
 	con.AppVersion = config.AppConfig.Version
 	return &con
-}
-
-func parseRequestParams(r *http.Request) data.QueryParam {
-	param := data.QueryParam{
-		Limit: config.Configuration.Paging.LimitDefault,
-	}
-
-	queryValues := r.URL.Query()
-
-	//-- parse limit
-	param.Limit = parseLimit(queryValues)
-	param.TransformFuns = parseTransform(queryValues, 0)
-
-	return param
-}
-
-func parseLimit(values url.Values) int {
-	val := values.Get(api.ParamLimit)
-	if len(val) < 1 {
-		return config.Configuration.Paging.LimitDefault
-	}
-	limit, err := strconv.Atoi(val)
-	if err != nil {
-		return config.Configuration.Paging.LimitDefault
-	}
-	if limit < 0 || limit > config.Configuration.Paging.LimitMax {
-		return config.Configuration.Paging.LimitMax
-	}
-	return limit
-}
-
-const transformFunSep = "|"
-const transformParamSep = ","
-
-func parseTransform(values url.Values, index int) []data.TransformFunction {
-	val := values.Get(api.ParamTransform)
-	if len(val) < 1 {
-		return nil
-	}
-	funDefs := strings.Split(val, transformFunSep)
-
-	funList := make([]data.TransformFunction, 0)
-	for _, fun := range funDefs {
-		tf := parseTransformFun(fun)
-		if tf.Name != "" {
-			funList = append(funList, tf)
-		}
-	}
-	return funList
-}
-
-func parseTransformFun(def string) data.TransformFunction {
-	// check for function parameter
-	atoms := strings.Split(def, transformParamSep)
-	name := atoms[0]
-	args := atoms[1:]
-	// TODO: harden this by checking arg is a valid number
-	// TODO: have whitelist for function names?
-	return data.TransformFunction{Name: name, Arg: args}
 }
