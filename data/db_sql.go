@@ -50,21 +50,42 @@ AND has_table_privilege(c.oid, 'select')
 AND postgis_typmod_srid(a.atttypmod) > 0
 `
 
-const sqlFeatures = `SELECT ST_AsGeoJSON( ST_Transform(%v,4326) ) AS _geojson, %v::text AS id, %v FROM %v LIMIT %v;`
+const sqlFmtFeatures = "SELECT %v, %v::text AS id, %v FROM %v %v LIMIT %v;"
 
 func makeSQLFeatures(layer *Layer, param QueryParam) string {
-	geomExpr := applyFunctions(param.TransformFuns, layer.GeometryColumn)
+	geomCol := makeGeomCol(layer, param)
 	propCols := strings.Join(layer.Columns, ",")
-	sql := fmt.Sprintf(sqlFeatures, geomExpr, layer.IDColumn, propCols, layer.ID, param.Limit)
+	sqlWhere := makeBBoxFilter(layer, param)
+	sql := fmt.Sprintf(sqlFmtFeatures, geomCol, layer.IDColumn, propCols, layer.ID, sqlWhere, param.Limit)
 	return sql
 }
 
-const sqlFeature = `SELECT ST_AsGeoJSON( ST_Transform(%v,4326) ) AS _geojson, %v::text AS id, %v FROM %v WHERE %v = $1 LIMIT 1`
+const sqlFeature = "SELECT %v, %v::text AS id, %v FROM %v WHERE %v = $1 LIMIT 1"
 
 func makeSQLFeature(layer *Layer, param QueryParam) string {
-	geomExpr := applyFunctions(param.TransformFuns, layer.GeometryColumn)
+	geomCol := makeGeomCol(layer, param)
 	propCols := strings.Join(layer.Columns, ",")
-	sql := fmt.Sprintf(sqlFeature, geomExpr, layer.IDColumn, propCols, layer.ID, layer.IDColumn)
+	sql := fmt.Sprintf(sqlFeature, geomCol, layer.IDColumn, propCols, layer.ID, layer.IDColumn)
+	return sql
+}
+
+const sqlFmtBBoxFilter = " WHERE ST_Intersects(%v, ST_Transform( ST_MakeEnvelope(%v, %v, %v, %v, 4326), %v)) "
+
+func makeBBoxFilter(layer *Layer, param QueryParam) string {
+	if param.Bbox == nil {
+		return ""
+	}
+	sql := fmt.Sprintf(sqlFmtBBoxFilter, layer.GeometryColumn,
+		param.Bbox.Minx, param.Bbox.Miny, param.Bbox.Maxx, param.Bbox.Maxy,
+		layer.Srid)
+	return sql
+}
+
+const sqlGeomCol = "ST_AsGeoJSON( ST_Transform(%v, 4326) ) AS _geojson"
+
+func makeGeomCol(layer *Layer, param QueryParam) string {
+	geomExpr := applyFunctions(param.TransformFuns, layer.GeometryColumn)
+	sql := fmt.Sprintf(sqlGeomCol, geomExpr)
 	return sql
 }
 
