@@ -45,6 +45,7 @@ type TransformFunction struct {
 type QueryParam struct {
 	Limit         int
 	Bbox          *Extent
+	Precision     int
 	TransformFuns []TransformFunction
 }
 

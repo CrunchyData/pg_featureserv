@@ -81,11 +81,15 @@ func makeBBoxFilter(layer *Layer, param QueryParam) string {
 	return sql
 }
 
-const sqlGeomCol = "ST_AsGeoJSON( ST_Transform(%v, 4326) ) AS _geojson"
+const sqlGeomCol = "ST_AsGeoJSON( ST_Transform(%v, 4326) %v ) AS _geojson"
 
 func makeGeomCol(layer *Layer, param QueryParam) string {
 	geomExpr := applyFunctions(param.TransformFuns, layer.GeometryColumn)
-	sql := fmt.Sprintf(sqlGeomCol, geomExpr)
+	precision := ""
+	if param.Precision >= 0 {
+		precision = fmt.Sprintf(",%v", param.Precision)
+	}
+	sql := fmt.Sprintf(sqlGeomCol, geomExpr, precision)
 	return sql
 }
 

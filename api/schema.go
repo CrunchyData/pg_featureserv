@@ -30,6 +30,7 @@ const (
 
 	ParamLimit     = "limit"
 	ParamBbox      = "bbox"
+	ParamPrecision = "precision"
 	ParamTransform = "transform"
 
 	RelSelf = "self"

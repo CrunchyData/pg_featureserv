@@ -27,7 +27,8 @@ import (
 
 func parseRequestParams(r *http.Request) (data.QueryParam, error) {
 	param := data.QueryParam{
-		Limit: config.Configuration.Paging.LimitDefault,
+		Limit:     config.Configuration.Paging.LimitDefault,
+		Precision: 4,
 	}
 
 	queryValues := r.URL.Query()
@@ -45,6 +46,13 @@ func parseRequestParams(r *http.Request) (data.QueryParam, error) {
 		return param, err
 	}
 	param.Bbox = bbox
+
+	// --- precision parameter
+	precision, err := parsePrecision(queryValues)
+	if err != nil {
+		return param, err
+	}
+	param.Precision = precision
 
 	// --- transform parameter
 	param.TransformFuns = parseTransform(queryValues, 0)
@@ -65,6 +73,19 @@ func parseLimit(values url.Values) (int, error) {
 		limit = config.Configuration.Paging.LimitMax
 	}
 	return limit, nil
+}
+
+func parsePrecision(values url.Values) (int, error) {
+	val := values.Get(api.ParamPrecision)
+	// no parameter present
+	if len(val) < 1 {
+		return -1, nil
+	}
+	prec, err := strconv.Atoi(val)
+	if err != nil {
+		return 0, fmt.Errorf(api.ErrMsgInvalidParameterValue, api.ParamPrecision, val)
+	}
+	return prec, nil
 }
 
 /*
