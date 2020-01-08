@@ -27,6 +27,7 @@ func setDefaultConfig() {
 	viper.SetDefault("Server.BindHost", "")
 	viper.SetDefault("Server.BindPort", 9000)
 	viper.SetDefault("Server.CORSOrigins", "*")
+	viper.SetDefault("Server.Debug", false)
 
 	viper.SetDefault("Paging.LimitDefault", 10)
 	viper.SetDefault("Paging.LimitMax", 1000)
@@ -48,6 +49,7 @@ type Server struct {
 	BindHost    string
 	BindPort    int
 	CORSOrigins string
+	Debug       bool
 }
 
 // Paging config

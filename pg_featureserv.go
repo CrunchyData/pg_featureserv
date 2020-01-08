@@ -30,6 +30,7 @@ Logging to stdout
 import (
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/CrunchyData/pg_featureserv/config"
 	"github.com/CrunchyData/pg_featureserv/data"
@@ -42,34 +43,49 @@ import (
 var catalogInstance data.Catalog
 var router *mux.Router
 var flagTestMode bool
+var flagDebugOn bool
+var flagHelp bool
 
 func init() {
-	initFlags()
+	initCommnandOptions()
 }
 
-func initFlags() {
-	getopt.FlagLong(&flagTestMode, "test", 't', "Serve test data")
+func initCommnandOptions() {
+	getopt.FlagLong(&flagHelp, "help", '?', "Show command usage")
+	getopt.FlagLong(&flagDebugOn, "debug", 'd', "Set logging level to TRACE")
+	getopt.FlagLong(&flagTestMode, "test", 't', "Serve mock data for testing")
 }
 
 func main() {
 	getopt.Parse()
-	log.Infof("%s %s\n", config.AppConfig.Name, config.AppConfig.Version)
+
+	if flagHelp {
+		getopt.Usage()
+		os.Exit(1)
+	}
+
+	log.Infof("----  %s - Version %s ----------\n", config.AppConfig.Name, config.AppConfig.Version)
 
 	config.InitConfig("config")
+
+	log.Infof("%s\n", config.Configuration.Metadata.Title)
 
 	if flagTestMode {
 		catalogInstance = data.CatMockInstance()
 	} else {
 		catalogInstance = data.CatDBInstance()
 	}
-
+	// Commandline over-rides config file for debugging
+	if flagDebugOn || config.Configuration.Server.Debug {
+		log.SetLevel(log.TraceLevel)
+		log.Debugf("Log level = DEBUG\n")
+	}
 	serve()
 }
 
 func serve() {
 
 	confServ := config.Configuration.Server
-	log.Infof("%s\n", config.Configuration.Metadata.Title)
 
 	bindAddress := fmt.Sprintf("%v:%v", confServ.BindHost, confServ.BindPort)
 	log.Infof("Serving at %v\n", bindAddress)

@@ -57,8 +57,8 @@ go build
 
 ### Command-line options
 
-One command-line option is provided, for testing purposes:
-
+* `-?` - show command usage
+* `--debug` - set logging level to TRACE (can also be set in config file)
 * `--test` - run in test mode, with an internal catalog of layers and data
 
 ## Requests Overview

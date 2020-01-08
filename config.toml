@@ -1,6 +1,8 @@
 [Server]
     BindHost = "localhost"
     BindPort = 9000
+#    CORSOrigins = "*"
+#    Debug = true
 
 [Paging]
     LimitDefault = 10

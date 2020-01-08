@@ -84,7 +84,7 @@ func (cat *catalogDB) LayerFeatures(name string, param QueryParam) ([]string, er
 		return nil, err
 	}
 	sql := makeSQLFeatures(layer, param)
-	log.Println(sql)
+	log.Debug(sql)
 	features := readFeatures(cat.dbconn, layer, sql)
 	return features, nil
 }
@@ -95,7 +95,7 @@ func (cat *catalogDB) LayerFeature(name string, id string, param QueryParam) (st
 		return "", err
 	}
 	sql := makeSQLFeature(layer, param)
-	log.Println(sql)
+	log.Debug(sql)
 
 	args := make([]interface{}, 0)
 	args = append(args, id)
@@ -133,6 +133,7 @@ func layersSorted(layers map[string]*Layer) []*Layer {
 }
 
 func readLayerTables(db *pgxpool.Pool) map[string]*Layer {
+	log.Debug(sqlLayers)
 	rows, err := db.Query(context.Background(), sqlLayers)
 	if err != nil {
 		log.Fatal(err)
