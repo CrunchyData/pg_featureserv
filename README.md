@@ -19,6 +19,14 @@ It supports the [OGC API - Features](http://docs.opengeospatial.org/is/17-069r3/
   * Transforming geometry data into the output coordinate system
   * Marshalling feature data into GeoJSON
 
+## Download
+
+Snapshot builds of the latest code:
+
+* [Linux](https://postgisftw.s3.amazonaws.com/pg_featureserv_snapshot_linux.zip)
+* [Windows](https://postgisftw.s3.amazonaws.com/pg_featureserv_snapshot_windows.zip)
+* [OSX](https://postgisftw.s3.amazonaws.com/pg_featureserv_snapshot_osx.zip)
+
 ## Building from Source
 
 pg_featurserv is developed under Go 1.13.  It may also work with earlier versions.
