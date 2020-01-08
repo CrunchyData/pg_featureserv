@@ -74,7 +74,7 @@ a:hover, a:focus { text-decoration: underline; }
 	padding: 2px 8px 2px 8px; border-radius: 10px;
 }
 .coll-desc { font-style: italic; }
-.coll-meta-field { font-weight: bold; }
+.coll-meta-field { font-weight: bold; text-align: end; vertical-align: top; padding-right: 10px;}
 .crumbs { font-size: 11pt; margin: 8px; }
 </style>
 </head>
@@ -154,17 +154,21 @@ var templateCollection = `
 <h2>Feature Collection: {{ .data.Title }}</h2>
 <div class='coll-desc'>{{ .data.Description }}</div>
 <p>
-<div ><span class='coll-meta-field'>ID column:</span> {{ .context.Layer.IDColumn }}</div>
-<div ><span class='coll-meta-field'>Geometry column:</span> {{ .context.Layer.GeometryColumn }}</div>
-<div ><span class='coll-meta-field'>Geometry type:</span> {{ .context.Layer.GeometryType }}</div>
-<div ><span class='coll-meta-field'>SRID:</span> {{ .context.Layer.Srid }}</div>
-<div ><span class='coll-meta-field'>Extent:</span> {{ .data.Extent }}</div>
-<div ><span class='coll-meta-field'>Columns:</span> </div>
+<table cellspacing='4px'>
+<tr><td class='coll-meta-field'>ID column</td><td>{{ .context.Layer.IDColumn }}</td></tr>
+<tr><td class='coll-meta-field'>Geometry column</td><td>{{ .context.Layer.GeometryColumn }}</td></tr>
+<tr><td class='coll-meta-field'>Geometry type</td><td>{{ .context.Layer.GeometryType }}</td></tr>
+<tr><td class='coll-meta-field'>SRID</td><td>{{ .context.Layer.Srid }}</td></tr>
+<tr><td class='coll-meta-field'>Extent</td><td>{{ .context.Layer.Extent }}</td></tr>
+<tr><td class='coll-meta-field'>Properties</td>
+<td>
 {{ $types := .context.Layer.Types }}
 {{ range $i, $name := .context.Layer.Columns }}
-<div><span style='padding-left: 10px;'>{{ $name }}</span>
+<div><span>{{ $name }}
 :: <span>{{index $types $name}}</span></div>
 {{ end }}
+</td></tr>
+</table>
 </p>
 
 <h3>Features</h3>
