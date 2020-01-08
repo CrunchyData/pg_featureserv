@@ -152,7 +152,6 @@ var templateCollection = `
 </div>
 <hr>
 <h2>Feature Collection: {{ .data.Title }}</h2>
-
 <div class='coll-desc'>{{ .data.Description }}</div>
 <p>
 <div ><span class='coll-meta-field'>ID column:</span> {{ .context.Layer.IDColumn }}</div>
@@ -161,8 +160,10 @@ var templateCollection = `
 <div ><span class='coll-meta-field'>SRID:</span> {{ .context.Layer.Srid }}</div>
 <div ><span class='coll-meta-field'>Extent:</span> {{ .data.Extent }}</div>
 <div ><span class='coll-meta-field'>Columns:</span> </div>
-{{ range $name, $typ := .context.Layer.Properties }}
-<div><span style='padding-left: 10px;'>{{ $name }}</span> :: {{ $typ }}</div>
+{{ $types := .context.Layer.Types }}
+{{ range $i, $name := .context.Layer.Columns }}
+<div><span style='padding-left: 10px;'>{{ $name }}</span>
+:: <span>{{index $types $name}}</span></div>
 {{ end }}
 </p>
 
