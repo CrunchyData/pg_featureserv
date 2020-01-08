@@ -19,7 +19,7 @@ install:
 script:
 - mkdir upload
 - go build
-- zip upload/pg_featureserv_snapshot_${TRAVIS_OS_NAME}.zip pg_featureserv README.md
+- zip upload/pg_featureserv_snapshot_${TRAVIS_OS_NAME}.zip pg_featureserv README.md config.toml
 - if [ "$TRAVIS_OS_NAME" = "linux" -a "$CROSS_COMPILE" = "true" ]; then env CGO_ENABLED=1 GOOS=windows GOARCH=amd64 CC=x86_64-w64-mingw32-gcc go build -v; zip upload/pg_featureserv_snapshot_windows.zip pg_featureserv.exe README.md; fi
 
 deploy:
