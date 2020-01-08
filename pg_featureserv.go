@@ -45,6 +45,7 @@ var router *mux.Router
 var flagTestMode bool
 var flagDebugOn bool
 var flagHelp bool
+var flagConfigFilename string
 
 func init() {
 	initCommnandOptions()
@@ -54,6 +55,8 @@ func initCommnandOptions() {
 	getopt.FlagLong(&flagHelp, "help", '?', "Show command usage")
 	getopt.FlagLong(&flagDebugOn, "debug", 'd', "Set logging level to TRACE")
 	getopt.FlagLong(&flagTestMode, "test", 't', "Serve mock data for testing")
+	getopt.FlagLong(&flagConfigFilename, "config", 'c', "", "config file name")
+
 }
 
 func main() {
@@ -66,7 +69,7 @@ func main() {
 
 	log.Infof("----  %s - Version %s ----------\n", config.AppConfig.Name, config.AppConfig.Version)
 
-	config.InitConfig("config")
+	config.InitConfig(flagConfigFilename)
 
 	log.Infof("%s\n", config.Configuration.Metadata.Title)
 

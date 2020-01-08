@@ -15,9 +15,13 @@ package config
 
 import (
 	"fmt"
-	"log"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+)
+
+const (
+	ConfigFileNameDefault = "config"
 )
 
 // Configuration for system
@@ -70,18 +74,23 @@ type Metadata struct {
 }
 
 // InitConfig initializes the configuration from the config file
-func InitConfig(configName string) {
+func InitConfig(configFilename string) {
 	// --- defaults
 	setDefaultConfig()
 
-	viper.SetConfigName(configName)
-	viper.AddConfigPath(".")
-
+	confFile := ConfigFileNameDefault
+	if configFilename != "" {
+		viper.SetConfigFile(configFilename)
+		confFile = configFilename
+	} else {
+		viper.SetConfigName(confFile)
+		viper.AddConfigPath(".")
+	}
 	err := viper.ReadInConfig() // Find and read the config file
 	if err != nil {             // Handle errors reading the config file
-		log.Panic(fmt.Errorf("fatal error config file: %s", err))
+		log.Fatal(fmt.Errorf("fatal error config file: %s", err))
 	}
-
+	log.Infof("Using config file: %s", confFile)
 	viper.Unmarshal(&Configuration)
 
 	//fmt.Printf("Viper: %v\n", viper.AllSettings())
