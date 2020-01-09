@@ -119,6 +119,26 @@ func TestFeatureNotFound(t *testing.T) {
 	doRequestStatus(t, "/collections/mock_a/items/999", http.StatusNotFound)
 }
 
+//--------  Test HTML generation
+func TestHTMLHome(t *testing.T) {
+	doRequest(t, "/home.html")
+}
+func TestHTMLConformance(t *testing.T) {
+	doRequest(t, "/conformance.html")
+}
+func TestHTMLCollections(t *testing.T) {
+	doRequest(t, "/collections.html")
+}
+func TestHTMLCollection(t *testing.T) {
+	doRequest(t, "/collections/mock_a.html")
+}
+func TestHTMLItems(t *testing.T) {
+	doRequest(t, "/collections/mock_a/items.html")
+}
+func TestHTMLItem(t *testing.T) {
+	doRequest(t, "/collections/mock_a/items/1.html")
+}
+
 //===================================================
 
 func readBody(resp *httptest.ResponseRecorder) []byte {
