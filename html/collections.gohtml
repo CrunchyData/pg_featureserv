@@ -1,0 +1,27 @@
+{{define "body"}}
+<div class='crumbs'><a href="{{ .context.URLHome }}">Home</a>
+/ Collections
+<a style='margin-left: 20px' class='json-link' href='{{ .context.URLJSON }}' title='JSON document for this page'>JSON</a>
+</div>
+<hr>
+<h2>Feature Collections</h2>
+
+{{ range .data.Collections }}
+{{$collTitle := .Title}}
+	<div >
+
+	{{ range .Links }}
+		{{ if (eq .Rel "self") }}
+		<a href="{{ .Href }}"><span class='coll-title'>{{ $collTitle }}</span></a>
+		{{ end }}
+	{{ end }}
+	{{ range .Links }}
+		{{ if (eq .Rel "alternate") }}
+			<a  class='json-link' href="{{ .Href }}">JSON</a></li>
+		{{ end }}
+	{{ end }}
+	</div>
+	<div class='coll-desc'>{{ .Description }}</div>
+	<p>
+{{ end }}
+{{ end }}

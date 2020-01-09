@@ -37,29 +37,51 @@ type PageData struct {
 	UseMap          bool
 }
 
-// HTMLTemplate UI templates repo (inited on startup)
-var HTMLTemplate struct {
-	Page        *template.Template
-	Home        *template.Template
-	Conformance *template.Template
-	Collections *template.Template
-	Collection  *template.Template
-	Items       *template.Template
-	Item        *template.Template
+var htmlTemp struct {
+	home        *template.Template
+	conformance *template.Template
+	collections *template.Template
+	collection  *template.Template
+	items       *template.Template
+	item        *template.Template
 }
+
+var HTMLDynamicLoad bool
 
 func init() {
-	HTMLTemplate.Page = createTemplate("page", templatePage)
-	HTMLTemplate.Home = createTemplate("home", templateHome)
-	HTMLTemplate.Conformance = createTemplate("conformance", templateConformance)
-	HTMLTemplate.Collections = createTemplate("collections", templateCollections)
-	HTMLTemplate.Collection = createTemplate("collection", templateCollection)
-	HTMLTemplate.Items = createTemplate("items", templateItems+mapCode)
-	HTMLTemplate.Item = createTemplate("item", templateItem+mapCode)
+	HTMLDynamicLoad = false
 }
 
-func createTemplate(name string, templateStr string) *template.Template {
-	return template.Must(template.New(name).Parse(templateStr))
+func loadTemplate(curr *template.Template, filename ...string) *template.Template {
+	if curr == nil || HTMLDynamicLoad {
+		return template.Must(template.ParseFiles(filename...))
+	}
+	return curr
+}
+
+func PageHome() *template.Template {
+	htmlTemp.home = loadTemplate(htmlTemp.home, "html/page.gohtml", "html/home.gohtml")
+	return htmlTemp.home
+}
+func PageConformance() *template.Template {
+	htmlTemp.conformance = loadTemplate(htmlTemp.conformance, "html/page.gohtml", "html/conformance.gohtml")
+	return htmlTemp.conformance
+}
+func PageCollections() *template.Template {
+	htmlTemp.collections = loadTemplate(htmlTemp.collections, "html/page.gohtml", "html/collections.gohtml")
+	return htmlTemp.collections
+}
+func PageCollection() *template.Template {
+	htmlTemp.collection = loadTemplate(htmlTemp.collection, "html/page.gohtml", "html/collection.gohtml")
+	return htmlTemp.collection
+}
+func PageItems() *template.Template {
+	htmlTemp.items = loadTemplate(htmlTemp.items, "html/page.gohtml", "html/map_script.gohtml", "html/items.gohtml")
+	return htmlTemp.items
+}
+func PageItem() *template.Template {
+	htmlTemp.item = loadTemplate(htmlTemp.item, "html/page.gohtml", "html/map_script.gohtml", "html/item.gohtml")
+	return htmlTemp.item
 }
 
 // RenderHTML tbd
@@ -72,19 +94,14 @@ func RenderHTML(temp *template.Template, content interface{}, context interface{
 	if err != nil {
 		return contentBytes, err
 	}
-
-	data := map[string]interface{}{
-		"config":  config.Configuration,
-		"context": context,
-		"body":    template.HTML(contentBytes)}
-	return renderTemplate(HTMLTemplate.Page, data)
+	return contentBytes, err
 }
 
 func renderTemplate(temp *template.Template, data map[string]interface{}) ([]byte, error) {
-	var tpl bytes.Buffer
+	var buf bytes.Buffer
 
-	if err := temp.Execute(&tpl, data); err != nil {
-		return tpl.Bytes(), err
+	if err := temp.ExecuteTemplate(&buf, "page", data); err != nil {
+		return buf.Bytes(), err
 	}
-	return tpl.Bytes(), nil
+	return buf.Bytes(), nil
 }

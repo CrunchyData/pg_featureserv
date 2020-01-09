@@ -104,7 +104,7 @@ func doRoot(w http.ResponseWriter, r *http.Request, format string) *appError {
 		context.URLHome = urlPathFormat(urlBase, "", api.FormatHTML)
 		context.URLJSON = urlPathFormat(urlBase, "", api.FormatJSON)
 
-		return writeHTML(w, content, context, ui.HTMLTemplate.Home)
+		return writeHTML(w, content, context, ui.PageHome())
 	default:
 		return writeJSON(w, api.ContentTypeJSON, content)
 	}
@@ -172,7 +172,7 @@ func handleCollections(w http.ResponseWriter, r *http.Request) *appError {
 		context.URLHome = urlPathFormat(urlBase, "", api.FormatHTML)
 		context.URLJSON = urlPathFormat(urlBase, api.TagCollections, api.FormatJSON)
 
-		return writeHTML(w, content, context, ui.HTMLTemplate.Collections)
+		return writeHTML(w, content, context, ui.PageCollections())
 	default:
 		return writeJSON(w, api.ContentTypeJSON, content)
 	}
@@ -227,7 +227,7 @@ func handleCollection(w http.ResponseWriter, r *http.Request) *appError {
 		context.CollectionTitle = layer.Title
 		context.Layer = layer
 
-		return writeHTML(w, content, context, ui.HTMLTemplate.Collection)
+		return writeHTML(w, content, context, ui.PageCollection())
 	default:
 		return writeJSON(w, api.ContentTypeJSON, content)
 	}
@@ -275,7 +275,7 @@ func writeItemsHTML(w http.ResponseWriter, name string, query string, urlBase st
 	context.UseMap = true
 
 	// features are not needed for items page (page queries for them)
-	return writeHTML(w, nil, context, ui.HTMLTemplate.Items)
+	return writeHTML(w, nil, context, ui.PageItems())
 }
 
 func writeItemsJSON(w http.ResponseWriter, name string, param data.QueryParam, urlBase string) *appError {
@@ -349,7 +349,7 @@ func writeItemHTML(w http.ResponseWriter, name string, fid string, query string,
 	context.FeatureID = fid
 	context.UseMap = true
 	// feature is not needed for item page (page queries for them)
-	return writeHTML(w, nil, context, ui.HTMLTemplate.Item)
+	return writeHTML(w, nil, context, ui.PageItem())
 }
 
 func writeItemJSON(w http.ResponseWriter, name string, fid string, param data.QueryParam, urlBase string) *appError {
@@ -384,7 +384,7 @@ func handleConformance(w http.ResponseWriter, r *http.Request) *appError {
 		context.URLHome = urlPathFormat(urlBase, "", api.FormatHTML)
 		context.URLJSON = urlPathFormat(urlBase, api.TagConformance, api.FormatJSON)
 
-		return writeHTML(w, content, context, ui.HTMLTemplate.Conformance)
+		return writeHTML(w, content, context, ui.PageConformance())
 	default:
 		return writeJSON(w, api.ContentTypeJSON, content)
 	}

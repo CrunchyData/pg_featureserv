@@ -2,6 +2,7 @@
     BindHost = "localhost"
     BindPort = 9000
 #    CORSOrigins = "*"
+    # set Debug to true to run in debug mode (can also be done on cmd-line)
 #    Debug = true
 
 [Paging]

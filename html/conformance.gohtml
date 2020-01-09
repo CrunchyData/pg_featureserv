@@ -1,0 +1,13 @@
+{{define "body"}}
+<div class='crumbs'><a href="{{ .context.URLHome }}">Home</a>
+/ Conformance
+<a style='margin-left: 20px' class='json-link' href='{{ .context.URLJSON }}' title='JSON document for this page'>JSON</a>
+</div>
+<hr>
+<h2>Conformance</h2>
+<ul>
+{{ range .data.ConformsTo }}
+	<li><a href="{{ . }}">{{ . }}</a></li>
+{{ end }}
+</ul>
+{{end}}

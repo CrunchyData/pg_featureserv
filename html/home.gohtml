@@ -1,0 +1,12 @@
+{{define "body"}}
+<div class='crumbs'>Home
+<a style='margin-left: 20px' class='json-link' href='{{ .context.URLJSON }}' title='JSON document for this page'>JSON</a>
+</div>
+<hr>
+<div>{{ .config.Metadata.Description }}</div>
+<h2>Collections</h2>
+<a href="collections.html">View the collections</a>
+
+<h2>Conformance</h2>
+<a href="conformance.html">View the conformance</a>
+{{end}}

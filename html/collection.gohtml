@@ -1,0 +1,37 @@
+{{define "body"}}
+<div class='crumbs'><a href="{{ .context.URLHome }}">Home</a>
+/ <a href="{{ .context.URLCollections }}">Collections</a>
+/ {{ .data.Title }}
+<a style='margin-left: 20px' class='json-link' href='{{ .context.URLJSON }}' title='JSON document for this page'>JSON</a>
+</div>
+<hr>
+<h2>Feature Collection: {{ .data.Title }}</h2>
+<div class='coll-desc'>{{ .data.Description }}</div>
+<p>
+<table cellspacing='4px'>
+<tr><td class='coll-meta-field'>ID column</td><td>{{ .context.Layer.IDColumn }}</td></tr>
+<tr><td class='coll-meta-field'>Geometry column</td><td>{{ .context.Layer.GeometryColumn }}</td></tr>
+<tr><td class='coll-meta-field'>Geometry type</td><td>{{ .context.Layer.GeometryType }}</td></tr>
+<tr><td class='coll-meta-field'>SRID</td><td>{{ .context.Layer.Srid }}</td></tr>
+<tr><td class='coll-meta-field'>Extent</td><td>{{ .context.Layer.Extent }}</td></tr>
+<tr><td class='coll-meta-field'>Properties</td>
+<td>
+{{ $types := .context.Layer.Types }}
+{{ range $i, $name := .context.Layer.Columns }}
+<div><span>{{ $name }}
+:: <span>{{index $types $name}}</span></div>
+{{ end }}
+</td></tr>
+</table>
+</p>
+
+<h3>Features</h3>
+	{{ range .data.Links }}
+	<div>
+		{{ if (eq .Rel "items") }}
+			<a href="{{ .Href }}">{{ .Title }}</a>
+		{{ end }}
+	</div>
+	{{ end }}
+<p>
+{{ end }}

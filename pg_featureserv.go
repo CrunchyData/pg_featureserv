@@ -32,6 +32,8 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/CrunchyData/pg_featureserv/ui"
+
 	"github.com/CrunchyData/pg_featureserv/config"
 	"github.com/CrunchyData/pg_featureserv/data"
 	"github.com/gorilla/handlers"
@@ -56,7 +58,6 @@ func initCommnandOptions() {
 	getopt.FlagLong(&flagDebugOn, "debug", 'd', "Set logging level to TRACE")
 	getopt.FlagLong(&flagTestMode, "test", 't', "Serve mock data for testing")
 	getopt.FlagLong(&flagConfigFilename, "config", 'c', "", "config file name")
-
 }
 
 func main() {
@@ -75,6 +76,7 @@ func main() {
 
 	if flagTestMode {
 		catalogInstance = data.CatMockInstance()
+		ui.HTMLDynamicLoad = true
 	} else {
 		catalogInstance = data.CatDBInstance()
 	}

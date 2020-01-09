@@ -1,0 +1,77 @@
+{{define "page"}}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{{ .config.Metadata.Title }}</title>
+
+{{ if .context.UseMap }}
+<link rel="stylesheet" href="https://openlayers.org/en/v6.1.1/css/ol.css" type="text/css">
+<style>
+.map {
+	height: 400px;
+	width: 400px;
+	margin-bottom: 10px;
+}
+.arrow_box {
+	border-radius: 5px;
+	padding: 10px;
+}
+.arrow_box {
+	position: relative;
+	background: #fff;
+	border: 1px solid #003c88;
+}
+.arrow_box:after, .arrow_box:before {
+	top: 100%;
+	left: 50%;
+	border: solid transparent;
+	content: " ";
+	height: 0;
+	width: 0;
+	position: absolute;
+	pointer-events: none;
+}
+.arrow_box:after {
+	border-color: rgba(255, 255, 255, 0);
+	border-top-color: #fff;
+	border-width: 10px;
+	margin-left: -10px;
+}
+.arrow_box:before {
+	border-color: rgba(153, 153, 153, 0);
+	border-top-color: #003c88;
+	border-width: 11px;
+	margin-left: -11px;
+}
+</style>
+{{ end }}
+
+{{ range .links }}
+<link rel="{{ .Rel }}" type="application/json" href="{{ .Href }}"/>
+{{ end }}
+<style>
+body {	font-family: sans-serif; }
+a { color:blue; text-decoration: none;}
+a:hover, a:focus { text-decoration: underline; }
+.page-title { font-family: monospace; font-size: 20pt; }
+.coll-title { font-weight: bold; padding-right: 10px }
+.json-link { font-size: 12px; background-color: lightgray;  color: blue;
+	padding: 2px 8px 2px 8px; border-radius: 10px;
+}
+.coll-desc { font-style: italic; }
+.coll-meta-field { font-weight: bold; text-align: end; vertical-align: top; padding-right: 10px;}
+.crumbs { font-size: 11pt; margin: 8px; }
+</style>
+</head>
+
+<body>
+	<header style='color: white; padding: 6px; background-color: #0167B4'>
+		<div class='page-title'><a href="{{ .context.URLHome }}"><span style='color:white'>{{ .config.Metadata.Title }}</span></a></div>
+	</header>
+	{{template "body" .}}
+	<hr/>
+	<div style='font-size: 10px; font-style: italic;'>{{ .context.AppName }} - Version {{ .context.AppVersion }}</div>
+</body>
+</html>
+{{end}}
