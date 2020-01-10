@@ -78,6 +78,7 @@ func InitConfig(configFilename string) {
 	// --- defaults
 	setDefaultConfig()
 
+	isExplictConfigFile := configFilename != ""
 	confFile := ConfigFileNameDefault
 	if configFilename != "" {
 		viper.SetConfigFile(configFilename)
@@ -87,8 +88,16 @@ func InitConfig(configFilename string) {
 		viper.AddConfigPath(".")
 	}
 	err := viper.ReadInConfig() // Find and read the config file
-	if err != nil {             // Handle errors reading the config file
-		log.Fatal(fmt.Errorf("fatal error config file: %s", err))
+	if err != nil {
+		_, isConfigFileNotFound := err.(viper.ConfigFileNotFoundError)
+		errrConfRead := fmt.Errorf("Fatal error reading config file: %s", err)
+		isUseDefaultConfig := isConfigFileNotFound && !isExplictConfigFile
+		if isUseDefaultConfig {
+			confFile = "DEFAULT" // let user know config is defaulted
+			log.Debug(errrConfRead)
+		} else {
+			log.Fatal(errrConfRead)
+		}
 	}
 	log.Infof("Using config file: %s", confFile)
 	viper.Unmarshal(&Configuration)
