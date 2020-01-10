@@ -1,77 +1,64 @@
+{{define "mapStyle"}}
+<link rel="stylesheet" href="https://openlayers.org/en/v6.1.1/css/ol.css" type="text/css">
+
+<style>
+.map {
+	height: 400px;
+	width: 400px;
+	margin-bottom: 10px;
+}
+.arrow_box {
+	border-radius: 5px;
+	padding: 10px;
+}
+.arrow_box {
+	position: relative;
+	background: #fff;
+	border: 1px solid #003c88;
+}
+.arrow_box:after, .arrow_box:before {
+	top: 100%;
+	left: 50%;
+	border: solid transparent;
+	content: " ";
+	height: 0;
+	width: 0;
+	position: absolute;
+	pointer-events: none;
+}
+.arrow_box:after {
+	border-color: rgba(255, 255, 255, 0);
+	border-top-color: #fff;
+	border-width: 10px;
+	margin-left: -10px;
+}
+.arrow_box:before {
+	border-color: rgba(153, 153, 153, 0);
+	border-top-color: #003c88;
+	border-width: 11px;
+	margin-left: -11px;
+}
+#tbl-props {
+	font-size: 12px;
+	border-spacing: 3px;
+}
+#tbl-props tr:nth-child(even) {
+	background-color: #EEE;
+}
+</style>
+{{ end }}
+{{define "propsTable"}}
+	<h3 id='feature-title' style='margin-top: 0; display: none;'>Feature ID: <a id='feature-title-text' href=''></a></h3>
+	<table id='tbl-props' style='border: 1px solid grey; width:400px'>
+	<thead style='background-color: lightgrey;'>
+		<tr><th>Name</th><th>Value</th></tr>
+	</thead>
+	<tbody></tbody>
+	</table>
+{{end}}
 {{define "mapScript"}}
 <script src="https://openlayers.org/en/v6.1.1/build/ol.js"></script>
 <script>
-var image = new ol.style.Circle({
-	radius: 5,
-	fill: new ol.style.Fill({
-		color: 'rgb(255, 0, 0)'
-	}),
-	stroke: new ol.style.Stroke({color: 'red', width: 1})
-});
-var styles = {
-	'Point': new ol.style.Style({
-		image: image
-	}),
-	'LineString': new ol.style.Style({
-		stroke: new ol.style.Stroke({
-			color: 'red',
-			width: 2
-		})
-	}),
-	'MultiLineString': new ol.style.Style({
-		stroke: new ol.style.Stroke({
-			color: 'red',
-			width: 2
-		})
-	}),
-	'MultiPoint': new ol.style.Style({
-		image: image
-	}),
-	'MultiPolygon': new ol.style.Style({
-		stroke: new ol.style.Stroke({
-			color: 'blue',
-			width: 2
-		}),
-		fill: new ol.style.Fill({
-			color: 'rgba(0, 0, 255, 0.1)'
-		})
-	}),
-	'Polygon': new ol.style.Style({
-		stroke: new ol.style.Stroke({
-			color: 'blue',
-			lineDash: [4],
-			width: 2
-		}),
-		fill: new ol.style.Fill({
-			color: 'rgba(0, 0, 255, 0.1)'
-		})
-	}),
-	'GeometryCollection': new ol.style.Style({
-		stroke: new ol.style.Stroke({
-			color: 'magenta',
-			width: 2
-		}),
-		fill: new ol.style.Fill({
-			color: 'magenta'
-		}),
-		image: new ol.style.Circle({
-			radius: 10,
-			fill: null,
-			stroke: new ol.style.Stroke({
-				color: 'magenta'
-			})
-		})
-	}),
-	'Circle': new ol.style.Style({
-		stroke: new ol.style.Stroke({
-			color: 'red',
-			width: 2
-		}),
-		fill: new ol.style.Fill({
-			color: 'rgba(255,0,0,0.2)'
-		})
-	})
-};
 var styleFunction = function(feature) {
 	return styles[feature.getGeometry().getType()];
 };
@@ -89,7 +76,6 @@ var map = new ol.Map({
 				"url" : "https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png"
 			})
 		}),
-//		vectorLayer
 	],
 	target: 'map',
 	controls: ol.control.defaults({
@@ -105,7 +91,9 @@ var map = new ol.Map({
 map.addLayer(vectorLayer);
 
 map.once('rendercomplete', function(event) {
-    map.getView().fit(vectorLayer.getSource().getExtent(), map.getSize());
+	zoom(vectorLayer);
+	showFeatureProperties( vectorLayer.getSource().getFeatures()[0] )
+	onMapLoad();
 });
 var overlay = new ol.Overlay({
 	element: document.getElementById('popup-container'),
@@ -113,11 +101,14 @@ var overlay = new ol.Overlay({
 	offset: [0, -10]
 });
 map.addOverlay(overlay);
-map.on('click', function(evt) {
+//map.on('click', function(evt) {  onMapClick(evt); }
+function onFeatureClick(evt) {
 	overlay.setPosition();
 	var features = map.getFeaturesAtPixel(evt.pixel);
 	var loc = evt.coordinate
 	if (features) {
+		showFeatureProperties(features[0]);
+		if (features.length <= 0) return;
 		var identifier = features[0].getId();
 		var popup = 'Id: ' + identifier
 		if (! document.location.href.includes('/items/')) {
@@ -126,6 +117,78 @@ map.on('click', function(evt) {
 		overlay.getElement().innerHTML = popup;
 		overlay.setPosition(loc);
 	}
+}
+function zoom(lyr) {
+	let lyrext = lyr.getSource().getExtent()
+	let sz = Math.max( ol.extent.getWidth(lyrext), ol.extent.getHeight(lyrext) );
+	let ext = ol.extent.buffer( lyrext,  0.2 * sz);
+    map.getView().fit(ext, map.getSize());
+}
+function showFeatureProperties(feature, showTitle) {
+	let titleText = document.getElementById('feature-title-text');
+	if (! showTitle) {
+
+	}
+	titleText.innerText = '';
+	let tbl = document.getElementById('tbl-props');
+	tableClear(tbl);
+
+	if (! feature) return;
+	let id = feature.getId();
+	titleText.innerText = id;
+	let link = 'items/' + id + '.html';
+	titleText.href = link;
+
+	let prop = feature.getProperties();
+    let tblbody = tbl.getElementsByTagName('tbody')[0];
+    for (var key in prop) {
+        if (key == 'geometry') {
+			continue;
+		}
+		var row = tblbody.insertRow(-1);
+		var cell0 = row.insertCell();
+		cell0.innerText = key;
+		var cell1 = row.insertCell();
+		cell1.innerText = prop[key];
+    }
+}
+function tableClear(tbl) {
+	var rowCount = tbl.rows.length;
+	while(rowCount > 0 && --rowCount) tbl.deleteRow(rowCount);
+}
+var image = new ol.style.Circle({ radius: 5,
+	fill: new ol.style.Fill({ color: 'rgb(255, 0, 0)' }),
+	stroke: new ol.style.Stroke({color: 'red', width: 1})
 });
+var styles = {
+	'Point': new ol.style.Style({ image: image }),
+	'MultiPoint': new ol.style.Style({ image: image }),
+	'LineString': new ol.style.Style({
+		stroke: new ol.style.Stroke({ color: 'red', width: 2 })
+	}),
+	'MultiLineString': new ol.style.Style({
+		stroke: new ol.style.Stroke({ color: 'red', width: 2 })
+	}),
+	'MultiPolygon': new ol.style.Style({
+		stroke: new ol.style.Stroke({ color: 'blue', width: 2 }),
+		fill: new ol.style.Fill({ color: 'rgba(0, 0, 255, 0.1)'	})
+	}),
+	'Polygon': new ol.style.Style({
+		stroke: new ol.style.Stroke({ color: 'blue', lineDash: [4], width: 2 }),
+		fill: new ol.style.Fill({ color: 'rgba(0, 0, 255, 0.1)'	})
+	}),
+	'GeometryCollection': new ol.style.Style({
+		stroke: new ol.style.Stroke({ color: 'magenta',	width: 2 }),
+		fill: new ol.style.Fill({ color: 'magenta' }),
+		image: new ol.style.Circle({ radius: 10, fill: null,
+			stroke: new ol.style.Stroke({ color: 'magenta' })
+		})
+	}),
+	'Circle': new ol.style.Style({
+		stroke: new ol.style.Stroke({ color: 'red',	width: 2 }),
+		fill: new ol.style.Fill({ color: 'rgba(255,0,0,0.2)' })
+	})
+};
+
 </script>
 {{ end }}

@@ -5,47 +5,7 @@
 <meta charset="utf-8">
 <title>{{ .config.Metadata.Title }}</title>
 
-{{ if .context.UseMap }}
-<link rel="stylesheet" href="https://openlayers.org/en/v6.1.1/css/ol.css" type="text/css">
-<style>
-.map {
-	height: 400px;
-	width: 400px;
-	margin-bottom: 10px;
-}
-.arrow_box {
-	border-radius: 5px;
-	padding: 10px;
-}
-.arrow_box {
-	position: relative;
-	background: #fff;
-	border: 1px solid #003c88;
-}
-.arrow_box:after, .arrow_box:before {
-	top: 100%;
-	left: 50%;
-	border: solid transparent;
-	content: " ";
-	height: 0;
-	width: 0;
-	position: absolute;
-	pointer-events: none;
-}
-.arrow_box:after {
-	border-color: rgba(255, 255, 255, 0);
-	border-top-color: #fff;
-	border-width: 10px;
-	margin-left: -10px;
-}
-.arrow_box:before {
-	border-color: rgba(153, 153, 153, 0);
-	border-top-color: #003c88;
-	border-width: 11px;
-	margin-left: -11px;
-}
-</style>
-{{ end }}
+{{template "mapStyle" .}}
 
 {{ range .links }}
 <link rel="{{ .Rel }}" type="application/json" href="{{ .Href }}"/>
@@ -75,3 +35,6 @@ a:hover, a:focus { text-decoration: underline; }
 </body>
 </html>
 {{end}}
+
+{{define "mapStyle"}}
+{{end}}}

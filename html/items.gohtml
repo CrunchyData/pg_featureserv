@@ -16,13 +16,25 @@
 <hr>
 <h2>Features: {{ .context.CollectionTitle }}</h2>
 
-<div id="map" class="map"></div>
+<table width='100%'>
+<tr>
+<td valign='top' width='1%'><div id="map" class="map"></div></td>
+<td valign='top' style='padding-left:10px;'>
+{{template "propsTable" .}}
+</td>
+</tr></table>
 <div id="popup-container" class="arrow_box"></div>
 
 <script>
 var DATA_URL = "{{ .context.URLJSON }}";
+ITEMS_PAGE = true;
 </script>
+{{template "mapScript" .}}
 <script>
+function onMapLoad() {
+	map.on('click', function(evt) {  onFeatureClick(evt); } );
+	document.getElementById('feature-title').style.display = 'block';
+}
 function chgLimit() {
 	var select = document.getElementById('item-limit');
 	var lim = select.options[select.selectedIndex].value;
@@ -31,5 +43,4 @@ function chgLimit() {
 	window.location.assign(newurl);
 }
 </script>
-{{template "mapScript" .}}
 {{ end }}

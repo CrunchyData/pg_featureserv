@@ -9,11 +9,22 @@
 <hr>
 <h2>Feature: {{ .context.FeatureID }}</h2>
 
-<div id="map" class="map"></div>
+<table width='100%'>
+<tr>
+<td valign='top' width='1%'><div id="map" class="map"></div></td>
+<td valign='top' style='padding-left:10px;'>
+{{template "propsTable" .}}
+</td>
+</tr></table>
 <div id="popup-container" class="arrow_box"></div>
 
 <script>
 var DATA_URL = "{{ .context.URLJSON }}";
 </script>
 {{template "mapScript" .}}
+<script>
+function onMapLoad() {
+	// nothing extra to do
+}
+</script>
 {{ end }}
