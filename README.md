@@ -58,7 +58,9 @@ go build
 ### Command-line options
 
 * `-?` - show command usage
+* `--config file.toml` - specify configuaration file to use
 * `--debug` - set logging level to TRACE (can also be set in config file)
+* `--devel` - run in development mode (e.g. HTML templates reloaded every query)
 * `--test` - run in test mode, with an internal catalog of layers and data
 
 ## Requests Overview

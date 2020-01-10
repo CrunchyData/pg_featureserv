@@ -44,8 +44,9 @@ import (
 
 var catalogInstance data.Catalog
 var router *mux.Router
-var flagTestMode bool
+var flagTestModeOn bool
 var flagDebugOn bool
+var flagDevModeOn bool
 var flagHelp bool
 var flagConfigFilename string
 
@@ -55,9 +56,10 @@ func init() {
 
 func initCommnandOptions() {
 	getopt.FlagLong(&flagHelp, "help", '?', "Show command usage")
-	getopt.FlagLong(&flagDebugOn, "debug", 'd', "Set logging level to TRACE")
-	getopt.FlagLong(&flagTestMode, "test", 't', "Serve mock data for testing")
 	getopt.FlagLong(&flagConfigFilename, "config", 'c', "", "config file name")
+	getopt.FlagLong(&flagDebugOn, "debug", 'd', "Set logging level to TRACE")
+	getopt.FlagLong(&flagDevModeOn, "devel", 0, "Run in development mode")
+	getopt.FlagLong(&flagTestModeOn, "test", 't', "Serve mock data for testing")
 }
 
 func main() {
@@ -74,11 +76,14 @@ func main() {
 
 	log.Infof("%s\n", config.Configuration.Metadata.Title)
 
-	if flagTestMode {
+	if flagTestModeOn {
 		catalogInstance = data.CatMockInstance()
-		ui.HTMLDynamicLoad = true
 	} else {
 		catalogInstance = data.CatDBInstance()
+	}
+	if flagTestModeOn || flagDevModeOn {
+		ui.HTMLDynamicLoad = true
+		log.Info("Running in development mode")
 	}
 	// Commandline over-rides config file for debugging
 	if flagDebugOn || config.Configuration.Server.Debug {
