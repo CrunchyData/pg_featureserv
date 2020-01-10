@@ -1,14 +1,21 @@
 [Server]
+    # The hostname to use in links
     BindHost = "localhost"
+    # The IP port to listen on
     BindPort = 9000
+    # String to return for Access-Control-Allow-Origin header
 #    CORSOrigins = "*"
     # set Debug to true to run in debug mode (can also be done on cmd-line)
 #    Debug = true
 
 [Paging]
+    # The default number of features in a response
     LimitDefault = 10
+    # Maxium number of features in a response
     LimitMax = 1000
 
 [Metadata]
+    # Title for this service
 	Title = "pg-featureserv Demo"
+    # Description of this service
 	Description = "Demo of Crunchy Data PostGIS Feature Server"
