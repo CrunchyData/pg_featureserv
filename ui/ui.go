@@ -19,6 +19,7 @@ import (
 
 	"github.com/CrunchyData/pg_featureserv/config"
 	"github.com/CrunchyData/pg_featureserv/data"
+	log "github.com/sirupsen/logrus"
 )
 
 // PageData - data used on the HTML pages
@@ -54,8 +55,13 @@ func init() {
 
 func loadTemplate(curr *template.Template, filename ...string) *template.Template {
 	if curr == nil || HTMLDynamicLoad {
-		return template.Must(template.ParseFiles(filename...))
+		temp, err := template.ParseFiles(filename...)
+		if err != nil {
+			log.Fatalf("Failure loading templates from %v: %v", filename, err)
+		}
+		return temp
 	}
+	// return already-loaded template
 	return curr
 }
 
