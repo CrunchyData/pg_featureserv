@@ -67,7 +67,7 @@ func addRoute(router *mux.Router, path string, handler func(http.ResponseWriter,
 // Common handling logic is placed here
 func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// --- log the request
-	log.Printf("%v Request: %v\n", r.RemoteAddr, r.URL)
+	log.Printf("%v %v %v\n", r.RemoteAddr, r.Method, r.URL)
 
 	// execute the handler
 	e := fn(w, r)
