@@ -35,8 +35,13 @@ type catalogDB struct {
 	layersSort []*Layer
 }
 
+var isStartup bool
 var instanceDB catalogDB
 var templateFeature *template.Template
+
+func init() {
+	isStartup = true
+}
 
 // CatDBInstance tbd
 func CatDBInstance() Catalog {
@@ -66,12 +71,12 @@ func dbConnect() *pgxpool.Pool {
 }
 
 func (cat *catalogDB) Layers() ([]*Layer, error) {
-	cat.refreshLayers()
+	cat.refreshLayers(true)
 	return cat.layersSort, nil
 }
 
 func (cat *catalogDB) LayerByName(name string) (*Layer, error) {
-	cat.refreshLayers()
+	cat.refreshLayers(false)
 	layer, ok := cat.layers[name]
 	if !ok {
 		return nil, nil
@@ -108,13 +113,13 @@ func (cat *catalogDB) LayerFeature(name string, id string, param QueryParam) (st
 	return features[0], nil
 }
 
-func (cat *catalogDB) refreshLayers() {
+func (cat *catalogDB) refreshLayers(force bool) {
 	// TODO: refresh on timed basis?
 	// for now this just loads the layers once
-	if cat.layers == nil {
+	if force || isStartup {
 		cat.loadLayers()
+		isStartup = false
 	}
-	instanceDB.loadLayers()
 }
 
 func (cat *catalogDB) loadLayers() {
