@@ -18,8 +18,8 @@
 </p>
 <h3>Metadata</h3>
 <table cellspacing='4px'>
-<tr><td class='coll-title'>ID column</td><td>{{ .context.Layer.IDColumn }}</td></tr>
-<tr><td class='coll-title'>Geometry column</td><td>{{ .context.Layer.GeometryColumn }}</td></tr>
+<tr><td class='coll-title'>ID column</td><td class='prop-name'>{{ .context.Layer.IDColumn }}</td></tr>
+<tr><td class='coll-title'>Geometry column</td><td class='prop-name'>{{ .context.Layer.GeometryColumn }}</td></tr>
 <tr><td class='coll-title'>Geometry type</td><td>{{ .context.Layer.GeometryType }}</td></tr>
 <tr><td class='coll-title'>SRID</td><td>{{ .context.Layer.Srid }}</td></tr>
 <tr><td class='coll-title'>Extent</td><td>{{ .context.Layer.Extent }}</td></tr>
@@ -32,7 +32,7 @@
 {{ $jtypes := .context.Layer.JSONTypes }}
 {{ $types := .context.Layer.Types }}
 {{ range $i, $name := .context.Layer.Columns }}
-<tr><td>{{ $name }}</td>
+<tr><td class='prop-name'>{{ $name }}</td>
 <td>{{index $jtypes $i}}</td>
 <td>{{index $types $name}}</td>
 </tr>
