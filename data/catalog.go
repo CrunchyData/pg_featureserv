@@ -63,6 +63,7 @@ type Layer struct {
 	Extent         Extent
 	Columns        []string
 	Types          map[string]string
+	JSONTypes      []string
 }
 
 // Extent of a layer

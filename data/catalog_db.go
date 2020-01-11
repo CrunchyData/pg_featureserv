@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"os"
 	"sort"
+	"strings"
 	"text/template"
 
 	"github.com/CrunchyData/pg_featureserv/config"
@@ -180,6 +181,7 @@ func readLayer(rows pgx.Rows) *Layer {
 
 	// Since Go map order is random, list columns in array
 	columns := make([]string, arrLen)
+	jsontypes := make([]string, arrLen)
 	datatypes := make(map[string]string)
 
 	for i := arrStart; i < arrLen; i++ {
@@ -188,6 +190,7 @@ func readLayer(rows pgx.Rows) *Layer {
 		datatype := props.Elements[elmPos+1].String
 		columns[i] = name
 		datatypes[name] = datatype
+		jsontypes[i] = toJSONTypeFromPG(datatype)
 	}
 
 	// "schema.tablename" is the unique key for table layers
@@ -212,6 +215,7 @@ func readLayer(rows pgx.Rows) *Layer {
 		IDColumn:       idColumn,
 		Columns:        columns,
 		Types:          datatypes,
+		JSONTypes:      jsontypes,
 	}
 }
 
@@ -277,6 +281,19 @@ func toJSONValue(value interface{}) interface{} {
 	}
 	// for now all other values are returned  as is
 	return value
+}
+
+func toJSONTypeFromPG(typ string) string {
+	if strings.HasPrefix(typ, "int") {
+		return "int"
+	}
+	if strings.HasPrefix(typ, "float") {
+		return "number"
+	}
+	if typ == "numeric" {
+		return "number"
+	}
+	return "string"
 }
 
 type featureData struct {

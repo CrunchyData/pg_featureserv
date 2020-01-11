@@ -8,24 +8,6 @@
 <h2>Feature Collection: {{ .data.Title }}</h2>
 <div class='coll-desc'>{{ .data.Description }}</div>
 <p>
-<table cellspacing='4px'>
-<tr><td class='coll-meta-field'>ID column</td><td>{{ .context.Layer.IDColumn }}</td></tr>
-<tr><td class='coll-meta-field'>Geometry column</td><td>{{ .context.Layer.GeometryColumn }}</td></tr>
-<tr><td class='coll-meta-field'>Geometry type</td><td>{{ .context.Layer.GeometryType }}</td></tr>
-<tr><td class='coll-meta-field'>SRID</td><td>{{ .context.Layer.Srid }}</td></tr>
-<tr><td class='coll-meta-field'>Extent</td><td>{{ .context.Layer.Extent }}</td></tr>
-<tr><td class='coll-meta-field'>Properties</td>
-<td>
-{{ $types := .context.Layer.Types }}
-{{ range $i, $name := .context.Layer.Columns }}
-<div><span>{{ $name }}
-:: <span>{{index $types $name}}</span></div>
-{{ end }}
-</td></tr>
-</table>
-</p>
-
-<h3>Features</h3>
 	{{ range .data.Links }}
 	<div>
 		{{ if (eq .Rel "items") }}
@@ -33,5 +15,31 @@
 		{{ end }}
 	</div>
 	{{ end }}
-<p>
+</p>
+<h3>Metadata</h3>
+<table cellspacing='4px'>
+<tr><td class='coll-title'>ID column</td><td>{{ .context.Layer.IDColumn }}</td></tr>
+<tr><td class='coll-title'>Geometry column</td><td>{{ .context.Layer.GeometryColumn }}</td></tr>
+<tr><td class='coll-title'>Geometry type</td><td>{{ .context.Layer.GeometryType }}</td></tr>
+<tr><td class='coll-title'>SRID</td><td>{{ .context.Layer.Srid }}</td></tr>
+<tr><td class='coll-title'>Extent</td><td>{{ .context.Layer.Extent }}</td></tr>
+<tr><td class='coll-title' valign='top'>Properties</td>
+<td>
+<table class='tbl-props'>
+	<thead style='background-color: lightgrey;'>
+		<tr><th>Name</th><th>Type</th><th>Postgres Type</th></tr>
+	</thead>
+{{ $jtypes := .context.Layer.JSONTypes }}
+{{ $types := .context.Layer.Types }}
+{{ range $i, $name := .context.Layer.Columns }}
+<tr><td>{{ $name }}</td>
+<td>{{index $jtypes $i}}</td>
+<td>{{index $types $name}}</td>
+</tr>
+{{ end }}
+</table>
+</td></tr>
+</table>
+</p>
+
 {{ end }}
