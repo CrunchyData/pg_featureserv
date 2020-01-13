@@ -31,6 +31,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/CrunchyData/pg_featureserv/ui"
 
@@ -103,9 +104,19 @@ func serve() {
 
 	router = initRouter()
 
-	// set CORS handling to allow all access
-	// TODO: make this runtime configurable?
+	// set CORS handling according to config
 	corsOpt := handlers.AllowedOrigins([]string{config.Configuration.Server.CORSOrigins})
 
-	log.Fatal(http.ListenAndServe(bindAddress, handlers.CORS(corsOpt)(router)))
+	// more "production friendly" timeouts
+	// https://blog.simon-frey.eu/go-as-in-golang-standard-net-http-config-will-break-your-production/#You_should_at_least_do_this_The_easy_path
+	server := &http.Server{
+		ReadTimeout:  1 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		Addr:         bindAddress,
+		Handler:      handlers.CompressHandler(handlers.CORS(corsOpt)(router)),
+	}
+
+	// TODO figure out how to gracefully shut down on ^C
+	// and shut down all the database connections / statements
+	log.Fatal(server.ListenAndServe())
 }
