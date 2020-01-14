@@ -231,7 +231,7 @@ func readFeatures(db *pgxpool.Pool, layer *Layer, sql string) []string {
 func readFeaturesWithArgs(db *pgxpool.Pool, layer *Layer, sql string, args []interface{}) []string {
 	rows, err := db.Query(context.Background(), sql, args...)
 	if err != nil {
-		log.Warn(err)
+		log.Warnf("Error exexuting query: %v", err)
 		return nil
 	}
 	var features []string
@@ -242,7 +242,7 @@ func readFeaturesWithArgs(db *pgxpool.Pool, layer *Layer, sql string, args []int
 	}
 	// Check for errors from iterating over rows.
 	if err := rows.Err(); err != nil {
-		log.Warn(err)
+		log.Warnf("Error reading rows: %v", err)
 	}
 	rows.Close()
 	return features
@@ -252,7 +252,7 @@ func readFeature(rows pgx.Rows, layer *Layer) string {
 	var id, geom string
 	vals, err := rows.Values()
 	if err != nil {
-		log.Warn(err)
+		log.Warnf("Error getting row values: %v", err)
 		return ""
 	}
 	//fmt.Println(vals)
@@ -313,7 +313,7 @@ func makeFeatureJSON(id string, geom string, props map[string]interface{}) strin
 	featData := featureData{"Feature", id, &geomRaw, props}
 	json, err := json.Marshal(featData)
 	if err != nil {
-		log.Error(err)
+		log.Errorf("Error marshalling feature into JSON: %v", err)
 		return ""
 	}
 	jsonStr := string(json)

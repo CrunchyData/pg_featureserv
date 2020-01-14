@@ -18,6 +18,8 @@ import (
  limitations under the License.
 */
 
+const forceTextTSVECTOR = "tsvector"
+
 const sqlLayers = `SELECT
 	n.nspname AS schema,
 	c.relname AS table,
@@ -54,17 +56,36 @@ const sqlFmtFeatures = "SELECT %v, %v::text AS id, %v FROM %v %v LIMIT %v;"
 
 func makeSQLFeatures(layer *Layer, param QueryParam) string {
 	geomCol := makeGeomCol(layer, param)
-	propCols := strings.Join(layer.Columns, ",")
+	propCols := makeSQLColList(layer)
 	sqlWhere := makeBBoxFilter(layer, param)
 	sql := fmt.Sprintf(sqlFmtFeatures, geomCol, layer.IDColumn, propCols, layer.ID, sqlWhere, param.Limit)
 	return sql
+}
+
+func makeSQLColList(layer *Layer) string {
+	var cols []string
+	for _, col := range layer.Columns {
+		colExpr := makeSQLColExpr(col, layer.Types[col])
+		cols = append(cols, colExpr)
+	}
+	return strings.Join(cols, ",")
+}
+
+// makeSQLColExpr casts a column to text if type is unknown to PGX
+func makeSQLColExpr(name string, dbtype string) string {
+	// TODO: make this more data-driven / configurable
+	switch dbtype {
+	case forceTextTSVECTOR:
+		return fmt.Sprintf("%s::text", name)
+	}
+	return name
 }
 
 const sqlFeature = "SELECT %v, %v::text AS id, %v FROM %v WHERE %v = $1 LIMIT 1"
 
 func makeSQLFeature(layer *Layer, param QueryParam) string {
 	geomCol := makeGeomCol(layer, param)
-	propCols := strings.Join(layer.Columns, ",")
+	propCols := makeSQLColList(layer)
 	sql := fmt.Sprintf(sqlFeature, geomCol, layer.IDColumn, propCols, layer.ID, layer.IDColumn)
 	return sql
 }
