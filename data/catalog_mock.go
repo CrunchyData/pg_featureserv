@@ -23,8 +23,8 @@ import (
 )
 
 type catalogMock struct {
-	layers    []*Layer
-	layerData map[string][]string
+	tables    []*Table
+	tableData map[string][]string
 	functions []*Function
 }
 
@@ -46,7 +46,7 @@ func init() {
 
 func newCatalogMock() Catalog {
 
-	layerA := &Layer{
+	layerA := &Table{
 		ID:          "mock_a",
 		Title:       "Mock A",
 		Description: "This dataset contains mock data about A (9 points)",
@@ -54,7 +54,7 @@ func newCatalogMock() Catalog {
 		Srid:        4326,
 	}
 
-	layerB := &Layer{
+	layerB := &Table{
 		ID:          "mock_b",
 		Title:       "Mock B",
 		Description: "This dataset contains mock data about B (100 points)",
@@ -62,7 +62,7 @@ func newCatalogMock() Catalog {
 		Srid:        4326,
 	}
 
-	layerC := &Layer{
+	layerC := &Table{
 		ID:          "mock_c",
 		Title:       "Mock C",
 		Description: "This dataset contains mock data about C (10000 points)",
@@ -70,30 +70,30 @@ func newCatalogMock() Catalog {
 		Srid:        4326,
 	}
 
-	layerData := map[string][]string{}
-	layerData["mock_a"] = makePointFeatures(layerA.Extent, 3, 3)
-	layerData["mock_b"] = makePointFeatures(layerB.Extent, 10, 10)
-	layerData["mock_c"] = makePointFeatures(layerC.Extent, 100, 100)
+	tableData := map[string][]string{}
+	tableData["mock_a"] = makePointFeatures(layerA.Extent, 3, 3)
+	tableData["mock_b"] = makePointFeatures(layerB.Extent, 10, 10)
+	tableData["mock_c"] = makePointFeatures(layerC.Extent, 100, 100)
 
-	var layers []*Layer
-	layers = append(layers, layerA)
-	layers = append(layers, layerB)
-	layers = append(layers, layerC)
+	var tables []*Table
+	tables = append(tables, layerA)
+	tables = append(tables, layerB)
+	tables = append(tables, layerC)
 
 	catMock := catalogMock{
-		layers:    layers,
-		layerData: layerData,
+		tables:    tables,
+		tableData: tableData,
 	}
 
 	return &catMock
 }
 
-func (cat *catalogMock) Layers() ([]*Layer, error) {
-	return cat.layers, nil
+func (cat *catalogMock) Tables() ([]*Table, error) {
+	return cat.tables, nil
 }
 
-func (cat *catalogMock) LayerByName(name string) (*Layer, error) {
-	for _, lyr := range cat.layers {
+func (cat *catalogMock) TableByName(name string) (*Table, error) {
+	for _, lyr := range cat.tables {
 		if lyr.ID == name {
 			return lyr, nil
 		}
@@ -102,26 +102,23 @@ func (cat *catalogMock) LayerByName(name string) (*Layer, error) {
 	return nil, nil
 }
 
-func (cat *catalogMock) LayerFeatures(name string, param QueryParam) ([]string, error) {
-	features, ok := cat.layerData[name]
+func (cat *catalogMock) TableFeatures(name string, param QueryParam) ([]string, error) {
+	features, ok := cat.tableData[name]
 	if !ok {
-		//		return []string{}, fmt.Errorf(errMsgBadLayerName, name)
-		// layer ot found - indicated by nil value returned
+		// table not found - indicated by nil value returned
 		return nil, nil
 	}
 	if param.Limit < len(features) {
 		featLim := features[:param.Limit]
 		return featLim, nil
 	}
-	//fmt.Println("LayerFeatures: " + name)
-	//fmt.Println(layerData)
 	return features, nil
 }
 
-func (cat *catalogMock) LayerFeature(name string, id string, param QueryParam) (string, error) {
-	features, ok := cat.layerData[name]
+func (cat *catalogMock) TableFeature(name string, id string, param QueryParam) (string, error) {
+	features, ok := cat.tableData[name]
 	if !ok {
-		// layer ot found - indicated by empty value returned
+		// table not found - indicated by empty value returned
 		return "", nil
 	}
 	index, err := strconv.Atoi(id)
@@ -129,9 +126,6 @@ func (cat *catalogMock) LayerFeature(name string, id string, param QueryParam) (
 		// a malformed int is treated as feature not found
 		return "", nil
 	}
-
-	//fmt.Println("LayerFeatures: " + name)
-	//fmt.Println(layerData)
 
 	// TODO: return not found if index out of range
 	if index < 0 || index >= len(features) {

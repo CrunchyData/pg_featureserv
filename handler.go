@@ -165,7 +165,7 @@ func handleCollections(w http.ResponseWriter, r *http.Request) *appError {
 	format := api.PathFormat(r.URL)
 	urlBase := serveURLBase(r)
 
-	colls, err := catalogInstance.Layers()
+	colls, err := catalogInstance.Tables()
 	if err != nil {
 		return appErrorInternal(err, errMsgNoCollections)
 	}
@@ -219,11 +219,11 @@ func handleCollection(w http.ResponseWriter, r *http.Request) *appError {
 
 	name := getRequestVar(varID, r)
 
-	layer, err := catalogInstance.LayerByName(name)
-	if layer == nil && err == nil {
-		return appErrorNotFoundFmt(err, api.ErrMsgLayerNotFound, name)
+	tbl, err := catalogInstance.TableByName(name)
+	if tbl == nil && err == nil {
+		return appErrorNotFoundFmt(err, api.ErrMsgLCollectionNotFound, name)
 	}
-	content := api.NewCollectionInfo(layer)
+	content := api.NewCollectionInfo(tbl)
 	content.Links = linksCollection(name, urlBase, format)
 
 	// --- encoding
@@ -234,8 +234,8 @@ func handleCollection(w http.ResponseWriter, r *http.Request) *appError {
 		context.URLCollections = urlPathFormat(urlBase, api.TagCollections, api.FormatHTML)
 		context.URLCollection = urlPathFormat(urlBase, api.PathCollection(name), api.FormatHTML)
 		context.URLJSON = urlPathFormat(urlBase, api.PathCollection(name), api.FormatJSON)
-		context.Title = layer.Title
-		context.Layer = layer
+		context.Title = tbl.Title
+		context.Table = tbl
 
 		return writeHTML(w, content, context, ui.PageCollection())
 	default:
@@ -266,13 +266,12 @@ func handleCollectionItems(w http.ResponseWriter, r *http.Request) *appError {
 }
 
 func writeItemsHTML(w http.ResponseWriter, name string, query string, urlBase string) *appError {
-	//--- get layer info (and check if layer exists)
-	layer, err1 := catalogInstance.LayerByName(name)
+	tbl, err1 := catalogInstance.TableByName(name)
 	if err1 != nil {
 		return appErrorInternal(err1, errMsgFailData)
 	}
-	if layer == nil {
-		return appErrorNotFoundFmt(err1, api.ErrMsgLayerNotFound, name)
+	if tbl == nil {
+		return appErrorNotFoundFmt(err1, api.ErrMsgLCollectionNotFound, name)
 	}
 	pathItems := api.PathItems(api.TagCollections, name)
 	// --- encoding
@@ -283,7 +282,7 @@ func writeItemsHTML(w http.ResponseWriter, name string, query string, urlBase st
 	context.URLItems = urlPathFormatQuery(urlBase, pathItems, api.FormatHTML, query)
 	context.URLJSON = urlPathFormatQuery(urlBase, pathItems, api.FormatJSON, query)
 	context.Group = "Collections"
-	context.Title = layer.Title
+	context.Title = tbl.Title
 
 	// features are not needed for items page (page queries for them)
 	return writeHTML(w, nil, context, ui.PageItems())
@@ -291,12 +290,12 @@ func writeItemsHTML(w http.ResponseWriter, name string, query string, urlBase st
 
 func writeItemsJSON(w http.ResponseWriter, name string, param data.QueryParam, urlBase string) *appError {
 	//--- query features data
-	features, err := catalogInstance.LayerFeatures(name, param)
+	features, err := catalogInstance.TableFeatures(name, param)
 	if err != nil {
 		return appErrorInternal(err, errMsgFailData)
 	}
 	if features == nil {
-		return appErrorNotFoundFmt(err, api.ErrMsgLayerNotFound, name)
+		return appErrorNotFoundFmt(err, api.ErrMsgLCollectionNotFound, name)
 	}
 
 	//--- assemble resonse
@@ -341,12 +340,12 @@ func handleItem(w http.ResponseWriter, r *http.Request) *appError {
 
 func writeItemHTML(w http.ResponseWriter, name string, fid string, query string, urlBase string) *appError {
 	//--- query data for request
-	layer, err1 := catalogInstance.LayerByName(name)
+	tbl, err1 := catalogInstance.TableByName(name)
 	if err1 != nil {
 		return appErrorInternal(err1, errMsgFailData)
 	}
-	if layer == nil {
-		return appErrorNotFoundFmt(err1, api.ErrMsgLayerNotFound, name)
+	if tbl == nil {
+		return appErrorNotFoundFmt(err1, api.ErrMsgLCollectionNotFound, name)
 	}
 
 	pathItems := api.PathItems(api.TagCollections, name)
@@ -358,7 +357,7 @@ func writeItemHTML(w http.ResponseWriter, name string, fid string, query string,
 	context.URLItems = urlPathFormat(urlBase, pathItems, api.FormatHTML)
 	context.URLJSON = urlPathFormatQuery(urlBase, api.PathItem(name, fid), api.FormatJSON, query)
 	context.Group = "Collections"
-	context.Title = layer.Title
+	context.Title = tbl.Title
 	context.FeatureID = fid
 
 	// feature is not needed for item page (page queries for them)
@@ -367,7 +366,7 @@ func writeItemHTML(w http.ResponseWriter, name string, fid string, query string,
 
 func writeItemJSON(w http.ResponseWriter, name string, fid string, param data.QueryParam, urlBase string) *appError {
 	//--- query data for request
-	feature, err := catalogInstance.LayerFeature(name, fid, param)
+	feature, err := catalogInstance.TableFeature(name, fid, param)
 	if err != nil {
 		return appErrorInternal(err, errMsgFailData)
 	}
@@ -509,7 +508,6 @@ func handleFunctionItems(w http.ResponseWriter, r *http.Request) *appError {
 }
 
 func writeFunItemsHTML(w http.ResponseWriter, name string, query string, urlBase string) *appError {
-	//--- get layer info (and check if layer exists)
 	fn, err1 := catalogInstance.FunctionByName(name)
 	if err1 != nil {
 		return appErrorInternal(err1, errMsgFailData)

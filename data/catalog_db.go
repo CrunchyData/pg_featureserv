@@ -31,8 +31,8 @@ import (
 
 type catalogDB struct {
 	dbconn      *pgxpool.Pool
-	layers      []*Layer
-	layerMap    map[string]*Layer
+	tables      []*Table
+	tableMap    map[string]*Table
 	functions   []*Function
 	functionMap map[string]*Function
 }
@@ -73,42 +73,42 @@ func dbConnect() *pgxpool.Pool {
 	return db
 }
 
-func (cat *catalogDB) Layers() ([]*Layer, error) {
-	cat.refreshLayers(true)
-	return cat.layers, nil
+func (cat *catalogDB) Tables() ([]*Table, error) {
+	cat.refreshTables(true)
+	return cat.tables, nil
 }
 
-func (cat *catalogDB) LayerByName(name string) (*Layer, error) {
-	cat.refreshLayers(false)
-	layer, ok := cat.layerMap[name]
+func (cat *catalogDB) TableByName(name string) (*Table, error) {
+	cat.refreshTables(false)
+	tbl, ok := cat.tableMap[name]
 	if !ok {
 		return nil, nil
 	}
-	return layer, nil
+	return tbl, nil
 }
 
-func (cat *catalogDB) LayerFeatures(name string, param QueryParam) ([]string, error) {
-	layer, err := cat.LayerByName(name)
-	if err != nil || layer == nil {
+func (cat *catalogDB) TableFeatures(name string, param QueryParam) ([]string, error) {
+	tbl, err := cat.TableByName(name)
+	if err != nil || tbl == nil {
 		return nil, err
 	}
-	sql := sqlFeatures(layer, param)
+	sql := sqlFeatures(tbl, param)
 	log.Debug(sql)
-	features, err := readFeatures(cat.dbconn, layer.Columns, sql)
+	features, err := readFeatures(cat.dbconn, tbl.Columns, sql)
 	return features, err
 }
 
-func (cat *catalogDB) LayerFeature(name string, id string, param QueryParam) (string, error) {
-	layer, err := cat.LayerByName(name)
+func (cat *catalogDB) TableFeature(name string, id string, param QueryParam) (string, error) {
+	tbl, err := cat.TableByName(name)
 	if err != nil {
 		return "", err
 	}
-	sql := sqlFeature(layer, param)
+	sql := sqlFeature(tbl, param)
 	log.Debug(sql)
 
 	args := make([]interface{}, 0)
 	args = append(args, id)
-	features, err := readFeaturesWithArgs(cat.dbconn, layer.Columns, sql, args)
+	features, err := readFeaturesWithArgs(cat.dbconn, tbl.Columns, sql, args)
 
 	if len(features) == 0 {
 		return "", err
@@ -116,25 +116,24 @@ func (cat *catalogDB) LayerFeature(name string, id string, param QueryParam) (st
 	return features[0], nil
 }
 
-func (cat *catalogDB) refreshLayers(force bool) {
+func (cat *catalogDB) refreshTables(force bool) {
 	// TODO: refresh on timed basis?
-	// for now this just loads the layers once
 	if force || isStartup {
-		cat.loadLayers()
+		cat.loadTables()
 		isStartup = false
 	}
 }
 
-func (cat *catalogDB) loadLayers() {
-	cat.layerMap = readLayerTables(cat.dbconn)
-	cat.layers = layersSorted(cat.layerMap)
+func (cat *catalogDB) loadTables() {
+	cat.tableMap = readTables(cat.dbconn)
+	cat.tables = tablesSorted(cat.tableMap)
 }
 
-func layersSorted(layerMap map[string]*Layer) []*Layer {
-	// TODO: use database order of layers instead of sorting here
-	var lsort []*Layer
-	for key := range layerMap {
-		lsort = append(lsort, layerMap[key])
+func tablesSorted(tableMap map[string]*Table) []*Table {
+	// TODO: use database order instead of sorting here
+	var lsort []*Table
+	for key := range tableMap {
+		lsort = append(lsort, tableMap[key])
 	}
 	sort.SliceStable(lsort, func(i, j int) bool {
 		return lsort[i].Title < lsort[j].Title
@@ -142,26 +141,26 @@ func layersSorted(layerMap map[string]*Layer) []*Layer {
 	return lsort
 }
 
-func readLayerTables(db *pgxpool.Pool) map[string]*Layer {
-	log.Debug(sqlLayers)
-	rows, err := db.Query(context.Background(), sqlLayers)
+func readTables(db *pgxpool.Pool) map[string]*Table {
+	log.Debug(sqlTables)
+	rows, err := db.Query(context.Background(), sqlTables)
 	if err != nil {
 		log.Fatal(err)
 	}
-	layers := make(map[string]*Layer)
+	tables := make(map[string]*Table)
 	for rows.Next() {
-		layer := scanLayer(rows)
-		layers[layer.ID] = layer
+		tbl := scanTable(rows)
+		tables[tbl.ID] = tbl
 	}
 	// Check for errors from iterating over rows.
 	if err := rows.Err(); err != nil {
 		log.Fatal(err)
 	}
 	rows.Close()
-	return layers
+	return tables
 }
 
-func scanLayer(rows pgx.Rows) *Layer {
+func scanTable(rows pgx.Rows) *Table {
 	var (
 		id, schema, table, description, geometryCol string
 		srid                                        int
@@ -209,7 +208,7 @@ func scanLayer(rows pgx.Rows) *Layer {
 		description = fmt.Sprintf("Data for table %v", id)
 	}
 
-	return &Layer{
+	return &Table{
 		ID:             id,
 		Schema:         schema,
 		Table:          table,

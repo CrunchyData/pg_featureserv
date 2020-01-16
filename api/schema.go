@@ -107,15 +107,15 @@ type Conformance struct {
 }
 
 const (
-	ErrMsgLayerNotFound         = "Collection not found: %v"
+	ErrMsgLCollectionNotFound   = "Collection not found: %v"
 	ErrMsgFeatureNotFound       = "Feature not found: %v"
 	ErrMsgFunctionNotFound      = "Function not found: %v"
 	ErrMsgInvalidParameterValue = "Invalid value for parameter %v: %v"
 )
 
 const (
-	ErrCodeLayerNotFound   = "CollectionNotFound"
-	ErrCodeFeatureNotFound = "FeatureNotFound"
+	ErrCodeCollectionNotFound = "CollectionNotFound"
+	ErrCodeFeatureNotFound    = "FeatureNotFound"
 )
 
 var conformance = Conformance{
@@ -126,7 +126,7 @@ var conformance = Conformance{
 	},
 }
 
-func toBbox(cc *data.Layer) *Bbox {
+func toBbox(cc *data.Table) *Bbox {
 	return &Bbox{
 		Crs:    fmt.Sprintf("EPSG:%v", cc.Srid),
 		Extent: []float64{cc.Extent.Minx, cc.Extent.Miny, cc.Extent.Maxx, cc.Extent.Maxy},
@@ -140,21 +140,21 @@ func NewRootInfo(conf *config.Config) *RootInfo {
 	return root
 }
 
-func NewCollectionsInfo(layers []*data.Layer) *CollectionsInfo {
+func NewCollectionsInfo(tables []*data.Table) *CollectionsInfo {
 	csDoc := CollectionsInfo{Links: []*Link{}, Collections: []*CollectionInfo{}}
-	for _, lyr := range layers {
+	for _, lyr := range tables {
 		collDoc := NewCollectionInfo(lyr)
 		csDoc.Collections = append(csDoc.Collections, collDoc)
 	}
 	return &csDoc
 }
 
-func NewCollectionInfo(lyr *data.Layer) *CollectionInfo {
+func NewCollectionInfo(tbl *data.Table) *CollectionInfo {
 	doc := CollectionInfo{
-		Name:        lyr.ID,
-		Title:       lyr.Title,
-		Description: lyr.Description,
-		Extent:      toBbox(lyr),
+		Name:        tbl.ID,
+		Title:       tbl.Title,
+		Description: tbl.Description,
+		Extent:      toBbox(tbl),
 	}
 	return &doc
 }

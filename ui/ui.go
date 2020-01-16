@@ -36,7 +36,7 @@ type PageData struct {
 	URLJSON        string
 	Group          string
 	Title          string
-	Layer          *data.Layer
+	Table          *data.Table
 	Function       *data.Function
 	FeatureID      string
 }

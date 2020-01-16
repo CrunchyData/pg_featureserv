@@ -20,19 +20,19 @@ import (
 
 // Catalog tbd
 type Catalog interface {
-	Layers() ([]*Layer, error)
+	Tables() ([]*Table, error)
 
-	// LayerByName returns the layer with given name.
-	// It returns nil if the layer does not exist
-	LayerByName(name string) (*Layer, error)
+	// TableByName returns the table with given name.
+	// It returns nil if the table does not exist
+	TableByName(name string) (*Table, error)
 
-	// LayerFeatures returns an array of the JSON for the features in a layer
-	// It returns nil if the layer does not exist
-	LayerFeatures(name string, param QueryParam) ([]string, error)
+	// TableFeatures returns an array of the JSON for the features in a table
+	// It returns nil if the table does not exist
+	TableFeatures(name string, param QueryParam) ([]string, error)
 
-	// LayerFeature returns the JSON text for a layer feature with given id
-	// It returns an empty string if the layer or feature does not exist
-	LayerFeature(name string, id string, param QueryParam) (string, error)
+	// TableFeature returns the JSON text for a table feature with given id
+	// It returns an empty string if the table or feature does not exist
+	TableFeature(name string, id string, param QueryParam) (string, error)
 
 	Functions() ([]*Function, error)
 
@@ -57,8 +57,8 @@ type QueryParam struct {
 	TransformFuns []TransformFunction
 }
 
-// Layer tbd
-type Layer struct {
+// Table holds metadata for table/view objects
+type Table struct {
 	ID             string
 	Schema         string
 	Table          string
@@ -74,7 +74,7 @@ type Layer struct {
 	JSONTypes      []string
 }
 
-// Extent of a layer
+// Extent of a table
 type Extent struct {
 	Minx, Miny, Maxx, Maxy float64
 }
@@ -97,8 +97,8 @@ type Function struct {
 }
 
 const (
-	errMsgLayerNotFound   = "Layer not found: %v"
-	errMsgFeatureNotFound = "Feature not found: %v"
+	errMsgCollectionNotFound = "Collection not found: %v"
+	errMsgFeatureNotFound    = "Feature not found: %v"
 )
 
 func (fun *TransformFunction) apply(expr string) string {

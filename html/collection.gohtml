@@ -18,20 +18,20 @@
 <div class='coll-desc'>{{ .data.Description }}</div>
 <h3>Metadata</h3>
 <table cellspacing='4px'>
-<tr><td class='coll-title'>ID column</td><td class='prop-name'>{{ .context.Layer.IDColumn }}</td></tr>
-<tr><td class='coll-title'>Geometry column</td><td class='prop-name'>{{ .context.Layer.GeometryColumn }}</td></tr>
-<tr><td class='coll-title'>Geometry type</td><td>{{ .context.Layer.GeometryType }}</td></tr>
-<tr><td class='coll-title'>SRID</td><td>{{ .context.Layer.Srid }}</td></tr>
-<tr><td class='coll-title'>Extent</td><td>{{ .context.Layer.Extent }}</td></tr>
+<tr><td class='coll-title'>ID column</td><td class='prop-name'>{{ .context.Table.IDColumn }}</td></tr>
+<tr><td class='coll-title'>Geometry column</td><td class='prop-name'>{{ .context.Table.GeometryColumn }}</td></tr>
+<tr><td class='coll-title'>Geometry type</td><td>{{ .context.Table.GeometryType }}</td></tr>
+<tr><td class='coll-title'>SRID</td><td>{{ .context.Table.Srid }}</td></tr>
+<tr><td class='coll-title'>Extent</td><td>{{ .context.Table.Extent }}</td></tr>
 <tr><td class='coll-title' valign='top'>Properties</td>
 <td>
 <table class='tbl-props'>
 	<thead style='background-color: lightgrey;'>
 		<tr><th>Name</th><th>JSON Type</th><th>Database Type</th></tr>
 	</thead>
-{{ $jtypes := .context.Layer.JSONTypes }}
-{{ $types := .context.Layer.Types }}
-{{ range $i, $name := .context.Layer.Columns }}
+{{ $jtypes := .context.Table.JSONTypes }}
+{{ $types := .context.Table.Types }}
+{{ range $i, $name := .context.Table.Columns }}
 <tr><td class='prop-name'>{{ $name }}</td>
 <td>{{index $jtypes $i}}</td>
 <td>{{index $types $name}}</td>

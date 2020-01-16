@@ -20,7 +20,7 @@ import (
 
 const forceTextTSVECTOR = "tsvector"
 
-const sqlLayers = `SELECT
+const sqlTables = `SELECT
 	Format('%s.%s', n.nspname, c.relname) AS id,
 	n.nspname AS schema,
 	c.relname AS table,
@@ -77,7 +77,7 @@ proargarrays AS (
 	GROUP BY 1
 )
 SELECT
-	Format('%s.%s', n.nspname, p.proname) AS id,
+	p.proname AS id,
 	n.nspname AS schema,
 	p.proname AS function,
 	coalesce(d.description, '') AS description,
@@ -94,11 +94,11 @@ ORDER BY id`
 
 const sqlFmtFeatures = "SELECT %v, %v::text AS id, %v FROM %v %v LIMIT %v;"
 
-func sqlFeatures(layer *Layer, param QueryParam) string {
-	geomCol := sqlGeomCol(layer.GeometryColumn, param)
-	propCols := sqlColList(layer.Columns, layer.Types)
-	sqlWhere := sqlBBoxFilter(layer, param)
-	sql := fmt.Sprintf(sqlFmtFeatures, geomCol, layer.IDColumn, propCols, layer.ID, sqlWhere, param.Limit)
+func sqlFeatures(tbl *Table, param QueryParam) string {
+	geomCol := sqlGeomCol(tbl.GeometryColumn, param)
+	propCols := sqlColList(tbl.Columns, tbl.Types)
+	sqlWhere := sqlBBoxFilter(tbl, param)
+	sql := fmt.Sprintf(sqlFmtFeatures, geomCol, tbl.IDColumn, propCols, tbl.ID, sqlWhere, param.Limit)
 	return sql
 }
 
@@ -123,22 +123,22 @@ func sqlColExpr(name string, dbtype string) string {
 
 const sqlFmtFeature = "SELECT %v, %v::text AS id, %v FROM %v WHERE %v = $1 LIMIT 1"
 
-func sqlFeature(layer *Layer, param QueryParam) string {
-	geomCol := sqlGeomCol(layer.GeometryColumn, param)
-	propCols := sqlColList(layer.Columns, layer.Types)
-	sql := fmt.Sprintf(sqlFmtFeature, geomCol, layer.IDColumn, propCols, layer.ID, layer.IDColumn)
+func sqlFeature(tbl *Table, param QueryParam) string {
+	geomCol := sqlGeomCol(tbl.GeometryColumn, param)
+	propCols := sqlColList(tbl.Columns, tbl.Types)
+	sql := fmt.Sprintf(sqlFmtFeature, geomCol, tbl.IDColumn, propCols, tbl.ID, tbl.IDColumn)
 	return sql
 }
 
 const sqlFmtBBoxFilter = " WHERE ST_Intersects(%v, ST_Transform( ST_MakeEnvelope(%v, %v, %v, %v, 4326), %v)) "
 
-func sqlBBoxFilter(layer *Layer, param QueryParam) string {
+func sqlBBoxFilter(tbl *Table, param QueryParam) string {
 	if param.Bbox == nil {
 		return ""
 	}
-	sql := fmt.Sprintf(sqlFmtBBoxFilter, layer.GeometryColumn,
+	sql := fmt.Sprintf(sqlFmtBBoxFilter, tbl.GeometryColumn,
 		param.Bbox.Minx, param.Bbox.Miny, param.Bbox.Maxx, param.Bbox.Maxy,
-		layer.Srid)
+		tbl.Srid)
 	return sql
 }
 
@@ -164,12 +164,12 @@ func applyTransform(funs []TransformFunction, expr string) string {
 	return expr
 }
 
-const sqlFmtFunction = "SELECT %v, id AS id, %v FROM %v() LIMIT %v;"
+const sqlFmtFunction = "SELECT %v, id AS id, %v FROM %v.%v() LIMIT %v;"
 
 func sqlFunction(fn *Function, propCols []string, param QueryParam) string {
 	sqlGeomCol := sqlGeomCol(fn.GeometryColumn, param)
 	sqlPropCols := sqlColList(propCols, fn.Types)
-	sql := fmt.Sprintf(sqlFmtFunction, sqlGeomCol, sqlPropCols, fn.ID, param.Limit)
+	sql := fmt.Sprintf(sqlFmtFunction, sqlGeomCol, sqlPropCols, fn.Schema, fn.Name, param.Limit)
 	return sql
 }
 
