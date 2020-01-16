@@ -39,7 +39,6 @@ type PageData struct {
 	Layer          *data.Layer
 	Function       *data.Function
 	FeatureID      string
-	UseMap         bool
 }
 
 var htmlTemp struct {

@@ -283,7 +283,6 @@ func writeItemsHTML(w http.ResponseWriter, name string, query string, urlBase st
 	context.URLItems = urlPathFormatQuery(urlBase, pathItems, api.FormatHTML, query)
 	context.URLJSON = urlPathFormatQuery(urlBase, pathItems, api.FormatJSON, query)
 	context.Title = layer.Title
-	context.UseMap = true
 
 	// features are not needed for items page (page queries for them)
 	return writeHTML(w, nil, context, ui.PageItems())
@@ -360,7 +359,7 @@ func writeItemHTML(w http.ResponseWriter, name string, fid string, query string,
 	context.Group = "Collections"
 	context.Title = layer.Title
 	context.FeatureID = fid
-	context.UseMap = true
+
 	// feature is not needed for item page (page queries for them)
 	return writeHTML(w, nil, context, ui.PageItem())
 }
@@ -527,7 +526,6 @@ func writeFunItemsHTML(w http.ResponseWriter, name string, query string, urlBase
 	context.URLJSON = urlPathFormatQuery(urlBase, pathItems, api.FormatJSON, query)
 	context.Group = "Functions"
 	context.Title = fn.ID
-	context.UseMap = true
 
 	// features are not needed for items page (page queries for them)
 	return writeHTML(w, nil, context, ui.PageItems())
