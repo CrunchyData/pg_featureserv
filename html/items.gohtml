@@ -5,13 +5,15 @@
 / Items
 <a style='margin-left: 20px' class='json-link' href='{{ .context.URLJSON }}' title='JSON document for this page'>JSON</a>
 <span style='padding-left:10px;'>Limit:</span>
-<select id='item-limit' onchange="chgLimit()">
+<select id='item-limit'>
 <option>10</option>
 <option>50</option>
 <option>100</option>
 <option>500</option>
 <option>1000</option>
 </select>
+<input type='checkbox' id='chk-bbox'> Use BBox
+<button onclick='doQuery();'>Query</button>
 </div>
 <hr>
 <h2>{{ .context.Title }} Features</h2>
@@ -35,12 +37,26 @@ function onMapLoad() {
 	map.on('click', function(evt) {  onFeatureClick(evt); } );
 	document.getElementById('feature-title').style.display = 'block';
 }
-function chgLimit() {
+function doQuery() {
+	var url = window.location.pathname;
+
 	var select = document.getElementById('item-limit');
 	var lim = select.options[select.selectedIndex].value;
-	var url = window.location.pathname;
-	var newurl = url + '?limit=' + lim;
+	var newurl = addQueryParam(url, 'limit', lim);
+
+	var useBbox = document.getElementById('chk-bbox').checked;
+	if (useBbox) {
+		var bbox = bboxStr(5);
+		newurl = addQueryParam(newurl, 'bbox', bbox);
+	}
 	window.location.assign(newurl);
+}
+function addQueryParam(url, name, value) {
+	if (! value || value.length <= 0) return url;
+	let hasQuery = url.indexOf('?') >= 0;
+	let  delim = hasQuery ? '&' : '?';
+	let  newUrl = `${url}${delim}${name}=${value}`;
+	return newUrl;
 }
 </script>
 {{ end }}

@@ -22,14 +22,14 @@
 <tr><td class='coll-title' valign='top'>Input</td>
 <td><table class='tbl-props'>
 	<thead style='background-color: lightgrey;'>
-		<tr><th>Name</th><th>Default value</th><th>Database Type</th></tr>
+		<tr><th>Name</th><th>Database Type</th><th>Default value</th></tr>
 	</thead>
 {{- $def := .context.Function.InDefaults }}
 {{- $types := .context.Function.Types }}
 {{- range $i, $name := .context.Function.InNames }}
 <tr><td class='prop-name'>{{ $name }}</td>
-<td>{{index $def $i}}</td>
 <td>{{index $types $name}}</td>
+<td>{{index $def $i}}</td>
 </tr>
 {{- end }}
 </table>

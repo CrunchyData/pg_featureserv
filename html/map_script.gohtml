@@ -124,6 +124,21 @@ function zoom(lyr) {
 	let ext = ol.extent.buffer( lyrext,  0.2 * sz);
     map.getView().fit(ext, map.getSize());
 }
+function extentGeo() {
+	var extent = map.getView().calculateExtent(map.getSize());
+	return ol.proj.transformExtent(extent, 'EPSG:3857', 'EPSG:4326');
+}
+function bboxStr(numDecimals) {
+	var fix = 4
+	if (numDecimals) fix = numDecimals;
+    var bbox = extentGeo()
+    var minx = bbox[0].toFixed(4)
+    var miny = bbox[1].toFixed(4)
+    var maxx = bbox[2].toFixed(4)
+    var maxy = bbox[3].toFixed(4)
+	var bboxStr = minx + "," + miny + "," + maxx + "," + maxy;
+	return bboxStr;
+}
 function showFeatureProperties(feature, showTitle) {
 	let titleText = document.getElementById('feature-title-text');
 	if (! showTitle) {

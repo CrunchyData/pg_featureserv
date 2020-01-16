@@ -142,6 +142,17 @@ func sqlBBoxFilter(tbl *Table, param QueryParam) string {
 	return sql
 }
 
+const sqlFmtBBoxGeoFilter = " WHERE ST_Intersects(%v, ST_MakeEnvelope(%v, %v, %v, %v, 4326)) "
+
+func sqlBBoxGeoFilter(geomCol string, param QueryParam) string {
+	if param.Bbox == nil {
+		return ""
+	}
+	sql := fmt.Sprintf(sqlFmtBBoxGeoFilter, geomCol,
+		param.Bbox.Minx, param.Bbox.Miny, param.Bbox.Maxx, param.Bbox.Maxy)
+	return sql
+}
+
 const sqlFmtGeomCol = "ST_AsGeoJSON( ST_Transform(%v, 4326) %v ) AS _geojson"
 
 func sqlGeomCol(geomCol string, param QueryParam) string {
@@ -164,12 +175,13 @@ func applyTransform(funs []TransformFunction, expr string) string {
 	return expr
 }
 
-const sqlFmtFunction = "SELECT %v, id AS id, %v FROM %v.%v() LIMIT %v;"
+const sqlFmtFunction = "SELECT %v, id AS id, %v FROM %v.%v() %v LIMIT %v;"
 
 func sqlFunction(fn *Function, propCols []string, param QueryParam) string {
 	sqlGeomCol := sqlGeomCol(fn.GeometryColumn, param)
 	sqlPropCols := sqlColList(propCols, fn.Types)
-	sql := fmt.Sprintf(sqlFmtFunction, sqlGeomCol, sqlPropCols, fn.Schema, fn.Name, param.Limit)
+	sqlWhere := sqlBBoxGeoFilter(fn.GeometryColumn, param)
+	sql := fmt.Sprintf(sqlFmtFunction, sqlGeomCol, sqlPropCols, fn.Schema, fn.Name, sqlWhere, param.Limit)
 	return sql
 }
 
