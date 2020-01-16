@@ -6,18 +6,49 @@
 </div>
 <hr>
 <h2>Function: {{ .data.ID }}</h2>
-<div class='coll-desc'>{{ .data.Description }}</div>
 <p>
 	{{ range .data.Links }}
-	<div>
-		{{ if (eq .Rel "items") }}
-			<a href="{{ .Href }}">{{ .Title }}</a>
-		{{ end }}
-	</div>
+	<span>
+		{{- if (eq .Rel "items") }}
+			<a class='json-link' href="{{ .Href }}">{{ .Title }}</a>
+		{{- end }}
+	</span>
 	{{ end }}
 </p>
+<div class='coll-desc'>{{ .data.Description }}</div>
 <h3>Metadata</h3>
+<table cellspacing='4px'>
 
-</p>
+<tr><td class='coll-title' valign='top'>Input</td>
+<td><table class='tbl-props'>
+	<thead style='background-color: lightgrey;'>
+		<tr><th>Name</th><th>Default value</th><th>Database Type</th></tr>
+	</thead>
+{{- $def := .context.Function.InDefaults }}
+{{- $types := .context.Function.Types }}
+{{- range $i, $name := .context.Function.InNames }}
+<tr><td class='prop-name'>{{ $name }}</td>
+<td>{{index $def $i}}</td>
+<td>{{index $types $name}}</td>
+</tr>
+{{- end }}
+</table>
+</td></tr>
+
+<tr><td class='coll-title' valign='top'>Output</td>
+<td><table class='tbl-props'>
+	<thead style='background-color: lightgrey;'>
+		<tr><th>Name</th><th>Database Type</th></tr>
+	</thead>
+{{- $types := .context.Function.Types }}
+{{- range $i, $name := .context.Function.OutNames }}
+<tr><td class='prop-name'>{{ $name }}</td>
+<td>{{index $types $name}}</td>
+</tr>
+{{- end }}
+</table>
+</td></tr>
+
+</table>
 
 {{ end }}

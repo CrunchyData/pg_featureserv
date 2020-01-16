@@ -6,16 +6,16 @@
 </div>
 <hr>
 <h2>Feature Collection: {{ .data.Title }}</h2>
-<div class='coll-desc'>{{ .data.Description }}</div>
 <p>
 	{{ range .data.Links }}
-	<div>
-		{{ if (eq .Rel "items") }}
-			<a href="{{ .Href }}">{{ .Title }}</a>
-		{{ end }}
-	</div>
+	<span>
+		{{- if (eq .Rel "items") }}
+			<a  class='json-link' href="{{ .Href }}">{{ .Title }}</a>
+		{{- end }}
+	</span>
 	{{ end }}
 </p>
+<div class='coll-desc'>{{ .data.Description }}</div>
 <h3>Metadata</h3>
 <table cellspacing='4px'>
 <tr><td class='coll-title'>ID column</td><td class='prop-name'>{{ .context.Layer.IDColumn }}</td></tr>
@@ -27,7 +27,7 @@
 <td>
 <table class='tbl-props'>
 	<thead style='background-color: lightgrey;'>
-		<tr><th>Name</th><th>Type</th><th>Postgres Type</th></tr>
+		<tr><th>Name</th><th>JSON Type</th><th>Database Type</th></tr>
 	</thead>
 {{ $jtypes := .context.Layer.JSONTypes }}
 {{ $types := .context.Layer.Types }}
@@ -40,6 +40,5 @@
 </table>
 </td></tr>
 </table>
-</p>
 
 {{ end }}

@@ -58,7 +58,7 @@ func readFunctionDefs(db *pgxpool.Pool) ([]*Function, map[string]*Function) {
 	var functions []*Function
 	functionMap := make(map[string]*Function)
 	for rows.Next() {
-		fn := readFunctionDef(rows)
+		fn := scanFunctionDef(rows)
 		// TODO: for now only show geometry functions
 		if hasOutGeometry(fn) {
 			functions = append(functions, fn)
@@ -73,7 +73,7 @@ func readFunctionDefs(db *pgxpool.Pool) ([]*Function, map[string]*Function) {
 	return functions, functionMap
 }
 
-func readFunctionDef(rows pgx.Rows) *Function {
+func scanFunctionDef(rows pgx.Rows) *Function {
 	var (
 		id, schema, name, description                              string
 		inNamesTA, inTypesTA, inDefaultsTA, outNamesTA, outTypesTA pgtype.TextArray
@@ -93,7 +93,7 @@ func readFunctionDef(rows pgx.Rows) *Function {
 
 	datatypes := make(map[string]string)
 	addTypes(datatypes, inNames, inTypes)
-	addTypes(datatypes, inNames, inTypes)
+	addTypes(datatypes, outNames, outTypes)
 
 	// synthesize a description if none provided
 	if description == "" {
