@@ -152,7 +152,7 @@ func (cat *catalogDB) FunctionFeatures(name string, param QueryParam) ([]string,
 		return nil, err
 	}
 	propCols := removeNames(fn.OutNames, fn.GeometryColumn, "")
-	sql := sqlFunction(fn, propCols, param)
+	sql := sqlGeomFunction(fn, propCols, param)
 	log.Debug(sql)
 	features, err := readFeatures(cat.dbconn, propCols, sql)
 	return features, err

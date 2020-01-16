@@ -175,13 +175,13 @@ func applyTransform(funs []TransformFunction, expr string) string {
 	return expr
 }
 
-const sqlFmtFunction = "SELECT %v, id AS id, %v FROM %v.%v() %v LIMIT %v;"
+const sqlFmtGeomFunction = "SELECT %v, id AS id, %v FROM %v.%v() %v LIMIT %v;"
 
-func sqlFunction(fn *Function, propCols []string, param QueryParam) string {
+func sqlGeomFunction(fn *Function, propCols []string, param QueryParam) string {
 	sqlGeomCol := sqlGeomCol(fn.GeometryColumn, param)
 	sqlPropCols := sqlColList(propCols, fn.Types)
 	sqlWhere := sqlBBoxGeoFilter(fn.GeometryColumn, param)
-	sql := fmt.Sprintf(sqlFmtFunction, sqlGeomCol, sqlPropCols, fn.Schema, fn.Name, sqlWhere, param.Limit)
+	sql := fmt.Sprintf(sqlFmtGeomFunction, sqlGeomCol, sqlPropCols, fn.Schema, fn.Name, sqlWhere, param.Limit)
 	return sql
 }
 
