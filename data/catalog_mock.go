@@ -25,6 +25,7 @@ import (
 type catalogMock struct {
 	layers    []*Layer
 	layerData map[string][]string
+	functions []*Function
 }
 
 var instance Catalog
@@ -137,6 +138,24 @@ func (cat *catalogMock) LayerFeature(name string, id string, param QueryParam) (
 		return "", nil
 	}
 	return features[index], nil
+}
+
+func (cat *catalogMock) Functions() ([]*Function, error) {
+	return cat.functions, nil
+}
+
+func (cat *catalogMock) FunctionByName(name string) (*Function, error) {
+	for _, fn := range cat.functions {
+		if fn.ID == name {
+			return fn, nil
+		}
+	}
+	// not found - indicated by nil value returned
+	return nil, nil
+}
+
+func (cat *catalogMock) FunctionFeatures(name string, param QueryParam) ([]string, error) {
+	return nil, nil
 }
 
 var featuresMock = []string{

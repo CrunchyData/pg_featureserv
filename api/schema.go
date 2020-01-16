@@ -28,6 +28,8 @@ const (
 	TagConformance = "conformance"
 	TagAPI         = "api"
 
+	TagFunctions = "functions"
+
 	ParamLimit     = "limit"
 	ParamBbox      = "bbox"
 	ParamPrecision = "precision"
@@ -87,6 +89,19 @@ type FeatureCollectionRaw struct {
 	Links          []*Link            `json:"links"`
 }
 
+// FunctionsInfo for all functions
+type FunctionsInfo struct {
+	Links     []*Link         `json:"links"`
+	Functions []*FunctionInfo `json:"functions"`
+}
+
+// FunctionInfo for a collection
+type FunctionInfo struct {
+	ID          string  `json:"id"`
+	Description string  `json:"description,omitempty"`
+	Links       []*Link `json:"links"`
+}
+
 type Conformance struct {
 	ConformsTo []string `json:"conformsTo"`
 }
@@ -94,6 +109,7 @@ type Conformance struct {
 const (
 	ErrMsgLayerNotFound         = "Collection not found: %v"
 	ErrMsgFeatureNotFound       = "Feature not found: %v"
+	ErrMsgFunctionNotFound      = "Function not found: %v"
 	ErrMsgInvalidParameterValue = "Invalid value for parameter %v: %v"
 )
 
@@ -155,6 +171,23 @@ func NewFeatureCollectionInfo(featureJSON []string) *FeatureCollectionRaw {
 	return &doc
 }
 
+func NewFunctionsInfo(fns []*data.Function) *FunctionsInfo {
+	fnsDoc := FunctionsInfo{Links: []*Link{}, Functions: []*FunctionInfo{}}
+	for _, fn := range fns {
+		fnDoc := NewFunctionInfo(fn)
+		fnsDoc.Functions = append(fnsDoc.Functions, fnDoc)
+	}
+	return &fnsDoc
+}
+
+func NewFunctionInfo(fn *data.Function) *FunctionInfo {
+	info := FunctionInfo{
+		ID:          fn.ID,
+		Description: fn.Description,
+	}
+	return &info
+}
+
 func GetConformance() *Conformance {
 	return &conformance
 }
@@ -172,8 +205,12 @@ func PathCollection(name string) string {
 	return fmt.Sprintf("%v/%v", TagCollections, name)
 }
 
-func PathItems(name string) string {
-	return fmt.Sprintf("%v/%v/%v", TagCollections, name, TagItems)
+func PathFunction(name string) string {
+	return fmt.Sprintf("%v/%v", TagFunctions, name)
+}
+
+func PathItems(tagType string, name string) string {
+	return fmt.Sprintf("%v/%v/%v", tagType, name, TagItems)
 }
 
 func PathItem(name string, fid string) string {

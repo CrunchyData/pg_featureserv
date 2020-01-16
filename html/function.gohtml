@@ -1,0 +1,23 @@
+{{define "body"}}
+<div class='crumbs'><a href="{{ .context.URLHome }}">Home</a>
+/ <a href="{{ .context.URLFunctions }}">Functions</a>
+/ {{ .data.ID }}
+<a style='margin-left: 20px' class='json-link' href='{{ .context.URLJSON }}' title='JSON document for this page'>JSON</a>
+</div>
+<hr>
+<h2>Function: {{ .data.ID }}</h2>
+<div class='coll-desc'>{{ .data.Description }}</div>
+<p>
+	{{ range .data.Links }}
+	<div>
+		{{ if (eq .Rel "items") }}
+			<a href="{{ .Href }}">{{ .Title }}</a>
+		{{ end }}
+	</div>
+	{{ end }}
+</p>
+<h3>Metadata</h3>
+
+</p>
+
+{{ end }}

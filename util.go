@@ -21,7 +21,6 @@ import (
 	"strings"
 
 	"github.com/CrunchyData/pg_featureserv/api"
-	"github.com/CrunchyData/pg_featureserv/config"
 	"github.com/CrunchyData/pg_featureserv/ui"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
@@ -151,12 +150,4 @@ func writeError(w http.ResponseWriter, code string, msg string, status int) {
 	} else {
 		w.Write(result)
 	}
-}
-
-// NewPageData create a page context initialized with globals.
-func NewPageData() *ui.PageData {
-	con := ui.PageData{}
-	con.AppName = config.AppConfig.Name
-	con.AppVersion = config.AppConfig.Version
-	return &con
 }

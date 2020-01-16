@@ -30,12 +30,15 @@ import (
 )
 
 type catalogDB struct {
-	dbconn     *pgxpool.Pool
-	layers     map[string]*Layer
-	layersSort []*Layer
+	dbconn      *pgxpool.Pool
+	layers      []*Layer
+	layerMap    map[string]*Layer
+	functions   []*Function
+	functionMap map[string]*Function
 }
 
 var isStartup bool
+var isFunctionsLoaded bool
 var instanceDB catalogDB
 var templateFeature *template.Template
 
@@ -72,12 +75,12 @@ func dbConnect() *pgxpool.Pool {
 
 func (cat *catalogDB) Layers() ([]*Layer, error) {
 	cat.refreshLayers(true)
-	return cat.layersSort, nil
+	return cat.layers, nil
 }
 
 func (cat *catalogDB) LayerByName(name string) (*Layer, error) {
 	cat.refreshLayers(false)
-	layer, ok := cat.layers[name]
+	layer, ok := cat.layerMap[name]
 	if !ok {
 		return nil, nil
 	}
@@ -89,10 +92,10 @@ func (cat *catalogDB) LayerFeatures(name string, param QueryParam) ([]string, er
 	if err != nil || layer == nil {
 		return nil, err
 	}
-	sql := makeSQLFeatures(layer, param)
+	sql := sqlFeatures(layer, param)
 	log.Debug(sql)
-	features := readFeatures(cat.dbconn, layer, sql)
-	return features, nil
+	features, err := readFeatures(cat.dbconn, layer.Columns, sql)
+	return features, err
 }
 
 func (cat *catalogDB) LayerFeature(name string, id string, param QueryParam) (string, error) {
@@ -100,15 +103,15 @@ func (cat *catalogDB) LayerFeature(name string, id string, param QueryParam) (st
 	if err != nil {
 		return "", err
 	}
-	sql := makeSQLFeature(layer, param)
+	sql := sqlFeature(layer, param)
 	log.Debug(sql)
 
 	args := make([]interface{}, 0)
 	args = append(args, id)
-	features := readFeaturesWithArgs(cat.dbconn, layer, sql, args)
+	features, err := readFeaturesWithArgs(cat.dbconn, layer.Columns, sql, args)
 
 	if len(features) == 0 {
-		return "", nil
+		return "", err
 	}
 	return features[0], nil
 }
@@ -123,14 +126,15 @@ func (cat *catalogDB) refreshLayers(force bool) {
 }
 
 func (cat *catalogDB) loadLayers() {
-	cat.layers = readLayerTables(cat.dbconn)
-	cat.layersSort = layersSorted(cat.layers)
+	cat.layerMap = readLayerTables(cat.dbconn)
+	cat.layers = layersSorted(cat.layerMap)
 }
 
-func layersSorted(layers map[string]*Layer) []*Layer {
+func layersSorted(layerMap map[string]*Layer) []*Layer {
+	// TODO: use database order of layers instead of sorting here
 	var lsort []*Layer
-	for key := range layers {
-		lsort = append(lsort, layers[key])
+	for key := range layerMap {
+		lsort = append(lsort, layerMap[key])
 	}
 	sort.SliceStable(lsort, func(i, j int) bool {
 		return lsort[i].Title < lsort[j].Title
@@ -146,7 +150,7 @@ func readLayerTables(db *pgxpool.Pool) map[string]*Layer {
 	}
 	layers := make(map[string]*Layer)
 	for rows.Next() {
-		layer := readLayer(rows)
+		layer := scanLayer(rows)
 		layers[layer.ID] = layer
 	}
 	// Check for errors from iterating over rows.
@@ -157,15 +161,15 @@ func readLayerTables(db *pgxpool.Pool) map[string]*Layer {
 	return layers
 }
 
-func readLayer(rows pgx.Rows) *Layer {
+func scanLayer(rows pgx.Rows) *Layer {
 	var (
-		schema, table, description, geometryCol string
-		srid                                    int
-		geometryType, idColumn                  string
-		props                                   pgtype.TextArray
+		id, schema, table, description, geometryCol string
+		srid                                        int
+		geometryType, idColumn                      string
+		props                                       pgtype.TextArray
 	)
 
-	err := rows.Scan(&schema, &table, &description, &geometryCol,
+	err := rows.Scan(&id, &schema, &table, &description, &geometryCol,
 		&srid, &geometryType, &idColumn, &props)
 	if err != nil {
 		log.Fatal(err)
@@ -198,9 +202,6 @@ func readLayer(rows pgx.Rows) *Layer {
 		jsontypes[i] = toJSONTypeFromPG(datatype)
 	}
 
-	// "schema.tablename" is the unique key for table layers
-	id := fmt.Sprintf("%s.%s", schema, table)
-
 	// Synthesize a title for now
 	title := id
 	// synthesize a description if none provided
@@ -224,51 +225,61 @@ func readLayer(rows pgx.Rows) *Layer {
 	}
 }
 
-func readFeatures(db *pgxpool.Pool, layer *Layer, sql string) []string {
-	return readFeaturesWithArgs(db, layer, sql, nil)
+//=================================================
+
+func readFeatures(db *pgxpool.Pool, propCols []string, sql string) ([]string, error) {
+	return readFeaturesWithArgs(db, propCols, sql, nil)
 }
 
-func readFeaturesWithArgs(db *pgxpool.Pool, layer *Layer, sql string, args []interface{}) []string {
+func readFeaturesWithArgs(db *pgxpool.Pool, propCols []string, sql string, args []interface{}) ([]string, error) {
 	rows, err := db.Query(context.Background(), sql, args...)
 	if err != nil {
-		log.Warnf("Error exexuting query: %v", err)
-		return nil
+		log.Warnf("Error running Features query: %v", err)
+		return nil, err
 	}
+	return scanFeatures(rows, propCols), nil
+}
+
+func scanFeatures(rows pgx.Rows, propCols []string) []string {
 	var features []string
 	for rows.Next() {
-		feature := readFeature(rows, layer)
+		feature := scanFeature(rows, true, propCols)
 		//log.Println(feature)
 		features = append(features, feature)
 	}
 	// Check for errors from iterating over rows.
 	if err := rows.Err(); err != nil {
-		log.Warnf("Error reading rows: %v", err)
+		log.Warnf("Error reading Features rows: %v", err)
 	}
 	rows.Close()
 	return features
 }
 
-func readFeature(rows pgx.Rows, layer *Layer) string {
+func scanFeature(rows pgx.Rows, hasID bool, propNames []string) string {
 	var id, geom string
 	vals, err := rows.Values()
 	if err != nil {
-		log.Warnf("Error getting row values: %v", err)
+		log.Warnf("Error getting Feature row values: %v", err)
 		return ""
 	}
 	//fmt.Println(vals)
-	id = fmt.Sprintf("%v", vals[1])
+	propOffset := 1
 	geom = fmt.Sprintf("%v", vals[0])
+	if hasID {
+		id = fmt.Sprintf("%v", vals[1])
+		propOffset = 2
+	}
+
 	//fmt.Println(geom)
-	props := extractProperties(vals, layer)
+	props := extractProperties(vals, propOffset, propNames)
 	return makeFeatureJSON(id, geom, props)
 }
 
-func extractProperties(vals []interface{}, layer *Layer) map[string]interface{} {
+func extractProperties(vals []interface{}, propOffset int, propNames []string) map[string]interface{} {
 	props := make(map[string]interface{})
-	for i := range layer.Columns {
-		name := layer.Columns[i]
+	for i, name := range propNames {
 		// offset vals index by 2 to skip geom, id
-		props[name] = toJSONValue(vals[i+2])
+		props[name] = toJSONValue(vals[i+propOffset])
 		//fmt.Printf("%v: %v\n", name, val)
 	}
 	return props

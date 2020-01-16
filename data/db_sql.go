@@ -21,6 +21,7 @@ import (
 const forceTextTSVECTOR = "tsvector"
 
 const sqlLayers = `SELECT
+	Format('%s.%s', n.nspname, c.relname) AS id,
 	n.nspname AS schema,
 	c.relname AS table,
 	coalesce(d.description, '') AS description,
@@ -50,29 +51,68 @@ WHERE c.relkind IN ('r') -- add 'v' for views
 AND t.typname = 'geometry'
 AND has_table_privilege(c.oid, 'select')
 AND postgis_typmod_srid(a.atttypmod) > 0
+ORDER BY id
 `
+const sqlFunctions = `WITH
+proargs AS (
+	SELECT p.oid,
+		generate_subscripts(p.proallargtypes, 1) AS argorder,
+		unnest(p.proallargtypes) AS argtype,
+		unnest(p.proargmodes) AS argmode,
+		unnest(p.proargnames) AS argname
+	FROM pg_proc p
+	JOIN pg_namespace n ON (p.pronamespace = n.oid)
+	WHERE n.nspname = 'postgisftw'
+		AND array_length(p.proargnames, 1) = array_length(p.proargmodes, 1)
+		AND array_length(p.proargmodes, 1) = array_length(p.proallargtypes, 1)
+),
+proargarrays AS (
+	SELECT p.oid,
+		array_agg(p.argname) FILTER (WHERE p.argmode = 'i') AS arginnames,
+		array_agg(t.typname) FILTER (WHERE p.argmode = 'i') AS argintypes,
+		array_agg(p.argname) FILTER (WHERE p.argmode = 'o') AS argoutnames,
+		array_agg(t.typname) FILTER (WHERE p.argmode = 'o') AS argouttypes
+	FROM proargs p
+	JOIN pg_type t ON (p.argtype = t.oid)
+	GROUP BY 1
+)
+SELECT
+	Format('%s.%s', n.nspname, p.proname) AS id,
+	n.nspname AS schema,
+	p.proname AS function,
+	coalesce(d.description, '') AS description,
+	aa.arginnames AS input_names,
+	aa.argintypes AS input_types,
+    coalesce(string_to_array(regexp_replace(pg_get_expr(p.proargdefaults, 0::Oid), '''([a-zA-Z0-9_]+)''::text', '\1'),', '), ARRAY[]::text[]) AS input_defaults,
+    argoutnames AS output_names,
+    argouttypes AS output_types
+FROM pg_proc p
+JOIN pg_namespace n ON (p.pronamespace = n.oid)
+JOIN proargarrays aa ON (p.oid = aa.oid)
+LEFT JOIN pg_description d ON (p.oid = d.objoid)
+ORDER BY id`
 
 const sqlFmtFeatures = "SELECT %v, %v::text AS id, %v FROM %v %v LIMIT %v;"
 
-func makeSQLFeatures(layer *Layer, param QueryParam) string {
-	geomCol := makeGeomCol(layer, param)
-	propCols := makeSQLColList(layer)
-	sqlWhere := makeBBoxFilter(layer, param)
+func sqlFeatures(layer *Layer, param QueryParam) string {
+	geomCol := sqlGeomCol(layer.GeometryColumn, param)
+	propCols := sqlColList(layer.Columns, layer.Types)
+	sqlWhere := sqlBBoxFilter(layer, param)
 	sql := fmt.Sprintf(sqlFmtFeatures, geomCol, layer.IDColumn, propCols, layer.ID, sqlWhere, param.Limit)
 	return sql
 }
 
-func makeSQLColList(layer *Layer) string {
+func sqlColList(names []string, dbtypes map[string]string) string {
 	var cols []string
-	for _, col := range layer.Columns {
-		colExpr := makeSQLColExpr(col, layer.Types[col])
+	for _, col := range names {
+		colExpr := sqlColExpr(col, dbtypes[col])
 		cols = append(cols, colExpr)
 	}
 	return strings.Join(cols, ",")
 }
 
 // makeSQLColExpr casts a column to text if type is unknown to PGX
-func makeSQLColExpr(name string, dbtype string) string {
+func sqlColExpr(name string, dbtype string) string {
 	// TODO: make this more data-driven / configurable
 	switch dbtype {
 	case forceTextTSVECTOR:
@@ -81,18 +121,18 @@ func makeSQLColExpr(name string, dbtype string) string {
 	return name
 }
 
-const sqlFeature = "SELECT %v, %v::text AS id, %v FROM %v WHERE %v = $1 LIMIT 1"
+const sqlFmtFeature = "SELECT %v, %v::text AS id, %v FROM %v WHERE %v = $1 LIMIT 1"
 
-func makeSQLFeature(layer *Layer, param QueryParam) string {
-	geomCol := makeGeomCol(layer, param)
-	propCols := makeSQLColList(layer)
-	sql := fmt.Sprintf(sqlFeature, geomCol, layer.IDColumn, propCols, layer.ID, layer.IDColumn)
+func sqlFeature(layer *Layer, param QueryParam) string {
+	geomCol := sqlGeomCol(layer.GeometryColumn, param)
+	propCols := sqlColList(layer.Columns, layer.Types)
+	sql := fmt.Sprintf(sqlFmtFeature, geomCol, layer.IDColumn, propCols, layer.ID, layer.IDColumn)
 	return sql
 }
 
 const sqlFmtBBoxFilter = " WHERE ST_Intersects(%v, ST_Transform( ST_MakeEnvelope(%v, %v, %v, %v, 4326), %v)) "
 
-func makeBBoxFilter(layer *Layer, param QueryParam) string {
+func sqlBBoxFilter(layer *Layer, param QueryParam) string {
 	if param.Bbox == nil {
 		return ""
 	}
@@ -102,19 +142,19 @@ func makeBBoxFilter(layer *Layer, param QueryParam) string {
 	return sql
 }
 
-const sqlGeomCol = "ST_AsGeoJSON( ST_Transform(%v, 4326) %v ) AS _geojson"
+const sqlFmtGeomCol = "ST_AsGeoJSON( ST_Transform(%v, 4326) %v ) AS _geojson"
 
-func makeGeomCol(layer *Layer, param QueryParam) string {
-	geomExpr := applyFunctions(param.TransformFuns, layer.GeometryColumn)
+func sqlGeomCol(geomCol string, param QueryParam) string {
+	geomExpr := applyTransform(param.TransformFuns, geomCol)
 	precision := ""
 	if param.Precision >= 0 {
 		precision = fmt.Sprintf(",%v", param.Precision)
 	}
-	sql := fmt.Sprintf(sqlGeomCol, geomExpr, precision)
+	sql := fmt.Sprintf(sqlFmtGeomCol, geomExpr, precision)
 	return sql
 }
 
-func applyFunctions(funs []TransformFunction, expr string) string {
+func applyTransform(funs []TransformFunction, expr string) string {
 	if funs == nil {
 		return expr
 	}
@@ -122,4 +162,23 @@ func applyFunctions(funs []TransformFunction, expr string) string {
 		expr = fun.apply(expr)
 	}
 	return expr
+}
+
+const sqlFmtFunction = "SELECT %v, id AS id, %v FROM %v() LIMIT %v;"
+
+func sqlFunction(fn *Function, propCols []string, param QueryParam) string {
+	sqlGeomCol := sqlGeomCol(fn.GeometryColumn, param)
+	sqlPropCols := sqlColList(propCols, fn.Types)
+	sql := fmt.Sprintf(sqlFmtFunction, sqlGeomCol, sqlPropCols, fn.ID, param.Limit)
+	return sql
+}
+
+func removeNames(names []string, ex1 string, ex2 string) []string {
+	var newNames []string
+	for _, name := range names {
+		if name != ex1 && name != ex2 {
+			newNames = append(newNames, name)
+		}
+	}
+	return newNames
 }

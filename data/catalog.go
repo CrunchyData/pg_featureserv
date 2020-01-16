@@ -22,7 +22,7 @@ import (
 type Catalog interface {
 	Layers() ([]*Layer, error)
 
-	// LayerFeatures returns the layer with given name.
+	// LayerByName returns the layer with given name.
 	// It returns nil if the layer does not exist
 	LayerByName(name string) (*Layer, error)
 
@@ -33,6 +33,14 @@ type Catalog interface {
 	// LayerFeature returns the JSON text for a layer feature with given id
 	// It returns an empty string if the layer or feature does not exist
 	LayerFeature(name string, id string, param QueryParam) (string, error)
+
+	Functions() ([]*Function, error)
+
+	// FunctionByName returns the function with given name.
+	// It returns nil if the function does not exist
+	FunctionByName(name string) (*Function, error)
+
+	FunctionFeatures(name string, param QueryParam) ([]string, error)
 }
 
 // TransformFunction denotes a geometry function with arguments
@@ -58,8 +66,8 @@ type Layer struct {
 	Description    string
 	GeometryType   string
 	GeometryColumn string
-	Srid           int
 	IDColumn       string
+	Srid           int
 	Extent         Extent
 	Columns        []string
 	Types          map[string]string
@@ -69,6 +77,23 @@ type Layer struct {
 // Extent of a layer
 type Extent struct {
 	Minx, Miny, Maxx, Maxy float64
+}
+
+// Function tbd
+type Function struct {
+	ID             string
+	Schema         string
+	Name           string
+	Description    string
+	InNames        []string
+	InTypes        []string
+	InDefaults     []string
+	OutNames       []string
+	OutTypes       []string
+	Types          map[string]string
+	JSONTypes      []string
+	GeometryColumn string
+	IDColumn       string
 }
 
 const (

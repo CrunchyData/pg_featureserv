@@ -27,15 +27,19 @@ type PageData struct {
 	AppName    string
 	AppVersion string
 	// URLHome - URL for the service home page
-	URLHome         string
-	URLCollections  string
-	URLCollection   string
-	URLItems        string
-	URLJSON         string
-	CollectionTitle string
-	Layer           *data.Layer
-	FeatureID       string
-	UseMap          bool
+	URLHome        string
+	URLCollections string
+	URLCollection  string
+	URLItems       string
+	URLFunctions   string
+	URLFunction    string
+	URLJSON        string
+	Group          string
+	Title          string
+	Layer          *data.Layer
+	Function       *data.Function
+	FeatureID      string
+	UseMap         bool
 }
 
 var htmlTemp struct {
@@ -45,12 +49,22 @@ var htmlTemp struct {
 	collection  *template.Template
 	items       *template.Template
 	item        *template.Template
+	functions   *template.Template
+	function    *template.Template
 }
 
 var HTMLDynamicLoad bool
 
 func init() {
 	HTMLDynamicLoad = false
+}
+
+// NewPageData create a page context initialized with globals.
+func NewPageData() *PageData {
+	con := PageData{}
+	con.AppName = config.AppConfig.Name
+	con.AppVersion = config.AppConfig.Version
+	return &con
 }
 
 func loadTemplate(curr *template.Template, filename ...string) *template.Template {
@@ -88,6 +102,14 @@ func PageItems() *template.Template {
 func PageItem() *template.Template {
 	htmlTemp.item = loadTemplate(htmlTemp.item, "html/page.gohtml", "html/map_script.gohtml", "html/item.gohtml")
 	return htmlTemp.item
+}
+func PageFunctions() *template.Template {
+	htmlTemp.functions = loadTemplate(htmlTemp.functions, "html/page.gohtml", "html/functions.gohtml")
+	return htmlTemp.functions
+}
+func PageFunction() *template.Template {
+	htmlTemp.function = loadTemplate(htmlTemp.function, "html/page.gohtml", "html/function.gohtml")
+	return htmlTemp.function
 }
 
 // RenderHTML tbd

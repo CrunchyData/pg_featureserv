@@ -1,7 +1,7 @@
 {{define "body"}}
 <div class='crumbs'><a href="{{ .context.URLHome }}">Home</a>
-/ <a href="{{ .context.URLCollections }}">Collections</a>
-/ <a href="{{ .context.URLCollection }}">{{ .context.CollectionTitle }}</a>
+/ <a href="{{ .context.URLCollections }}">{{ .context.Group }}</a>
+/ <a href="{{ .context.URLCollection }}">{{ .context.Title }}</a>
 / Items
 <a style='margin-left: 20px' class='json-link' href='{{ .context.URLJSON }}' title='JSON document for this page'>JSON</a>
 <span style='padding-left:10px;'>Limit:</span>
@@ -14,7 +14,7 @@
 </select>
 </div>
 <hr>
-<h2>Features: {{ .context.CollectionTitle }}</h2>
+<h2>Features: {{ .context.Title }}</h2>
 
 <table width='100%'>
 <tr>
