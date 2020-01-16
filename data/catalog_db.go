@@ -29,6 +29,16 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const (
+	JSONTypeString  = "string"
+	JSONTypeNumber  = "number"
+	JSONTypeBoolean = "boolean"
+
+	pgTypeBool     = "bool"
+	pgTypeNumeric  = "numeric"
+	pgTypeGeometry = "geometry"
+)
+
 type catalogDB struct {
 	dbconn      *pgxpool.Pool
 	tables      []*Table
@@ -300,15 +310,18 @@ func toJSONValue(value interface{}) interface{} {
 
 func toJSONTypeFromPG(typ string) string {
 	if strings.HasPrefix(typ, "int") {
-		return "int"
+		return JSONTypeNumber
 	}
 	if strings.HasPrefix(typ, "float") {
-		return "number"
+		return JSONTypeNumber
 	}
-	if typ == "numeric" {
-		return "number"
+	switch typ {
+	case pgTypeNumeric:
+		return JSONTypeNumber
+	case pgTypeBool:
+		return JSONTypeBoolean
 	}
-	return "string"
+	return JSONTypeString
 }
 
 type featureData struct {

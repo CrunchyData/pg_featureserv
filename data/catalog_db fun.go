@@ -60,7 +60,7 @@ func readFunctionDefs(db *pgxpool.Pool) ([]*Function, map[string]*Function) {
 	for rows.Next() {
 		fn := scanFunctionDef(rows)
 		// TODO: for now only show geometry functions
-		if hasOutGeometry(fn) {
+		if fn.isGeometryFunction() {
 			functions = append(functions, fn)
 			functionMap[fn.ID] = fn
 		}
@@ -100,7 +100,7 @@ func scanFunctionDef(rows pgx.Rows) *Function {
 		description = fmt.Sprintf("The function %v", id)
 	}
 
-	geomCol := geometryColumn(outNames, outTypes)
+	geomCol := geometryColumn(outNames, datatypes)
 
 	return &Function{
 		ID:             id,
@@ -121,9 +121,14 @@ func addTypes(typeMap map[string]string, names []string, types []string) {
 		typeMap[name] = types[i]
 	}
 }
-func geometryColumn(names []string, types []string) string {
+func geometryColumn(names []string, types map[string]string) string {
 	// TODO: extract from outNames, outTypes
-	return "geom"
+	for _, name := range names {
+		if types[name] == pgTypeGeometry {
+			return name
+		}
+	}
+	return ""
 }
 func toArray(ta pgtype.TextArray) []string {
 	arrLen := ta.Dimensions[0].Length
@@ -137,7 +142,7 @@ func toArray(ta pgtype.TextArray) []string {
 	}
 	return arr
 }
-func hasOutGeometry(fun *Function) bool {
+func (fun *Function) isGeometryFunction() bool {
 	for _, typ := range fun.OutTypes {
 		if typ == "geometry" {
 			return true
