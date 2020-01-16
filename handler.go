@@ -498,9 +498,17 @@ func handleFunctionItems(w http.ResponseWriter, r *http.Request) *appError {
 	}
 	query := api.URLQuery(r.URL)
 
+	fn, err := catalogInstance.FunctionByName(name)
+	if fn == nil && err == nil {
+		return appErrorNotFoundFmt(err, api.ErrMsgFunctionNotFound, name)
+	}
+
 	switch format {
 	case api.FormatJSON:
-		return writeFunItemsJSON(w, name, param, urlBase)
+		if fn.IsGeometryFunction() {
+			return writeFunItemsGeoJSON(w, name, param, urlBase)
+		}
+		return writeFunItemsJSON(w, name, param)
 	case api.FormatHTML:
 		return writeFunItemsHTML(w, name, query, urlBase)
 	}
@@ -530,7 +538,7 @@ func writeFunItemsHTML(w http.ResponseWriter, name string, query string, urlBase
 	return writeHTML(w, nil, context, ui.PageItems())
 }
 
-func writeFunItemsJSON(w http.ResponseWriter, name string, param data.QueryParam, urlBase string) *appError {
+func writeFunItemsGeoJSON(w http.ResponseWriter, name string, param data.QueryParam, urlBase string) *appError {
 	//--- query features data
 	features, err := catalogInstance.FunctionFeatures(name, param)
 	if err != nil {
@@ -545,4 +553,16 @@ func writeFunItemsJSON(w http.ResponseWriter, name string, param data.QueryParam
 	content.Links = linksItems(name, urlBase, api.FormatJSON)
 
 	return writeJSON(w, api.ContentTypeGeoJSON, content)
+}
+
+func writeFunItemsJSON(w http.ResponseWriter, name string, param data.QueryParam) *appError {
+	//--- query features data
+	features, err := catalogInstance.FunctionData(name, param)
+	if err != nil {
+		return appErrorInternal(err, errMsgFailData)
+	}
+	if features == nil {
+		return appErrorNotFoundFmt(err, api.ErrMsgFunctionNotFound, name)
+	}
+	return writeJSON(w, api.ContentTypeJSON, features)
 }

@@ -60,10 +60,10 @@ func readFunctionDefs(db *pgxpool.Pool) ([]*Function, map[string]*Function) {
 	for rows.Next() {
 		fn := scanFunctionDef(rows)
 		// TODO: for now only show geometry functions
-		if fn.isGeometryFunction() {
-			functions = append(functions, fn)
-			functionMap[fn.ID] = fn
-		}
+		//if fn.IsGeometryFunction() {
+		functions = append(functions, fn)
+		functionMap[fn.ID] = fn
+		//}
 	}
 	// Check for errors from iterating over rows.
 	if err := rows.Err(); err != nil {
@@ -142,14 +142,6 @@ func toArray(ta pgtype.TextArray) []string {
 	}
 	return arr
 }
-func (fun *Function) isGeometryFunction() bool {
-	for _, typ := range fun.OutTypes {
-		if typ == "geometry" {
-			return true
-		}
-	}
-	return false
-}
 
 func (cat *catalogDB) FunctionFeatures(name string, param QueryParam) ([]string, error) {
 	fn, err := cat.FunctionByName(name)
@@ -161,4 +153,63 @@ func (cat *catalogDB) FunctionFeatures(name string, param QueryParam) ([]string,
 	log.Debug(sql)
 	features, err := readFeatures(cat.dbconn, propCols, sql)
 	return features, err
+}
+
+func (cat *catalogDB) FunctionData(name string, param QueryParam) ([]map[string]interface{}, error) {
+	fn, err := cat.FunctionByName(name)
+	if err != nil || fn == nil {
+		return nil, err
+	}
+	propCols := fn.OutNames
+	sql := sqlFunction(fn, propCols, param)
+	log.Debug(sql)
+	data, err := readDataWithArgs(cat.dbconn, propCols, sql, nil)
+	return data, err
+}
+
+func removeNames(names []string, ex1 string, ex2 string) []string {
+	var newNames []string
+	for _, name := range names {
+		if name != ex1 && name != ex2 {
+			newNames = append(newNames, name)
+		}
+	}
+	return newNames
+}
+
+func readDataWithArgs(db *pgxpool.Pool, propCols []string, sql string, args []interface{}) ([]map[string]interface{}, error) {
+	rows, err := db.Query(context.Background(), sql, args...)
+	if err != nil {
+		log.Warnf("Error running Data query: %v", err)
+		return nil, err
+	}
+	return scanData(rows, propCols), nil
+}
+
+func scanData(rows pgx.Rows, propCols []string) []map[string]interface{} {
+	var data []map[string]interface{}
+	for rows.Next() {
+		obj := scanDataRow(rows, true, propCols)
+		//log.Println(feature)
+		data = append(data, obj)
+	}
+	// Check for errors from iterating over rows.
+	if err := rows.Err(); err != nil {
+		log.Warnf("Error reading Data rows: %v", err)
+	}
+	rows.Close()
+	return data
+}
+
+func scanDataRow(rows pgx.Rows, hasID bool, propNames []string) map[string]interface{} {
+	vals, err := rows.Values()
+	if err != nil {
+		log.Warnf("Error getting Data row values: %v", err)
+		return nil
+	}
+	//fmt.Println(vals)
+
+	//fmt.Println(geom)
+	props := extractProperties(vals, 0, propNames)
+	return props
 }

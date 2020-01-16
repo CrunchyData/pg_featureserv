@@ -149,6 +149,12 @@ func (cat *catalogMock) FunctionByName(name string) (*Function, error) {
 }
 
 func (cat *catalogMock) FunctionFeatures(name string, param QueryParam) ([]string, error) {
+	// TODO:
+	return nil, nil
+}
+
+func (cat *catalogMock) FunctionData(name string, param QueryParam) ([]map[string]interface{}, error) {
+	// TODO:
 	return nil, nil
 }
 

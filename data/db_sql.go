@@ -185,12 +185,10 @@ func sqlGeomFunction(fn *Function, propCols []string, param QueryParam) string {
 	return sql
 }
 
-func removeNames(names []string, ex1 string, ex2 string) []string {
-	var newNames []string
-	for _, name := range names {
-		if name != ex1 && name != ex2 {
-			newNames = append(newNames, name)
-		}
-	}
-	return newNames
+const sqlFmtFunction = "SELECT %v FROM %v.%v() LIMIT %v;"
+
+func sqlFunction(fn *Function, propCols []string, param QueryParam) string {
+	sqlPropCols := sqlColList(propCols, fn.Types)
+	sql := fmt.Sprintf(sqlFmtFunction, sqlPropCols, fn.Schema, fn.Name, param.Limit)
+	return sql
 }

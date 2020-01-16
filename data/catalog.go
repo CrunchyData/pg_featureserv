@@ -41,6 +41,8 @@ type Catalog interface {
 	FunctionByName(name string) (*Function, error)
 
 	FunctionFeatures(name string, param QueryParam) ([]string, error)
+
+	FunctionData(name string, param QueryParam) ([]map[string]interface{}, error)
 }
 
 // TransformFunction denotes a geometry function with arguments
@@ -100,6 +102,15 @@ const (
 	errMsgCollectionNotFound = "Collection not found: %v"
 	errMsgFeatureNotFound    = "Feature not found: %v"
 )
+
+func (fun *Function) IsGeometryFunction() bool {
+	for _, typ := range fun.OutTypes {
+		if typ == "geometry" {
+			return true
+		}
+	}
+	return false
+}
 
 func (fun *TransformFunction) apply(expr string) string {
 	if fun.Name == "" {
