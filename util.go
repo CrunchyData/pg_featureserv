@@ -45,6 +45,11 @@ func appErrorInternal(err error, msg string) *appError {
 	return &appError{err, msg, http.StatusInternalServerError}
 }
 
+func appErrorInternalFmt(err error, format string, v ...interface{}) *appError {
+	msg := fmt.Sprintf(format, v...)
+	return &appError{err, msg, http.StatusInternalServerError}
+}
+
 func appErrorNoFound(err error, msg string) *appError {
 	return &appError{err, msg, http.StatusNotFound}
 }
@@ -111,7 +116,7 @@ func writeJSON(w http.ResponseWriter, contype string, content interface{}) *appE
 	encodedContent, err := json.Marshal(content)
 	if err != nil {
 		log.Printf("JSON encoding error: %v", err.Error())
-		return appErrorInternal(err, errMsgEncoding)
+		return appErrorInternal(err, api.ErrMsgEncoding)
 	}
 	writeResponse(w, contype, encodedContent)
 	return nil
@@ -121,7 +126,7 @@ func writeHTML(w http.ResponseWriter, content interface{}, context interface{}, 
 	encodedContent, err := ui.RenderHTML(templ, content, context)
 	if err != nil {
 		log.Printf("HTML encoding error: %v", err.Error())
-		return appErrorInternal(err, errMsgEncoding)
+		return appErrorInternal(err, api.ErrMsgEncoding)
 	}
 	writeResponse(w, api.ContentTypeHTML, encodedContent)
 	return nil

@@ -258,7 +258,7 @@ func scanFeatures(rows pgx.Rows, propCols []string) []string {
 	}
 	// Check for errors from iterating over rows.
 	if err := rows.Err(); err != nil {
-		log.Warnf("Error reading Features rows: %v", err)
+		log.Warnf("Error scanning rows for Features: %v", err)
 	}
 	rows.Close()
 	return features
@@ -268,7 +268,7 @@ func scanFeature(rows pgx.Rows, hasID bool, propNames []string) string {
 	var id, geom string
 	vals, err := rows.Values()
 	if err != nil {
-		log.Warnf("Error getting Feature row values: %v", err)
+		log.Warnf("Error scanning row for Feature: %v", err)
 		return ""
 	}
 	//fmt.Println(vals)

@@ -108,10 +108,16 @@ type Conformance struct {
 }
 
 const (
-	ErrMsgLCollectionNotFound   = "Collection not found: %v"
+	ErrMsgEncoding              = "Error encoding response"
+	ErrMsgLoadCollections       = "Unable to access Collections"
+	ErrMsgCollectionNotFound    = "Collection not found: %v"
+	ErrMsgCollectionAccess      = "Unable to access Collection: %v"
 	ErrMsgFeatureNotFound       = "Feature not found: %v"
+	ErrMsgLoadFunctions         = "Unable to access Functions"
 	ErrMsgFunctionNotFound      = "Function not found: %v"
+	ErrMsgFunctionAccess        = "Unable to access Function: %v"
 	ErrMsgInvalidParameterValue = "Invalid value for parameter %v: %v"
+	ErrMsgDataRead              = "Unable to read data from: %v"
 )
 
 const (

@@ -27,13 +27,8 @@ import (
 )
 
 const (
-	varID         = "id"
-	varFeatureID  = "fid"
-	varFunctionID = "fnid"
-
-	errMsgEncoding      = "Error encoding response"
-	errMsgNoCollections = "No collections loaded"
-	errMsgFailData      = "Error loading data"
+	routeVarID        = "id"
+	routeVarFeatureID = "fid"
 )
 
 func initRouter() *mux.Router {
@@ -167,7 +162,7 @@ func handleCollections(w http.ResponseWriter, r *http.Request) *appError {
 
 	colls, err := catalogInstance.Tables()
 	if err != nil {
-		return appErrorInternal(err, errMsgNoCollections)
+		return appErrorInternal(err, api.ErrMsgLoadCollections)
 	}
 
 	content := api.NewCollectionsInfo(colls)
@@ -217,11 +212,11 @@ func handleCollection(w http.ResponseWriter, r *http.Request) *appError {
 	format := api.PathFormat(r.URL)
 	urlBase := serveURLBase(r)
 
-	name := getRequestVar(varID, r)
+	name := getRequestVar(routeVarID, r)
 
 	tbl, err := catalogInstance.TableByName(name)
 	if tbl == nil && err == nil {
-		return appErrorNotFoundFmt(err, api.ErrMsgLCollectionNotFound, name)
+		return appErrorNotFoundFmt(err, api.ErrMsgCollectionNotFound, name)
 	}
 	content := api.NewCollectionInfo(tbl)
 	content.Links = linksCollection(name, urlBase, format)
@@ -249,7 +244,7 @@ func handleCollectionItems(w http.ResponseWriter, r *http.Request) *appError {
 	urlBase := serveURLBase(r)
 
 	//--- extract request parameters
-	name := getRequestVar(varID, r)
+	name := getRequestVar(routeVarID, r)
 	param, err := parseRequestParams(r)
 	if err != nil {
 		return appErrorMsg(err, err.Error(), http.StatusBadRequest)
@@ -268,10 +263,10 @@ func handleCollectionItems(w http.ResponseWriter, r *http.Request) *appError {
 func writeItemsHTML(w http.ResponseWriter, name string, query string, urlBase string) *appError {
 	tbl, err1 := catalogInstance.TableByName(name)
 	if err1 != nil {
-		return appErrorInternal(err1, errMsgFailData)
+		return appErrorInternalFmt(err1, api.ErrMsgCollectionAccess, name)
 	}
 	if tbl == nil {
-		return appErrorNotFoundFmt(err1, api.ErrMsgLCollectionNotFound, name)
+		return appErrorNotFoundFmt(err1, api.ErrMsgCollectionNotFound, name)
 	}
 	pathItems := api.PathItems(api.TagCollections, name)
 	// --- encoding
@@ -292,10 +287,10 @@ func writeItemsJSON(w http.ResponseWriter, name string, param data.QueryParam, u
 	//--- query features data
 	features, err := catalogInstance.TableFeatures(name, param)
 	if err != nil {
-		return appErrorInternal(err, errMsgFailData)
+		return appErrorInternalFmt(err, api.ErrMsgDataRead, name)
 	}
 	if features == nil {
-		return appErrorNotFoundFmt(err, api.ErrMsgLCollectionNotFound, name)
+		return appErrorNotFoundFmt(err, api.ErrMsgCollectionNotFound, name)
 	}
 
 	//--- assemble resonse
@@ -321,8 +316,8 @@ func handleItem(w http.ResponseWriter, r *http.Request) *appError {
 	urlBase := serveURLBase(r)
 
 	//--- extract request parameters
-	name := getRequestVar(varID, r)
-	fid := getRequestVar(varFeatureID, r)
+	name := getRequestVar(routeVarID, r)
+	fid := getRequestVar(routeVarFeatureID, r)
 	param, err := parseRequestParams(r)
 	if err != nil {
 		return appErrorMsg(err, err.Error(), http.StatusBadRequest)
@@ -342,10 +337,10 @@ func writeItemHTML(w http.ResponseWriter, name string, fid string, query string,
 	//--- query data for request
 	tbl, err1 := catalogInstance.TableByName(name)
 	if err1 != nil {
-		return appErrorInternal(err1, errMsgFailData)
+		return appErrorInternalFmt(err1, api.ErrMsgCollectionAccess, name)
 	}
 	if tbl == nil {
-		return appErrorNotFoundFmt(err1, api.ErrMsgLCollectionNotFound, name)
+		return appErrorNotFoundFmt(err1, api.ErrMsgCollectionNotFound, name)
 	}
 
 	pathItems := api.PathItems(api.TagCollections, name)
@@ -368,7 +363,7 @@ func writeItemJSON(w http.ResponseWriter, name string, fid string, param data.Qu
 	//--- query data for request
 	feature, err := catalogInstance.TableFeature(name, fid, param)
 	if err != nil {
-		return appErrorInternal(err, errMsgFailData)
+		return appErrorInternalFmt(err, api.ErrMsgDataRead, name)
 	}
 	if len(feature) == 0 {
 		return appErrorNotFoundFmt(nil, api.ErrCodeFeatureNotFound, fid)
@@ -408,7 +403,7 @@ func handleFunctions(w http.ResponseWriter, r *http.Request) *appError {
 
 	fns, err := catalogInstance.Functions()
 	if err != nil {
-		return appErrorInternal(err, errMsgNoCollections)
+		return appErrorInternal(err, api.ErrMsgLoadFunctions)
 	}
 
 	content := api.NewFunctionsInfo(fns)
@@ -465,7 +460,7 @@ func handleFunction(w http.ResponseWriter, r *http.Request) *appError {
 	format := api.PathFormat(r.URL)
 	urlBase := serveURLBase(r)
 
-	name := getRequestVar(varID, r)
+	name := getRequestVar(routeVarID, r)
 
 	fn, err := catalogInstance.FunctionByName(name)
 	if fn == nil && err == nil {
@@ -497,7 +492,7 @@ func handleFunctionItems(w http.ResponseWriter, r *http.Request) *appError {
 	urlBase := serveURLBase(r)
 
 	//--- extract request parameters
-	name := getRequestVar(varID, r)
+	name := getRequestVar(routeVarID, r)
 	param, err := parseRequestParams(r)
 	if err != nil {
 		return appErrorMsg(err, err.Error(), http.StatusBadRequest)
@@ -524,7 +519,7 @@ func handleFunctionItems(w http.ResponseWriter, r *http.Request) *appError {
 func writeFunItemsHTML(w http.ResponseWriter, name string, query string, urlBase string) *appError {
 	fn, err1 := catalogInstance.FunctionByName(name)
 	if err1 != nil {
-		return appErrorInternal(err1, errMsgFailData)
+		return appErrorInternalFmt(err1, api.ErrMsgFunctionAccess, name)
 	}
 	if fn == nil {
 		return appErrorNotFoundFmt(err1, api.ErrMsgFunctionNotFound, name)
@@ -548,10 +543,10 @@ func writeFunItemsGeoJSON(w http.ResponseWriter, name string, param data.QueryPa
 	//--- query features data
 	features, err := catalogInstance.FunctionFeatures(name, param)
 	if err != nil {
-		return appErrorInternal(err, errMsgFailData)
+		return appErrorInternalFmt(err, api.ErrMsgDataRead, name)
 	}
 	if features == nil {
-		return appErrorNotFoundFmt(err, api.ErrMsgFunctionNotFound, name)
+		return appErrorNotFoundFmt(err, api.ErrMsgDataRead, name)
 	}
 
 	//--- assemble resonse
@@ -565,10 +560,10 @@ func writeFunItemsJSON(w http.ResponseWriter, name string, param data.QueryParam
 	//--- query features data
 	features, err := catalogInstance.FunctionData(name, param)
 	if err != nil {
-		return appErrorInternal(err, errMsgFailData)
+		return appErrorInternalFmt(err, api.ErrMsgFunctionAccess, name)
 	}
 	if features == nil {
-		return appErrorNotFoundFmt(err, api.ErrMsgFunctionNotFound, name)
+		return appErrorNotFoundFmt(err, api.ErrMsgDataRead, name)
 	}
 	return writeJSON(w, api.ContentTypeJSON, features)
 }
