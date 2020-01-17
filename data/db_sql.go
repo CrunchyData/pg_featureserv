@@ -92,23 +92,33 @@ JOIN proargarrays aa ON (p.oid = aa.oid)
 LEFT JOIN pg_description d ON (p.oid = d.objoid)
 ORDER BY id`
 
-const sqlFmtFeatures = "SELECT %v, %v::text AS id, %v FROM %v %v LIMIT %v;"
+const sqlFmtFeatures = "SELECT %v %v FROM %v %v LIMIT %v;"
 
 func sqlFeatures(tbl *Table, param QueryParam) string {
 	geomCol := sqlGeomCol(tbl.GeometryColumn, param)
-	propCols := sqlColList(tbl.Columns, tbl.Types)
+	propCols := sqlColList(tbl.Columns, tbl.Types, true)
 	sqlWhere := sqlBBoxFilter(tbl, param)
-	sql := fmt.Sprintf(sqlFmtFeatures, geomCol, tbl.IDColumn, propCols, tbl.ID, sqlWhere, param.Limit)
+	sql := fmt.Sprintf(sqlFmtFeatures, geomCol, propCols, tbl.ID, sqlWhere, param.Limit)
 	return sql
 }
 
-func sqlColList(names []string, dbtypes map[string]string) string {
+// sqlColList creates a comma-separated column list, or blank if no columns
+// If addLeadingComma is true, a leading comma is added, for use when the target SQL has columns defined before
+func sqlColList(names []string, dbtypes map[string]string, addLeadingComma bool) string {
+	if len(names) == 0 {
+		return ""
+	}
+
 	var cols []string
 	for _, col := range names {
 		colExpr := sqlColExpr(col, dbtypes[col])
 		cols = append(cols, colExpr)
 	}
-	return strings.Join(cols, ",")
+	colsStr := strings.Join(cols, ",")
+	if addLeadingComma {
+		return ", " + colsStr
+	}
+	return colsStr
 }
 
 // makeSQLColExpr casts a column to text if type is unknown to PGX
@@ -121,12 +131,12 @@ func sqlColExpr(name string, dbtype string) string {
 	return name
 }
 
-const sqlFmtFeature = "SELECT %v, %v::text AS id, %v FROM %v WHERE %v = $1 LIMIT 1"
+const sqlFmtFeature = "SELECT %v, %v FROM %v WHERE %v = $1 LIMIT 1"
 
 func sqlFeature(tbl *Table, param QueryParam) string {
 	geomCol := sqlGeomCol(tbl.GeometryColumn, param)
-	propCols := sqlColList(tbl.Columns, tbl.Types)
-	sql := fmt.Sprintf(sqlFmtFeature, geomCol, tbl.IDColumn, propCols, tbl.ID, tbl.IDColumn)
+	propCols := sqlColList(tbl.Columns, tbl.Types, true)
+	sql := fmt.Sprintf(sqlFmtFeature, geomCol, propCols, tbl.ID, tbl.IDColumn)
 	return sql
 }
 
@@ -175,12 +185,12 @@ func applyTransform(funs []TransformFunction, expr string) string {
 	return expr
 }
 
-const sqlFmtGeomFunction = "SELECT %v, id AS id, %v FROM %v.%v( %v ) %v LIMIT %v;"
+const sqlFmtGeomFunction = "SELECT %v %v FROM %v.%v( %v ) %v LIMIT %v;"
 
 func sqlGeomFunction(fn *Function, args map[string]string, propCols []string, param QueryParam) (string, []interface{}) {
 	sqlArgs, argVals := sqlFunctionArgs(fn, args)
 	sqlGeomCol := sqlGeomCol(fn.GeometryColumn, param)
-	sqlPropCols := sqlColList(propCols, fn.Types)
+	sqlPropCols := sqlColList(propCols, fn.Types, true)
 	sqlWhere := sqlBBoxGeoFilter(fn.GeometryColumn, param)
 	sql := fmt.Sprintf(sqlFmtGeomFunction, sqlGeomCol, sqlPropCols, fn.Schema, fn.Name, sqlArgs, sqlWhere, param.Limit)
 	return sql, argVals
@@ -190,7 +200,7 @@ const sqlFmtFunction = "SELECT %v FROM %v.%v( %v ) LIMIT %v;"
 
 func sqlFunction(fn *Function, args map[string]string, propCols []string, param QueryParam) (string, []interface{}) {
 	sqlArgs, argVals := sqlFunctionArgs(fn, args)
-	sqlPropCols := sqlColList(propCols, fn.Types)
+	sqlPropCols := sqlColList(propCols, fn.Types, false)
 	sql := fmt.Sprintf(sqlFmtFunction, sqlPropCols, fn.Schema, fn.Name, sqlArgs, param.Limit)
 	return sql, argVals
 }

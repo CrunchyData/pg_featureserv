@@ -103,8 +103,10 @@ func (cat *catalogDB) TableFeatures(name string, param QueryParam) ([]string, er
 		return nil, err
 	}
 	sql := sqlFeatures(tbl, param)
-	log.Debug(sql)
-	features, err := readFeatures(cat.dbconn, tbl.Columns, sql)
+	log.Debug("TableFeatures: " + sql)
+	idColIndex := indexOfName(tbl.Columns, tbl.IDColumn)
+
+	features, err := readFeatures(cat.dbconn, sql, idColIndex, tbl.Columns)
 	return features, err
 }
 
@@ -115,10 +117,12 @@ func (cat *catalogDB) TableFeature(name string, id string, param QueryParam) (st
 	}
 	sql := sqlFeature(tbl, param)
 	log.Debug(sql)
+	idColIndex := indexOfName(tbl.Columns, tbl.IDColumn)
 
-	args := make([]interface{}, 0)
-	args = append(args, id)
-	features, err := readFeaturesWithArgs(cat.dbconn, tbl.Columns, sql, args)
+	//--- Add a SQL arg for the feature ID
+	argValues := make([]interface{}, 0)
+	argValues = append(argValues, id)
+	features, err := readFeaturesWithArgs(cat.dbconn, sql, argValues, idColIndex, tbl.Columns)
 
 	if len(features) == 0 {
 		return "", err
@@ -236,23 +240,23 @@ func scanTable(rows pgx.Rows) *Table {
 
 //=================================================
 
-func readFeatures(db *pgxpool.Pool, propCols []string, sql string) ([]string, error) {
-	return readFeaturesWithArgs(db, propCols, sql, nil)
+func readFeatures(db *pgxpool.Pool, sql string, idColIndex int, propCols []string) ([]string, error) {
+	return readFeaturesWithArgs(db, sql, nil, idColIndex, propCols)
 }
 
-func readFeaturesWithArgs(db *pgxpool.Pool, propCols []string, sql string, args []interface{}) ([]string, error) {
+func readFeaturesWithArgs(db *pgxpool.Pool, sql string, args []interface{}, idColIndex int, propCols []string) ([]string, error) {
 	rows, err := db.Query(context.Background(), sql, args...)
 	if err != nil {
 		log.Warnf("Error running Features query: %v", err)
 		return nil, err
 	}
-	return scanFeatures(rows, propCols), nil
+	return scanFeatures(rows, idColIndex, propCols), nil
 }
 
-func scanFeatures(rows pgx.Rows, propCols []string) []string {
+func scanFeatures(rows pgx.Rows, idColIndex int, propCols []string) []string {
 	var features []string
 	for rows.Next() {
-		feature := scanFeature(rows, true, propCols)
+		feature := scanFeature(rows, idColIndex, propCols)
 		//log.Println(feature)
 		features = append(features, feature)
 	}
@@ -264,7 +268,7 @@ func scanFeatures(rows pgx.Rows, propCols []string) []string {
 	return features
 }
 
-func scanFeature(rows pgx.Rows, hasID bool, propNames []string) string {
+func scanFeature(rows pgx.Rows, idColIndex int, propNames []string) string {
 	var id, geom string
 	vals, err := rows.Values()
 	if err != nil {
@@ -272,11 +276,11 @@ func scanFeature(rows pgx.Rows, hasID bool, propNames []string) string {
 		return ""
 	}
 	//fmt.Println(vals)
+	//--- geom value is expected to be a GeoJSON string
+	geom = vals[0].(string)
 	propOffset := 1
-	geom = fmt.Sprintf("%v", vals[0])
-	if hasID {
-		id = fmt.Sprintf("%v", vals[1])
-		propOffset = 2
+	if idColIndex >= 0 {
+		id = fmt.Sprintf("%v", vals[idColIndex+propOffset])
 	}
 
 	//fmt.Println(geom)
@@ -326,14 +330,19 @@ func toJSONTypeFromPG(typ string) string {
 
 type featureData struct {
 	Type  string                 `json:"type"`
-	ID    string                 `json:"id"`
+	ID    string                 `json:"id,omitempty"`
 	Geom  *json.RawMessage       `json:"geometry"`
 	Props map[string]interface{} `json:"properties"`
 }
 
 func makeFeatureJSON(id string, geom string, props map[string]interface{}) string {
 	geomRaw := json.RawMessage(geom)
-	featData := featureData{"Feature", id, &geomRaw, props}
+	featData := featureData{
+		Type:  "Feature",
+		ID:    id,
+		Geom:  &geomRaw,
+		Props: props,
+	}
 	json, err := json.Marshal(featData)
 	if err != nil {
 		log.Errorf("Error marshalling feature into JSON: %v", err)
