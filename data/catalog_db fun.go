@@ -177,6 +177,9 @@ func (cat *catalogDB) FunctionData(name string, param QueryParam) ([]map[string]
 	return data, err
 }
 
+// inputArgs extracts function arguments from any provided in the query parameters
+// Arg values are stored as strings, and relies on Postgres to convert
+// to the actual types required by the function
 func inputArgs(params []string, queryArgs map[string]string) map[string]string {
 	sqlArgs := make(map[string]string)
 	for _, param := range params {
