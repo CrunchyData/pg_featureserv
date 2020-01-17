@@ -30,4 +30,6 @@ LANGUAGE 'plpgsql'
 STABLE
 STRICT;
 
+COMMENT ON FUNCTION postgisftw.us_grid IS 'Generates a grid of rectangles covering the USA';
+
 SELECT * FROM postgisftw.us_grid();
