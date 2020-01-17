@@ -124,6 +124,9 @@ func linksRoot(urlBase string, format string) []*api.Link {
 	links = append(links, &api.Link{
 		Href: urlPathFormat(urlBase, api.TagCollections, format),
 		Rel:  api.RelData, Type: api.ContentType(format), Title: "collections"})
+	links = append(links, &api.Link{
+		Href: urlPathFormat(urlBase, api.TagFunctions, format),
+		Rel:  api.RelData, Type: api.ContentType(format), Title: "functions"})
 
 	return links
 }
