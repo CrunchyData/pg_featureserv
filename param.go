@@ -26,12 +26,12 @@ import (
 )
 
 func parseRequestParams(r *http.Request) (data.QueryParam, error) {
+	queryValues := r.URL.Query()
 	param := data.QueryParam{
 		Limit:     config.Configuration.Paging.LimitDefault,
 		Precision: 4,
+		Values:    extractSingleArg(queryValues),
 	}
-
-	queryValues := r.URL.Query()
 
 	// --- limit parameter
 	limit, err := parseLimit(queryValues)
@@ -58,6 +58,15 @@ func parseRequestParams(r *http.Request) (data.QueryParam, error) {
 	param.TransformFuns = parseTransform(queryValues, 0)
 
 	return param, nil
+}
+
+func extractSingleArg(queryArgs url.Values) map[string]string {
+	vals := make(map[string]string)
+	for key := range queryArgs {
+		queryval := queryArgs.Get(key)
+		vals[key] = queryval
+	}
+	return vals
 }
 
 func parseLimit(values url.Values) (int, error) {

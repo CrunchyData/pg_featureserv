@@ -131,8 +131,12 @@ func geometryColumn(names []string, types map[string]string) string {
 	return ""
 }
 func toArray(ta pgtype.TextArray) []string {
-	arrLen := ta.Dimensions[0].Length
-	arrStart := ta.Dimensions[0].LowerBound - 1
+	arrLen := 0
+	arrStart := 0
+	if len(ta.Dimensions) > 0 {
+		arrLen = int(ta.Dimensions[0].Length)
+		arrStart = int(ta.Dimensions[0].LowerBound - 1)
+	}
 
 	arr := make([]string, arrLen)
 
@@ -148,10 +152,11 @@ func (cat *catalogDB) FunctionFeatures(name string, param QueryParam) ([]string,
 	if err != nil || fn == nil {
 		return nil, err
 	}
+	sqlNamedArgs := inputArgs(fn.InNames, param.Values)
 	propCols := removeNames(fn.OutNames, fn.GeometryColumn, "")
-	sql := sqlGeomFunction(fn, propCols, param)
-	log.Debug(sql)
-	features, err := readFeatures(cat.dbconn, propCols, sql)
+	sql, argValues := sqlGeomFunction(fn, sqlNamedArgs, propCols, param)
+	log.Debugf("%v -- Args: %v", sql, argValues)
+	features, err := readFeaturesWithArgs(cat.dbconn, propCols, sql, argValues)
 	return features, err
 }
 
@@ -160,11 +165,22 @@ func (cat *catalogDB) FunctionData(name string, param QueryParam) ([]map[string]
 	if err != nil || fn == nil {
 		return nil, err
 	}
+	sqlNamedArgs := inputArgs(fn.InNames, param.Values)
 	propCols := fn.OutNames
-	sql := sqlFunction(fn, propCols, param)
-	log.Debug(sql)
-	data, err := readDataWithArgs(cat.dbconn, propCols, sql, nil)
+	sql, argValues := sqlFunction(fn, sqlNamedArgs, propCols, param)
+	log.Debugf("%v -- Args: %v", sql, argValues)
+	data, err := readDataWithArgs(cat.dbconn, propCols, sql, argValues)
 	return data, err
+}
+
+func inputArgs(params []string, queryArgs map[string]string) map[string]string {
+	sqlArgs := make(map[string]string)
+	for _, param := range params {
+		if val, ok := queryArgs[param]; ok {
+			sqlArgs[param] = val
+		}
+	}
+	return sqlArgs
 }
 
 func removeNames(names []string, ex1 string, ex2 string) []string {

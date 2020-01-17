@@ -175,20 +175,36 @@ func applyTransform(funs []TransformFunction, expr string) string {
 	return expr
 }
 
-const sqlFmtGeomFunction = "SELECT %v, id AS id, %v FROM %v.%v() %v LIMIT %v;"
+const sqlFmtGeomFunction = "SELECT %v, id AS id, %v FROM %v.%v( %v ) %v LIMIT %v;"
 
-func sqlGeomFunction(fn *Function, propCols []string, param QueryParam) string {
+func sqlGeomFunction(fn *Function, args map[string]string, propCols []string, param QueryParam) (string, []interface{}) {
+	sqlArgs, argVals := sqlFunctionArgs(fn, args)
 	sqlGeomCol := sqlGeomCol(fn.GeometryColumn, param)
 	sqlPropCols := sqlColList(propCols, fn.Types)
 	sqlWhere := sqlBBoxGeoFilter(fn.GeometryColumn, param)
-	sql := fmt.Sprintf(sqlFmtGeomFunction, sqlGeomCol, sqlPropCols, fn.Schema, fn.Name, sqlWhere, param.Limit)
-	return sql
+	sql := fmt.Sprintf(sqlFmtGeomFunction, sqlGeomCol, sqlPropCols, fn.Schema, fn.Name, sqlArgs, sqlWhere, param.Limit)
+	return sql, argVals
 }
 
-const sqlFmtFunction = "SELECT %v FROM %v.%v() LIMIT %v;"
+const sqlFmtFunction = "SELECT %v FROM %v.%v( %v ) LIMIT %v;"
 
-func sqlFunction(fn *Function, propCols []string, param QueryParam) string {
+func sqlFunction(fn *Function, args map[string]string, propCols []string, param QueryParam) (string, []interface{}) {
+	sqlArgs, argVals := sqlFunctionArgs(fn, args)
 	sqlPropCols := sqlColList(propCols, fn.Types)
-	sql := fmt.Sprintf(sqlFmtFunction, sqlPropCols, fn.Schema, fn.Name, param.Limit)
-	return sql
+	sql := fmt.Sprintf(sqlFmtFunction, sqlPropCols, fn.Schema, fn.Name, sqlArgs, param.Limit)
+	return sql, argVals
+}
+
+func sqlFunctionArgs(fn *Function, argValues map[string]string) (string, []interface{}) {
+	var vals []interface{}
+	var argItems []string
+	i := 1
+	for argName := range argValues {
+		argItem := fmt.Sprintf("%v => $%v", argName, i)
+		argItems = append(argItems, argItem)
+		i++
+		vals = append(vals, argValues[argName])
+	}
+	sql := strings.Join(argItems, ",")
+	return sql, vals
 }

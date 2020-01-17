@@ -57,6 +57,7 @@ type QueryParam struct {
 	Bbox          *Extent
 	Precision     int
 	TransformFuns []TransformFunction
+	Values        map[string]string
 }
 
 // Table holds metadata for table/view objects

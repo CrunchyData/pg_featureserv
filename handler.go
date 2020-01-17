@@ -415,7 +415,7 @@ func handleFunctions(w http.ResponseWriter, r *http.Request) *appError {
 	content.Links = linksFunctions(urlBase, format)
 
 	for _, fn := range content.Functions {
-		fn.Links = linksFunction(fn.ID, urlBase, format)
+		fn.Links = linksFunction(fn.ID, urlBase, format, fn.Function.IsGeometryFunction())
 	}
 
 	switch format {
@@ -437,7 +437,7 @@ func linksFunctions(urlBase string, format string) []*api.Link {
 	return links
 }
 
-func linksFunction(id string, urlBase string, format string) []*api.Link {
+func linksFunction(id string, urlBase string, format string, isGeomFun bool) []*api.Link {
 	path := fmt.Sprintf("%v/%v", api.TagFunctions, id)
 	pathItems := api.PathItems(api.TagFunctions, id)
 
@@ -445,13 +445,19 @@ func linksFunction(id string, urlBase string, format string) []*api.Link {
 	links = append(links, linkSelf(urlBase, path, format))
 	links = append(links, linkAlt(urlBase, path, format))
 
+	dataTitle := "Data as JSON"
+	if isGeomFun {
+		dataTitle = "Features as GeoJSON"
+	}
+
 	links = append(links, &api.Link{
 		Href: urlPathFormat(urlBase, pathItems, api.FormatJSON),
-		Rel:  "items", Type: api.ContentTypeJSON, Title: "Features as GeoJSON"})
-	links = append(links, &api.Link{
-		Href: urlPathFormat(urlBase, pathItems, api.FormatHTML),
-		Rel:  "items", Type: api.ContentTypeHTML, Title: "Features as HTML"})
-
+		Rel:  "items", Type: api.ContentTypeJSON, Title: dataTitle})
+	if isGeomFun {
+		links = append(links, &api.Link{
+			Href: urlPathFormat(urlBase, pathItems, api.FormatHTML),
+			Rel:  "items", Type: api.ContentTypeHTML, Title: "Features as HTML"})
+	}
 	return links
 }
 
@@ -466,7 +472,7 @@ func handleFunction(w http.ResponseWriter, r *http.Request) *appError {
 		return appErrorNotFoundFmt(err, api.ErrMsgFunctionNotFound, name)
 	}
 	content := api.NewFunctionInfo(fn)
-	content.Links = linksFunction(name, urlBase, format)
+	content.Links = linksFunction(name, urlBase, format, fn.IsGeometryFunction())
 
 	// --- encoding
 	switch format {

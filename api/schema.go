@@ -100,6 +100,7 @@ type FunctionInfo struct {
 	ID          string  `json:"id"`
 	Description string  `json:"description,omitempty"`
 	Links       []*Link `json:"links"`
+	Function    *data.Function
 }
 
 type Conformance struct {
@@ -184,6 +185,7 @@ func NewFunctionInfo(fn *data.Function) *FunctionInfo {
 	info := FunctionInfo{
 		ID:          fn.ID,
 		Description: fn.Description,
+		Function:    fn,
 	}
 	return &info
 }
