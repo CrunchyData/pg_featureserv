@@ -48,7 +48,7 @@
 </style>
 {{ end }}
 {{define "propsTable"}}
-	<h3 id='feature-title' style='margin-top: 0; display: none;'>Feature ID: <a id='feature-title-text' href=''></a></h3>
+	<h3 id='feature-title' style='margin-top: 0; display: none;'>Feature ID: <span id='feature-title-span'></span></h3>
 	<table id='tbl-props' class='tbl-props' style='border: 1px solid grey; width:400px'>
 	<thead style='background-color: lightgrey;'>
 		<tr><th>Name</th><th>Value</th></tr>
@@ -59,6 +59,7 @@
 {{define "mapScript"}}
 <script src="https://openlayers.org/en/v6.1.1/build/ol.js"></script>
 <script>
+var SHOW_FEATURE_LINK = {{ .context.ShowFeatureLink }};
 var styleFunction = function(feature) {
 	return styles[feature.getGeometry().getType()];
 };
@@ -111,7 +112,7 @@ function onFeatureClick(evt) {
 		if (features.length <= 0) return;
 		var identifier = features[0].getId();
 		var popup = 'Id: ' + identifier
-		if (! document.location.href.includes('/items/')) {
+		if (SHOW_FEATURE_LINK && identifier && ! document.location.href.includes('/items/')) {
 			popup = '<a href="items/' + identifier + '.html">' + popup + '</a>'
 		}
 		overlay.getElement().innerHTML = popup;
@@ -140,19 +141,22 @@ function bboxStr(numDecimals) {
 	return bboxStr;
 }
 function showFeatureProperties(feature, showTitle) {
-	let titleText = document.getElementById('feature-title-text');
+	let titleText = document.getElementById('feature-title-span');
 	if (! showTitle) {
 
 	}
-	titleText.innerText = '';
+	titleText.innerHTML = '';
 	let tbl = document.getElementById('tbl-props');
 	tableClear(tbl);
 
 	if (! feature) return;
 	let id = feature.getId();
-	titleText.innerText = id;
-	let link = 'items/' + id + '.html';
-	titleText.href = link;
+	let titleHTML = id;
+	if (SHOW_FEATURE_LINK && id) {
+		let link = 'items/' + id + '.html';
+		titleHTML = '<a href="' + link + '">' + id + '</a>';
+	}
+	titleText.innerHTML = titleHTML;
 
 	let prop = feature.getProperties();
     let tblbody = tbl.getElementsByTagName('tbody')[0];

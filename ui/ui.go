@@ -27,18 +27,19 @@ type PageData struct {
 	AppName    string
 	AppVersion string
 	// URLHome - URL for the service home page
-	URLHome        string
-	URLCollections string
-	URLCollection  string
-	URLItems       string
-	URLFunctions   string
-	URLFunction    string
-	URLJSON        string
-	Group          string
-	Title          string
-	Table          *data.Table
-	Function       *data.Function
-	FeatureID      string
+	URLHome         string
+	URLCollections  string
+	URLCollection   string
+	URLItems        string
+	URLFunctions    string
+	URLFunction     string
+	URLJSON         string
+	Group           string
+	Title           string
+	Table           *data.Table
+	Function        *data.Function
+	FeatureID       string
+	ShowFeatureLink bool
 }
 
 var htmlTemp struct {

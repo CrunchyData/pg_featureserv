@@ -281,6 +281,7 @@ func writeItemsHTML(w http.ResponseWriter, name string, query string, urlBase st
 	context.URLJSON = urlPathFormatQuery(urlBase, pathItems, api.FormatJSON, query)
 	context.Group = "Collections"
 	context.Title = tbl.Title
+	context.ShowFeatureLink = true
 
 	// features are not needed for items page (page queries for them)
 	return writeHTML(w, nil, context, ui.PageItems())
