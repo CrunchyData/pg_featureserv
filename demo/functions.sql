@@ -60,3 +60,19 @@ $$
 LANGUAGE 'plpgsql'
 STABLE
 STRICT;
+
+
+CREATE OR REPLACE FUNCTION postgisftw.buffer(
+	input geometry DEFAULT 'POINT(0 0)'::geometry,
+	dist numeric DEFAULT 10)
+RETURNS TABLE(geom geometry)
+AS $$
+BEGIN
+	RETURN QUERY
+		SELECT
+			ST_Buffer( ST_SetSRID(input, 4326), dist ) AS geom;
+END;
+$$
+LANGUAGE 'plpgsql'
+STABLE
+STRICT;
