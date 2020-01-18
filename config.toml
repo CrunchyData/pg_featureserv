@@ -10,9 +10,9 @@
 
 [Paging]
     # The default number of features in a response
-    LimitDefault = 10
+    LimitDefault = 20
     # Maxium number of features in a response
-    LimitMax = 1000
+    LimitMax = 10000
 
 [Metadata]
     # Title for this service
