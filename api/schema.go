@@ -31,6 +31,7 @@ const (
 	TagFunctions = "functions"
 
 	ParamLimit     = "limit"
+	ParamOffset    = "offset"
 	ParamBbox      = "bbox"
 	ParamPrecision = "precision"
 	ParamTransform = "transform"

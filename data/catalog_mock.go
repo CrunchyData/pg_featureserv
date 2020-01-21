@@ -109,7 +109,12 @@ func (cat *catalogMock) TableFeatures(name string, param QueryParam) ([]string, 
 		return nil, nil
 	}
 	if param.Limit < len(features) {
-		featLim := features[:param.Limit]
+		start := param.Offset
+		end := param.Offset + param.Limit
+		if end >= len(features) {
+			end = len(features) - 1
+		}
+		featLim := features[start:end]
 		return featLim, nil
 	}
 	return features, nil
@@ -178,10 +183,11 @@ func makePointFeatures(extent Extent, nx int, ny int) []string {
 	index := 0
 	for ix := 0; ix < nx; ix++ {
 		for iy := 0; iy < ny; iy++ {
+			id := index + 1
 			x := basex + dx*float64(ix)
 			y := basey + dy*float64(iy)
 			val := fmt.Sprintf("data value %v", index)
-			features[index] = makeFeaturePoint(index, x, y, val)
+			features[index] = makeFeaturePoint(id, x, y, val)
 			//fmt.Println(features[index])
 
 			index++
@@ -197,7 +203,7 @@ type featurePointMock struct {
 	Val string
 }
 
-var templateStrFeaturePoint = `{ "type": "Feature", "id": {{ .ID }},
+var templateStrFeaturePoint = `{ "type": "Feature", "id": "{{ .ID }}",
 "geometry": {"type": "Point","coordinates": [  {{ .X }}, {{ .Y }} ]  },
 "properties": { "value": "{{ .Val }}"  } }`
 

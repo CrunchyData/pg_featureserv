@@ -54,6 +54,7 @@ type TransformFunction struct {
 // QueryParam holds the optional parameters for an items query
 type QueryParam struct {
 	Limit         int
+	Offset        int
 	Bbox          *Extent
 	Precision     int
 	TransformFuns []TransformFunction

@@ -30,6 +30,24 @@ import (
 	"github.com/CrunchyData/pg_featureserv/data"
 )
 
+// Define a FeatureCollection structure for parsing test data
+
+type Feature struct {
+	Type  string                 `json:"type"`
+	ID    string                 `json:"id,omitempty"`
+	Geom  *json.RawMessage       `json:"geometry"`
+	Props map[string]interface{} `json:"properties"`
+}
+
+type FeatureCollection struct {
+	Type           string      `json:"type"`
+	Features       []*Feature  `json:"features"`
+	NumberMatched  uint        `json:"numberMatched,omitempty"`
+	NumberReturned uint        `json:"numberReturned"`
+	TimeStamp      string      `json:"timeStamp,omitempty"`
+	Links          []*api.Link `json:"links"`
+}
+
 // testConfir is a config spec for using in running tests
 var testConfig config.Config = config.Config{
 	Server: config.Server{
@@ -88,14 +106,32 @@ func TestCollectionResponse(t *testing.T) {
 func TestLimit(t *testing.T) {
 	rr := doRequest(t, "/collections/mock_a/items?limit=3")
 
-	var v api.FeatureCollectionRaw
+	var v FeatureCollection
 	json.Unmarshal(readBody(rr), &v)
 
 	equals(t, 3, len(v.Features), "# features")
+	equals(t, "1", v.Features[0].ID, "feature 1 id")
+	equals(t, "2", v.Features[1].ID, "feature 2 id")
+	equals(t, "3", v.Features[3].ID, "feature 3 id")
 }
 
 func TestLimitInvalid(t *testing.T) {
 	doRequestStatus(t, "/collections/mock_a/items?limit=x", http.StatusBadRequest)
+}
+
+func TestOffset(t *testing.T) {
+	rr := doRequest(t, "/collections/mock_a/items?limit=2&offset=4")
+
+	var v FeatureCollection
+	json.Unmarshal(readBody(rr), &v)
+
+	equals(t, 2, len(v.Features), "# features")
+	equals(t, "5", v.Features[0].ID, "feature 5 id")
+	equals(t, "6", v.Features[1].ID, "feature 6 id")
+}
+
+func TestOffsetInvalid(t *testing.T) {
+	doRequestStatus(t, "/collections/mock_a/items?offset=x", http.StatusBadRequest)
 }
 
 func TestBBox(t *testing.T) {

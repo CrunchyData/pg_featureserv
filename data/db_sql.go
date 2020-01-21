@@ -92,13 +92,13 @@ JOIN proargarrays aa ON (p.oid = aa.oid)
 LEFT JOIN pg_description d ON (p.oid = d.objoid)
 ORDER BY id`
 
-const sqlFmtFeatures = "SELECT %v %v FROM %v %v LIMIT %v;"
+const sqlFmtFeatures = "SELECT %v %v FROM %v %v LIMIT %v OFFSET %v;"
 
 func sqlFeatures(tbl *Table, param QueryParam) string {
 	geomCol := sqlGeomCol(tbl.GeometryColumn, param)
 	propCols := sqlColList(tbl.Columns, tbl.Types, true)
 	sqlWhere := sqlBBoxFilter(tbl, param)
-	sql := fmt.Sprintf(sqlFmtFeatures, geomCol, propCols, tbl.ID, sqlWhere, param.Limit)
+	sql := fmt.Sprintf(sqlFmtFeatures, geomCol, propCols, tbl.ID, sqlWhere, param.Limit, param.Offset)
 	return sql
 }
 
