@@ -1,6 +1,6 @@
 FROM centos:7
 
-ARG VERSION
+ARG VERSION=0.1
 
 LABEL vendor="Crunchy Data" \
 	url="https://crunchydata.com" \
@@ -8,11 +8,14 @@ LABEL vendor="Crunchy Data" \
 	org.opencontainers.image.vendor="Crunchy Data" \
 	os.version="7.7"
 
-ADD ./build/crunchy-cloud-api /usr/local/bin
-ADD ./build/plugin-crunchy-cloud.so /opt/crunchy-cloud/
+ADD ./pg_featureserv .
+ADD ./assets ./assets
 
 VOLUME ["/config"]
+VOLUME [ "/assets"]
 
-USER daemon
+USER 1001
+EXPOSE 9000
 
-ENTRYPOINT ["/usr/local/bin/crunchy-cloud-api"]
+ENTRYPOINT ["./pg_featureserv"]
+CMD []
