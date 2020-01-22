@@ -7,6 +7,8 @@
 #    CORSOrigins = "*"
     # set Debug to true to run in debug mode (can also be done on cmd-line)
 #    Debug = true
+     # Read html templates from this directory
+     AssetsPath = "./assets"
 
 [Paging]
     # The default number of features in a response

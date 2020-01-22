@@ -32,6 +32,7 @@ func setDefaultConfig() {
 	viper.SetDefault("Server.BindPort", 9000)
 	viper.SetDefault("Server.CORSOrigins", "*")
 	viper.SetDefault("Server.Debug", false)
+	viper.SetDefault("Server.AssetsPath", "./assets")
 
 	viper.SetDefault("Paging.LimitDefault", 10)
 	viper.SetDefault("Paging.LimitMax", 1000)
@@ -54,6 +55,7 @@ type Server struct {
 	BindPort    int
 	CORSOrigins string
 	Debug       bool
+	AssetsPath  string
 }
 
 // Paging config

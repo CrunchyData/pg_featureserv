@@ -79,36 +79,53 @@ func loadTemplate(curr *template.Template, filename ...string) *template.Templat
 	return curr
 }
 
+func loadPageTemplate(curr *template.Template, filename string) *template.Template {
+	files := []string{
+		config.Configuration.Server.AssetsPath + "/page.gohtml",
+		config.Configuration.Server.AssetsPath + "/" + filename,
+	}
+	return loadTemplate(curr, files...)
+}
+
+func loadMapPageTemplate(curr *template.Template, filename string) *template.Template {
+	files := []string{
+		config.Configuration.Server.AssetsPath + "/page.gohtml",
+		config.Configuration.Server.AssetsPath + "/map_script.gohtml",
+		config.Configuration.Server.AssetsPath + "/" + filename,
+	}
+	return loadTemplate(curr, files...)
+}
+
 func PageHome() *template.Template {
-	htmlTemp.home = loadTemplate(htmlTemp.home, "html/page.gohtml", "html/home.gohtml")
+	htmlTemp.home = loadPageTemplate(htmlTemp.home, "home.gohtml")
 	return htmlTemp.home
 }
 func PageConformance() *template.Template {
-	htmlTemp.conformance = loadTemplate(htmlTemp.conformance, "html/page.gohtml", "html/conformance.gohtml")
+	htmlTemp.conformance = loadPageTemplate(htmlTemp.conformance, "conformance.gohtml")
 	return htmlTemp.conformance
 }
 func PageCollections() *template.Template {
-	htmlTemp.collections = loadTemplate(htmlTemp.collections, "html/page.gohtml", "html/collections.gohtml")
+	htmlTemp.collections = loadPageTemplate(htmlTemp.collections, "collections.gohtml")
 	return htmlTemp.collections
 }
 func PageCollection() *template.Template {
-	htmlTemp.collection = loadTemplate(htmlTemp.collection, "html/page.gohtml", "html/collection.gohtml")
+	htmlTemp.collection = loadPageTemplate(htmlTemp.collection, "collection.gohtml")
 	return htmlTemp.collection
 }
 func PageItems() *template.Template {
-	htmlTemp.items = loadTemplate(htmlTemp.items, "html/page.gohtml", "html/map_script.gohtml", "html/items.gohtml")
+	htmlTemp.items = loadMapPageTemplate(htmlTemp.items, "items.gohtml")
 	return htmlTemp.items
 }
 func PageItem() *template.Template {
-	htmlTemp.item = loadTemplate(htmlTemp.item, "html/page.gohtml", "html/map_script.gohtml", "html/item.gohtml")
+	htmlTemp.item = loadMapPageTemplate(htmlTemp.item, "item.gohtml")
 	return htmlTemp.item
 }
 func PageFunctions() *template.Template {
-	htmlTemp.functions = loadTemplate(htmlTemp.functions, "html/page.gohtml", "html/functions.gohtml")
+	htmlTemp.functions = loadPageTemplate(htmlTemp.functions, "functions.gohtml")
 	return htmlTemp.functions
 }
 func PageFunction() *template.Template {
-	htmlTemp.function = loadTemplate(htmlTemp.function, "html/page.gohtml", "html/function.gohtml")
+	htmlTemp.function = loadPageTemplate(htmlTemp.function, "function.gohtml")
 	return htmlTemp.function
 }
 

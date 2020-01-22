@@ -51,8 +51,9 @@ type FeatureCollection struct {
 // testConfir is a config spec for using in running tests
 var testConfig config.Config = config.Config{
 	Server: config.Server{
-		BindHost: "",
-		BindPort: 9000,
+		BindHost:   "localhost",
+		BindPort:   9000,
+		AssetsPath: "./assets",
 	},
 	Paging: config.Paging{
 		LimitDefault: 10,
