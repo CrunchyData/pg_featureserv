@@ -51,6 +51,8 @@ type TransformFunction struct {
 	Arg  []string
 }
 
+type ParamNameVal map[string]string
+
 // QueryParam holds the optional parameters for an items query
 type QueryParam struct {
 	Limit         int
@@ -58,7 +60,7 @@ type QueryParam struct {
 	Bbox          *Extent
 	Precision     int
 	TransformFuns []TransformFunction
-	Values        map[string]string
+	Values        ParamNameVal
 }
 
 // Table holds metadata for table/view objects

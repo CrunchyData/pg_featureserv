@@ -112,11 +112,22 @@ func TestLimit(t *testing.T) {
 	equals(t, 3, len(v.Features), "# features")
 	equals(t, "1", v.Features[0].ID, "feature 1 id")
 	equals(t, "2", v.Features[1].ID, "feature 2 id")
-	equals(t, "3", v.Features[3].ID, "feature 3 id")
+	equals(t, "3", v.Features[2].ID, "feature 3 id")
 }
 
 func TestLimitInvalid(t *testing.T) {
 	doRequestStatus(t, "/collections/mock_a/items?limit=x", http.StatusBadRequest)
+}
+
+func TestParamCase(t *testing.T) {
+	rr := doRequest(t, "/collections/mock_a/items?LIMIT=2&Offset=4")
+
+	var v FeatureCollection
+	json.Unmarshal(readBody(rr), &v)
+
+	equals(t, 2, len(v.Features), "# features")
+	equals(t, "5", v.Features[0].ID, "feature 5 id")
+	equals(t, "6", v.Features[1].ID, "feature 6 id")
 }
 
 func TestOffset(t *testing.T) {

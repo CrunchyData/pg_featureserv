@@ -27,58 +27,80 @@ import (
 
 func parseRequestParams(r *http.Request) (data.QueryParam, error) {
 	queryValues := r.URL.Query()
+	paramValues := extractSingleArgs(queryValues)
+
 	param := data.QueryParam{
 		Limit:     config.Configuration.Paging.LimitDefault,
 		Offset:    0,
-		Precision: 4,
-		Values:    extractSingleArg(queryValues),
+		Precision: 6,
+		Values:    paramValues,
 	}
 
 	// --- limit parameter
-	limit, err := parseLimit(queryValues)
+	limit, err := parseLimit(paramValues)
 	if err != nil {
 		return param, err
 	}
 	param.Limit = limit
 
 	// --- limit parameter
-	offset, err := parseOffset(queryValues)
+	offset, err := parseInt(paramValues, api.ParamOffset, 0, config.Configuration.Paging.LimitMax, 0)
 	if err != nil {
 		return param, err
 	}
 	param.Offset = offset
 
 	// --- bbox parameter
-	bbox, err := parseBbox(queryValues)
+	bbox, err := parseBbox(paramValues)
 	if err != nil {
 		return param, err
 	}
 	param.Bbox = bbox
 
 	// --- precision parameter
-	precision, err := parsePrecision(queryValues)
+	precision, err := parseInt(paramValues, api.ParamPrecision, 0, 20, -1)
 	if err != nil {
 		return param, err
 	}
 	param.Precision = precision
 
 	// --- transform parameter
-	param.TransformFuns = parseTransform(queryValues, 0)
+	param.TransformFuns = parseTransform(paramValues)
 
 	return param, nil
 }
 
-func extractSingleArg(queryArgs url.Values) map[string]string {
+func extractSingleArgs(queryArgs url.Values) data.ParamNameVal {
 	vals := make(map[string]string)
-	for key := range queryArgs {
-		queryval := queryArgs.Get(key)
+	for keyRaw := range queryArgs {
+		queryval := queryArgs.Get(keyRaw)
+		key := strings.ToLower(keyRaw)
 		vals[key] = queryval
 	}
 	return vals
 }
 
-func parseLimit(values url.Values) (int, error) {
-	val := values.Get(api.ParamLimit)
+func parseInt(values data.ParamNameVal, key string, minVal int, maxVal int, defaultVal int) (int, error) {
+	valStr := values[key]
+	// key not present or missing value
+	if len(valStr) < 1 {
+		return defaultVal, nil
+	}
+	val, err := strconv.Atoi(valStr)
+	if err != nil {
+		return 0, fmt.Errorf(api.ErrMsgInvalidParameterValue, key, valStr)
+	}
+	if val < minVal {
+		val = minVal
+	}
+	if val > maxVal {
+		val = maxVal
+	}
+	return val, nil
+}
+
+func parseLimit(values data.ParamNameVal) (int, error) {
+	val := values[api.ParamLimit]
 	if len(val) < 1 {
 		return config.Configuration.Paging.LimitDefault, nil
 	}
@@ -92,43 +114,12 @@ func parseLimit(values url.Values) (int, error) {
 	return limit, nil
 }
 
-func parseOffset(values url.Values) (int, error) {
-	val := values.Get(api.ParamOffset)
-	if len(val) < 1 {
-		return 0, nil
-	}
-	offset, err := strconv.Atoi(val)
-	if err != nil {
-		return 0, fmt.Errorf(api.ErrMsgInvalidParameterValue, api.ParamLimit, val)
-	}
-	if offset < 0 {
-		offset = 0
-	}
-	if offset > config.Configuration.Paging.LimitMax {
-		offset = config.Configuration.Paging.LimitMax
-	}
-	return offset, nil
-}
-
-func parsePrecision(values url.Values) (int, error) {
-	val := values.Get(api.ParamPrecision)
-	// no parameter present
-	if len(val) < 1 {
-		return -1, nil
-	}
-	prec, err := strconv.Atoi(val)
-	if err != nil {
-		return 0, fmt.Errorf(api.ErrMsgInvalidParameterValue, api.ParamPrecision, val)
-	}
-	return prec, nil
-}
-
 /*
 parseBbox parses the bbox query parameter, if present, or nll if not
 This has the format bbox=minLon,minLat,maxLon,maxLat.
 */
-func parseBbox(values url.Values) (*data.Extent, error) {
-	val := values.Get(api.ParamBbox)
+func parseBbox(values data.ParamNameVal) (*data.Extent, error) {
+	val := values[api.ParamBbox]
 	if len(val) < 1 {
 		return nil, nil
 	}
@@ -163,8 +154,8 @@ func parseBbox(values url.Values) (*data.Extent, error) {
 const transformFunSep = "|"
 const transformParamSep = ","
 
-func parseTransform(values url.Values, index int) []data.TransformFunction {
-	val := values.Get(api.ParamTransform)
+func parseTransform(values data.ParamNameVal) []data.TransformFunction {
+	val := values[api.ParamTransform]
 	if len(val) < 1 {
 		return nil
 	}
