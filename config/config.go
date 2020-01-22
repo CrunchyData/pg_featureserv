@@ -28,7 +28,7 @@ const (
 var Configuration Config
 
 func setDefaultConfig() {
-	viper.SetDefault("Server.BindHost", "")
+	viper.SetDefault("Server.BindHost", "localhost")
 	viper.SetDefault("Server.BindPort", 9000)
 	viper.SetDefault("Server.CORSOrigins", "*")
 	viper.SetDefault("Server.Debug", false)
