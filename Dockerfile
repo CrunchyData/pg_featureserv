@@ -12,6 +12,7 @@ ADD ./pg_featureserv .
 ADD ./assets ./assets
 
 VOLUME ["/config"]
+VOLUME ["/assets"]
 
 USER 1001
 EXPOSE 9000
