@@ -37,8 +37,8 @@ func setDefaultConfig() {
 	viper.SetDefault("Paging.LimitDefault", 10)
 	viper.SetDefault("Paging.LimitMax", 1000)
 
-	viper.SetDefault("Metadata.Title", "pg-featureserv Demo")
-	viper.SetDefault("Metadata.Description", "Demo of Crunchy Data PostGIS Feature Server")
+	viper.SetDefault("Metadata.Title", "pg-featureserv")
+	viper.SetDefault("Metadata.Description", "Crunchy Data Feature Server for PostGIS")
 }
 
 // Config for system

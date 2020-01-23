@@ -18,6 +18,6 @@
 
 [Metadata]
     # Title for this service
-	Title = "pg-featureserv Demo"
+#	Title = "pg-featureserv"
     # Description of this service
-	Description = "Demo of Crunchy Data PostGIS Feature Server"
+#	Description = "Crunchy Data Feature Server for PostGIS"
