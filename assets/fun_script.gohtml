@@ -3,14 +3,16 @@
 <td></td>
 <td class='section-title'>Function Args</td>
 <td>
+{{- $types := .context.Function.Types }}
 {{- range $i, $name := .context.Function.InNames }}
-<span class='param-title'> {{ $name }} <input tye='text' id='arg-{{ $name }}'></span>
+<span class='param-title'
+title='Arg {{ $name }} is of type {{index $types $name}}'> {{ $name }}
+<input tye='text' id='arg-{{ $name }}' title='Enter a {{index $types $name}} value'></span>
 {{- end }}
 <td></tr>
 <script>
 function addFunctionArgs(url) {
     var newurl = url;
-
 {{- range $i, $name := .context.Function.InNames }}
 newurl = addQueryParam(newurl, '{{ $name }}', document.getElementById('arg-{{ $name }}').value );
 {{- end }}

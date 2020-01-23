@@ -9,10 +9,10 @@
 
 <table>
 <tr>
-<td><button onclick='doQuery();'>Query</button></td>
+<td><button onclick='doQuery();' title='Click to requery with the parameters'>Query</button></td>
 <td class='section-title'>Parameters</td>
 <td>
-<span class='param-title'>Limit</span>
+<span class='param-title' title='Limits the number of features in the response'>Limit</span>
 <select id='item-limit'>
 <option></option>
 <option>10</option>
@@ -23,7 +23,8 @@
 <option>5000</option>
 <option>10000</option>
 </select>
-<span class='param-title'>Map BBox</span><input type='checkbox' id='chk-bbox'>
+<span class='param-title' title='Sets the BBOX query parameter to the map extent'>Map BBox</span>
+<input type='checkbox' id='chk-bbox'>
 </td></tr>
 {{template "funArgs" .}}
 </table>
