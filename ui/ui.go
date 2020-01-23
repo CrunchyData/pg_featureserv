@@ -43,14 +43,15 @@ type PageData struct {
 }
 
 var htmlTemp struct {
-	home        *template.Template
-	conformance *template.Template
-	collections *template.Template
-	collection  *template.Template
-	items       *template.Template
-	item        *template.Template
-	functions   *template.Template
-	function    *template.Template
+	home          *template.Template
+	conformance   *template.Template
+	collections   *template.Template
+	collection    *template.Template
+	items         *template.Template
+	item          *template.Template
+	functions     *template.Template
+	function      *template.Template
+	functionItems *template.Template
 }
 
 var HTMLDynamicLoad bool
@@ -127,6 +128,16 @@ func PageFunctions() *template.Template {
 func PageFunction() *template.Template {
 	htmlTemp.function = loadPageTemplate(htmlTemp.function, "function.gohtml")
 	return htmlTemp.function
+}
+func PageFunctionItems() *template.Template {
+	files := []string{
+		config.Configuration.Server.AssetsPath + "/page.gohtml",
+		config.Configuration.Server.AssetsPath + "/items.gohtml",
+		config.Configuration.Server.AssetsPath + "/map_script.gohtml",
+		config.Configuration.Server.AssetsPath + "/fun_script.gohtml",
+	}
+	htmlTemp.functionItems = loadTemplate(htmlTemp.functionItems, files...)
+	return htmlTemp.functionItems
 }
 
 // RenderHTML tbd

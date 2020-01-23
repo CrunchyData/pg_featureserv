@@ -538,9 +538,10 @@ func writeFunItemsHTML(w http.ResponseWriter, name string, query string, urlBase
 	context.URLJSON = urlPathFormatQuery(urlBase, pathItems, api.FormatJSON, query)
 	context.Group = "Functions"
 	context.Title = fn.ID
+	context.Function = fn
 
 	// features are not needed for items page (page queries for them)
-	return writeHTML(w, nil, context, ui.PageItems())
+	return writeHTML(w, nil, context, ui.PageFunctionItems())
 }
 
 func writeFunItemsGeoJSON(w http.ResponseWriter, name string, param data.QueryParam, urlBase string) *appError {

@@ -1,0 +1,21 @@
+{{define "funArgs"}}
+<tr>
+<td></td>
+<td class='section-title'>Function Args</td>
+<td>
+{{- range $i, $name := .context.Function.InNames }}
+<span class='param-title'> {{ $name }} <input tye='text' id='arg-{{ $name }}'></span>
+{{- end }}
+<td></tr>
+<script>
+function addFunctionArgs(url) {
+    var newurl = url;
+
+{{- range $i, $name := .context.Function.InNames }}
+newurl = addQueryParam(newurl, '{{ $name }}', document.getElementById('arg-{{ $name }}').value );
+{{- end }}
+
+    return newurl;
+}
+</script>
+{{ end }}

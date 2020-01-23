@@ -7,8 +7,11 @@
 </div>
 <hr>
 
-<div>
-<span class='section-title'>Parameters</span>
+<table>
+<tr>
+<td><button onclick='doQuery();'>Query</button></td>
+<td class='section-title'>Parameters</td>
+<td>
 <span class='param-title'>Limit</span>
 <select id='item-limit'>
 <option></option>
@@ -21,8 +24,9 @@
 <option>10000</option>
 </select>
 <span class='param-title'>Map BBox</span><input type='checkbox' id='chk-bbox'>
-<button onclick='doQuery();' style='margin-left:20px;'>Query</button>
-</div>
+</td></tr>
+{{template "funArgs" .}}
+</table>
 
 <h2>{{ .context.Title }} Features</h2>
 <table width='100%'>
@@ -46,10 +50,11 @@ function onMapLoad() {
 }
 function doQuery() {
 	var url = window.location.pathname;
+	var newUrl = addFunctionArgs(url);
 
 	var select = document.getElementById('item-limit');
 	var lim = select.options[select.selectedIndex].value;
-	var newurl = addQueryParam(url, 'limit', lim);
+	newurl = addQueryParam(newUrl, 'limit', lim);
 
 	var useBbox = document.getElementById('chk-bbox').checked;
 	if (useBbox) {
@@ -65,5 +70,11 @@ function addQueryParam(url, name, value) {
 	let  newUrl = `${url}${delim}${name}=${value}`;
 	return newUrl;
 }
+</script>
+{{ end }}
+{{define "funArgs"}}
+<script>
+// No-op for function args - replaced on function Items page
+function addFunctionArgs(url) { return url; }
 </script>
 {{ end }}
