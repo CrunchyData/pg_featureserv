@@ -9,7 +9,7 @@ LABEL vendor="Crunchy Data" \
 	os.version="7.7"
 
 ADD ./pg_featureserv .
-ADD ./html ./html
+ADD ./assets ./assets
 
 VOLUME ["/config"]
 
