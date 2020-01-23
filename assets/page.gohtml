@@ -14,6 +14,8 @@
 body {	font-family: sans-serif; }
 a { color:blue; text-decoration: none;}
 a:hover, a:focus { text-decoration: underline; }
+hr { margin-left: -10px; margin-right: -10px; }
+
 .tbl-props { border: 1px solid lightgrey; 	font-size: 12px; border-spacing: 3px; }
 .tbl-props tr:nth-child(even) { background-color: #EEE; }
 .page-title { font-family: monospace; font-size: 20pt; }
@@ -25,11 +27,12 @@ a:hover, a:focus { text-decoration: underline; }
 .coll-title { font-weight: italic; text-align: end; vertical-align: top; padding-right: 10px;}
 .prop-name { font-family: monospace; }
 .crumbs { font-size: 11pt; margin: 8px; }
+
 </style>
 </head>
 
-<body>
-	<header style='color: white; padding: 6px; background-color: #0167B4'>
+<body style='margin: 10px;'>
+	<header style='color: white; padding: 6px; background-color: #0167B4; margin: -10px -10px 10px -10px;'>
 		<div class='page-title'><a href="{{ .context.URLHome }}"><span style='color:white'>{{ .config.Metadata.Title }}</span></a></div>
 	</header>
 	{{template "body" .}}
