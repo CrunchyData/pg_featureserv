@@ -49,6 +49,7 @@ var flagTestModeOn bool
 var flagDebugOn bool
 var flagDevModeOn bool
 var flagHelp bool
+var flagVersion bool
 var flagConfigFilename string
 
 func init() {
@@ -61,6 +62,7 @@ func initCommnandOptions() {
 	getopt.FlagLong(&flagDebugOn, "debug", 'd', "Set logging level to TRACE")
 	getopt.FlagLong(&flagDevModeOn, "devel", 0, "Run in development mode")
 	getopt.FlagLong(&flagTestModeOn, "test", 't', "Serve mock data for testing")
+	getopt.FlagLong(&flagVersion, "version", 'v', "Output the version information")
 }
 
 func main() {
@@ -68,6 +70,11 @@ func main() {
 
 	if flagHelp {
 		getopt.Usage()
+		os.Exit(1)
+	}
+
+	if flagVersion {
+		fmt.Printf("%s %s\n", config.AppConfig.Name, config.AppConfig.Version)
 		os.Exit(1)
 	}
 
