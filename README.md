@@ -23,11 +23,12 @@ It supports the [OGC API - Features](http://docs.opengeospatial.org/is/17-069r3/
 
 ## Download
 
-Snapshot builds of the latest code:
+Builds of the latest code:
 
-* [Linux](https://postgisftw.s3.amazonaws.com/pg_featureserv_snapshot_linux.zip)
-* [Windows](https://postgisftw.s3.amazonaws.com/pg_featureserv_snapshot_windows.zip)
-* [OSX](https://postgisftw.s3.amazonaws.com/pg_featureserv_snapshot_osx.zip)
+* [Linux](https://postgisftw.s3.amazonaws.com/pg_featureserv_latest_linux.zip)
+* [Windows](https://postgisftw.s3.amazonaws.com/pg_featureserv_latest_windows.zip)
+* [OSX](https://postgisftw.s3.amazonaws.com/pg_featureserv_latest_osx.zip)
+* [Docker](https://hub.docker.com/repository/docker/pramsey/pg_featureserv)
 
 ## Building from Source
 

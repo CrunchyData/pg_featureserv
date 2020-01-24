@@ -1,39 +1,63 @@
 language: go
-sudo: false
+sudo: required
+
+services:
+  - docker
 
 matrix:
   include:
   - go: tip
     os: linux
-    env: CROSS_COMPILE=true
+    env: TARGET=linux
+  - go: tip
+    os: linux
+    env: TARGET=windows
   - go: tip
     os: osx
-    env: CROSS_COMPILE=false
+    env: TARGET=osx
+  - go: tip
+    os: linux
+    env: TARGET=docker
 
 before_install:
-- if [ "$CROSS_COMPILE" = "true" ]; then sudo apt update; fi
+- if [ "$TARGET" = "windows" ]; then sudo apt update; fi
 
 install:
-- if [ "$CROSS_COMPILE" = "true" ]; then sudo apt install gcc-mingw-w64 libc6-dev-i386; fi
+- if [ "$TARGET" = "windows" ]; then sudo apt install gcc-mingw-w64 libc6-dev-i386; fi
 
 script:
-- mkdir upload
-- go build
-- if [ "$TRAVIS_TAG" = "" ]; then REL=snapshot; else REL=$TRAVIS_TAG; fi
-- zip -r upload/pg_featureserv_${REL}_${TRAVIS_OS_NAME}.zip pg_featureserv README.md LICENSE.md config.toml html/
-- if [ "$TRAVIS_OS_NAME" = "linux" -a "$CROSS_COMPILE" = "true" ]; then env CGO_ENABLED=1 GOOS=windows GOARCH=amd64 CC=x86_64-w64-mingw32-gcc go build -v; zip -r upload/pg_featureserv_${REL}_windows.zip pg_featureserv.exe README.md LICENSE.md config.toml html/; fi
+- ./ci/travis-build.sh
+
+after_success:
+- ./ci/travis-after-success.sh
+
 
 deploy:
-  on:
-    repo: CrunchyData/pg_featureserv
-    branch: master
-  provider: s3
-  region: us-east-1
-  bucket: postgisftw
-  local_dir: "./upload"
-  overwrite: true
-  verbose: true
-  edge: true
-  access_key_id: ${AWS_ACCESS_KEY_ID}
-  secret_access_key: ${AWS_SECRET_ACCESS_KEY}
-  cleanup: false
+  - provider: s3
+    on:
+      repo: CrunchyData/pg_featureserv
+      branch: master
+      condition: $TARGET != docker
+    region: us-east-1
+    bucket: postgisftw
+    local_dir: "./upload"
+    overwrite: true
+    verbose: true
+    edge: true
+    access_key_id: ${AWS_ACCESS_KEY_ID}
+    secret_access_key: ${AWS_SECRET_ACCESS_KEY}
+    cleanup: false
+  - provider: s3
+    on:
+      repo: CrunchyData/pg_featureserv
+      tags: true
+      condition: $TARGET != docker
+    region: us-east-1
+    bucket: postgisftw
+    local_dir: "./upload"
+    overwrite: true
+    verbose: true
+    edge: true
+    access_key_id: ${AWS_ACCESS_KEY_ID}
+    secret_access_key: ${AWS_SECRET_ACCESS_KEY}
+    cleanup: false
