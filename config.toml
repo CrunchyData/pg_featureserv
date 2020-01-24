@@ -1,6 +1,6 @@
 [Server]
     # The hostname to use in links
-    BindHost = "localhost"
+    BindHost = "0.0.0.0"
     # The IP port to listen on
     BindPort = 9000
     # String to return for Access-Control-Allow-Origin header

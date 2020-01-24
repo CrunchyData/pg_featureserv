@@ -51,7 +51,7 @@ type FeatureCollection struct {
 // testConfir is a config spec for using in running tests
 var testConfig config.Config = config.Config{
 	Server: config.Server{
-		BindHost:   "localhost",
+		BindHost:   "0.0.0.0",
 		BindPort:   9000,
 		AssetsPath: "./assets",
 	},
