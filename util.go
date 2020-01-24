@@ -82,7 +82,7 @@ func serveURLBase(r *http.Request) string {
 		if fm, err := httpforwarded.Parse(f); err == nil {
 			ph = fm["host"][0]
 			ps = fm["proto"][0]
-			return fmt.Sprintf("%v://%v", ps, ph)
+			return fmt.Sprintf("%v://%v/", ps, ph)
 		}
 	}
 
@@ -97,7 +97,7 @@ func serveURLBase(r *http.Request) string {
 		ps = fp[0]
 	}
 
-	return fmt.Sprintf("%v://%v", ps, ph)
+	return fmt.Sprintf("%v://%v/", ps, ph)
 }
 
 func getRequestVar(varname string, r *http.Request) string {
