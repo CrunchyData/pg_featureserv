@@ -4,7 +4,7 @@ CONTAINER := pramsey/$(PROGRAM)
 
 .PHONY: all check clean test docker
 
-GOFILES := $(wildcard *.go)
+GOFILES := $(shell find . -type f -name '*.go')
 
 all: $(PROGRAM)
 

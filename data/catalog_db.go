@@ -195,9 +195,14 @@ func scanTable(rows pgx.Rows) *Table {
 	// the array. It's complex because of PgSQL ARRAY generality
 	// really, no fault of pgx
 
-	arrLen := props.Dimensions[0].Length
-	arrStart := props.Dimensions[0].LowerBound - 1
-	elmLen := props.Dimensions[1].Length
+	arrLen := 0
+	arrStart := 0
+	elmLen := 0
+	if props.Status != pgtype.Null {
+		arrLen = int(props.Dimensions[0].Length)
+		arrStart = int(props.Dimensions[0].LowerBound - 1)
+		elmLen = int(props.Dimensions[1].Length)
+	}
 
 	// TODO: query columns in table-defined order
 
