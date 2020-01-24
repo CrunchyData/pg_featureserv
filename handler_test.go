@@ -51,7 +51,7 @@ type FeatureCollection struct {
 // testConfir is a config spec for using in running tests
 var testConfig config.Config = config.Config{
 	Server: config.Server{
-		HttpHost:   "localhost",
+		HttpHost:   "0.0.0.0",
 		HttpPort:   9000,
 		AssetsPath: "./assets",
 	},

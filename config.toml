@@ -1,6 +1,6 @@
 [Server]
     # The hostname to use in links
-    HttpHost = "localhost"
+    HttpHost = "0.0.0.0"
     # The IP port to listen on
     HttpPort = 9000
     # String to return for Access-Control-Allow-Origin header
