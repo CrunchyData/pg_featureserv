@@ -105,7 +105,7 @@ func serve() {
 
 	confServ := config.Configuration.Server
 
-	bindAddress := fmt.Sprintf("%v:%v", confServ.BindHost, confServ.BindPort)
+	bindAddress := fmt.Sprintf("%v:%v", confServ.HttpHost, confServ.HttpPort)
 	log.Infof("Serving at %v\n", bindAddress)
 	log.Infof("CORS Allowed Origins: %v\n", config.Configuration.Server.CORSOrigins)
 
