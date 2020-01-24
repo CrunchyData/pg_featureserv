@@ -28,8 +28,9 @@ const (
 var Configuration Config
 
 func setDefaultConfig() {
-	viper.SetDefault("Server.BindHost", "localhost")
-	viper.SetDefault("Server.BindPort", 9000)
+	viper.SetDefault("Server.HttpHost", "0.0.0.0")
+	viper.SetDefault("Server.HttpPort", 9000)
+	viper.SetDefault("Server.UrlBase", "")
 	viper.SetDefault("Server.CORSOrigins", "*")
 	viper.SetDefault("Server.Debug", false)
 	viper.SetDefault("Server.AssetsPath", "./assets")
@@ -51,8 +52,9 @@ type Config struct {
 
 // Server config
 type Server struct {
-	BindHost    string
-	BindPort    int
+	HttpHost    string
+	HttpPort    int
+	UrlBase     string
 	CORSOrigins string
 	Debug       bool
 	AssetsPath  string
