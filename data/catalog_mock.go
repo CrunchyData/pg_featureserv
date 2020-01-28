@@ -46,12 +46,12 @@ func init() {
 
 func newCatalogMock() Catalog {
 	// must be in synch with featureMock type
-	propNames := []string{"propA", "propB", "propC", "propD"}
+	propNames := []string{"propa", "propb", "propc", "propd"}
 	types := map[string]string{
-		"propA": "text",
-		"propB": "int",
-		"propC": "text",
-		"propD": "int",
+		"propa": "text",
+		"propb": "int",
+		"propc": "text",
+		"propd": "int",
 	}
 	jtypes := []string{"string", "number", "string", "number"}
 
@@ -259,16 +259,16 @@ func (fm *featureMock) extractProperties(propNames []string) map[string]interfac
 	isAll := len(propNames) == 0
 	props := make(map[string]interface{})
 	for _, name := range propNames {
-		if isAll || name == "propA" {
+		if isAll || name == "propa" {
 			props[name] = fm.PropA
 		}
-		if isAll || name == "propB" {
+		if isAll || name == "propb" {
 			props[name] = fm.PropB
 		}
-		if isAll || name == "propC" {
+		if isAll || name == "propc" {
 			props[name] = fm.PropC
 		}
-		if isAll || name == "propD" {
+		if isAll || name == "propd" {
 			props[name] = fm.PropD
 		}
 	}

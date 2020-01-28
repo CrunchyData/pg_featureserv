@@ -158,12 +158,24 @@ func parseBbox(values data.ParamNameVal) (*data.Extent, error) {
 	return &bbox, nil
 }
 
+// parseProperties computes a lower-case, unique list
+// of property names to be returned
 func parseProperties(values data.ParamNameVal) ([]string, error) {
 	val := values[api.ParamProperties]
 	if len(val) < 1 {
 		return nil, nil
 	}
-	names := strings.Split(val, ",")
+	namesRaw := strings.Split(val, ",")
+	var names []string
+	nameMap := make(map[string]bool)
+	for _, name := range namesRaw {
+		nameLow := strings.ToLower(name)
+		// if a new name add to list
+		if _, ok := nameMap[nameLow]; !ok {
+			names = append(names, nameLow)
+			nameMap[nameLow] = true
+		}
+	}
 	return names, nil
 }
 
