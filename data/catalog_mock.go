@@ -24,7 +24,7 @@ import (
 
 type catalogMock struct {
 	tables    []*Table
-	tableData map[string][]string
+	tableData map[string][]*featureMock
 	functions []*Function
 }
 
@@ -45,6 +45,12 @@ func init() {
 }
 
 func newCatalogMock() Catalog {
+	// must be in synch with featureMock type
+	propNames := []string{"propA", "propB"}
+	types := map[string]string{
+		"propA": "text",
+		"propB": "int"}
+	jtypes := []string{"string", "number"}
 
 	layerA := &Table{
 		ID:          "mock_a",
@@ -52,6 +58,9 @@ func newCatalogMock() Catalog {
 		Description: "This dataset contains mock data about A (9 points)",
 		Extent:      Extent{Minx: -120, Miny: 40, Maxx: -74, Maxy: 50},
 		Srid:        4326,
+		Columns:     propNames,
+		Types:       types,
+		JSONTypes:   jtypes,
 	}
 
 	layerB := &Table{
@@ -60,6 +69,9 @@ func newCatalogMock() Catalog {
 		Description: "This dataset contains mock data about B (100 points)",
 		Extent:      Extent{Minx: -75, Miny: 45, Maxx: -74, Maxy: 46},
 		Srid:        4326,
+		Columns:     propNames,
+		Types:       types,
+		JSONTypes:   jtypes,
 	}
 
 	layerC := &Table{
@@ -68,9 +80,12 @@ func newCatalogMock() Catalog {
 		Description: "This dataset contains mock data about C (10000 points)",
 		Extent:      Extent{Minx: -120, Miny: 40, Maxx: -74, Maxy: 60},
 		Srid:        4326,
+		Columns:     propNames,
+		Types:       types,
+		JSONTypes:   jtypes,
 	}
 
-	tableData := map[string][]string{}
+	tableData := map[string][]*featureMock{}
 	tableData["mock_a"] = makePointFeatures(layerA.Extent, 3, 3)
 	tableData["mock_b"] = makePointFeatures(layerB.Extent, 10, 10)
 	tableData["mock_c"] = makePointFeatures(layerC.Extent, 100, 100)
@@ -108,16 +123,20 @@ func (cat *catalogMock) TableFeatures(name string, param QueryParam) ([]string, 
 		// table not found - indicated by nil value returned
 		return nil, nil
 	}
+	start := 0
+	end := len(features) - 1
 	if param.Limit < len(features) {
-		start := param.Offset
-		end := param.Offset + param.Limit
+		start = param.Offset
+		end = param.Offset + param.Limit - 1
 		if end >= len(features) {
 			end = len(features) - 1
 		}
-		featLim := features[start:end]
-		return featLim, nil
 	}
-	return features, nil
+	propNames := cat.tables[0].Columns
+	if len(param.Properties) > 0 {
+		propNames = param.Properties
+	}
+	return featuresToJSON(features, start, end, propNames), nil
 }
 
 func (cat *catalogMock) TableFeature(name string, id string, param QueryParam) (string, error) {
@@ -136,7 +155,12 @@ func (cat *catalogMock) TableFeature(name string, id string, param QueryParam) (
 	if index < 0 || index >= len(features) {
 		return "", nil
 	}
-	return features[index], nil
+	propNames := cat.tables[0].Columns
+	if len(param.Properties) > 0 {
+		propNames = param.Properties
+	}
+
+	return features[index].toJSON(propNames), nil
 }
 
 func (cat *catalogMock) Functions() ([]*Function, error) {
@@ -163,31 +187,21 @@ func (cat *catalogMock) FunctionData(name string, param QueryParam) ([]map[strin
 	return nil, nil
 }
 
-var featuresMock = []string{
-	`{ "type": "Feature", "id": 1,  "geometry": {"type": "Point","coordinates": [  -75,	  45]  },
-	  "properties": { "value": "89.9"  } }`,
-	`{ "type": "Feature", "id": 2,  "geometry": {"type": "Point","coordinates": [  -75,	  40]  },
-	  "properties": { "value": "89.9"  } }`,
-	`{ "type": "Feature", "id": 3,  "geometry": {"type": "Point","coordinates": [  -75,	  35]  },
-	  "properties": { "value": "89.9"  } }`,
-}
-
-func makePointFeatures(extent Extent, nx int, ny int) []string {
+func makePointFeatures(extent Extent, nx int, ny int) []*featureMock {
 	basex := extent.Minx
 	basey := extent.Miny
 	dx := (extent.Maxx - extent.Minx) / float64(nx)
 	dy := (extent.Maxy - extent.Miny) / float64(ny)
 
 	n := nx * ny
-	features := make([]string, n)
+	features := make([]*featureMock, n)
 	index := 0
 	for ix := 0; ix < nx; ix++ {
 		for iy := 0; iy < ny; iy++ {
 			id := index + 1
 			x := basex + dx*float64(ix)
 			y := basey + dy*float64(iy)
-			val := fmt.Sprintf("data value %v", index)
-			features[index] = makeFeaturePoint(id, x, y, val)
+			features[index] = makeFeatureMockPoint(id, x, y)
 			//fmt.Println(features[index])
 
 			index++
@@ -213,4 +227,48 @@ func makeFeaturePoint(id int, x float64, y float64, val string) string {
 	//	tempOut.Reset()
 	templateFeaturePoint.Execute(&tempOut, feat)
 	return tempOut.String()
+}
+
+type featureMock struct {
+	ID    string
+	Geom  string
+	PropA string
+	PropB int
+}
+
+func makeFeatureMockPoint(id int, x float64, y float64) *featureMock {
+	geomFmt := `{"type": "Point","coordinates": [ %v, %v ]  }`
+	geomStr := fmt.Sprintf(geomFmt, x, y)
+
+	idstr := strconv.Itoa(id)
+	feat := featureMock{idstr, geomStr, "propA", id}
+	return &feat
+}
+
+func (fm *featureMock) toJSON(propNames []string) string {
+	props := fm.extractProperties(propNames)
+	return makeFeatureJSON(fm.ID, fm.Geom, props)
+}
+
+func (fm *featureMock) extractProperties(propNames []string) map[string]interface{} {
+	isAll := len(propNames) == 0
+	props := make(map[string]interface{})
+	for _, name := range propNames {
+		if isAll || name == "propA" {
+			props[name] = fm.PropA
+		}
+		if isAll || name == "propB" {
+			props[name] = fm.PropB
+		}
+	}
+	return props
+}
+
+func featuresToJSON(features []*featureMock, start int, end int, propNames []string) []string {
+	n := end - start + 1
+	featJSON := make([]string, n)
+	for i := 0; i < n; i++ {
+		featJSON[i] = features[start+i].toJSON(propNames)
+	}
+	return featJSON
 }

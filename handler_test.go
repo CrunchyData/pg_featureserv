@@ -120,7 +120,7 @@ func TestLimitInvalid(t *testing.T) {
 	doRequestStatus(t, "/collections/mock_a/items?limit=x", http.StatusBadRequest)
 }
 
-func TestParamCase(t *testing.T) {
+func TestQueryParamCase(t *testing.T) {
 	rr := doRequest(t, "/collections/mock_a/items?LIMIT=2&Offset=4")
 
 	var v FeatureCollection
@@ -153,6 +153,16 @@ func TestBBox(t *testing.T) {
 
 func TestBBoxInvalid(t *testing.T) {
 	doRequestStatus(t, "/collections/mock_a/items?bbox=1,2,3,x", http.StatusBadRequest)
+}
+
+func TestProperties(t *testing.T) {
+	rr := doRequest(t, "/collections/mock_a/items?limit=2&properties=propA")
+
+	var v FeatureCollection
+	json.Unmarshal(readBody(rr), &v)
+
+	equals(t, 2, len(v.Features), "# features")
+	equals(t, 1, len(v.Features[0].Props), "feature 1 # properties")
 }
 
 func TestCollectionNoFound(t *testing.T) {

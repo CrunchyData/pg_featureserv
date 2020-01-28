@@ -43,7 +43,7 @@ func parseRequestParams(r *http.Request) (data.QueryParam, error) {
 	}
 	param.Limit = limit
 
-	// --- limit parameter
+	// --- offset parameter
 	offset, err := parseInt(paramValues, api.ParamOffset, 0, config.Configuration.Paging.LimitMax, 0)
 	if err != nil {
 		return param, err
@@ -56,6 +56,13 @@ func parseRequestParams(r *http.Request) (data.QueryParam, error) {
 		return param, err
 	}
 	param.Bbox = bbox
+
+	// --- properties parameter
+	props, err := parseProperties(paramValues)
+	if err != nil {
+		return param, err
+	}
+	param.Properties = props
 
 	// --- precision parameter
 	precision, err := parseInt(paramValues, api.ParamPrecision, 0, 20, -1)
@@ -149,6 +156,15 @@ func parseBbox(values data.ParamNameVal) (*data.Extent, error) {
 	}
 	var bbox = data.Extent{Minx: minLon, Miny: minLat, Maxx: maxLon, Maxy: maxLat}
 	return &bbox, nil
+}
+
+func parseProperties(values data.ParamNameVal) ([]string, error) {
+	val := values[api.ParamProperties]
+	if len(val) < 1 {
+		return nil, nil
+	}
+	names := strings.Split(val, ",")
+	return names, nil
 }
 
 const transformFunSep = "|"

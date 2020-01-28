@@ -58,6 +58,7 @@ type QueryParam struct {
 	Limit         int
 	Offset        int
 	Bbox          *Extent
+	Properties    []string
 	Precision     int
 	TransformFuns []TransformFunction
 	Values        ParamNameVal
