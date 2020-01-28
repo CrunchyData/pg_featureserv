@@ -156,15 +156,19 @@ func TestBBoxInvalid(t *testing.T) {
 }
 
 func TestProperties(t *testing.T) {
-	rr := doRequest(t, "/collections/mock_a/items?limit=2&properties=PROPA,propC,propa")
+	// Tests:
+	// - property names are non-case-sensitive
+	// - names are made unique (properties only include once)
+	// - non-existing names are ignored
+	rr := doRequest(t, "/collections/mock_a/items?limit=2&properties=PROP_A,prop_C,prop_a,not_prop")
 
 	var v FeatureCollection
 	json.Unmarshal(readBody(rr), &v)
 
 	equals(t, 2, len(v.Features), "# features")
 	equals(t, 2, len(v.Features[0].Props), "feature 1 # properties")
-	equals(t, "propA", v.Features[0].Props["propa"], "feature 1 # property A")
-	equals(t, "propC", v.Features[0].Props["propc"], "feature 1 # property C")
+	equals(t, "propA", v.Features[0].Props["prop_a"], "feature 1 # property A")
+	equals(t, "propC", v.Features[0].Props["prop_c"], "feature 1 # property C")
 }
 
 // TestPropertiesAll tests that no properties parameter returns all props
@@ -177,10 +181,10 @@ func TestPropertiesAll(t *testing.T) {
 	// Note that JSON numbers are read as float64
 	equals(t, 2, len(v.Features), "# features")
 	equals(t, 4, len(v.Features[0].Props), "feature 1 # properties")
-	equals(t, "propA", v.Features[0].Props["propa"], "feature 1 # property A")
-	equals(t, 1.0, v.Features[0].Props["propb"], "feature 1 # property B")
-	equals(t, "propC", v.Features[0].Props["propc"], "feature 1 # property C")
-	equals(t, 999.0, v.Features[0].Props["propd"], "feature 1 # property D")
+	equals(t, "propA", v.Features[0].Props["prop_a"], "feature 1 # property A")
+	equals(t, 1.0, v.Features[0].Props["prop_b"], "feature 1 # property B")
+	equals(t, "propC", v.Features[0].Props["prop_c"], "feature 1 # property C")
+	equals(t, 999.0, v.Features[0].Props["prop_d"], "feature 1 # property D")
 }
 
 func TestCollectionNoFound(t *testing.T) {
