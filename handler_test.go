@@ -156,13 +156,30 @@ func TestBBoxInvalid(t *testing.T) {
 }
 
 func TestProperties(t *testing.T) {
-	rr := doRequest(t, "/collections/mock_a/items?limit=2&properties=propA")
+	rr := doRequest(t, "/collections/mock_a/items?limit=2&properties=propA,propC")
 
 	var v FeatureCollection
 	json.Unmarshal(readBody(rr), &v)
 
 	equals(t, 2, len(v.Features), "# features")
-	equals(t, 1, len(v.Features[0].Props), "feature 1 # properties")
+	equals(t, 2, len(v.Features[0].Props), "feature 1 # properties")
+	equals(t, "propA", v.Features[0].Props["propA"], "feature 1 # property A")
+	equals(t, "propC", v.Features[0].Props["propC"], "feature 1 # property C")
+}
+
+func TestPropertiesAll(t *testing.T) {
+	rr := doRequest(t, "/collections/mock_a/items?limit=2")
+
+	var v FeatureCollection
+	json.Unmarshal(readBody(rr), &v)
+
+	// Note that JSON numbers are read as float64
+	equals(t, 2, len(v.Features), "# features")
+	equals(t, 4, len(v.Features[0].Props), "feature 1 # properties")
+	equals(t, "propA", v.Features[0].Props["propA"], "feature 1 # property A")
+	equals(t, 1.0, v.Features[0].Props["propB"], "feature 1 # property B")
+	equals(t, "propC", v.Features[0].Props["propC"], "feature 1 # property C")
+	equals(t, 999.0, v.Features[0].Props["propD"], "feature 1 # property D")
 }
 
 func TestCollectionNoFound(t *testing.T) {

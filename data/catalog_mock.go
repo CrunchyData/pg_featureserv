@@ -46,11 +46,14 @@ func init() {
 
 func newCatalogMock() Catalog {
 	// must be in synch with featureMock type
-	propNames := []string{"propA", "propB"}
+	propNames := []string{"propA", "propB", "propC", "propD"}
 	types := map[string]string{
 		"propA": "text",
-		"propB": "int"}
-	jtypes := []string{"string", "number"}
+		"propB": "int",
+		"propC": "text",
+		"propD": "int",
+	}
+	jtypes := []string{"string", "number", "string", "number"}
 
 	layerA := &Table{
 		ID:          "mock_a",
@@ -234,6 +237,8 @@ type featureMock struct {
 	Geom  string
 	PropA string
 	PropB int
+	PropC string
+	PropD int
 }
 
 func makeFeatureMockPoint(id int, x float64, y float64) *featureMock {
@@ -241,7 +246,7 @@ func makeFeatureMockPoint(id int, x float64, y float64) *featureMock {
 	geomStr := fmt.Sprintf(geomFmt, x, y)
 
 	idstr := strconv.Itoa(id)
-	feat := featureMock{idstr, geomStr, "propA", id}
+	feat := featureMock{idstr, geomStr, "propA", id, "propC", 999}
 	return &feat
 }
 
@@ -259,6 +264,12 @@ func (fm *featureMock) extractProperties(propNames []string) map[string]interfac
 		}
 		if isAll || name == "propB" {
 			props[name] = fm.PropB
+		}
+		if isAll || name == "propC" {
+			props[name] = fm.PropC
+		}
+		if isAll || name == "propD" {
+			props[name] = fm.PropD
 		}
 	}
 	return props
