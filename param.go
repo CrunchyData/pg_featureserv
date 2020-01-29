@@ -179,6 +179,10 @@ func parseProperties(values data.ParamNameVal) ([]string, error) {
 	return names, nil
 }
 
+// normalizePropNames converts the request property name list (if any)
+// into a clean list of valid, unique column names
+// If the request properties list is empty,
+// the full column list is returned
 func normalizePropNames(requestNames []string, colNames []string) []string {
 	// no props given => use all properties
 	if len(requestNames) == 0 {

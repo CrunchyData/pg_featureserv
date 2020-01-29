@@ -55,10 +55,12 @@ type ParamNameVal map[string]string
 
 // QueryParam holds the optional parameters for an items query
 type QueryParam struct {
-	Limit         int
-	Offset        int
-	Bbox          *Extent
-	Properties    []string
+	Limit      int
+	Offset     int
+	Bbox       *Extent
+	Properties []string
+	// Columns is the clean list of columns to query
+	Columns       []string
 	Precision     int
 	TransformFuns []TransformFunction
 	Values        ParamNameVal

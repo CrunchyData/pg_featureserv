@@ -96,7 +96,7 @@ const sqlFmtFeatures = "SELECT %v %v FROM %v %v LIMIT %v OFFSET %v;"
 
 func sqlFeatures(tbl *Table, param QueryParam) string {
 	geomCol := sqlGeomCol(tbl.GeometryColumn, param)
-	propCols := sqlColList(tbl.Columns, tbl.Types, true)
+	propCols := sqlColList(param.Columns, tbl.Types, true)
 	sqlWhere := sqlBBoxFilter(tbl, param)
 	sql := fmt.Sprintf(sqlFmtFeatures, geomCol, propCols, tbl.ID, sqlWhere, param.Limit, param.Offset)
 	return sql
@@ -131,11 +131,11 @@ func sqlColExpr(name string, dbtype string) string {
 	return name
 }
 
-const sqlFmtFeature = "SELECT %v, %v FROM %v WHERE %v = $1 LIMIT 1"
+const sqlFmtFeature = "SELECT %v %v FROM %v WHERE %v = $1 LIMIT 1"
 
 func sqlFeature(tbl *Table, param QueryParam) string {
 	geomCol := sqlGeomCol(tbl.GeometryColumn, param)
-	propCols := sqlColList(tbl.Columns, tbl.Types, true)
+	propCols := sqlColList(param.Columns, tbl.Types, true)
 	sql := fmt.Sprintf(sqlFmtFeature, geomCol, propCols, tbl.ID, tbl.IDColumn)
 	return sql
 }

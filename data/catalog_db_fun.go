@@ -236,12 +236,3 @@ func scanDataRow(rows pgx.Rows, hasID bool, propNames []string) map[string]inter
 	props := extractProperties(vals, 0, propNames)
 	return props
 }
-
-func indexOfName(names []string, name string) int {
-	for i, nm := range names {
-		if nm == name {
-			return i
-		}
-	}
-	return -1
-}

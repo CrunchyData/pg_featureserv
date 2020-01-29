@@ -261,7 +261,7 @@ func handleCollectionItems(w http.ResponseWriter, r *http.Request) *appError {
 	if tbl == nil {
 		return appErrorNotFoundFmt(err1, api.ErrMsgCollectionNotFound, name)
 	}
-	param.Properties = normalizePropNames(param.Properties, tbl.Columns)
+	param.Columns = normalizePropNames(param.Properties, tbl.Columns)
 
 	switch format {
 	case api.FormatJSON:
@@ -339,7 +339,7 @@ func handleItem(w http.ResponseWriter, r *http.Request) *appError {
 		return appErrorNotFoundFmt(err1, api.ErrMsgCollectionNotFound, name)
 	}
 
-	param.Properties = normalizePropNames(param.Properties, tbl.Columns)
+	param.Columns = normalizePropNames(param.Properties, tbl.Columns)
 
 	switch format {
 	case api.FormatJSON:
@@ -513,7 +513,7 @@ func handleFunctionItems(w http.ResponseWriter, r *http.Request) *appError {
 	if fn == nil && err == nil {
 		return appErrorNotFoundFmt(err, api.ErrMsgFunctionNotFound, name)
 	}
-	param.Properties = normalizePropNames(param.Properties, fn.OutNames)
+	param.Columns = normalizePropNames(param.Properties, fn.OutNames)
 
 	switch format {
 	case api.FormatJSON:

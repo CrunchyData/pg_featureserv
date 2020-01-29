@@ -129,8 +129,8 @@ func (cat *catalogMock) TableFeatures(name string, param QueryParam) ([]string, 
 	}
 	// handle empty property list
 	propNames := cat.tables[0].Columns
-	if len(param.Properties) > 0 {
-		propNames = param.Properties
+	if len(param.Columns) > 0 {
+		propNames = param.Columns
 	}
 	return featuresToJSON(features, start, end, propNames), nil
 }
@@ -153,8 +153,8 @@ func (cat *catalogMock) TableFeature(name string, id string, param QueryParam) (
 	}
 	// handle empty property list
 	propNames := cat.tables[0].Columns
-	if len(param.Properties) > 0 {
-		propNames = param.Properties
+	if len(param.Columns) > 0 {
+		propNames = param.Columns
 	}
 
 	return features[index].toJSON(propNames), nil

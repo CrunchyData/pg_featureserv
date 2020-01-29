@@ -102,11 +102,12 @@ func (cat *catalogDB) TableFeatures(name string, param QueryParam) ([]string, er
 	if err != nil || tbl == nil {
 		return nil, err
 	}
+	cols := param.Columns
 	sql := sqlFeatures(tbl, param)
 	log.Debug("TableFeatures: " + sql)
-	idColIndex := indexOfName(tbl.Columns, tbl.IDColumn)
+	idColIndex := indexOfName(cols, tbl.IDColumn)
 
-	features, err := readFeatures(cat.dbconn, sql, idColIndex, tbl.Columns)
+	features, err := readFeatures(cat.dbconn, sql, idColIndex, cols)
 	return features, err
 }
 
@@ -115,14 +116,15 @@ func (cat *catalogDB) TableFeature(name string, id string, param QueryParam) (st
 	if err != nil {
 		return "", err
 	}
+	cols := param.Columns
 	sql := sqlFeature(tbl, param)
 	log.Debug(sql)
-	idColIndex := indexOfName(tbl.Columns, tbl.IDColumn)
+	idColIndex := indexOfName(cols, tbl.IDColumn)
 
 	//--- Add a SQL arg for the feature ID
 	argValues := make([]interface{}, 0)
 	argValues = append(argValues, id)
-	features, err := readFeaturesWithArgs(cat.dbconn, sql, argValues, idColIndex, tbl.Columns)
+	features, err := readFeaturesWithArgs(cat.dbconn, sql, argValues, idColIndex, cols)
 
 	if len(features) == 0 {
 		return "", err
@@ -356,4 +358,15 @@ func makeFeatureJSON(id string, geom string, props map[string]interface{}) strin
 	jsonStr := string(json)
 	//fmt.Println(jsonStr)
 	return jsonStr
+}
+
+// indexOfName finds the index of a name in an array of names
+// It returns the index or -1 if not found
+func indexOfName(names []string, name string) int {
+	for i, nm := range names {
+		if nm == name {
+			return i
+		}
+	}
+	return -1
 }
