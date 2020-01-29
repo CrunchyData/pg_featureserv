@@ -245,6 +245,7 @@ func handleCollectionItems(w http.ResponseWriter, r *http.Request) *appError {
 	// TODO: determine content from request header?
 	format := api.PathFormat(r.URL)
 	urlBase := serveURLBase(r)
+	query := api.URLQuery(r.URL)
 
 	//--- extract request parameters
 	name := getRequestVar(routeVarID, r)
@@ -252,18 +253,7 @@ func handleCollectionItems(w http.ResponseWriter, r *http.Request) *appError {
 	if err != nil {
 		return appErrorMsg(err, err.Error(), http.StatusBadRequest)
 	}
-	query := api.URLQuery(r.URL)
 
-	switch format {
-	case api.FormatJSON:
-		return writeItemsJSON(w, name, param, urlBase)
-	case api.FormatHTML:
-		return writeItemsHTML(w, name, query, urlBase)
-	}
-	return nil
-}
-
-func writeItemsHTML(w http.ResponseWriter, name string, query string, urlBase string) *appError {
 	tbl, err1 := catalogInstance.TableByName(name)
 	if err1 != nil {
 		return appErrorInternalFmt(err1, api.ErrMsgCollectionAccess, name)
@@ -271,6 +261,19 @@ func writeItemsHTML(w http.ResponseWriter, name string, query string, urlBase st
 	if tbl == nil {
 		return appErrorNotFoundFmt(err1, api.ErrMsgCollectionNotFound, name)
 	}
+	param.Properties = normalizePropNames(param.Properties, tbl.Columns)
+
+	switch format {
+	case api.FormatJSON:
+		return writeItemsJSON(w, name, param, urlBase)
+	case api.FormatHTML:
+		return writeItemsHTML(w, tbl, name, query, urlBase)
+	}
+	return nil
+}
+
+func writeItemsHTML(w http.ResponseWriter, tbl *data.Table, name string, query string, urlBase string) *appError {
+
 	pathItems := api.PathItems(api.TagCollections, name)
 	// --- encoding
 	context := ui.NewPageData()
@@ -319,6 +322,7 @@ func handleItem(w http.ResponseWriter, r *http.Request) *appError {
 	format := api.PathFormat(r.URL)
 	urlBase := serveURLBase(r)
 
+	query := api.URLQuery(r.URL)
 	//--- extract request parameters
 	name := getRequestVar(routeVarID, r)
 	fid := getRequestVar(routeVarFeatureID, r)
@@ -326,19 +330,7 @@ func handleItem(w http.ResponseWriter, r *http.Request) *appError {
 	if err != nil {
 		return appErrorMsg(err, err.Error(), http.StatusBadRequest)
 	}
-	query := api.URLQuery(r.URL)
 
-	switch format {
-	case api.FormatJSON:
-		return writeItemJSON(w, name, fid, param, urlBase)
-	case api.FormatHTML:
-		return writeItemHTML(w, name, fid, query, urlBase)
-	}
-	return nil
-}
-
-func writeItemHTML(w http.ResponseWriter, name string, fid string, query string, urlBase string) *appError {
-	//--- query data for request
 	tbl, err1 := catalogInstance.TableByName(name)
 	if err1 != nil {
 		return appErrorInternalFmt(err1, api.ErrMsgCollectionAccess, name)
@@ -346,6 +338,20 @@ func writeItemHTML(w http.ResponseWriter, name string, fid string, query string,
 	if tbl == nil {
 		return appErrorNotFoundFmt(err1, api.ErrMsgCollectionNotFound, name)
 	}
+
+	param.Properties = normalizePropNames(param.Properties, tbl.Columns)
+
+	switch format {
+	case api.FormatJSON:
+		return writeItemJSON(w, name, fid, param, urlBase)
+	case api.FormatHTML:
+		return writeItemHTML(w, tbl, name, fid, query, urlBase)
+	}
+	return nil
+}
+
+func writeItemHTML(w http.ResponseWriter, tbl *data.Table, name string, fid string, query string, urlBase string) *appError {
+	//--- query data for request
 
 	pathItems := api.PathItems(api.TagCollections, name)
 	// --- encoding
@@ -507,6 +513,7 @@ func handleFunctionItems(w http.ResponseWriter, r *http.Request) *appError {
 	if fn == nil && err == nil {
 		return appErrorNotFoundFmt(err, api.ErrMsgFunctionNotFound, name)
 	}
+	param.Properties = normalizePropNames(param.Properties, fn.OutNames)
 
 	switch format {
 	case api.FormatJSON:

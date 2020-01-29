@@ -14,10 +14,8 @@ package data
 */
 
 import (
-	"bytes"
 	"fmt"
 	"strconv"
-	"text/template"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -36,12 +34,6 @@ func CatMockInstance() Catalog {
 	// TODO: make a singleton
 	instance = newCatalogMock()
 	return instance
-}
-
-var templateFeaturePoint *template.Template
-
-func init() {
-	templateFeaturePoint = template.Must(template.New("feature").Parse(templateStrFeaturePoint))
 }
 
 func newCatalogMock() Catalog {
@@ -135,6 +127,7 @@ func (cat *catalogMock) TableFeatures(name string, param QueryParam) ([]string, 
 			end = len(features) - 1
 		}
 	}
+	// handle empty property list
 	propNames := cat.tables[0].Columns
 	if len(param.Properties) > 0 {
 		propNames = param.Properties
@@ -158,6 +151,7 @@ func (cat *catalogMock) TableFeature(name string, id string, param QueryParam) (
 	if index < 0 || index >= len(features) {
 		return "", nil
 	}
+	// handle empty property list
 	propNames := cat.tables[0].Columns
 	if len(param.Properties) > 0 {
 		propNames = param.Properties
@@ -213,25 +207,6 @@ func makePointFeatures(extent Extent, nx int, ny int) []*featureMock {
 	return features
 }
 
-type featurePointMock struct {
-	ID  int
-	X   float64
-	Y   float64
-	Val string
-}
-
-var templateStrFeaturePoint = `{ "type": "Feature", "id": "{{ .ID }}",
-"geometry": {"type": "Point","coordinates": [  {{ .X }}, {{ .Y }} ]  },
-"properties": { "value": "{{ .Val }}"  } }`
-
-func makeFeaturePoint(id int, x float64, y float64, val string) string {
-	feat := featurePointMock{id, x, y, val}
-	var tempOut bytes.Buffer
-	//	tempOut.Reset()
-	templateFeaturePoint.Execute(&tempOut, feat)
-	return tempOut.String()
-}
-
 type featureMock struct {
 	ID    string
 	Geom  string
@@ -256,23 +231,32 @@ func (fm *featureMock) toJSON(propNames []string) string {
 }
 
 func (fm *featureMock) extractProperties(propNames []string) map[string]interface{} {
-	isAll := len(propNames) == 0
 	props := make(map[string]interface{})
 	for _, name := range propNames {
-		if isAll || name == "prop_a" {
-			props[name] = fm.PropA
+		val, err := fm.getProperty(name)
+		if err != nil {
+			// panic to avoid having to return error
+			panic(fmt.Errorf("Unknown property: %v", name))
 		}
-		if isAll || name == "prop_b" {
-			props[name] = fm.PropB
-		}
-		if isAll || name == "prop_c" {
-			props[name] = fm.PropC
-		}
-		if isAll || name == "prop_d" {
-			props[name] = fm.PropD
-		}
+		props[name] = val
 	}
 	return props
+}
+
+func (fm *featureMock) getProperty(name string) (interface{}, error) {
+	if name == "prop_a" {
+		return fm.PropA, nil
+	}
+	if name == "prop_b" {
+		return fm.PropB, nil
+	}
+	if name == "prop_c" {
+		return fm.PropC, nil
+	}
+	if name == "prop_d" {
+		return fm.PropD, nil
+	}
+	return nil, fmt.Errorf("Unknown property: %v", name)
 }
 
 func featuresToJSON(features []*featureMock, start int, end int, propNames []string) []string {

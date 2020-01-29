@@ -179,6 +179,31 @@ func parseProperties(values data.ParamNameVal) ([]string, error) {
 	return names, nil
 }
 
+func normalizePropNames(requestNames []string, colNames []string) []string {
+	// no props given => use all properties
+	if len(requestNames) == 0 {
+		return colNames
+	}
+	nameSet := toNameSet(requestNames)
+	// select cols which appear in set
+	var propNames []string
+	for _, colName := range colNames {
+		if _, ok := nameSet[colName]; ok {
+			propNames = append(propNames, colName)
+		}
+	}
+	return propNames
+}
+
+func toNameSet(strs []string) map[string]bool {
+	set := make(map[string]bool)
+	for _, s := range strs {
+		sLow := strings.ToLower(s)
+		set[sLow] = true
+	}
+	return set
+}
+
 const transformFunSep = "|"
 const transformParamSep = ","
 
