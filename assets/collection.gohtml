@@ -22,7 +22,9 @@
 <tr><td class='coll-title'>Geometry column</td><td class='prop-name'>{{ .context.Table.GeometryColumn }}</td></tr>
 <tr><td class='coll-title'>Geometry type</td><td>{{ .context.Table.GeometryType }}</td></tr>
 <tr><td class='coll-title'>SRID</td><td>{{ .context.Table.Srid }}</td></tr>
-<tr><td class='coll-title'>Extent</td><td>{{ .context.Table.Extent }}</td></tr>
+<tr><td class='coll-title'>Extent</td>
+<td>Lon/Lat Min: {{ .context.Table.Extent.Minx }}, {{ .context.Table.Extent.Miny }}
+Max: {{ .context.Table.Extent.Maxx }}, {{ .context.Table.Extent.Maxy}}</td></tr>
 <tr><td class='coll-title' valign='top'>Properties</td>
 <td>
 <table class='tbl-props'>
