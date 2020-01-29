@@ -37,6 +37,7 @@ type PageData struct {
 	Group           string
 	Title           string
 	Table           *data.Table
+	IDColumn        string
 	Function        *data.Function
 	FeatureID       string
 	ShowFeatureLink bool

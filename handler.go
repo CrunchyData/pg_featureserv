@@ -234,6 +234,7 @@ func handleCollection(w http.ResponseWriter, r *http.Request) *appError {
 		context.URLJSON = urlPathFormat(urlBase, api.PathCollection(name), api.FormatJSON)
 		context.Title = tbl.Title
 		context.Table = tbl
+		context.IDColumn = tbl.IDColumn
 
 		return writeHTML(w, content, context, ui.PageCollection())
 	default:
@@ -284,6 +285,7 @@ func writeItemsHTML(w http.ResponseWriter, tbl *data.Table, name string, query s
 	context.URLJSON = urlPathFormatQuery(urlBase, pathItems, api.FormatJSON, query)
 	context.Group = "Collections"
 	context.Title = tbl.Title
+	context.IDColumn = tbl.IDColumn
 	context.ShowFeatureLink = true
 
 	// features are not needed for items page (page queries for them)
@@ -546,6 +548,7 @@ func writeFunItemsHTML(w http.ResponseWriter, name string, query string, urlBase
 	context.Group = "Functions"
 	context.Title = fn.ID
 	context.Function = fn
+	context.IDColumn = data.FunctionIDColumnName
 
 	// features are not needed for items page (page queries for them)
 	return writeHTML(w, nil, context, ui.PageFunctionItems())

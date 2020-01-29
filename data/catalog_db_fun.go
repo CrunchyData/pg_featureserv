@@ -23,8 +23,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// functionIDColumnName is the name for a function-supplied ID
-const functionIDColumnName = "id"
+// FunctionIDColumnName is the name for a function-supplied ID
+const FunctionIDColumnName = "id"
 
 func (cat *catalogDB) Functions() ([]*Function, error) {
 	cat.refreshFunctions(true)
@@ -157,7 +157,7 @@ func (cat *catalogDB) FunctionFeatures(name string, param QueryParam) ([]string,
 	}
 	sqlNamedArgs := inputArgs(fn.InNames, param.Values)
 	propCols := removeNames(fn.OutNames, fn.GeometryColumn, "")
-	idColIndex := indexOfName(propCols, functionIDColumnName)
+	idColIndex := indexOfName(propCols, FunctionIDColumnName)
 	sql, argValues := sqlGeomFunction(fn, sqlNamedArgs, propCols, param)
 	log.Debugf("%v -- Args: %v", sql, argValues)
 	features, err := readFeaturesWithArgs(cat.dbconn, sql, argValues, idColIndex, propCols)
