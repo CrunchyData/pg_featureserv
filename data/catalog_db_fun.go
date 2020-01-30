@@ -156,7 +156,7 @@ func (cat *catalogDB) FunctionFeatures(name string, param QueryParam) ([]string,
 		return nil, err
 	}
 	sqlNamedArgs := inputArgs(fn.InNames, param.Values)
-	propCols := removeNames(fn.OutNames, fn.GeometryColumn, "")
+	propCols := removeNames(param.Columns, fn.GeometryColumn, "")
 	idColIndex := indexOfName(propCols, FunctionIDColumnName)
 	sql, argValues := sqlGeomFunction(fn, sqlNamedArgs, propCols, param)
 	log.Debugf("%v -- Args: %v", sql, argValues)
@@ -170,7 +170,7 @@ func (cat *catalogDB) FunctionData(name string, param QueryParam) ([]map[string]
 		return nil, err
 	}
 	sqlNamedArgs := inputArgs(fn.InNames, param.Values)
-	propCols := fn.OutNames
+	propCols := param.Columns
 	sql, argValues := sqlFunction(fn, sqlNamedArgs, propCols, param)
 	log.Debugf("%v -- Args: %v", sql, argValues)
 	data, err := readDataWithArgs(cat.dbconn, propCols, sql, argValues)
