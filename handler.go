@@ -37,6 +37,9 @@ func initRouter() *mux.Router {
 	addRoute(router, "/", handleRootJSON)
 	addRoute(router, "/home{.fmt}", handleHome)
 
+	addRoute(router, "/api", handleAPI)
+	addRoute(router, "/api.{fmt}", handleAPI)
+
 	addRoute(router, "/conformance", handleConformance)
 	addRoute(router, "/conformance.{fmt}", handleConformance)
 
@@ -404,6 +407,25 @@ func handleConformance(w http.ResponseWriter, r *http.Request) *appError {
 		context.URLJSON = urlPathFormat(urlBase, api.TagConformance, api.FormatJSON)
 
 		return writeHTML(w, content, context, ui.PageConformance())
+	default:
+		return writeJSON(w, api.ContentTypeJSON, content)
+	}
+}
+
+func handleAPI(w http.ResponseWriter, r *http.Request) *appError {
+	// TODO: determine content from request header?
+	format := api.PathFormat(r.URL)
+	urlBase := serveURLBase(r)
+
+	content := api.GetAPIContent()
+
+	switch format {
+	case api.FormatHTML:
+		context := ui.NewPageData()
+		context.URLHome = urlPathFormat(urlBase, "", api.FormatHTML)
+		context.URLJSON = urlPathFormat(urlBase, api.TagAPI, api.FormatJSON)
+
+		return writeHTML(w, content, context, ui.PageAPI())
 	default:
 		return writeJSON(w, api.ContentTypeJSON, content)
 	}

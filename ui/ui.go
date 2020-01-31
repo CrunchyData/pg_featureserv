@@ -46,6 +46,7 @@ type PageData struct {
 var htmlTemp struct {
 	home          *template.Template
 	conformance   *template.Template
+	api           *template.Template
 	collections   *template.Template
 	collection    *template.Template
 	items         *template.Template
@@ -105,6 +106,10 @@ func PageHome() *template.Template {
 func PageConformance() *template.Template {
 	htmlTemp.conformance = loadPageTemplate(htmlTemp.conformance, "conformance.gohtml")
 	return htmlTemp.conformance
+}
+func PageAPI() *template.Template {
+	htmlTemp.api = loadTemplate(htmlTemp.api, config.Configuration.Server.AssetsPath+"/api.gohtml")
+	return htmlTemp.api
 }
 func PageCollections() *template.Template {
 	htmlTemp.collections = loadPageTemplate(htmlTemp.collections, "collections.gohtml")
