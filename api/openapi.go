@@ -58,6 +58,43 @@ func GetAPIContent() *openapi3.Swagger {
 			AllowEmptyValue: false,
 		},
 	}
+	paramProperties := openapi3.ParameterRef{
+		Value: &openapi3.Parameter{
+			Name:        "properties",
+			Description: "List of properties to return in response objects",
+			In:          "query",
+			Required:    false,
+			Explode:     openapi3.BoolPtr(false),
+			Example:     "a,b,c",
+			Schema: &openapi3.SchemaRef{
+				Value: &openapi3.Schema{
+					Type:     "array",
+					MinItems: 0,
+					Items:    &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+				},
+			},
+			AllowEmptyValue: false,
+		},
+	}
+	paramTransform := openapi3.ParameterRef{
+		Value: &openapi3.Parameter{
+			Name:        "transform",
+			Description: "Geometry transformation function pipeline to apply",
+			In:          "query",
+			Required:    false,
+			Explode:     openapi3.BoolPtr(false),
+			Style:       "pipeDelimited",
+			Example:     "Centroid|Buffer,1",
+			Schema: &openapi3.SchemaRef{
+				Value: &openapi3.Schema{
+					Type:     "array",
+					MinItems: 0,
+					Items:    &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+				},
+			},
+			AllowEmptyValue: false,
+		},
+	}
 	paramLimit := openapi3.ParameterRef{
 		Value: &openapi3.Parameter{
 			Name:        "limit",
@@ -70,6 +107,23 @@ func GetAPIContent() *openapi3.Swagger {
 					Min:     openapi3.Float64Ptr(1),
 					Max:     openapi3.Float64Ptr(float64(config.Configuration.Paging.LimitMax)),
 					Default: config.Configuration.Paging.LimitDefault,
+				},
+			},
+			AllowEmptyValue: false,
+		},
+	}
+	paramOffset := openapi3.ParameterRef{
+		Value: &openapi3.Parameter{
+			Name:        "offset",
+			Description: "Offset of start of returned results.",
+			In:          "query",
+			Required:    false,
+			Schema: &openapi3.SchemaRef{
+				Value: &openapi3.Schema{
+					Type: "integer",
+					Min:  openapi3.Float64Ptr(0),
+					//Max:     openapi3.Float64Ptr(float64(config.Configuration.Paging.LimitMax)),
+					Default: 0,
 				},
 			},
 			AllowEmptyValue: false,
@@ -172,7 +226,10 @@ func GetAPIContent() *openapi3.Swagger {
 					Parameters: openapi3.Parameters{
 						&paramCollectionID,
 						&paramLimit,
+						&paramOffset,
 						&paramBbox,
+						&paramProperties,
+						&paramTransform,
 						/* TODO
 						&openapi3.ParameterRef{
 							Value: &openapi3.Parameter{
@@ -220,6 +277,8 @@ func GetAPIContent() *openapi3.Swagger {
 								AllowEmptyValue: false,
 							},
 						},
+						&paramProperties,
+						&paramTransform,
 					},
 					Responses: openapi3.Responses{
 						"200": &openapi3.ResponseRef{
@@ -281,7 +340,10 @@ func GetAPIContent() *openapi3.Swagger {
 					Parameters: openapi3.Parameters{
 						&paramFunctionID,
 						&paramLimit,
+						&paramOffset,
 						&paramBbox,
+						&paramProperties,
+						&paramTransform,
 						/* TODO
 						&openapi3.ParameterRef{
 							Value: &openapi3.Parameter{
