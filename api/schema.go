@@ -156,7 +156,7 @@ var CollectionInfoSchema openapi3.Schema = openapi3.Schema{
 	Type:     "object",
 	Required: []string{"name", "links"},
 	Properties: map[string]*openapi3.SchemaRef{
-		"name":        {Value: &openapi3.Schema{Type: "string"}},
+		"id":          {Value: &openapi3.Schema{Type: "string"}},
 		"title":       {Value: &openapi3.Schema{Type: "string"}},
 		"description": {Value: &openapi3.Schema{Type: "string"}},
 		"links": {Value: &openapi3.Schema{
@@ -191,9 +191,28 @@ type FunctionsInfo struct {
 	Functions []*FunctionInfo `json:"functions"`
 }
 
+var FunctionsInfoSchema openapi3.Schema = openapi3.Schema{
+	Type:     "object",
+	Required: []string{"links", "functions"},
+	Properties: map[string]*openapi3.SchemaRef{
+		"links": {
+			Value: &openapi3.Schema{
+				Type:  "array",
+				Items: &openapi3.SchemaRef{Value: &LinkSchema},
+			},
+		},
+		"functions": {
+			Value: &openapi3.Schema{
+				Type:  "array",
+				Items: &openapi3.SchemaRef{Value: &FunctionInfoSchema},
+			},
+		},
+	},
+}
+
 // FunctionInfo is the API metadata for a function
 type FunctionInfo struct {
-	ID          string  `json:"id"`
+	Name        string  `json:"id"`
 	Description string  `json:"description,omitempty"`
 	Links       []*Link `json:"links"`
 	Function    *data.Function
@@ -314,7 +333,7 @@ func NewFunctionsInfo(fns []*data.Function) *FunctionsInfo {
 
 func NewFunctionInfo(fn *data.Function) *FunctionInfo {
 	info := FunctionInfo{
-		ID:          fn.ID,
+		Name:        fn.Name,
 		Description: fn.Description,
 		Function:    fn,
 	}

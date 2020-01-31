@@ -19,12 +19,68 @@ import (
 )
 
 func GetAPIContent() *openapi3.Swagger {
+	paramCollectionID := openapi3.ParameterRef{
+		Value: &openapi3.Parameter{
+			Description:     "ID of collection.",
+			Name:            "collectionId",
+			In:              "path",
+			Required:        true,
+			Schema:          &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+			AllowEmptyValue: false,
+		},
+	}
+	paramFunctionID := openapi3.ParameterRef{
+		Value: &openapi3.Parameter{
+			Description:     "ID of function.",
+			Name:            "functionId",
+			In:              "path",
+			Required:        true,
+			Schema:          &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+			AllowEmptyValue: false,
+		},
+	}
+	paramBbox := openapi3.ParameterRef{
+		Value: &openapi3.Parameter{
+			Name:        "bbox",
+			Description: "Bounding box to restrict results to given extent (as minLon,minLat,maxLon,maxLat).",
+			In:          "query",
+			Required:    false,
+			Explode:     openapi3.BoolPtr(false),
+			Example:     "-120,30,-100,49",
+			Schema: &openapi3.SchemaRef{
+				Value: &openapi3.Schema{
+					Type:     "array",
+					MinItems: 4,
+					MaxItems: openapi3.Uint64Ptr(4),
+					Items:    openapi3.NewSchemaRef("", openapi3.NewFloat64Schema().WithMin(-180).WithMax(180)),
+				},
+			},
+			AllowEmptyValue: false,
+		},
+	}
+	paramLimit := openapi3.ParameterRef{
+		Value: &openapi3.Parameter{
+			Name:        "limit",
+			Description: "Maximum number of results to return.",
+			In:          "query",
+			Required:    false,
+			Schema: &openapi3.SchemaRef{
+				Value: &openapi3.Schema{
+					Type:    "integer",
+					Min:     openapi3.Float64Ptr(1),
+					Max:     openapi3.Float64Ptr(float64(config.Configuration.Paging.LimitMax)),
+					Default: config.Configuration.Paging.LimitDefault,
+				},
+			},
+			AllowEmptyValue: false,
+		},
+	}
 	return &openapi3.Swagger{
 		OpenAPI: "3.0.0",
 		Info: openapi3.Info{
 			Title:       config.Configuration.Metadata.Title,
 			Description: config.Configuration.Metadata.Description,
-			Version:     "0.0.1",
+			Version:     config.AppConfig.Version,
 			License: &openapi3.License{
 				Name: "Apache 2.0",
 				URL:  "http://www.apache.org/licenses/LICENSE-2.0",
@@ -77,7 +133,7 @@ func GetAPIContent() *openapi3.Swagger {
 				},
 			},
 			"/collections": &openapi3.PathItem{
-				Summary:     "Feature collection metadata",
+				Summary:     "Feature collections metadata",
 				Description: "Provides details about feature collections served",
 				Get: &openapi3.Operation{
 					OperationID: "getCollectionsMetaData",
@@ -91,23 +147,13 @@ func GetAPIContent() *openapi3.Swagger {
 					},
 				},
 			},
-			"/collections/{name}": &openapi3.PathItem{
+			"/collections/{collectionId}": &openapi3.PathItem{
 				Summary:     "Feature collection metadata",
-				Description: "Provides details about the feature collection named",
+				Description: "Provides details about the specified feature collection",
 				Get: &openapi3.Operation{
 					OperationID: "getCollectionMetaData",
 					Parameters: openapi3.Parameters{
-						&openapi3.ParameterRef{
-							Value: &openapi3.Parameter{
-								Description:     "Name of collection to retrieve metadata for.",
-								Name:            "name",
-								In:              "path",
-								Required:        true,
-								Schema:          &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
-								AllowEmptyValue: false,
-							},
-						},
-					},
+						&paramCollectionID},
 					Responses: openapi3.Responses{
 						"200": &openapi3.ResponseRef{
 							Value: &openapi3.Response{
@@ -118,52 +164,19 @@ func GetAPIContent() *openapi3.Swagger {
 					},
 				},
 			},
-			"/collections/{name}/items": &openapi3.PathItem{
+			"/collections/{collectionId}/items": &openapi3.PathItem{
 				Summary:     "Feature data for collection",
-				Description: "Provides paged access to data for all features in collection",
+				Description: "Provides paged access to data for all features in specified collection",
 				Get: &openapi3.Operation{
 					OperationID: "getCollectionFeatures",
 					Parameters: openapi3.Parameters{
+						&paramCollectionID,
+						&paramLimit,
+						&paramBbox,
+						/* TODO
 						&openapi3.ParameterRef{
 							Value: &openapi3.Parameter{
-								Name:            "name",
-								Description:     "Name of collection to retrieve data for.",
-								In:              "path",
-								Required:        true,
-								Schema:          &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
-								AllowEmptyValue: false,
-							},
-						},
-						&openapi3.ParameterRef{
-							Value: &openapi3.Parameter{
-								Name:        "limit",
-								Description: "Maximum number of results to return.",
-								In:          "query",
-								Required:    false,
-								Schema: &openapi3.SchemaRef{
-									Value: &openapi3.Schema{
-										Type:    "integer",
-										Min:     openapi3.Float64Ptr(1),
-										Max:     openapi3.Float64Ptr(float64(config.Configuration.Paging.LimitMax)),
-										Default: config.Configuration.Paging.LimitDefault,
-									},
-								},
-								AllowEmptyValue: false,
-							},
-						},
-						&openapi3.ParameterRef{
-							Value: &openapi3.Parameter{
-								Name:            "bbox",
-								Description:     "Bounding box to limit results.",
-								In:              "query",
-								Required:        false,
-								Schema:          &openapi3.SchemaRef{Value: &BboxSchema},
-								AllowEmptyValue: false,
-							},
-						},
-						&openapi3.ParameterRef{
-							Value: &openapi3.Parameter{
-								Name:            "<other>",
+								Name:            "<prop-name>",
 								Description:     "Any feature property name may be filtered on by including it as a query parameter",
 								In:              "query",
 								Required:        false,
@@ -171,39 +184,35 @@ func GetAPIContent() *openapi3.Swagger {
 								AllowEmptyValue: false,
 							},
 						},
+						*/
 					},
 					Responses: openapi3.Responses{
 						"200": &openapi3.ResponseRef{
 							Value: &openapi3.Response{
-								Content: openapi3.NewContentWithJSONSchemaRef(
-									&openapi3.SchemaRef{
-										Ref: "http://geojson.org/schema/FeatureCollection.json",
-									},
-								),
+								Description: "GeoJSON Featuree Collection document containing data for features",
+								/*
+									// TODO: create schema for result?
+									Content: openapi3.NewContentWithJSONSchemaRef(
+										&openapi3.SchemaRef{
+											Ref: "http://geojson.org/schema/FeatureCollection.json",
+										},
+									),
+								*/
 							},
 						},
 					},
 				},
 			},
-			"/collections/{name}/items/{feature_id}": &openapi3.PathItem{
+			"/collections/{collectionId}/items/{featureId}": &openapi3.PathItem{
 				Summary:     "Single feature data from collection",
-				Description: "Provides access to a single feature identitfied by {feature_id} from the named collection",
+				Description: "Provides access to a single feature identitfied by {featureId} from the specified collection",
 				Get: &openapi3.Operation{
 					OperationID: "getCollectionFeature",
 					Parameters: openapi3.Parameters{
+						&paramCollectionID,
 						&openapi3.ParameterRef{
 							Value: &openapi3.Parameter{
-								Name:            "name",
-								Description:     "Name of collection to retrieve data for.",
-								In:              "path",
-								Required:        true,
-								Schema:          &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
-								AllowEmptyValue: false,
-							},
-						},
-						&openapi3.ParameterRef{
-							Value: &openapi3.Parameter{
-								Name:            "feature_id",
+								Name:            "featureId",
 								Description:     "Id of feature in collection to retrieve data for.",
 								In:              "path",
 								Required:        true,
@@ -215,40 +224,88 @@ func GetAPIContent() *openapi3.Swagger {
 					Responses: openapi3.Responses{
 						"200": &openapi3.ResponseRef{
 							Value: &openapi3.Response{
-								Content: openapi3.NewContentWithJSONSchemaRef(
-									&openapi3.SchemaRef{
-										Ref: "http://geojson.org/schema/Feature.json",
-									},
-								),
+								Description: "GeoJSON Feature document containing feature data",
+								/*
+									// TODO: create schema for result?
+									Content: openapi3.NewContentWithJSONSchemaRef(
+										&openapi3.SchemaRef{
+											Ref: "http://geojson.org/schema/Feature.json",
+										},
+									),
+								*/
 							},
 						},
 					},
 				},
 			},
-			"/functions/{name}": &openapi3.PathItem{
+			"/functions": &openapi3.PathItem{
+				Summary:     "Functions metadata",
+				Description: "Provides details about functions served",
+				Get: &openapi3.Operation{
+					OperationID: "getFunctionsMetaData",
+					Responses: openapi3.Responses{
+						"200": &openapi3.ResponseRef{
+							Value: &openapi3.Response{
+								Content: openapi3.NewContentWithJSONSchemaRef(
+									&openapi3.SchemaRef{Value: &FunctionsInfoSchema}),
+							},
+						},
+					},
+				},
+			},
+			"/functions/{functionId}": &openapi3.PathItem{
 				Summary:     "Function metadata",
-				Description: "Provides details about the function named",
+				Description: "Provides details about the specified function",
 				Get: &openapi3.Operation{
 					OperationID: "getFunctionMetaData",
 					Parameters: openapi3.Parameters{
-						&openapi3.ParameterRef{
-							Value: &openapi3.Parameter{
-								Description:     "Name of function to retrieve metadata for.",
-								Name:            "name",
-								In:              "path",
-								Required:        true,
-								Schema:          &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
-								AllowEmptyValue: false,
-							},
-						},
+						&paramFunctionID,
 					},
 					Responses: openapi3.Responses{
 						"200": &openapi3.ResponseRef{
 							Value: &openapi3.Response{
 								Content: openapi3.NewContentWithJSONSchemaRef(
 									&openapi3.SchemaRef{
-										Value: &CollectionInfoSchema,
+										Value: &FunctionInfoSchema,
 									}),
+							},
+						},
+					},
+				},
+			},
+			"/functions/{functionId}/items": &openapi3.PathItem{
+				Summary:     "Features or data for a function result",
+				Description: "Provides paged access to data in specified function result",
+				Get: &openapi3.Operation{
+					OperationID: "getFunctionFeatures",
+					Parameters: openapi3.Parameters{
+						&paramFunctionID,
+						&paramLimit,
+						&paramBbox,
+						/* TODO
+						&openapi3.ParameterRef{
+							Value: &openapi3.Parameter{
+								Name:            "<prop-name>",
+								Description:     "Any feature property name may be filtered on by including it as a query parameter",
+								In:              "query",
+								Required:        false,
+								Schema:          &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+								AllowEmptyValue: false,
+							},
+						},
+						*/
+					},
+					Responses: openapi3.Responses{
+						"200": &openapi3.ResponseRef{
+							Value: &openapi3.Response{
+								Description: "GeoJSON or JSON document containing function results",
+								/*
+									Content: openapi3.NewContentWithJSONSchemaRef(
+										&openapi3.SchemaRef{
+											Ref: "http://geojson.org/schema/FeatureCollection.json",
+										},
+									),
+								*/
 							},
 						},
 					},

@@ -444,7 +444,7 @@ func handleFunctions(w http.ResponseWriter, r *http.Request) *appError {
 	content.Links = linksFunctions(urlBase, format)
 
 	for _, fn := range content.Functions {
-		fn.Links = linksFunction(fn.ID, urlBase, format, fn.Function.IsGeometryFunction())
+		fn.Links = linksFunction(fn.Name, urlBase, format, fn.Function.IsGeometryFunction())
 	}
 
 	switch format {
