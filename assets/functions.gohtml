@@ -7,7 +7,7 @@
 <h2>Functions</h2>
 
 {{ range .data.Functions }}
-{{$collTitle := .ID}}
+{{$collTitle := .Name}}
 	<div >
 	{{ range .Links }}
 		{{ if (eq .Rel "self") }}

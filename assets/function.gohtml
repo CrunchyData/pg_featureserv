@@ -1,11 +1,11 @@
 {{define "body"}}
 <div class='crumbs'><a href="{{ .context.URLHome }}">Home</a>
 / <a href="{{ .context.URLFunctions }}">Functions</a>
-/ {{ .data.ID }}
+/ {{ .data.Name }}
 <a style='margin-left: 20px' class='json-link' href='{{ .context.URLJSON }}' title='JSON document for this page'>JSON</a>
 </div>
 <hr>
-<h2>Function: {{ .data.ID }}</h2>
+<h2>Function: {{ .data.Name }}</h2>
 <p>
 	{{ range .data.Links }}
 	<span>
