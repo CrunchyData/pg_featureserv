@@ -64,6 +64,13 @@ func parseRequestParams(r *http.Request) (data.QueryParam, error) {
 	}
 	param.Properties = props
 
+	// --- orderBy parameter
+	orderBy, err := parseOrderBy(paramValues)
+	if err != nil {
+		return param, err
+	}
+	param.OrderBy = orderBy
+
 	// --- precision parameter
 	precision, err := parseInt(paramValues, api.ParamPrecision, 0, 20, -1)
 	if err != nil {
@@ -177,6 +184,46 @@ func parseProperties(values data.ParamNameVal) ([]string, error) {
 		}
 	}
 	return names, nil
+}
+
+const OrderByDirSep = ":"
+const OrderByDirDesc = "desc"
+const OrderByDirD = "d"
+const OrderByDirAsc = "asc"
+const OrderByDirA = "a"
+
+// parseOrderBy determines an order by array
+func parseOrderBy(values data.ParamNameVal) ([]data.Ordering, error) {
+	var orderBy []data.Ordering
+	val := values[api.ParamOrderBy]
+	if len(val) < 1 {
+		return orderBy, nil
+	}
+	valLow := strings.ToLower(val)
+	nameDir := strings.Split(valLow, OrderByDirSep)
+	name := nameDir[0]
+	isDesc := false
+	var err error
+	if len(nameDir) >= 2 {
+		dirSpec := nameDir[1]
+		isDesc, err = parseOrderByDir(dirSpec)
+		if err != nil {
+			return nil, err
+		}
+	}
+	orderBy = append(orderBy, data.Ordering{Name: name, IsDesc: isDesc})
+	return orderBy, nil
+}
+
+func parseOrderByDir(dir string) (bool, error) {
+	if dir == OrderByDirDesc || dir == OrderByDirD {
+		return true, nil
+	}
+	if dir == OrderByDirAsc || dir == OrderByDirA {
+		return false, nil
+	}
+	err := fmt.Errorf(api.ErrMsgInvalidParameterValue, api.ParamOrderBy, dir)
+	return false, err
 }
 
 // normalizePropNames converts the request property name list (if any)

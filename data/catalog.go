@@ -51,6 +51,11 @@ type TransformFunction struct {
 	Arg  []string
 }
 
+type Ordering struct {
+	Name   string
+	IsDesc bool // false = ASC (default), true = DESC
+}
+
 type ParamNameVal map[string]string
 
 // QueryParam holds the optional parameters for an items query
@@ -61,6 +66,7 @@ type QueryParam struct {
 	Properties []string
 	// Columns is the clean list of columns to query
 	Columns       []string
+	OrderBy       []Ordering
 	Precision     int
 	TransformFuns []TransformFunction
 	Values        ParamNameVal

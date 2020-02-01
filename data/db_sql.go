@@ -92,13 +92,14 @@ JOIN proargarrays aa ON (p.oid = aa.oid)
 LEFT JOIN pg_description d ON (p.oid = d.objoid)
 ORDER BY id`
 
-const sqlFmtFeatures = "SELECT %v %v FROM %v %v LIMIT %v OFFSET %v;"
+const sqlFmtFeatures = "SELECT %v %v FROM %v %v %v LIMIT %v OFFSET %v;"
 
 func sqlFeatures(tbl *Table, param QueryParam) string {
 	geomCol := sqlGeomCol(tbl.GeometryColumn, param)
 	propCols := sqlColList(param.Columns, tbl.Types, true)
 	sqlWhere := sqlBBoxFilter(tbl, param)
-	sql := fmt.Sprintf(sqlFmtFeatures, geomCol, propCols, tbl.ID, sqlWhere, param.Limit, param.Offset)
+	sqlOrderBy := sqlOrderBy(param.OrderBy)
+	sql := fmt.Sprintf(sqlFmtFeatures, geomCol, propCols, tbl.ID, sqlWhere, sqlOrderBy, param.Limit, param.Offset)
 	return sql
 }
 
@@ -172,6 +173,21 @@ func sqlGeomCol(geomCol string, param QueryParam) string {
 		precision = fmt.Sprintf(",%v", param.Precision)
 	}
 	sql := fmt.Sprintf(sqlFmtGeomCol, geomExpr, precision)
+	return sql
+}
+
+const sqlFmtOrderBy = "ORDER By %v%v"
+
+func sqlOrderBy(ordering []Ordering) string {
+	if len(ordering) <= 0 {
+		return ""
+	}
+	col := ordering[0].Name
+	dir := ""
+	if ordering[0].IsDesc {
+		dir = " DESC"
+	}
+	sql := fmt.Sprintf(sqlFmtOrderBy, col, dir)
 	return sql
 }
 

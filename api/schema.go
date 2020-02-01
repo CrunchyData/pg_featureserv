@@ -34,6 +34,7 @@ const (
 	ParamLimit      = "limit"
 	ParamOffset     = "offset"
 	ParamBbox       = "bbox"
+	ParamOrderBy    = "orderby"
 	ParamPrecision  = "precision"
 	ParamProperties = "properties"
 	ParamTransform  = "transform"
