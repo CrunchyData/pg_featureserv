@@ -43,6 +43,8 @@ type Catalog interface {
 	FunctionFeatures(name string, param QueryParam) ([]string, error)
 
 	FunctionData(name string, param QueryParam) ([]map[string]interface{}, error)
+
+	Close()
 }
 
 // TransformFunction denotes a geometry function with arguments

@@ -83,6 +83,10 @@ func dbConnect() *pgxpool.Pool {
 	return db
 }
 
+func (cat *catalogDB) Close() {
+	cat.dbconn.Close()
+}
+
 func (cat *catalogDB) Tables() ([]*Table, error) {
 	cat.refreshTables(true)
 	return cat.tables, nil

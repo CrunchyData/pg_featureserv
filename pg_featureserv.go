@@ -28,9 +28,11 @@ Logging to stdout
 */
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
+	"os/signal"
 	"time"
 
 	"github.com/CrunchyData/pg_featureserv/ui"
@@ -123,7 +125,30 @@ func serve() {
 		Handler:      handlers.CompressHandler(handlers.CORS(corsOpt)(router)),
 	}
 
-	// TODO figure out how to gracefully shut down on ^C
-	// and shut down all the database connections / statements
-	log.Fatal(server.ListenAndServe())
+	// start http service
+	go func() {
+		// ListenAndServe returns http.ErrServerClosed when the server receives
+		// a call to Shutdown(). Other errors are unexpected.
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatal(err)
+		}
+	}()
+
+	// wait here for interrupt signal (^C)
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt)
+	<-sig
+
+	// Interrupt signal received:  Start shutting down
+	log.Infoln("Shutting down...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	server.Shutdown(ctx)
+
+	log.Debugln("Closing DB connections")
+	catalogInstance.Close()
+
+	log.Infoln("Server stopped.")
+	//log.Fatal(server.ListenAndServe())
 }

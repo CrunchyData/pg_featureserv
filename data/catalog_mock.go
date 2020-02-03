@@ -98,6 +98,10 @@ func newCatalogMock() Catalog {
 	return &catMock
 }
 
+func (cat *catalogMock) Close() {
+	// this is a no-op
+}
+
 func (cat *catalogMock) Tables() ([]*Table, error) {
 	return cat.tables, nil
 }
