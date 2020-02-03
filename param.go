@@ -187,9 +187,7 @@ func parseProperties(values data.ParamNameVal) ([]string, error) {
 }
 
 const OrderByDirSep = ":"
-const OrderByDirDesc = "desc"
 const OrderByDirD = "d"
-const OrderByDirAsc = "asc"
 const OrderByDirA = "a"
 
 // parseOrderBy determines an order by array
@@ -216,10 +214,10 @@ func parseOrderBy(values data.ParamNameVal) ([]data.Ordering, error) {
 }
 
 func parseOrderByDir(dir string) (bool, error) {
-	if dir == OrderByDirDesc || dir == OrderByDirD {
+	if dir == OrderByDirD {
 		return true, nil
 	}
-	if dir == OrderByDirAsc || dir == OrderByDirA {
+	if dir == OrderByDirA {
 		return false, nil
 	}
 	err := fmt.Errorf(api.ErrMsgInvalidParameterValue, api.ParamOrderBy, dir)
