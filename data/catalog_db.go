@@ -21,10 +21,12 @@ import (
 	"sort"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/CrunchyData/pg_featureserv/config"
 	"github.com/jackc/pgtype"
 	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/log/logrusadapter"
 	"github.com/jackc/pgx/v4/pgxpool"
 	log "github.com/sirupsen/logrus"
 )
@@ -72,15 +74,45 @@ func newCatalogDB() catalogDB {
 }
 
 func dbConnect() *pgxpool.Pool {
-	config, err := pgxpool.ParseConfig(os.Getenv(config.AppConfig.EnvDBURL))
-	db, err := pgxpool.ConnectConfig(context.Background(), config)
+	dbconfig := dbConfig()
+
+	db, err := pgxpool.ConnectConfig(context.Background(), dbconfig)
 	if err != nil {
 		log.Fatal(err)
 	}
-	connLog := fmt.Sprintf("Connected to DB: host=%v, user=%v, database=%v",
-		config.ConnConfig.Host, config.ConnConfig.User, config.ConnConfig.Database)
-	log.Printf(connLog)
+	dbName := dbconfig.ConnConfig.Config.Database
+	dbUser := dbconfig.ConnConfig.Config.User
+	dbHost := dbconfig.ConnConfig.Config.Host
+	log.Infof("Connected as '%s' to '%s' @ '%s'", dbUser, dbName, dbHost)
 	return db
+}
+
+func dbConfig() *pgxpool.Config {
+	dbconfig, err := pgxpool.ParseConfig(os.Getenv(config.AppConfig.EnvDBURL))
+	if err != nil {
+		log.Fatal(err)
+	}
+	// Read and parse connection lifetime
+	dbPoolMaxLifeTime, errt := time.ParseDuration(config.Configuration.Database.DbPoolMaxConnLifeTime)
+	if errt != nil {
+		log.Fatal(errt)
+	}
+	dbconfig.MaxConnLifetime = dbPoolMaxLifeTime
+
+	// Read and parse max connections
+	dbPoolMaxConns := config.Configuration.Database.DbPoolMaxConns
+	if dbPoolMaxConns > 0 {
+		dbconfig.MaxConns = int32(dbPoolMaxConns)
+	}
+
+	// Read current log level and use one less-fine level
+	// below that
+	dbconfig.ConnConfig.Logger = logrusadapter.NewLogger(log.New())
+	levelString, _ := (log.GetLevel() - 1).MarshalText()
+	pgxLevel, _ := pgx.LogLevelFromString(string(levelString))
+	dbconfig.ConnConfig.LogLevel = pgxLevel
+
+	return dbconfig
 }
 
 func (cat *catalogDB) Close() {

@@ -38,6 +38,9 @@ func setDefaultConfig() {
 	viper.SetDefault("Paging.LimitDefault", 10)
 	viper.SetDefault("Paging.LimitMax", 1000)
 
+	viper.SetDefault("Database.DbPoolMaxConnLifeTime", "1h")
+	viper.SetDefault("Database.DbPoolMaxConns", 4)
+
 	viper.SetDefault("Metadata.Title", "pg-featureserv")
 	viper.SetDefault("Metadata.Description", "Crunchy Data Feature Server for PostGIS")
 }
@@ -47,7 +50,7 @@ type Config struct {
 	Server   Server
 	Paging   Paging
 	Metadata Metadata
-	//Database Database
+	Database Database
 }
 
 // Server config
@@ -68,7 +71,9 @@ type Paging struct {
 
 // Database config
 type Database struct {
-	ConnectString string
+	DbConnection          string
+	DbPoolMaxConnLifeTime string
+	DbPoolMaxConns        int
 }
 
 // Metadata config
