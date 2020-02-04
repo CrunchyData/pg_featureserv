@@ -8,6 +8,5 @@ weight: 200
 
 # Requirements
 
-- Software
-- Supported Platforms
-- It is OK to provide relevant links here.
+* **PostgreSQL 9.5** or later
+* **PostGIS 2.4** or later

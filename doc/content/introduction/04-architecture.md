@@ -5,14 +5,13 @@ draft: false
 weight: 175
 ---
 
-# Architecture
-
 `pg_featureserv` has a simple architecture.  It consists of a single Go application, together with static (read-only) configuration sourced from
 a file, the command-line and/or environment variables.
 
 The service application integrates with the following:
 
 * a PostGIS-enabled Postgres database instance or cluster, containing the data being served
+and the catalog metadata describing it.
 * client software which utilize an HTTP API.  Typically this is a web-mapping application running in a web browser,
 but it could also be another application (ranging from a simple data access utility such as `curl` or `OGR`
 to a desktop GIS application such as `QGIS`), or a web proxy mediating access to the service.

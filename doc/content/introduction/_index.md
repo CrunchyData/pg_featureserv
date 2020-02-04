@@ -8,7 +8,7 @@ weight: 10
 ## Motivation
 
 There are numerous services available which can be used to serve features.
-Popular ones are [Geoserver](https://geoserver.org) and [Mapserver](https://mapserver.org)); others include pygeoapi.  All of these services provide the capability to read from multiple data sources
+Popular ones are [Geoserver](https://geoserver.org) and [Mapserver](https://mapserver.org)); others include [pygeoapi]().  All of these services provide the capability to read from multiple data sources
 and generate feature datasets in various formats.
 In exchange for that flexibility of source format, they provide less flexibility of usage.
 
@@ -16,13 +16,18 @@ In exchange for that flexibility of source format, they provide less flexibility
 
 By targetting PostGIS as the sole data provider, `pg_featureserv` gains significant capabilties:
 
-* **Automatic configuration.** Just point the server at a PostgreSQL / PostGIS database, and the server discovers and automatically publishes all tables it has access to. This has the benefit that changes to the database are published automatically without needing to restar the service.
-Also, this makes it easy to take advantage of Postgres clustering to provide scale-out and High Availability.
+* **Automatic configuration.** Just point the server at a PostgreSQL / PostGIS database, and the server discovers and automatically publishes all tables it has access to.
+The Postgres system catalog provides all the metadata needed to support publishing
+datasets (including things like primary key columns and table descriptions).
+This has the benefit that changes to the database are published automatically without needing to restar the service.
+Also, it is straightforward to take advantage of Postgres' highly-evolved clustering capabilites to provide scale-out and High Availability.
 * **Full SQL power.** The server relies on the database to perform all data operations, even including converting geometry records into GeoJSON.
 This provides maximum peformance, since the database is highly optimized to perform data operations such as filtering and sorting.
 Also, by using [function sources]() the server can run any SQL at all to generate features.
 Any data processing or feature filtering or record aggregation you can express in SQL can be exposed as feature datasets.
 Moreover, function parameters are exposed as URL query parameters, which allows dynamically changing the data returned.
+Using the full power of SQL means that it is easy to expose any already-developed database functionality
+via the service, and minimizes the learning curve for developers.
 * **Database security model.** You can restrict access to tables and functions using standard database access control. This means you can also use advanced access control techniques like row-level security to dynamically filter access based on the login role.
 
 Moreover, by utilizing a single powerful spatial data source, the `pg_featureserv` codebase is significantly smaller and simpler.

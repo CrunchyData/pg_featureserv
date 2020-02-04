@@ -5,8 +5,6 @@ draft: false
 weight: 150
 ---
 
-# Definitions
-
 ### Feature
 A representation of a real-world spatial phenomena which can be modelled by a geometry and zero or more scalar-valued properties.
 
