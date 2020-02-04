@@ -7,8 +7,8 @@ weight: 175
 
 # Architecture
 
-`pg_featureserv` has a simple architecture.  It consists of a single Go application, together with configuration sourced from
-a file or environment variables.
+`pg_featureserv` has a simple architecture.  It consists of a single Go application, together with static (read-only) configuration sourced from
+a file, the command-line and/or environment variables.
 
 The service application integrates with the following:
 
