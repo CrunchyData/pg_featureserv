@@ -1,8 +1,16 @@
 ---
-title: "Crunchy PostgreSQL Operator" # Change to the name of your project
+title: "pg_featureserv"
 date:
 draft: false
 ---
 
-# THIS IS THE INTRO PAGE TO YOUR WHOLE PROJECT
-Put any content here that is kinda of an overview
+# pg_featureserv
+`pg_featureserv` is a [PostGIS](https://postgis.net/)-based feature server written in [Go](https://golang.org/).
+It is a lightweight, low-configuration REST-ful web service that provides
+access to spatial data stored in PostGIS tables, as well as spatial processing capability
+based on PostGIS spatial functions.
+The service API follows the [OGC API for Features Version 1.0](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html) standard.
+It also provides extensions
+that expose more of the powerful spatial capabilities of PostGIS.
+
+This guide walks you through how to install and use `pg_featureserv` for your spatial applications. The [Usage](./usage) section goes in-depth on how the service works. We also include some [basic examples](./examples) of web map applications that source feature data from `pg_featureserv`.

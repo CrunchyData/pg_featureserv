@@ -5,13 +5,22 @@ draft: false
 weight: 150
 ---
 
-Add product name here  
-Add version number here  
+# Definitions
 
-# Definitions or Needed Concepts
+### Feature
+A representation of a real-world spatial phenomena which can be modelled by a geometry and zero or more scalar-valued properties.
 
-- Define important terms (e.g. "Ansible roles"). The definition should be as short and simple as possible. If you think the reader might benefit from a more in-depth explanation, find an existing resource or page; if there are none, that might be a good opportunity to write a separate short article or blog post.
-- If there is a chance that the reader might not be familiar with any acronyms or abbreviations, write out the term in full here, accompanied by the shortened version that would be used throughout the rest of the doc.  
-- Include prerequisite skills or knowledge level.
-  - If they don’t have these prerequisites, how and where can readers acquire them?
-  - Link out to other learning material (example: [Introduction to PostGIS](https://postgis.net/workshops/postgis-intro/introduction.html))  
+### Feature collection
+A set of **features** from a spatial dataset.  In `pg_featureserv` these are mapped to database tables and views.
+
+### Spatial database
+A database that includes a "geometry" column type. The PostGIS extension to PostgreSQL adds a geometry column type, and hundreds of functions to operate on that type.  For example, it provides the [ST_AsGeoJSON()](https://postgis.net/docs/ST_AsGeoJSON.html) function that `pg_featureserv` uses.
+
+### Web API
+An Application Program Interface allows client software to make programmatic requests to a service and retrieve information from it.
+A Web API is an API which is founded on the technologies of the Web.
+These include:
+
+* use of the HTTP protocol to provide high-level semantics for operations, as well as efficienet mechanisms for querying, security and transporting data to clients
+* following the REST paradigm to simplify the model of interacting with data
+* using the standard JSON and GeoJSON formats as the primary way of encoding data
