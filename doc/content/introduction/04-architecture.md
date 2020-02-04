@@ -5,9 +5,21 @@ draft: false
 weight: 175
 ---
 
-
 # Architecture
 
-- Provide a high level overview of how the product and its components are organized.
-- This section should help tie the pieces of the architecture back to the Definitions and Needed Concepts.
-- Avoid marketing fluff.
+`pg_featureserv` has a simple architecture.  It consists of a single Go application, together with configuration sourced from
+a file or environment variables.
+
+The service application integrates with the following:
+
+* a PostGIS-enabled Postgres database instance or cluster, containing the data being served
+* client software which utilize an HTTP API.  Typically this is a web-mapping application running in a web browser,
+but it could also be another application (ranging from a simple data access utility such as `curl` or `OGR`
+to a desktop GIS application such as `QGIS`), or a web proxy mediating access to the service.
+
+The `pg_featureserv` component connects to the database using a database pool.
+It contains an integrated web server which provides an HTTP interface to clients.
+
+The `pg_featureserv` application can run stand-alone or inside a containerized environment.
+
+** Diagram TBD **
