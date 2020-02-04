@@ -5,8 +5,6 @@ draft: false
 weight: 50
 ---
 
-Add product name here  
-Add version number here
 
 # Troubleshooting (optional)
 

@@ -3,11 +3,10 @@ title: "Deploying"
 date:
 draft: false
 weight: 250
+---
 
----Add product name here  
-Add version number here  
 
-# Deployment  
+# Deployment
 
 - Are there scenarios in which the deployment steps would vary? Break this section out into subsections, or pages if necessary.
   - Each subsection heading can include the step number, for clarity.
