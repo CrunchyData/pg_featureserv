@@ -44,24 +44,24 @@ The default configuration file is shown below.
 
 ```toml
 [Server]
-    # The hostname to use in links
-    HttpHost = "0.0.0.0"
+# The hostname to use in links
+HttpHost = "0.0.0.0"
 
-    # The IP port to listen on
-    HttpPort = 9000
+# The IP port to listen on
+HttpPort = 9000
 
-    # Advertise URLs relative to this server name
-    # default is to look this up from incoming request headers
-#    UrlBase = "http://localhost:9000/"
+# Advertise URLs relative to this server name
+# default is to look this up from incoming request headers
+# UrlBase = "http://localhost:9000/"
 
-    # String to return for Access-Control-Allow-Origin header
-#    CORSOrigins = "*"
+# String to return for Access-Control-Allow-Origin header
+# CORSOrigins = "*"
 
-    # set Debug to true to run in debug mode (can also be done on cmd-line)
-#    Debug = true
+# set Debug to true to run in debug mode (can also be done on cmd-line)
+# Debug = true
 
-     # Read html templates from this directory
-     AssetsPath = "./assets"
+# Read html templates from this directory
+AssetsPath = "./assets"
 
 [Database]
 # Database connection
@@ -76,14 +76,14 @@ The default configuration file is shown below.
 # DbPoolMaxConns = 4
 
 [Paging]
-    # The default number of features in a response
-    LimitDefault = 20
-    # Maxium number of features in a response
-    LimitMax = 10000
+# The default number of features in a response
+LimitDefault = 20
+# Maxium number of features in a response
+LimitMax = 10000
 
 [Metadata]
-    # Title for this service
-#	Title = "pg-featureserv"
-    # Description of this service
-#	Description = "Crunchy Data Feature Server for PostGIS"
+# Title for this service
+#Title = "pg-featureserv"
+# Description of this service
+#Description = "Crunchy Data Feature Server for PostGIS"
 ```
