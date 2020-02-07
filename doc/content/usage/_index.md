@@ -5,12 +5,5 @@ draft: false
 weight: 30
 ---
 
-
-# Basic Usage
-
-(may be covered in Deployment)
-
-- Describe a standard task or use case step by step.
-- If the order of a list of items does not matter, use bullet points (Example: a list of variables). Otherwise, use a numbered list.
-  - If there are more than 5 bullet points, consider a table display.
-- Also consider breaking out each step into subsections. Each subsection heading can include the step number.
+This section describes how to create or expose database tables, views and functions via
+`pg_featureserv`, how to query the API, and how to use the Web user interface provided by the service.

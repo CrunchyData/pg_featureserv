@@ -12,7 +12,7 @@ Popular ones are [Geoserver](https://geoserver.org) and [Mapserver](https://maps
 and generate feature datasets in various formats.
 In exchange for that flexibility of source format, they provide less flexibility of usage.
 
-## PostGIS-Only
+### PostGIS-Only
 
 By targetting PostGIS as the sole data provider, `pg_featureserv` gains significant capabilties:
 
@@ -33,19 +33,27 @@ via the service, and minimizes the learning curve for developers.
 Moreover, by utilizing a single powerful spatial data source, the `pg_featureserv` codebase is significantly smaller and simpler.
 This gives the advantages of more rapid development, fewer bugs, a more secure API, and easier deployment on a wider variety of platforms.
 
-## Modern Web Service Architecture
+### Modern Web Service Architecture
 
-`pg_featureserv` fully adopts the modern architectural paradigm of web-friendly, RESTful microservices.
-The emerging OGC API specification provides a suite simple, REST-based spatial APIs.  This is expected to see wide and rapid adoption
-due to its ease of impmentation on both server and client sides.
+`pg_featureserv` follows the modern architectural paradigm of web-friendly, RESTful microservices.
+The emerging OGC API suite of specifications provides a suite simple, REST-based spatial APIs
+which is aligned with standard web practice.
+This philosophy is described in the W3C/OGC [Spatial Data on the Web Best Practices](https://www.w3.org/TR/sdw-bp/).
+The OGC API standards are expected to see wide and rapid adoption
+due to their ease of impmentation on both server and client sides.
+The first of these standards to be approved is the [OGC API for Features Core](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html).
+
 A key benefit of this lighter-weight standard is the ease of extending it to expose service-specific capabilities,
 and `pg_featureserv` takes full advantage of this.
-By focussing on the single aspect of serving spatial features, it is easier to deploy, provision, manage and secure
-feature services within a containerized environment.
+For instance, `pg_featureserv` allows querying spatial functions as well as static collections, using a similar API.
+Other extension provide functionality which has not yet be codified in the OGC standard,
+or which exposes functionality native to PostGIS.
 
-## PostGIS for the Web
+By focussing on the single aspect of serving spatial features, `pg_featureserv` makes it easier to deploy, provision, manage and secure feature services within a containerized environment.
 
-`pg_featureserv` is one component in **PostGIS for the Web** (aka "PostGIS FTW"), a growing family of Go spatial micro-services. Database-centric applications naturally have a central source of coordinating state, the database, which allows otherwise independent micro-services to provide HTTP-level access to the database with minimal middleware complexity.
+### PostGIS for the Web
+
+`pg_featureserv` is one component of **PostGIS for the Web** (aka "PostGIS FTW"), a growing family of Go spatial micro-services. Database-centric applications naturally have a central source of coordinating state, the database, which allows otherwise independent micro-services to provide HTTP-level access to the database with minimal middleware complexity.
 
 * [pg_tileserv](https://github.com/crunchydata/pg_tileserv) provides MVT tiles for interactive clients and smooth rendering
 * [pg_featureserv](https://github.com/crunchydata/pg_featureserv) provides GeoJSON feature services for reading and writing vector and attribute data from tables

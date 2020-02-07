@@ -7,19 +7,35 @@ weight: 250
 
 ### Basic Operation
 
-#### Linux or OSX
+The service can be run with minimal configuration.
+Only the database connection information is required.
+(Even that can be omitted
+if run with the `--test` option.)
+The database connection information can be provided in an environment variable
+`DATABASE_URL` containing a Postgres [connection string](https://www.postgresql.org/docs/12/libpq-connect.html#LIBPQ-CONNSTRING)
 
+#### Linux or OSX
 ```sh
 export DATABASE_URL=postgresql://username:password@host/dbname
 ./pg_featureserv
 ```
 
 #### Windows
-
 ```
 SET DATABASE_URL=postgresql://username:password@host/dbname
 pg_featureserv.exe
 ```
+
+### Command options
+
+|  Option  |  Description  |
+|-------------|-----------|
+| `-?` | show command usage |
+| `--config <file>.toml` | specify configuration file to use |
+| `--debug` | set logging level to TRACE (can also be set in config file) |
+| `--devel`| run in development mode (i.e. assets are reloaded for every request) |
+| `--test` | run in test mode, using an internal catalog of sample tables and data rather than a database |
+
 
 ### Configuration File
 

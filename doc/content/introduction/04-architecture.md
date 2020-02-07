@@ -21,4 +21,7 @@ It contains an integrated web server which provides an HTTP interface to clients
 
 The `pg_featureserv` application can run stand-alone or inside a containerized environment.
 
-** Diagram TBD **
+The context diagram below shows `pg_featureserv` running alongside `pg_tileserv` to
+provide a PostGIS-centric "platform for the spatial web".
+
+![pg_feaureserv Architecture](/pg_fs_architecture.png)
