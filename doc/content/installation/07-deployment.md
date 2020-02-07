@@ -39,7 +39,7 @@ pg_featureserv.exe
 
 ### Configuration File
 
-The configuration file is automatically read from the file `pg_featureerv.toml`
+The configuration file is automatically read from the file `config.toml`
 in the directory the application starts in, if it exists.
 
 If you want to specify a different file, use the `--config` commandline parameter to pass in a full path to the configuration file.  When using the `--config` option the local configuration file is ignored.

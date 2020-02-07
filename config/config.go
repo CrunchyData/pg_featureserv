@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	ConfigFileNameDefault = "pg_featureserv"
+	ConfigFileNameDefault = "config"
 )
 
 // Configuration for system
