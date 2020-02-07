@@ -50,7 +50,7 @@ go build
 
 * Set the environment variable `DATABASE_URL` with a Postgres [connection string](https://www.postgresql.org/docs/12/libpq-connect.html#LIBPQ-CONNSTRING)
   * Example: `export DATABASE_URL="host=localhost"`
-* Edit the configuration file `config.toml`, located in the application directory
+* Edit the configuration file `pg_featureserv.toml`, located in the application directory
 
 ## Running the service
 
@@ -79,12 +79,25 @@ Append `.html` to the request path to see the UI page for the resource.
 The example requests assume that the service is running locally and configured
 to listen on port 9000.
 
-- API landing: http://localhost:9000/
-- API definition: http://localhost:9000/api
+- Landing page (JSON): http://localhost:9000/
+- Landing page (HTML): http://localhost:9000/
+- OpenAPI definition: http://localhost:9000/api
+- OpenAPI test UI: http://localhost:9000/api.html
 - Conformance: http://localhost:9000/conformance
-- Collections: http://localhost:9000/collections
+- Collections JSON: http://localhost:9000/collections
+- Collections UI: http://localhost:9000/collections.html
 - Feature collection metadata: http://localhost:9000/collections/{name}
+- Feature collection UI: http://localhost:9000/collections/{name}.html
 - Features from a single feature collection: http://localhost:9000/collections/{name}/items
+- Features from a single feature collection (Map UI): http://localhost:9000/collections/{name}/items.html
 - Single feature from a feature collection: http://localhost:9000/collections/{name}/items/{featureid}
+- Functions JSON: http://localhost:9000/functions
+- Functions UI: http://localhost:9000/functions.html
+- Function metadata: http://localhost:9000/functions/{name}
+- Function UI: http://localhost:9000/functions/{name}.html
+- Features from a function: http://localhost:9000/functions/{name}/items
+- Features from a function (Map UI): http://localhost:9000/functions/{name}/items.html
 
-See [API Summary](API.md) for a summary of the API
+
+
+See [API Summary](API.md) for a summary of the API.
