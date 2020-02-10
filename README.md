@@ -79,8 +79,9 @@ Append `.html` to the request path to see the UI page for the resource.
 The example requests assume that the service is running locally and configured
 to listen on port 9000.
 
-- Landing page (JSON): http://localhost:9000/
-- Landing page (HTML): http://localhost:9000/
+- Landing page (HTML or JSON): http://localhost:9000/
+- Landing page (HTML): http://localhost:9000/index,html
+- Landing page (JSON): http://localhost:9000/index.json
 - OpenAPI definition: http://localhost:9000/api
 - OpenAPI test UI: http://localhost:9000/api.html
 - Conformance: http://localhost:9000/conformance
@@ -91,11 +92,11 @@ to listen on port 9000.
 - Features from a single feature collection: http://localhost:9000/collections/{name}/items
 - Features from a single feature collection (Map UI): http://localhost:9000/collections/{name}/items.html
 - Single feature from a feature collection: http://localhost:9000/collections/{name}/items/{featureid}
-- Functions JSON: http://localhost:9000/functions
+- Functions (JSON): http://localhost:9000/functions
 - Functions UI: http://localhost:9000/functions.html
 - Function metadata: http://localhost:9000/functions/{name}
 - Function UI: http://localhost:9000/functions/{name}.html
-- Features from a function: http://localhost:9000/functions/{name}/items
+- Features from a function (JSON): http://localhost:9000/functions/{name}/items
 - Features from a function (Map UI): http://localhost:9000/functions/{name}/items.html
 
 
