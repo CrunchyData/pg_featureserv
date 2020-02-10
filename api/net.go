@@ -14,6 +14,8 @@ package api
 */
 
 import (
+	"fmt"
+	"net/http"
 	"net/url"
 	"strings"
 )
@@ -47,6 +49,24 @@ func ContentType(format string) string {
 func PathFormat(url *url.URL) string {
 	path := url.EscapedPath()
 	if strings.HasSuffix(path, ".html") {
+		return FormatHTML
+	}
+	return FormatJSON
+}
+
+func RequestedFormat(r *http.Request) string {
+	// first check explicit path
+	path := r.URL.EscapedPath()
+	if strings.HasSuffix(path, ".html") {
+		return FormatHTML
+	}
+	if strings.HasSuffix(path, ".json") {
+		return FormatJSON
+	}
+	// Use Accept header if present
+	hdrAccept := r.Header.Get("Accept")
+	fmt.Println(hdrAccept)
+	if strings.Index(hdrAccept, ContentTypeHTML) >= 0 {
 		return FormatHTML
 	}
 	return FormatJSON

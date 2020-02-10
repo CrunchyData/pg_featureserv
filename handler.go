@@ -34,8 +34,10 @@ const (
 func initRouter() *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
 
-	addRoute(router, "/", handleRootJSON)
+	addRoute(router, "/", handleHome)
 	addRoute(router, "/home{.fmt}", handleHome)
+	// consistent with pg_tileserv
+	addRoute(router, "/index{.fmt}", handleHome)
 
 	addRoute(router, "/api", handleAPI)
 	addRoute(router, "/api.{fmt}", handleAPI)
@@ -95,11 +97,12 @@ func handleRootJSON(w http.ResponseWriter, r *http.Request) *appError {
 }
 
 func handleHome(w http.ResponseWriter, r *http.Request) *appError {
-	format := api.PathFormat(r.URL)
+	format := api.RequestedFormat(r)
 	return doRoot(w, r, format)
 }
 
 func doRoot(w http.ResponseWriter, r *http.Request, format string) *appError {
+	log.Printf("Content-Type: %v  Accept: %v", r.Header.Get("Content-Type"), r.Header.Get("Accept"))
 	urlBase := serveURLBase(r)
 
 	// --- create content
