@@ -102,7 +102,7 @@ func handleHome(w http.ResponseWriter, r *http.Request) *appError {
 }
 
 func doRoot(w http.ResponseWriter, r *http.Request, format string) *appError {
-	log.Printf("Content-Type: %v  Accept: %v", r.Header.Get("Content-Type"), r.Header.Get("Accept"))
+	//log.Printf("Content-Type: %v  Accept: %v", r.Header.Get("Content-Type"), r.Header.Get("Accept"))
 	urlBase := serveURLBase(r)
 
 	// --- create content
