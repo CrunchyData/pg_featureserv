@@ -146,12 +146,12 @@ func linkSelf(urlBase string, path string, format string) *api.Link {
 }
 
 func linkAlt(urlBase string, path string, format string) *api.Link {
-	adt := altFormat(format)
+	alt := altFormat(format)
 	return &api.Link{
-		Href:  urlPathFormat(urlBase, path, adt),
+		Href:  urlPathFormat(urlBase, path, alt),
 		Rel:   api.RelAlt,
-		Type:  api.ContentType(adt),
-		Title: "This document as " + strings.ToUpper(adt)}
+		Type:  api.ContentType(alt),
+		Title: "This document as " + strings.ToUpper(alt)}
 }
 
 func altFormat(format string) string {
