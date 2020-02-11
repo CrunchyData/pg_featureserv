@@ -17,7 +17,7 @@ package main
 # Running
 Usage: ./pg_featureserv [ -test ]
 
-Browser: e.g. http://localhost:9000/home.html
+Browser: e.g. http://localhost:9000/index.html
 
 # Configuration
 Database URL in env var `DATABASE_URL`

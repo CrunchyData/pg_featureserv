@@ -48,11 +48,14 @@ type FeatureCollection struct {
 	Links          []*api.Link `json:"links"`
 }
 
+const urlBase = "http://test"
+
 // testConfir is a config spec for using in running tests
 var testConfig config.Config = config.Config{
 	Server: config.Server{
 		HttpHost:   "0.0.0.0",
 		HttpPort:   9000,
+		UrlBase:    urlBase,
 		AssetsPath: "./assets",
 	},
 	Paging: config.Paging{
@@ -76,32 +79,44 @@ func TestRoot(t *testing.T) {
 	resp := doRequest(t, "/")
 	body, _ := ioutil.ReadAll(resp.Body)
 
-	// Check the response body
-	//var v map[string]interface{}
 	var v api.RootInfo
 	json.Unmarshal(body, &v)
 
-	fmt.Println("Response ==>")
-	fmt.Println(v.Title)
-	fmt.Println(v.Description)
+	checkLink(t, v.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+"/")
+	checkLink(t, v.Links[1], api.RelAlt, api.ContentTypeHTML, urlBase+"/"+api.RootPageName+".html")
+	checkLink(t, v.Links[2], api.RelData, api.ContentTypeJSON, urlBase+"/collections.json")
+	checkLink(t, v.Links[3], api.RelFunctions, api.ContentTypeJSON, urlBase+"/functions.json")
+
 	/*
-		if rr.Body.String() != expected {
-			t.Errorf("handler returned unexpected body: got %v want %v",
-				rr.Body.String(), expected)
-		}
+		fmt.Println("Response ==>")
+		fmt.Println(v.Title)
+		fmt.Println(v.Description)
 	*/
 }
 
-func TestCollectionResponse(t *testing.T) {
-	resp := doRequest(t, "/collections/mock_a/items")
+func TestCollectionsResponse(t *testing.T) {
+	path := "/collections"
+	resp := doRequest(t, path)
 	body, _ := ioutil.ReadAll(resp.Body)
 
-	// Check the response body
-	//var v map[string]interface{}
+	var v api.CollectionsInfo
+	json.Unmarshal(body, &v)
+
+	checkLink(t, v.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+path+".json")
+	checkLink(t, v.Links[1], api.RelAlt, api.ContentTypeHTML, urlBase+path+".html")
+}
+
+func TestCollectionItemsResponse(t *testing.T) {
+	path := "/collections/mock_a/items"
+	resp := doRequest(t, path)
+	body, _ := ioutil.ReadAll(resp.Body)
+
 	var v api.FeatureCollectionRaw
 	json.Unmarshal(body, &v)
 
 	equals(t, 9, len(v.Features), "# features")
+	checkLink(t, v.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+path+".json")
+	checkLink(t, v.Links[1], api.RelAlt, api.ContentTypeHTML, urlBase+path+".html")
 }
 
 func TestLimit(t *testing.T) {
@@ -200,8 +215,8 @@ func TestFeatureNotFound(t *testing.T) {
 }
 
 //--------  Test HTML generation
-func TestHTMLHome(t *testing.T) {
-	doRequest(t, "/home.html")
+func TestHTMLRoot(t *testing.T) {
+	doRequest(t, "/index.html")
 }
 func TestHTMLConformance(t *testing.T) {
 	doRequest(t, "/conformance.html")
@@ -247,6 +262,12 @@ func doRequestStatus(t *testing.T, url string,
 			status, statusExpected)
 	}
 	return rr
+}
+
+func checkLink(tb testing.TB, link *api.Link, rel string, conType string, href string) {
+	equals(tb, link.Rel, rel, "Incorrect link rel")
+	equals(tb, link.Type, conType, "Incorrect link type")
+	equals(tb, link.Href, href, "Incorrect link href")
 }
 
 //---- testing utilities from https://github.com/benbjohnson/testing

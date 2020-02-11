@@ -34,10 +34,10 @@ const (
 func initRouter() *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
 
-	addRoute(router, "/", handleHome)
-	addRoute(router, "/home{.fmt}", handleHome)
+	addRoute(router, "/", handleRoot)
+	addRoute(router, "/home{.fmt}", handleRoot)
 	// consistent with pg_tileserv
-	addRoute(router, "/index{.fmt}", handleHome)
+	addRoute(router, "/index{.fmt}", handleRoot)
 
 	addRoute(router, "/api", handleAPI)
 	addRoute(router, "/api.{fmt}", handleAPI)
@@ -96,7 +96,7 @@ func handleRootJSON(w http.ResponseWriter, r *http.Request) *appError {
 	return doRoot(w, r, api.FormatJSON)
 }
 
-func handleHome(w http.ResponseWriter, r *http.Request) *appError {
+func handleRoot(w http.ResponseWriter, r *http.Request) *appError {
 	format := api.RequestedFormat(r)
 	return doRoot(w, r, format)
 }
@@ -132,7 +132,7 @@ func linksRoot(urlBase string, format string) []*api.Link {
 		Rel:  api.RelData, Type: api.ContentType(format), Title: "collections"})
 	links = append(links, &api.Link{
 		Href: urlPathFormat(urlBase, api.TagFunctions, format),
-		Rel:  api.RelData, Type: api.ContentType(format), Title: "functions"})
+		Rel:  api.RelFunctions, Type: api.ContentType(format), Title: "functions"})
 
 	return links
 }

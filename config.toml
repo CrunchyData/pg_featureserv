@@ -7,7 +7,7 @@ HttpPort = 9000
 
 # Advertise URLs relative to this server name
 # default is to look this up from incoming request headers
-#    UrlBase = "http://localhost:9000/"
+#    UrlBase = "http://localhost:9000"
 
 # String to return for Access-Control-Allow-Origin header
 #    CORSOrigins = "*"

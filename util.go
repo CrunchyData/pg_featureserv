@@ -68,7 +68,7 @@ func serveURLBase(r *http.Request) string {
 	configUrl := config.Configuration.Server.UrlBase
 
 	if configUrl != "" {
-		return configUrl
+		return configUrl + "/"
 	}
 	// Preferred scheme
 	ps := "http"
@@ -113,17 +113,12 @@ func urlPathFormat(urlBase string, path string, format string) string {
 	if path == "" {
 		pathType = ""
 		if format == api.FormatHTML {
-			pathType = "home.html"
+			pathType = api.RootPageName + ".html"
 		}
 	} else {
 		pathType = path + "." + format
 	}
 	url := fmt.Sprintf("%v%v", urlBase, pathType)
-	/*
-		if !supportedContentType(contentType) {
-			panic(fmt.Sprintf("unsupported content type: %v", contentType))
-		}
-	*/
 	return url
 }
 

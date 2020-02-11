@@ -24,6 +24,7 @@ import (
 )
 
 const (
+	RootPageName   = "index"
 	TagCollections = "collections"
 	TagItems       = "items"
 	TagConformance = "conformance"
@@ -39,9 +40,10 @@ const (
 	ParamProperties = "properties"
 	ParamTransform  = "transform"
 
-	RelSelf = "self"
-	RelAlt  = "alternate"
-	RelData = "data"
+	RelSelf      = "self"
+	RelAlt       = "alternate"
+	RelData      = "data"
+	RelFunctions = "functions"
 
 	GeoJSONFeatureCollection = "FeatureCollection"
 )
