@@ -44,6 +44,7 @@ const (
 	RelAlt       = "alternate"
 	RelData      = "data"
 	RelFunctions = "functions"
+	RelItems     = "items"
 
 	GeoJSONFeatureCollection = "FeatureCollection"
 )

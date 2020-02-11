@@ -104,6 +104,10 @@ func TestCollectionsResponse(t *testing.T) {
 
 	checkLink(t, v.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+path+".json")
 	checkLink(t, v.Links[1], api.RelAlt, api.ContentTypeHTML, urlBase+path+".html")
+
+	checkCollection(t, v.Collections[0], "mock_a", "Mock A")
+	checkCollection(t, v.Collections[1], "mock_b", "Mock B")
+	checkCollection(t, v.Collections[2], "mock_c", "Mock C")
 }
 
 func TestCollectionItemsResponse(t *testing.T) {
@@ -264,10 +268,21 @@ func doRequestStatus(t *testing.T, url string,
 	return rr
 }
 
+func checkCollection(tb testing.TB, coll *api.CollectionInfo, name string, title string) {
+	equals(tb, name, coll.Name, "Collection name")
+	equals(tb, title, coll.Title, "Collection title")
+
+	path := "/collections/" + name
+	checkLink(tb, coll.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+path+".json")
+	checkLink(tb, coll.Links[1], api.RelAlt, api.ContentTypeHTML, urlBase+path+".html")
+
+	pathItems := path + "/items"
+	checkLink(tb, coll.Links[2], api.RelItems, api.ContentTypeGeoJSON, urlBase+pathItems+".json")
+}
 func checkLink(tb testing.TB, link *api.Link, rel string, conType string, href string) {
-	equals(tb, link.Rel, rel, "Incorrect link rel")
-	equals(tb, link.Type, conType, "Incorrect link type")
-	equals(tb, link.Href, href, "Incorrect link href")
+	equals(tb, rel, link.Rel, "Link rel")
+	equals(tb, conType, link.Type, "Link type")
+	equals(tb, href, link.Href, "Link href")
 }
 
 //---- testing utilities from https://github.com/benbjohnson/testing

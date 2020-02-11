@@ -209,10 +209,10 @@ func linksCollection(name string, urlBase string, format string) []*api.Link {
 
 	links = append(links, &api.Link{
 		Href: urlPathFormat(urlBase, pathItems, api.FormatJSON),
-		Rel:  "items", Type: api.ContentTypeJSON, Title: "Features as GeoJSON"})
+		Rel:  api.RelItems, Type: api.ContentTypeGeoJSON, Title: "Features as GeoJSON"})
 	links = append(links, &api.Link{
 		Href: urlPathFormat(urlBase, pathItems, api.FormatHTML),
-		Rel:  "items", Type: api.ContentTypeHTML, Title: "Features as HTML"})
+		Rel:  api.RelItems, Type: api.ContentTypeHTML, Title: "Features as HTML"})
 
 	return links
 }
