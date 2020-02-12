@@ -151,17 +151,6 @@ func linkAlt(urlBase string, path string, desc string) *api.Link {
 		Title: desc + api.TitleAsHTML}
 }
 
-func altFormat(format string) string {
-	switch format {
-	case api.FormatJSON:
-		return api.FormatHTML
-	case api.FormatHTML:
-		return api.FormatJSON
-	}
-	// TODO: panic here?
-	return ""
-}
-
 func handleCollections(w http.ResponseWriter, r *http.Request) *appError {
 	format := api.PathFormat(r.URL)
 	isJSON := format == api.FormatJSON
