@@ -67,6 +67,14 @@ var RootInfoSchema openapi3.Schema = openapi3.Schema{
 	Type:     "object",
 	Required: []string{"links"},
 	Properties: map[string]*openapi3.SchemaRef{
+		"title": {Value: &openapi3.Schema{
+			Type:        "string",
+			Description: "Title of this feature service",
+		}},
+		"description": {Value: &openapi3.Schema{
+			Type:        "string",
+			Description: "Description of this feature service",
+		}},
 		"links": {
 			Value: &openapi3.Schema{
 				Type:  "array",
@@ -85,14 +93,37 @@ type Link struct {
 }
 
 var LinkSchema openapi3.Schema = openapi3.Schema{
-	Type:     "object",
-	Required: []string{"href"},
+	Description: "Describes links to other resources",
+	Type:        "object",
+	Required:    []string{"href"},
 	Properties: map[string]*openapi3.SchemaRef{
 		"href":     {Value: &openapi3.Schema{Type: "string"}},
 		"rel":      {Value: &openapi3.Schema{Type: "string"}},
 		"type":     {Value: &openapi3.Schema{Type: "string"}},
 		"hreflang": {Value: &openapi3.Schema{Type: "string"}},
 		"title":    {Value: &openapi3.Schema{Type: "string"}},
+	},
+}
+
+var PropertySchema openapi3.Schema = openapi3.Schema{
+	Description: "A data property of a collection or function result",
+	Type:        "object",
+	Required:    []string{"name", "type"},
+	Properties: map[string]*openapi3.SchemaRef{
+		"name":        {Value: &openapi3.Schema{Type: "string"}},
+		"type":        {Value: &openapi3.Schema{Type: "string"}},
+		"description": {Value: &openapi3.Schema{Type: "string"}},
+	},
+}
+
+var ParameterSchema openapi3.Schema = openapi3.Schema{
+	Description: "A parameter of a function",
+	Type:        "object",
+	Required:    []string{"name", "type"},
+	Properties: map[string]*openapi3.SchemaRef{
+		"name":    {Value: &openapi3.Schema{Type: "string"}},
+		"type":    {Value: &openapi3.Schema{Type: "string"}},
+		"default": {Value: &openapi3.Schema{Type: "string"}},
 	},
 }
 
@@ -168,14 +199,17 @@ type Property struct {
 
 // CollectionInfo for a collection
 type CollectionInfo struct {
-	Name         string      `json:"id"`
-	Title        string      `json:"title,omitempty"`
-	Description  string      `json:"description,omitempty"`
-	Extent       *Bbox       `json:"extent,omitempty"`
-	Crs          []string    `json:"crs,omitempty"`
-	Properties   []*Property `json:"properties,omitempty"`
-	GeometryType *string     `json:"geometrytype,omitempty"`
-	Links        []*Link     `json:"links"`
+	Name         string   `json:"id"`
+	Title        string   `json:"title,omitempty"`
+	Description  string   `json:"description,omitempty"`
+	Extent       *Bbox    `json:"extent,omitempty"`
+	Crs          []string `json:"crs,omitempty"`
+	GeometryType *string  `json:"geometrytype,omitempty"`
+
+	// these are omitempty so they don't show in summary metadata
+	Properties []*Property `json:"properties,omitempty"`
+
+	Links []*Link `json:"links"`
 	// used for HTML response only
 	URLMetadataHTML string `json:"-"`
 	URLMetadataJSON string `json:"-"`
@@ -185,22 +219,28 @@ type CollectionInfo struct {
 
 var CollectionInfoSchema openapi3.Schema = openapi3.Schema{
 	Type:     "object",
-	Required: []string{"name", "links"},
+	Required: []string{"id", "links"},
 	Properties: map[string]*openapi3.SchemaRef{
 		"id":          {Value: &openapi3.Schema{Type: "string"}},
 		"title":       {Value: &openapi3.Schema{Type: "string"}},
 		"description": {Value: &openapi3.Schema{Type: "string"}},
-		"links": {Value: &openapi3.Schema{
-			Type:  "array",
-			Items: &openapi3.SchemaRef{Value: &LinkSchema},
-		},
-		},
-		"extent": {Value: &BboxSchema},
+		"extent":      {Value: &BboxSchema},
 		"crs": {Value: &openapi3.Schema{
 			Type: "array",
 			Items: &openapi3.SchemaRef{
 				Value: &openapi3.Schema{Type: "string"},
 			},
+		},
+		},
+		"geometrytype": {Value: &openapi3.Schema{Type: "string"}},
+		"properties": {Value: &openapi3.Schema{
+			Type:  "array",
+			Items: &openapi3.SchemaRef{Value: &PropertySchema},
+		},
+		},
+		"links": {Value: &openapi3.Schema{
+			Type:  "array",
+			Items: &openapi3.SchemaRef{Value: &LinkSchema},
 		},
 		},
 	},
@@ -243,24 +283,39 @@ var FunctionsInfoSchema openapi3.Schema = openapi3.Schema{
 
 // FunctionInfo is the API metadata for a function
 type FunctionInfo struct {
-	Name            string         `json:"id"`
-	Description     string         `json:"description,omitempty"`
-	Parameters      []*Parameter   `json:"parameters,omitempty"`
-	Properties      []*Property    `json:"properties,omitempty"`
-	Links           []*Link        `json:"links"`
-	Function        *data.Function `json:"-"`
-	URLMetadataHTML string         `json:"-"`
-	URLMetadataJSON string         `json:"-"`
-	URLItemsHTML    string         `json:"-"`
-	URLItemsJSON    string         `json:"-"`
+	Name        string `json:"id"`
+	Description string `json:"description,omitempty"`
+
+	// these are omitempty so they don't show in summary metadata
+	Parameters []*Parameter `json:"parameters,omitempty"`
+	Properties []*Property  `json:"properties,omitempty"`
+
+	Links    []*Link        `json:"links"`
+	Function *data.Function `json:"-"`
+
+	// used for HTML response only
+	URLMetadataHTML string `json:"-"`
+	URLMetadataJSON string `json:"-"`
+	URLItemsHTML    string `json:"-"`
+	URLItemsJSON    string `json:"-"`
 }
 
 var FunctionInfoSchema openapi3.Schema = openapi3.Schema{
 	Type:     "object",
-	Required: []string{"name", "links"},
+	Required: []string{"id", "links"},
 	Properties: map[string]*openapi3.SchemaRef{
 		"id":          {Value: &openapi3.Schema{Type: "string"}},
 		"description": {Value: &openapi3.Schema{Type: "string"}},
+		"parameters": {Value: &openapi3.Schema{
+			Type:  "array",
+			Items: &openapi3.SchemaRef{Value: &ParameterSchema},
+		},
+		},
+		"properties": {Value: &openapi3.Schema{
+			Type:  "array",
+			Items: &openapi3.SchemaRef{Value: &PropertySchema},
+		},
+		},
 		"links": {Value: &openapi3.Schema{
 			Type:  "array",
 			Items: &openapi3.SchemaRef{Value: &LinkSchema},

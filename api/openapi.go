@@ -158,7 +158,7 @@ func GetAPIContent() *openapi3.Swagger {
 				},
 			},
 			"/api": &openapi3.PathItem{
-				Summary:     "api definition",
+				Summary:     "API definition",
 				Description: "OpenAPI 3.0 definition of this service",
 				Get: &openapi3.Operation{
 					OperationID: "getAPI",
