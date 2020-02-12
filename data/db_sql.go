@@ -30,9 +30,10 @@ const sqlTables = `SELECT
 	postgis_typmod_type(a.atttypmod) AS geometry_type,
 	coalesce(ia.attname, '') AS id_column,
 	(
-		SELECT array_agg(ARRAY[sa.attname, st.typname]::text[])
+		SELECT array_agg(ARRAY[sa.attname, st.typname, coalesce(da.description,''), sa.attnum::text]::text[] ORDER BY sa.attnum)
 		FROM pg_attribute sa
 		JOIN pg_type st ON sa.atttypid = st.oid
+		LEFT JOIN pg_description da ON (c.oid = da.objoid and sa.attnum = da.objsubid)
 		WHERE sa.attrelid = c.oid
 		AND sa.attnum > 0
 		AND NOT sa.attisdropped
