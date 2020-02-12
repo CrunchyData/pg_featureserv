@@ -4,23 +4,14 @@
 <a style='margin-left: 20px' class='json-link' href='{{ .context.URLJSON }}' title='JSON document for this page'>JSON</a>
 </div>
 <hr>
-<h2>Functions</h2>
+<h3>Functions</h3>
 
 {{ range .data.Functions }}
-{{$collTitle := .Name}}
-	<div >
-	{{ range .Links }}
-		{{ if (eq .Rel "self") }}
-		<a href="{{ .Href }}"><span class='coll-title'>{{ $collTitle }}</span></a>
-		{{ end }}
-	{{ end }}
-	{{ range .Links }}
-		{{ if (eq .Rel "alternate") }}
-			<a  class='json-link' href="{{ .Href }}">JSON</a></li>
-		{{ end }}
-	{{ end }}
-	</div>
-	<div class='coll-desc'>{{ .Description }}</div>
-	<p>
+<div >
+    <a href="{{ .URLMetadataHTML }}"><span class='coll-title'>{{ .Name }}</span></a>
+    <a  class='json-link' href="{{ .URLMetadataJSON }}">JSON</a></li>
+</div>
+<div class='coll-desc'>{{ .Description }}</div>
+<p>
 {{ end }}
 {{ end }}

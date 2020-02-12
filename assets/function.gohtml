@@ -5,18 +5,13 @@
 <a style='margin-left: 20px' class='json-link' href='{{ .context.URLJSON }}' title='JSON document for this page'>JSON</a>
 </div>
 <hr>
-<h2>Function: {{ .data.Name }}</h2>
-<p>
-	{{ range .data.Links }}
-	<span>
-		{{- if (eq .Rel "items") }}
-			<a class='json-link' href="{{ .Href }}">{{ .Title }}</a>
-		{{- end }}
-	</span>
-	{{ end }}
-</p>
+<h3>Function: {{ .data.Name }}</h3>
 <div class='coll-desc'>{{ .data.Description }}</div>
-<h3>Metadata</h3>
+<p>
+<a href="{{ .data.URLItemsHTML }}">Preview Items</a>
+<a class='json-link' href="{{ .data.URLItemsJSON }}">JSON</a>
+</p>
+<h4>Metadata</h4>
 <table cellspacing='4px'>
 
 <tr><td class='coll-title' valign='top'>Input</td>

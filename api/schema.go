@@ -46,6 +46,13 @@ const (
 	RelFunctions = "functions"
 	RelItems     = "items"
 
+	TitleFeatuuresGeoJSON = "Features as GeoJSON"
+	TitleDataJSON         = "Data as JSON"
+	TitleMetadata         = "Metadata"
+	TitleDocument         = "This document"
+	TitleAsJSON           = " as JSON"
+	TitleAsHTML           = " as HTML"
+
 	GeoJSONFeatureCollection = "FeatureCollection"
 )
 
@@ -148,12 +155,16 @@ var CollectionsInfoSchema openapi3.Schema = openapi3.Schema{
 
 // CollectionInfo for a collection
 type CollectionInfo struct {
-	Name        string   `json:"id"`
-	Title       string   `json:"title,omitempty"`
-	Description string   `json:"description,omitempty"`
-	Extent      *Bbox    `json:"extent,omitempty"`
-	Crs         []string `json:"crs,omitempty"`
-	Links       []*Link  `json:"links"`
+	Name            string   `json:"id"`
+	Title           string   `json:"title,omitempty"`
+	Description     string   `json:"description,omitempty"`
+	Extent          *Bbox    `json:"extent,omitempty"`
+	Crs             []string `json:"crs,omitempty"`
+	Links           []*Link  `json:"links"`
+	URLMetadataHTML string   `json:"-"`
+	URLMetadataJSON string   `json:"-"`
+	URLItemsHTML    string   `json:"-"`
+	URLItemsJSON    string   `json:"-"`
 }
 
 var CollectionInfoSchema openapi3.Schema = openapi3.Schema{
@@ -216,10 +227,14 @@ var FunctionsInfoSchema openapi3.Schema = openapi3.Schema{
 
 // FunctionInfo is the API metadata for a function
 type FunctionInfo struct {
-	Name        string  `json:"id"`
-	Description string  `json:"description,omitempty"`
-	Links       []*Link `json:"links"`
-	Function    *data.Function
+	Name            string         `json:"id"`
+	Description     string         `json:"description,omitempty"`
+	Links           []*Link        `json:"links"`
+	Function        *data.Function `json:"-"`
+	URLMetadataHTML string         `json:"-"`
+	URLMetadataJSON string         `json:"-"`
+	URLItemsHTML    string         `json:"-"`
+	URLItemsJSON    string         `json:"-"`
 }
 
 var FunctionInfoSchema openapi3.Schema = openapi3.Schema{
@@ -285,6 +300,15 @@ func toBbox(cc *data.Table) *Bbox {
 	return &Bbox{
 		Crs:    fmt.Sprintf("EPSG:%v", cc.Srid),
 		Extent: []float64{cc.Extent.Minx, cc.Extent.Miny, cc.Extent.Maxx, cc.Extent.Maxy},
+	}
+}
+
+func NewLink(href string, rel string, conType string, title string) *Link {
+	return &Link{
+		Href:  href,
+		Rel:   rel,
+		Type:  conType,
+		Title: title,
 	}
 }
 
@@ -361,12 +385,16 @@ func PathCollection(name string) string {
 	return fmt.Sprintf("%v/%v", TagCollections, name)
 }
 
+func PathCollectionItems(name string) string {
+	return fmt.Sprintf("%v/%v/%v", TagCollections, name, TagItems)
+}
+
 func PathFunction(name string) string {
 	return fmt.Sprintf("%v/%v", TagFunctions, name)
 }
 
-func PathItems(tagType string, name string) string {
-	return fmt.Sprintf("%v/%v/%v", tagType, name, TagItems)
+func PathFunctionItems(name string) string {
+	return fmt.Sprintf("%v/%v/%v", TagFunctions, name, TagItems)
 }
 
 func PathItem(name string, fid string) string {

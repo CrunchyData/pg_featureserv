@@ -3,14 +3,15 @@
 <a style='margin-left: 20px' class='json-link' href='{{ .context.URLJSON }}' title='JSON document for this page'>JSON</a>
 </div>
 <hr>
-<div>{{ .config.Metadata.Description }}</div>
-<h2>Collections</h2>
+<div style='font-style:italic;'>{{ .config.Metadata.Description }}</div>
+<div style='margin-top: 12px;'>
+<a href="api.html">OpenAPI schema</a><a style='margin-left: 5px' class='json-link' href='api.json' title='JSON document for OpenAPI schema'>JSON</a>
+<span style='font-size:18px; font-weigth:bold; margin: 0px 8px 0px 8px;'>|</span> <a href="conformance.html">Conformance</a><a style='margin-left: 5px' class='json-link' href='conformance.json' title='JSON document for the conformance'>JSON</a>
+</div>
+<h3>Collections</h3>
 <a href="collections.html">View the collections</a>
 
-<h2>Functions</h2>
+<h3>Functions</h3>
 <a href="functions.html">View the functions</a>
 
-<h2>Metadata</h2>
-<div><a href="api.html">View the OpenAPI schema</a></div>
-<div><a href="conformance.html">View the conformance</a></div>
 {{end}}
