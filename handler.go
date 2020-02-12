@@ -197,13 +197,13 @@ func linksCollections(urlBase string) []*api.Link {
 	return links
 }
 
-func addCollectionLinks(coll *api.CollectionInfo, urlBase string, isJSON bool, isInList bool) {
+func addCollectionLinks(coll *api.CollectionInfo, urlBase string, isJSON bool, isSummary bool) {
 	name := coll.Name
 	path := api.PathCollection(name)
 	pathItems := api.PathCollectionItems(name)
 
 	if isJSON {
-		coll.Links = linksCollection(name, urlBase, isInList)
+		coll.Links = linksCollection(name, urlBase, isSummary)
 	} else {
 		coll.URLMetadataJSON = urlPathFormat(urlBase, path, api.FormatJSON)
 		coll.URLMetadataHTML = urlPathFormat(urlBase, path, api.FormatHTML)
@@ -211,12 +211,12 @@ func addCollectionLinks(coll *api.CollectionInfo, urlBase string, isJSON bool, i
 	}
 }
 
-func linksCollection(name string, urlBase string, isInList bool) []*api.Link {
+func linksCollection(name string, urlBase string, isSummary bool) []*api.Link {
 	path := api.PathCollection(name)
 	pathItems := api.PathCollectionItems(name)
 
 	titleDesc := api.TitleDocument
-	if isInList {
+	if isSummary {
 		titleDesc = api.TitleMetadata
 	}
 
@@ -487,10 +487,10 @@ func linksFunctions(urlBase string) []*api.Link {
 	return links
 }
 
-func addFunctionLinks(content *api.FunctionInfo, urlBase string, isJSON bool, isInList bool, isGeomFun bool) {
+func addFunctionLinks(content *api.FunctionInfo, urlBase string, isJSON bool, isSummary bool, isGeomFun bool) {
 	name := content.Name
 	if isJSON {
-		content.Links = linksFunction(name, urlBase, isInList, isGeomFun)
+		content.Links = linksFunction(name, urlBase, isSummary, isGeomFun)
 	} else {
 		path := api.PathFunction(name)
 		pathItems := api.PathFunctionItems(name)
@@ -501,12 +501,12 @@ func addFunctionLinks(content *api.FunctionInfo, urlBase string, isJSON bool, is
 	}
 }
 
-func linksFunction(id string, urlBase string, isInList bool, isGeomFun bool) []*api.Link {
+func linksFunction(id string, urlBase string, isSummary bool, isGeomFun bool) []*api.Link {
 	path := api.PathFunction(id)
 	pathItems := api.PathFunctionItems(id)
 
 	titleDesc := api.TitleDocument
-	if isInList {
+	if isSummary {
 		titleDesc = api.TitleMetadata
 	}
 
