@@ -534,6 +534,9 @@ func handleFunction(w http.ResponseWriter, r *http.Request) *appError {
 	isGeomFun := fn.IsGeometryFunction()
 	isJSON := format == api.FormatJSON
 	addFunctionLinks(content, urlBase, isJSON, false, isGeomFun)
+	content.Parameters = api.FunctionParameters(fn)
+	content.Properties = api.FunctionProperties(fn)
+
 	// --- encoding
 	switch format {
 	case api.FormatHTML:

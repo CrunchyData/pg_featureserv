@@ -107,8 +107,8 @@ type Function struct {
 	InDefaults     []string
 	OutNames       []string
 	OutTypes       []string
+	OutJSONTypes   []string
 	Types          map[string]string
-	JSONTypes      []string
 	GeometryColumn string
 	IDColumn       string
 }

@@ -36,9 +36,9 @@ const (
 	JSONTypeNumber  = "number"
 	JSONTypeBoolean = "boolean"
 
-	pgTypeBool     = "bool"
-	pgTypeNumeric  = "numeric"
-	pgTypeGeometry = "geometry"
+	PGTypeBool     = "bool"
+	PGTypeNumeric  = "numeric"
+	PGTypeGeometry = "geometry"
 )
 
 type catalogDB struct {
@@ -355,18 +355,29 @@ func toJSONValue(value interface{}) interface{} {
 	return value
 }
 
-func toJSONTypeFromPG(typ string) string {
-	if strings.HasPrefix(typ, "int") {
+func toJSONTypeFromPGArray(pgTypes []string) []string {
+	jsonTypes := make([]string, len(pgTypes))
+	for i, pgType := range pgTypes {
+		jsonTypes[i] = toJSONTypeFromPG(pgType)
+	}
+	return jsonTypes
+}
+
+func toJSONTypeFromPG(pgType string) string {
+	if strings.HasPrefix(pgType, "int") {
 		return JSONTypeNumber
 	}
-	if strings.HasPrefix(typ, "float") {
+	if strings.HasPrefix(pgType, "float") {
 		return JSONTypeNumber
 	}
-	switch typ {
-	case pgTypeNumeric:
+	switch pgType {
+	case PGTypeNumeric:
 		return JSONTypeNumber
-	case pgTypeBool:
+	case PGTypeBool:
 		return JSONTypeBoolean
+	// hack to allow displaying geometry type
+	case PGTypeGeometry:
+		return PGTypeGeometry
 	}
 	return JSONTypeString
 }

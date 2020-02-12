@@ -153,6 +153,13 @@ var CollectionsInfoSchema openapi3.Schema = openapi3.Schema{
 	},
 }
 
+type Parameter struct {
+	Name        string `json:"name"`
+	Type        string `json:"type"`
+	Description string `json:"description"`
+	Default     string `json:"default,omitempty"`
+}
+
 type Property struct {
 	Name        string `json:"name"`
 	Type        string `json:"type"`
@@ -238,6 +245,8 @@ var FunctionsInfoSchema openapi3.Schema = openapi3.Schema{
 type FunctionInfo struct {
 	Name            string         `json:"id"`
 	Description     string         `json:"description,omitempty"`
+	Parameters      []*Parameter   `json:"parameters,omitempty"`
+	Properties      []*Property    `json:"properties,omitempty"`
 	Links           []*Link        `json:"links"`
 	Function        *data.Function `json:"-"`
 	URLMetadataHTML string         `json:"-"`
@@ -386,6 +395,31 @@ func NewFunctionInfo(fn *data.Function) *FunctionInfo {
 		Function:    fn,
 	}
 	return &info
+}
+
+func FunctionParameters(fn *data.Function) []*Parameter {
+	params := make([]*Parameter, len(fn.InNames))
+	for i, name := range fn.InNames {
+		params[i] = &Parameter{
+			Name: name,
+			Type: fn.InTypes[i],
+			// no description available from db catalog
+			Default: fn.InDefaults[i],
+		}
+	}
+	return params
+}
+
+func FunctionProperties(fn *data.Function) []*Property {
+	props := make([]*Property, len(fn.OutNames))
+	for i, name := range fn.OutNames {
+		props[i] = &Property{
+			Name: name,
+			Type: fn.OutJSONTypes[i],
+			// no description available from db catalog
+		}
+	}
+	return props
 }
 
 func GetConformance() *Conformance {

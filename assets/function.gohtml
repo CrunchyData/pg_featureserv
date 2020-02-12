@@ -14,7 +14,7 @@
 <h4>Metadata</h4>
 <table cellspacing='4px'>
 
-<tr><td class='coll-title' valign='top'>Input</td>
+<tr><td class='coll-title' valign='top'>Parameters</td>
 <td><table class='tbl-props'>
 	<thead style='background-color: lightgrey;'>
 		<tr><th>Name</th><th>Database Type</th><th>Default value</th></tr>
@@ -30,15 +30,14 @@
 </table>
 </td></tr>
 
-<tr><td class='coll-title' valign='top'>Output</td>
+<tr><td class='coll-title' valign='top'>Properties</td>
 <td><table class='tbl-props'>
 	<thead style='background-color: lightgrey;'>
-		<tr><th>Name</th><th>Database Type</th></tr>
+		<tr><th>Name</th><th>Type</th></tr>
 	</thead>
-{{- $types := .context.Function.Types }}
-{{- range $i, $name := .context.Function.OutNames }}
-<tr><td class='prop-name'>{{ $name }}</td>
-<td>{{index $types $name}}</td>
+{{- range .data.Properties }}
+<tr><td class='prop-name'>{{ .Name }}</td>
+<td>{{ .Type }}</td>
 </tr>
 {{- end }}
 </table>

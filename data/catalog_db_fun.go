@@ -93,6 +93,7 @@ func scanFunctionDef(rows pgx.Rows) *Function {
 	inDefaults := toArray(inDefaultsTA)
 	outNames := toArray(outNamesTA)
 	outTypes := toArray(outTypesTA)
+	outJSONTypes := toJSONTypeFromPGArray(outTypes)
 
 	datatypes := make(map[string]string)
 	addTypes(datatypes, inNames, inTypes)
@@ -115,6 +116,7 @@ func scanFunctionDef(rows pgx.Rows) *Function {
 		InDefaults:     inDefaults,
 		OutNames:       outNames,
 		OutTypes:       outTypes,
+		OutJSONTypes:   outJSONTypes,
 		Types:          datatypes,
 		GeometryColumn: geomCol,
 	}
@@ -127,7 +129,7 @@ func addTypes(typeMap map[string]string, names []string, types []string) {
 func geometryColumn(names []string, types map[string]string) string {
 	// TODO: extract from outNames, outTypes
 	for _, name := range names {
-		if types[name] == pgTypeGeometry {
+		if types[name] == PGTypeGeometry {
 			return name
 		}
 	}
