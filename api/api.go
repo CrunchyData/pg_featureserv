@@ -153,18 +153,27 @@ var CollectionsInfoSchema openapi3.Schema = openapi3.Schema{
 	},
 }
 
+type Property struct {
+	Name        string `json:"name"`
+	Type        string `json:"type"`
+	Description string `json:"description"`
+}
+
 // CollectionInfo for a collection
 type CollectionInfo struct {
-	Name            string   `json:"id"`
-	Title           string   `json:"title,omitempty"`
-	Description     string   `json:"description,omitempty"`
-	Extent          *Bbox    `json:"extent,omitempty"`
-	Crs             []string `json:"crs,omitempty"`
-	Links           []*Link  `json:"links"`
-	URLMetadataHTML string   `json:"-"`
-	URLMetadataJSON string   `json:"-"`
-	URLItemsHTML    string   `json:"-"`
-	URLItemsJSON    string   `json:"-"`
+	Name         string      `json:"id"`
+	Title        string      `json:"title,omitempty"`
+	Description  string      `json:"description,omitempty"`
+	Extent       *Bbox       `json:"extent,omitempty"`
+	Crs          []string    `json:"crs,omitempty"`
+	Properties   []*Property `json:"properties,omitempty"`
+	GeometryType *string     `json:"geometrytype,omitempty"`
+	Links        []*Link     `json:"links"`
+	// used for HTML response only
+	URLMetadataHTML string `json:"-"`
+	URLMetadataJSON string `json:"-"`
+	URLItemsHTML    string `json:"-"`
+	URLItemsJSON    string `json:"-"`
 }
 
 var CollectionInfoSchema openapi3.Schema = openapi3.Schema{
@@ -336,6 +345,17 @@ func NewCollectionInfo(tbl *data.Table) *CollectionInfo {
 		Extent:      toBbox(tbl),
 	}
 	return &doc
+}
+
+func TableProperties(tbl *data.Table) []*Property {
+	props := make([]*Property, len(tbl.Columns))
+	for i, name := range tbl.Columns {
+		props[i] = &Property{
+			Name: name,
+			Type: tbl.JSONTypes[i],
+		}
+	}
+	return props
 }
 
 func NewFeatureCollectionInfo(featureJSON []string) *FeatureCollectionRaw {

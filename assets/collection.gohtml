@@ -16,7 +16,7 @@
 <table cellspacing='4px'>
 <tr><td class='coll-title'>ID column</td><td class='prop-name'>{{ .context.Table.IDColumn }}</td></tr>
 <tr><td class='coll-title'>Geometry column</td><td class='prop-name'>{{ .context.Table.GeometryColumn }}</td></tr>
-<tr><td class='coll-title'>Geometry type</td><td>{{ .context.Table.GeometryType }}</td></tr>
+<tr><td class='coll-title'>Geometry type</td><td>{{ .data.GeometryType }}</td></tr>
 <tr><td class='coll-title'>SRID</td><td>{{ .context.Table.Srid }}</td></tr>
 <tr><td class='coll-title'>Extent</td>
 <td>Lon/Lat Min: {{ .context.Table.Extent.Minx }}, {{ .context.Table.Extent.Miny }}
@@ -25,14 +25,12 @@ Max: {{ .context.Table.Extent.Maxx }}, {{ .context.Table.Extent.Maxy}}</td></tr>
 <td>
 <table class='tbl-props'>
 	<thead style='background-color: lightgrey;'>
-		<tr><th>Name</th><th>JSON Type</th><th>Database Type</th></tr>
+		<tr><th>Name</th><th>Type</th><th>Description</th></tr>
 	</thead>
-{{ $jtypes := .context.Table.JSONTypes }}
-{{ $types := .context.Table.Types }}
-{{ range $i, $name := .context.Table.Columns }}
-<tr><td class='prop-name'>{{ $name }}</td>
-<td>{{index $jtypes $i}}</td>
-<td>{{index $types $name}}</td>
+{{ range .data.Properties }}
+<tr><td class='prop-name'>{{ .Name }}</td>
+<td>{{ .Type }}</td>
+<td><i>{{ .Description }}</i></td>
 </tr>
 {{ end }}
 </table>

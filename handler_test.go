@@ -68,8 +68,11 @@ var testConfig config.Config = config.Config{
 	},
 }
 
+var catalogMock *data.CatalogMock
+
 func TestMain(m *testing.M) {
-	catalogInstance = data.CatMockInstance()
+	catalogMock = data.CatMockInstance()
+	catalogInstance = catalogMock
 	router = initRouter()
 	config.Configuration = testConfig
 	os.Exit(m.Run())
@@ -108,6 +111,30 @@ func TestCollectionsResponse(t *testing.T) {
 	checkCollection(t, v.Collections[0], "mock_a", "Mock A")
 	checkCollection(t, v.Collections[1], "mock_b", "Mock B")
 	checkCollection(t, v.Collections[2], "mock_c", "Mock C")
+}
+
+func TestCollectionResponse(t *testing.T) {
+	path := "/collections/mock_a"
+	resp := doRequest(t, path)
+	body, _ := ioutil.ReadAll(resp.Body)
+
+	var v api.CollectionInfo
+	json.Unmarshal(body, &v)
+
+	// use mock data as expected
+	tbl := catalogMock.TableDefs[0]
+
+	equals(t, tbl.ID, v.Name, "Name")
+	equals(t, tbl.Title, v.Title, "Title")
+	equals(t, tbl.Description, v.Description, "Description")
+	// check properties
+	equals(t, len(tbl.Columns), len(v.Properties), "Properties len")
+	equals(t, tbl.Columns[0], v.Properties[0].Name, "Properties[0].Name")
+	equals(t, tbl.JSONTypes[0], v.Properties[0].Type, "Properties[0].Type")
+
+	checkLink(t, v.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+path+".json")
+	checkLink(t, v.Links[1], api.RelAlt, api.ContentTypeHTML, urlBase+path+".html")
+	checkLink(t, v.Links[2], api.RelItems, api.ContentTypeGeoJSON, urlBase+path+"/items.json")
 }
 
 func TestCollectionItemsResponse(t *testing.T) {

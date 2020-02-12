@@ -236,6 +236,8 @@ func handleCollection(w http.ResponseWriter, r *http.Request) *appError {
 	content := api.NewCollectionInfo(tbl)
 	isJSON := format == api.FormatJSON
 	addCollectionLinks(content, urlBase, isJSON, false)
+	content.GeometryType = &tbl.GeometryType
+	content.Properties = api.TableProperties(tbl)
 
 	// --- encoding
 	switch format {

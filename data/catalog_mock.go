@@ -20,23 +20,23 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type catalogMock struct {
-	tables    []*Table
-	tableData map[string][]*featureMock
-	functions []*Function
+type CatalogMock struct {
+	TableDefs    []*Table
+	tableData    map[string][]*featureMock
+	FunctionDefs []*Function
 }
 
-var instance Catalog
+var instance CatalogMock
 
 // CatMockInstance tbd
-func CatMockInstance() Catalog {
+func CatMockInstance() *CatalogMock {
 	log.Printf("Using Test Catalog data")
 	// TODO: make a singleton
 	instance = newCatalogMock()
-	return instance
+	return &instance
 }
 
-func newCatalogMock() Catalog {
+func newCatalogMock() CatalogMock {
 	// must be in synch with featureMock type
 	propNames := []string{"prop_a", "prop_b", "prop_c", "prop_d"}
 	types := map[string]string{
@@ -90,24 +90,24 @@ func newCatalogMock() Catalog {
 	tables = append(tables, layerB)
 	tables = append(tables, layerC)
 
-	catMock := catalogMock{
-		tables:    tables,
+	catMock := CatalogMock{
+		TableDefs: tables,
 		tableData: tableData,
 	}
 
-	return &catMock
+	return catMock
 }
 
-func (cat *catalogMock) Close() {
+func (cat *CatalogMock) Close() {
 	// this is a no-op
 }
 
-func (cat *catalogMock) Tables() ([]*Table, error) {
-	return cat.tables, nil
+func (cat *CatalogMock) Tables() ([]*Table, error) {
+	return cat.TableDefs, nil
 }
 
-func (cat *catalogMock) TableByName(name string) (*Table, error) {
-	for _, lyr := range cat.tables {
+func (cat *CatalogMock) TableByName(name string) (*Table, error) {
+	for _, lyr := range cat.TableDefs {
 		if lyr.ID == name {
 			return lyr, nil
 		}
@@ -116,7 +116,7 @@ func (cat *catalogMock) TableByName(name string) (*Table, error) {
 	return nil, nil
 }
 
-func (cat *catalogMock) TableFeatures(name string, param QueryParam) ([]string, error) {
+func (cat *CatalogMock) TableFeatures(name string, param QueryParam) ([]string, error) {
 	features, ok := cat.tableData[name]
 	if !ok {
 		// table not found - indicated by nil value returned
@@ -132,14 +132,14 @@ func (cat *catalogMock) TableFeatures(name string, param QueryParam) ([]string, 
 		}
 	}
 	// handle empty property list
-	propNames := cat.tables[0].Columns
+	propNames := cat.TableDefs[0].Columns
 	if len(param.Columns) > 0 {
 		propNames = param.Columns
 	}
 	return featuresToJSON(features, start, end, propNames), nil
 }
 
-func (cat *catalogMock) TableFeature(name string, id string, param QueryParam) (string, error) {
+func (cat *CatalogMock) TableFeature(name string, id string, param QueryParam) (string, error) {
 	features, ok := cat.tableData[name]
 	if !ok {
 		// table not found - indicated by empty value returned
@@ -156,7 +156,7 @@ func (cat *catalogMock) TableFeature(name string, id string, param QueryParam) (
 		return "", nil
 	}
 	// handle empty property list
-	propNames := cat.tables[0].Columns
+	propNames := cat.TableDefs[0].Columns
 	if len(param.Columns) > 0 {
 		propNames = param.Columns
 	}
@@ -164,12 +164,12 @@ func (cat *catalogMock) TableFeature(name string, id string, param QueryParam) (
 	return features[index].toJSON(propNames), nil
 }
 
-func (cat *catalogMock) Functions() ([]*Function, error) {
-	return cat.functions, nil
+func (cat *CatalogMock) Functions() ([]*Function, error) {
+	return cat.FunctionDefs, nil
 }
 
-func (cat *catalogMock) FunctionByName(name string) (*Function, error) {
-	for _, fn := range cat.functions {
+func (cat *CatalogMock) FunctionByName(name string) (*Function, error) {
+	for _, fn := range cat.FunctionDefs {
 		if fn.ID == name {
 			return fn, nil
 		}
@@ -178,12 +178,12 @@ func (cat *catalogMock) FunctionByName(name string) (*Function, error) {
 	return nil, nil
 }
 
-func (cat *catalogMock) FunctionFeatures(name string, param QueryParam) ([]string, error) {
+func (cat *CatalogMock) FunctionFeatures(name string, param QueryParam) ([]string, error) {
 	// TODO:
 	return nil, nil
 }
 
-func (cat *catalogMock) FunctionData(name string, param QueryParam) ([]map[string]interface{}, error) {
+func (cat *CatalogMock) FunctionData(name string, param QueryParam) ([]map[string]interface{}, error) {
 	// TODO:
 	return nil, nil
 }
