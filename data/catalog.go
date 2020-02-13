@@ -87,7 +87,7 @@ type Table struct {
 	Srid           int
 	Extent         Extent
 	Columns        []string
-	Types          map[string]string
+	DbTypes        map[string]string
 	JSONTypes      []string
 }
 
@@ -103,10 +103,10 @@ type Function struct {
 	Name           string
 	Description    string
 	InNames        []string
-	InTypes        []string
+	InDbTypes      []string
 	InDefaults     []string
 	OutNames       []string
-	OutTypes       []string
+	OutDbTypes     []string
 	OutJSONTypes   []string
 	Types          map[string]string
 	GeometryColumn string
@@ -119,7 +119,7 @@ const (
 )
 
 func (fun *Function) IsGeometryFunction() bool {
-	for _, typ := range fun.OutTypes {
+	for _, typ := range fun.OutDbTypes {
 		if typ == "geometry" {
 			return true
 		}

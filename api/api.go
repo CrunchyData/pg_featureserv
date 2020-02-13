@@ -457,7 +457,7 @@ func FunctionParameters(fn *data.Function) []*Parameter {
 	for i, name := range fn.InNames {
 		params[i] = &Parameter{
 			Name: name,
-			Type: fn.InTypes[i],
+			Type: fn.InDbTypes[i],
 			// no description available from db catalog
 			Default: fn.InDefaults[i],
 		}

@@ -54,7 +54,7 @@ func newCatalogMock() CatalogMock {
 		Extent:      Extent{Minx: -120, Miny: 40, Maxx: -74, Maxy: 50},
 		Srid:        4326,
 		Columns:     propNames,
-		Types:       types,
+		DbTypes:     types,
 		JSONTypes:   jtypes,
 	}
 
@@ -65,7 +65,7 @@ func newCatalogMock() CatalogMock {
 		Extent:      Extent{Minx: -75, Miny: 45, Maxx: -74, Maxy: 46},
 		Srid:        4326,
 		Columns:     propNames,
-		Types:       types,
+		DbTypes:     types,
 		JSONTypes:   jtypes,
 	}
 
@@ -76,7 +76,7 @@ func newCatalogMock() CatalogMock {
 		Extent:      Extent{Minx: -120, Miny: 40, Maxx: -74, Maxy: 60},
 		Srid:        4326,
 		Columns:     propNames,
-		Types:       types,
+		DbTypes:     types,
 		JSONTypes:   jtypes,
 	}
 

@@ -276,7 +276,7 @@ func scanTable(rows pgx.Rows) *Table {
 		GeometryType:   geometryType,
 		IDColumn:       idColumn,
 		Columns:        columns,
-		Types:          datatypes,
+		DbTypes:        datatypes,
 		JSONTypes:      jsontypes,
 	}
 }
