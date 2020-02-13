@@ -415,8 +415,9 @@ func TableProperties(tbl *data.Table) []*Property {
 	props := make([]*Property, len(tbl.Columns))
 	for i, name := range tbl.Columns {
 		props[i] = &Property{
-			Name: name,
-			Type: tbl.JSONTypes[i],
+			Name:        name,
+			Type:        tbl.JSONTypes[i],
+			Description: tbl.ColDesc[i],
 		}
 	}
 	return props

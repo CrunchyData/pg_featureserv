@@ -248,6 +248,7 @@ func scanTable(rows pgx.Rows) *Table {
 	columns := make([]string, arrLen)
 	jsontypes := make([]string, arrLen)
 	datatypes := make(map[string]string)
+	colDesc := make([]string, arrLen)
 
 	for i := arrStart; i < arrLen; i++ {
 		elmPos := i * elmLen
@@ -256,6 +257,7 @@ func scanTable(rows pgx.Rows) *Table {
 		columns[i] = name
 		datatypes[name] = datatype
 		jsontypes[i] = toJSONTypeFromPG(datatype)
+		colDesc[i] = props.Elements[elmPos+2].String
 	}
 
 	// Synthesize a title for now
@@ -278,6 +280,7 @@ func scanTable(rows pgx.Rows) *Table {
 		Columns:        columns,
 		DbTypes:        datatypes,
 		JSONTypes:      jsontypes,
+		ColDesc:        colDesc,
 	}
 }
 

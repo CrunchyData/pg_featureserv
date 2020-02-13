@@ -129,8 +129,11 @@ func TestCollectionResponse(t *testing.T) {
 	equals(t, tbl.Description, v.Description, "Description")
 	// check properties
 	equals(t, len(tbl.Columns), len(v.Properties), "Properties len")
-	equals(t, tbl.Columns[0], v.Properties[0].Name, "Properties[0].Name")
-	equals(t, tbl.JSONTypes[0], v.Properties[0].Type, "Properties[0].Type")
+	for i := 0; i < len(v.Properties); i++ {
+		equals(t, tbl.Columns[i], v.Properties[i].Name, "Properties[].Name")
+		equals(t, tbl.JSONTypes[i], v.Properties[i].Type, "Properties[].Type")
+		equals(t, tbl.ColDesc[i], v.Properties[i].Description, "Properties[].Description")
+	}
 
 	checkLink(t, v.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+path+".json")
 	checkLink(t, v.Links[1], api.RelAlt, api.ContentTypeHTML, urlBase+path+".html")

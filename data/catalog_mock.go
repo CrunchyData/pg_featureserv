@@ -46,6 +46,7 @@ func newCatalogMock() CatalogMock {
 		"prop_d": "int",
 	}
 	jtypes := []string{"string", "number", "string", "number"}
+	colDesc := []string{"Property A", "Property B", "Property C", "Property D"}
 
 	layerA := &Table{
 		ID:          "mock_a",
@@ -56,6 +57,7 @@ func newCatalogMock() CatalogMock {
 		Columns:     propNames,
 		DbTypes:     types,
 		JSONTypes:   jtypes,
+		ColDesc:     colDesc,
 	}
 
 	layerB := &Table{
@@ -67,6 +69,7 @@ func newCatalogMock() CatalogMock {
 		Columns:     propNames,
 		DbTypes:     types,
 		JSONTypes:   jtypes,
+		ColDesc:     colDesc,
 	}
 
 	layerC := &Table{
@@ -78,6 +81,7 @@ func newCatalogMock() CatalogMock {
 		Columns:     propNames,
 		DbTypes:     types,
 		JSONTypes:   jtypes,
+		ColDesc:     colDesc,
 	}
 
 	tableData := map[string][]*featureMock{}

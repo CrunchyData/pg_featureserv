@@ -89,6 +89,7 @@ type Table struct {
 	Columns        []string
 	DbTypes        map[string]string
 	JSONTypes      []string
+	ColDesc        []string
 }
 
 // Extent of a table
