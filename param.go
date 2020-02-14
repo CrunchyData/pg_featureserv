@@ -25,14 +25,14 @@ import (
 	"github.com/CrunchyData/pg_featureserv/data"
 )
 
-func parseRequestParams(r *http.Request) (data.QueryParam, error) {
+func parseRequestParams(r *http.Request) (api.RequestParam, error) {
 	queryValues := r.URL.Query()
 	paramValues := extractSingleArgs(queryValues)
 
-	param := data.QueryParam{
+	param := api.RequestParam{
 		Limit:     config.Configuration.Paging.LimitDefault,
 		Offset:    0,
-		Precision: 6,
+		Precision: -1,
 		Values:    paramValues,
 	}
 
@@ -84,7 +84,7 @@ func parseRequestParams(r *http.Request) (data.QueryParam, error) {
 	return param, nil
 }
 
-func extractSingleArgs(queryArgs url.Values) data.ParamNameVal {
+func extractSingleArgs(queryArgs url.Values) api.NameValMap {
 	vals := make(map[string]string)
 	for keyRaw := range queryArgs {
 		queryval := queryArgs.Get(keyRaw)
@@ -94,7 +94,7 @@ func extractSingleArgs(queryArgs url.Values) data.ParamNameVal {
 	return vals
 }
 
-func parseInt(values data.ParamNameVal, key string, minVal int, maxVal int, defaultVal int) (int, error) {
+func parseInt(values api.NameValMap, key string, minVal int, maxVal int, defaultVal int) (int, error) {
 	valStr := values[key]
 	// key not present or missing value
 	if len(valStr) < 1 {
@@ -113,7 +113,7 @@ func parseInt(values data.ParamNameVal, key string, minVal int, maxVal int, defa
 	return val, nil
 }
 
-func parseLimit(values data.ParamNameVal) (int, error) {
+func parseLimit(values api.NameValMap) (int, error) {
 	val := values[api.ParamLimit]
 	if len(val) < 1 {
 		return config.Configuration.Paging.LimitDefault, nil
@@ -132,7 +132,7 @@ func parseLimit(values data.ParamNameVal) (int, error) {
 parseBbox parses the bbox query parameter, if present, or nll if not
 This has the format bbox=minLon,minLat,maxLon,maxLat.
 */
-func parseBbox(values data.ParamNameVal) (*data.Extent, error) {
+func parseBbox(values api.NameValMap) (*data.Extent, error) {
 	val := values[api.ParamBbox]
 	if len(val) < 1 {
 		return nil, nil
@@ -167,7 +167,7 @@ func parseBbox(values data.ParamNameVal) (*data.Extent, error) {
 
 // parseProperties computes a lower-case, unique list
 // of property names to be returned
-func parseProperties(values data.ParamNameVal) ([]string, error) {
+func parseProperties(values api.NameValMap) ([]string, error) {
 	val := values[api.ParamProperties]
 	if len(val) < 1 {
 		return nil, nil
@@ -191,7 +191,7 @@ const OrderByDirD = "d"
 const OrderByDirA = "a"
 
 // parseOrderBy determines an order by array
-func parseOrderBy(values data.ParamNameVal) ([]data.Ordering, error) {
+func parseOrderBy(values api.NameValMap) ([]data.Ordering, error) {
 	var orderBy []data.Ordering
 	val := values[api.ParamOrderBy]
 	if len(val) < 1 {
@@ -256,7 +256,7 @@ func toNameSet(strs []string) map[string]bool {
 const transformFunSep = "|"
 const transformParamSep = ","
 
-func parseTransform(values data.ParamNameVal) []data.TransformFunction {
+func parseTransform(values api.NameValMap) []data.TransformFunction {
 	val := values[api.ParamTransform]
 	if len(val) < 1 {
 		return nil

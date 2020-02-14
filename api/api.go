@@ -155,6 +155,20 @@ var BboxSchema openapi3.Schema = openapi3.Schema{
 	},
 }
 
+type NameValMap map[string]string
+
+// RequestParam holds the parameters for a request
+type RequestParam struct {
+	Limit         int
+	Offset        int
+	Bbox          *data.Extent
+	Properties    []string
+	OrderBy       []data.Ordering
+	Precision     int
+	TransformFuns []data.TransformFunction
+	Values        NameValMap
+}
+
 // CollectionsInfo for all collections
 type CollectionsInfo struct {
 	Links       []*Link           `json:"links"`

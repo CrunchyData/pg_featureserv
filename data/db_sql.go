@@ -95,7 +95,7 @@ ORDER BY id`
 
 const sqlFmtFeatures = "SELECT %v %v FROM %v %v %v LIMIT %v OFFSET %v;"
 
-func sqlFeatures(tbl *Table, param QueryParam) string {
+func sqlFeatures(tbl *Table, param *QueryParam) string {
 	geomCol := sqlGeomCol(tbl.GeometryColumn, param)
 	propCols := sqlColList(param.Columns, tbl.DbTypes, true)
 	sqlWhere := sqlBBoxFilter(tbl, param)
@@ -135,7 +135,7 @@ func sqlColExpr(name string, dbtype string) string {
 
 const sqlFmtFeature = "SELECT %v %v FROM %v WHERE %v = $1 LIMIT 1"
 
-func sqlFeature(tbl *Table, param QueryParam) string {
+func sqlFeature(tbl *Table, param *QueryParam) string {
 	geomCol := sqlGeomCol(tbl.GeometryColumn, param)
 	propCols := sqlColList(param.Columns, tbl.DbTypes, true)
 	sql := fmt.Sprintf(sqlFmtFeature, geomCol, propCols, tbl.ID, tbl.IDColumn)
@@ -144,7 +144,7 @@ func sqlFeature(tbl *Table, param QueryParam) string {
 
 const sqlFmtBBoxFilter = " WHERE ST_Intersects(%v, ST_Transform( ST_MakeEnvelope(%v, %v, %v, %v, 4326), %v)) "
 
-func sqlBBoxFilter(tbl *Table, param QueryParam) string {
+func sqlBBoxFilter(tbl *Table, param *QueryParam) string {
 	if param.Bbox == nil {
 		return ""
 	}
@@ -156,7 +156,7 @@ func sqlBBoxFilter(tbl *Table, param QueryParam) string {
 
 const sqlFmtBBoxGeoFilter = " WHERE ST_Intersects(%v, ST_MakeEnvelope(%v, %v, %v, %v, 4326)) "
 
-func sqlBBoxGeoFilter(geomCol string, param QueryParam) string {
+func sqlBBoxGeoFilter(geomCol string, param *QueryParam) string {
 	if param.Bbox == nil {
 		return ""
 	}
@@ -167,7 +167,7 @@ func sqlBBoxGeoFilter(geomCol string, param QueryParam) string {
 
 const sqlFmtGeomCol = "ST_AsGeoJSON( ST_Transform(%v, 4326) %v ) AS _geojson"
 
-func sqlGeomCol(geomCol string, param QueryParam) string {
+func sqlGeomCol(geomCol string, param *QueryParam) string {
 	geomExpr := applyTransform(param.TransformFuns, geomCol)
 	precision := ""
 	if param.Precision >= 0 {
@@ -204,7 +204,7 @@ func applyTransform(funs []TransformFunction, expr string) string {
 
 const sqlFmtGeomFunction = "SELECT %v %v FROM %v.%v( %v ) %v %v LIMIT %v;"
 
-func sqlGeomFunction(fn *Function, args map[string]string, propCols []string, param QueryParam) (string, []interface{}) {
+func sqlGeomFunction(fn *Function, args map[string]string, propCols []string, param *QueryParam) (string, []interface{}) {
 	sqlArgs, argVals := sqlFunctionArgs(fn, args)
 	sqlGeomCol := sqlGeomCol(fn.GeometryColumn, param)
 	sqlPropCols := sqlColList(propCols, fn.Types, true)
@@ -216,7 +216,7 @@ func sqlGeomFunction(fn *Function, args map[string]string, propCols []string, pa
 
 const sqlFmtFunction = "SELECT %v FROM %v.%v( %v ) %v LIMIT %v;"
 
-func sqlFunction(fn *Function, args map[string]string, propCols []string, param QueryParam) (string, []interface{}) {
+func sqlFunction(fn *Function, args map[string]string, propCols []string, param *QueryParam) (string, []interface{}) {
 	sqlArgs, argVals := sqlFunctionArgs(fn, args)
 	sqlPropCols := sqlColList(propCols, fn.Types, false)
 	sqlOrderBy := sqlOrderBy(param.OrderBy)

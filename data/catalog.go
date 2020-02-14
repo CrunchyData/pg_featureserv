@@ -28,11 +28,11 @@ type Catalog interface {
 
 	// TableFeatures returns an array of the JSON for the features in a table
 	// It returns nil if the table does not exist
-	TableFeatures(name string, param QueryParam) ([]string, error)
+	TableFeatures(name string, param *QueryParam) ([]string, error)
 
 	// TableFeature returns the JSON text for a table feature with given id
 	// It returns an empty string if the table or feature does not exist
-	TableFeature(name string, id string, param QueryParam) (string, error)
+	TableFeature(name string, id string, param *QueryParam) (string, error)
 
 	Functions() ([]*Function, error)
 
@@ -40,9 +40,9 @@ type Catalog interface {
 	// It returns nil if the function does not exist
 	FunctionByName(name string) (*Function, error)
 
-	FunctionFeatures(name string, param QueryParam) ([]string, error)
+	FunctionFeatures(name string, args map[string]string, param *QueryParam) ([]string, error)
 
-	FunctionData(name string, param QueryParam) ([]map[string]interface{}, error)
+	FunctionData(name string, args map[string]string, param *QueryParam) ([]map[string]interface{}, error)
 
 	Close()
 }
@@ -60,18 +60,16 @@ type Ordering struct {
 
 type ParamNameVal map[string]string
 
-// QueryParam holds the optional parameters for an items query
+// QueryParam holds the optional parameters for a data query
 type QueryParam struct {
-	Limit      int
-	Offset     int
-	Bbox       *Extent
-	Properties []string
-	// Columns is the clean list of columns to query
+	Limit  int
+	Offset int
+	Bbox   *Extent
+	// Columns is the list of columns to return
 	Columns       []string
 	OrderBy       []Ordering
 	Precision     int
 	TransformFuns []TransformFunction
-	Values        ParamNameVal
 }
 
 // Table holds metadata for table/view objects
@@ -105,6 +103,7 @@ type Function struct {
 	Description    string
 	InNames        []string
 	InDbTypes      []string
+	InTypeMap      map[string]string
 	InDefaults     []string
 	OutNames       []string
 	OutDbTypes     []string

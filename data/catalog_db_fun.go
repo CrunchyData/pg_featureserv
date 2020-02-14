@@ -95,6 +95,9 @@ func scanFunctionDef(rows pgx.Rows) *Function {
 	outTypes := toArray(outTypesTA)
 	outJSONTypes := toJSONTypeFromPGArray(outTypes)
 
+	inTypeMap := make(map[string]string)
+	addTypes(inTypeMap, inNames, inTypes)
+
 	datatypes := make(map[string]string)
 	addTypes(datatypes, inNames, inTypes)
 	addTypes(datatypes, outNames, outTypes)
@@ -113,6 +116,7 @@ func scanFunctionDef(rows pgx.Rows) *Function {
 		Description:    description,
 		InNames:        inNames,
 		InDbTypes:      inTypes,
+		InTypeMap:      inTypeMap,
 		InDefaults:     inDefaults,
 		OutNames:       outNames,
 		OutDbTypes:     outTypes,
@@ -152,28 +156,35 @@ func toArray(ta pgtype.TextArray) []string {
 	return arr
 }
 
-func (cat *catalogDB) FunctionFeatures(name string, param QueryParam) ([]string, error) {
+func (cat *catalogDB) FunctionFeatures(name string, args map[string]string, param *QueryParam) ([]string, error) {
 	fn, err := cat.FunctionByName(name)
 	if err != nil || fn == nil {
 		return nil, err
 	}
-	sqlNamedArgs := inputArgs(fn.InNames, param.Values)
+	errArg := checkArgsValid(fn, args)
+	if errArg != nil {
+		log.Debug("ERROR: " + errArg.Error())
+		return nil, errArg
+	}
 	propCols := removeNames(param.Columns, fn.GeometryColumn, "")
 	idColIndex := indexOfName(propCols, FunctionIDColumnName)
-	sql, argValues := sqlGeomFunction(fn, sqlNamedArgs, propCols, param)
+	sql, argValues := sqlGeomFunction(fn, args, propCols, param)
 	log.Debugf("%v -- Args: %v", sql, argValues)
 	features, err := readFeaturesWithArgs(cat.dbconn, sql, argValues, idColIndex, propCols)
 	return features, err
 }
 
-func (cat *catalogDB) FunctionData(name string, param QueryParam) ([]map[string]interface{}, error) {
+func (cat *catalogDB) FunctionData(name string, args map[string]string, param *QueryParam) ([]map[string]interface{}, error) {
 	fn, err := cat.FunctionByName(name)
 	if err != nil || fn == nil {
 		return nil, err
 	}
-	sqlNamedArgs := inputArgs(fn.InNames, param.Values)
+	errArg := checkArgsValid(fn, args)
+	if errArg != nil {
+		return nil, errArg
+	}
 	propCols := param.Columns
-	sql, argValues := sqlFunction(fn, sqlNamedArgs, propCols, param)
+	sql, argValues := sqlFunction(fn, args, propCols, param)
 	log.Debugf("%v -- Args: %v", sql, argValues)
 	data, err := readDataWithArgs(cat.dbconn, propCols, sql, argValues)
 	return data, err
@@ -182,14 +193,13 @@ func (cat *catalogDB) FunctionData(name string, param QueryParam) ([]map[string]
 // inputArgs extracts function arguments from any provided in the query parameters
 // Arg values are stored as strings, and relies on Postgres to convert
 // to the actual types required by the function
-func inputArgs(params []string, queryArgs map[string]string) map[string]string {
-	sqlArgs := make(map[string]string)
-	for _, param := range params {
-		if val, ok := queryArgs[param]; ok {
-			sqlArgs[param] = val
+func checkArgsValid(fn *Function, args map[string]string) error {
+	for argName := range args {
+		if _, ok := fn.InTypeMap[argName]; !ok {
+			return fmt.Errorf("'%v' is not a parameter of function '%v'", argName, fn.ID)
 		}
 	}
-	return sqlArgs
+	return nil
 }
 
 func removeNames(names []string, ex1 string, ex2 string) []string {

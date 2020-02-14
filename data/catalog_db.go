@@ -133,7 +133,7 @@ func (cat *catalogDB) TableByName(name string) (*Table, error) {
 	return tbl, nil
 }
 
-func (cat *catalogDB) TableFeatures(name string, param QueryParam) ([]string, error) {
+func (cat *catalogDB) TableFeatures(name string, param *QueryParam) ([]string, error) {
 	tbl, err := cat.TableByName(name)
 	if err != nil || tbl == nil {
 		return nil, err
@@ -147,7 +147,7 @@ func (cat *catalogDB) TableFeatures(name string, param QueryParam) ([]string, er
 	return features, err
 }
 
-func (cat *catalogDB) TableFeature(name string, id string, param QueryParam) (string, error) {
+func (cat *catalogDB) TableFeature(name string, id string, param *QueryParam) (string, error) {
 	tbl, err := cat.TableByName(name)
 	if err != nil {
 		return "", err
