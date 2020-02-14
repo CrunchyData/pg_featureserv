@@ -8,13 +8,21 @@
 ## Notes
 
 * The request response format can be indicated by suffixing URLs with `.json` or `.html`
-* Paths are given relative to service root
+* Paths are given relative to service root path
 
 ## Root
 
-Path: `/`, `index`
+Landing page for the service.
 
-### Links
+### Request
+Path: `/` or `index`
+
+### Response
+
+A JSON document some basic service information
+and links to more detailed resources.
+
+#### Links
 * self - `/index.json` - This document as JSON
 * alternate - `/index.html` - This document as HTML
 * conformance
@@ -23,19 +31,31 @@ Path: `/`, `index`
 
 ## Feature collections
 
+List collections provided by the service.
+
+### Request
 Path: `/collections`
 
-### Links
-* self - `/collections.json|html` - This document as JSON | HTML
-* alternate - `/collections.html|json` - This document as HTML | JSON
+### Response
+
+JSON document listing service collections.
+
+#### Links
+* self - `/collections.json` - This document as JSON
+* alternate - `/collections.html` - This document as HTML
 
 ## Feature collection
 
+Provides metadata about a feature collection.
+
+### Request
 Path: `/collections/{cid}`
 
-Metadata about the collection
+### Response
 
-### Links
+JSON document containing feature collection metadata.
+
+#### Links
 * self - `/collections/{cid}.json` - This document as JSON
 * alternate - `/collections/{cid}.html` - This document as HTML
 * items - `/collections/{cid}/items.json` - Features as GeoJSON
@@ -45,6 +65,7 @@ Metadata about the collection
 
 Produces a dataset of items from the collection (as GeoJSON)
 
+### Request
 Path: `/collections/{cid}/items`
 
 ### Parameters
@@ -55,6 +76,8 @@ Path: `/collections/{cid}/items`
 * `transform` - transform the feature geometry by the given geometry function pipeline
 
 ### Response
+
+GeoJSON document containg the features produced by the request.
 
 #### Links
 * self - `/collections/{cid}/items.json` - This document as JSON
@@ -81,9 +104,14 @@ Path: `/collections/{cid}/items/{fid}`
 
 ## Functions
 
+Lists the functions provided by the service.
+
+### Request
 Path: `/functions`
 
 ### Response
+
+JSON document listing available functions.
 
 #### Links
 * self - `/functions.json` - This document as JSON
@@ -91,9 +119,10 @@ Path: `/functions`
 
 ## Function
 
-Path: `/functions/{fnid}`
+Provides metadata about a function
 
-Metadata about the function
+### Request
+Path: `/functions/{fnid}`
 
 ### Response
 
@@ -105,11 +134,13 @@ Metadata about the function
 
 ## Function Result
 
+Calls a function and produces a result dataset of items (either GeoJSON or JSON).
+
+### Request
 Path: `/functions/{fid}/items`
 
-Produces a dataset of items from the function (either GeoJSON or JSON)
-
 #### Parameters
+* `name=value` - Supplies a value for the named function parameter
 * `limit=N` - limits the number of features in the response
 * `offset=N` - starts the response at the given offset
 * `orderBy=PROP[:A | :D]` - order the response items by the given property (ascending (default) or descending)
@@ -117,6 +148,8 @@ Produces a dataset of items from the function (either GeoJSON or JSON)
 * `transform` - transform the feature geometry by the given geometry function pipeline
 
 ### Response
+
+A GeoJSON or JSON dataset containing function call results
 
 #### Links
 * self - `/functions/{fid}/items.json` - This document as JSON
