@@ -96,9 +96,7 @@
 <script src="https://openlayers.org/en/v6.1.1/build/ol.js"></script>
 <script>
 var SHOW_FEATURE_LINK = {{ .context.ShowFeatureLink }};
-var styleFunction = function(feature) {
-	return styles[feature.getGeometry().getType()];
-};
+
 var vectorLayer = new ol.layer.Vector({
 	source: new ol.source.Vector({
 	  url: DATA_URL,
@@ -202,6 +200,54 @@ function showFeatureProperties(feature, showTitle) {
 function tableClear(tbl) {
 	var rowCount = tbl.rows.length;
 	while(rowCount > 0 && --rowCount) tbl.deleteRow(rowCount);
+}
+//===========================
+function SIMPLEstyleFunction(feature) {
+	return styles[feature.getGeometry().getType()];
+}
+function styleFunction(feature) {
+    let ftype = feature.getGeometry().getType();
+    let sty = styles[ftype];
+
+    let styleLabelText = feature.get('style_label_text');
+    if (styleLabelText) {
+        let textSpec = {
+            text: styleLabelText,
+            font: '14px sans-serif',
+            fill: new ol.style.Fill({ color: '#000000' }),
+        };
+        // label offset for points and lines
+        if (ftype == 'Point') {
+            textSpec.offsetY = -14;	}
+        sty.setText( new ol.style.Text(textSpec) );
+    }
+    //--- set fill from feature styleFill property, if any
+    let styleFillColor = feature.get('style_fill_color');
+    if (styleFillColor) {
+        sty.setFill(new ol.style.Fill({ color: styleFillColor } ));
+    }
+    if (sty.getStroke()) {
+        let strokeClr = sty.getStroke().getColor();
+        let styleStrokeColor = feature.get('style_stroke_color');
+        if (styleStrokeColor) {
+            strokeClr = styleStrokeColor;
+        }
+        let strokeW = sty.getStroke().getWidth();
+        let styleStrokeWidth = feature.get('style_stroke_width');
+        if (styleStrokeWidth == 0) {
+            strokeW = styleStrokeWidth;
+        }
+        if (styleStrokeWidth) {
+            strokeW = styleStrokeWidth
+            // OL bug?  need width to be > 0...
+        }
+        if (! strokeW || strokeW <= 0) strokeW = 0.00001;
+
+        if (strokeClr || strokeW >= 0) {
+            sty.setStroke(new ol.style.Stroke( { color: strokeClr, width: strokeW } ));
+        }
+    }
+    return sty;
 }
 var image = new ol.style.Circle({ radius: 5,
 	fill: new ol.style.Fill({ color: 'rgb(255, 0, 0)' }),
