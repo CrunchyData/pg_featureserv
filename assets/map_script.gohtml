@@ -29,6 +29,16 @@
 }
 #feature-title {
     font-weight: bold;
+    margin-bottom: 4px;
+}
+#feature-zoom {
+    height: 16px;
+    width: 12px;
+    border: 2px dashed blue;
+    background-color: lightgray;
+    cursor: pointer;
+    outline: none;
+    margin-right: 4px;
 }
 .map-widget {
     padding: 6px;
@@ -79,10 +89,14 @@
     font-size: 12px;
     text-align: right;
 }
+
 </style>
 {{ end }}
 {{define "propsTable"}}
-	<div id='feature-title' style='margin-top: 0;'>Feature ID ({{ .context.IDColumn }}): <span id='feature-title-span'></span></div>
+	<div id='feature-title' style='margin-top: 0;'>
+        <button id='feature-zoom' title='Zoom to feature'></button>
+        Feature ID: <span id='feature-title-span'></span>
+        <span style='margin-left: 6px; font-size: 12px; font-weight: normal;'>( {{ .context.IDColumn }} )</span></div>
     <div class='div-props'>
 	<table id='tbl-props' class='tbl-props' style='border: none; '>
 	<thead style='background-color: lightgrey;'>
@@ -122,28 +136,33 @@ var map = new ol.Map({
 map.addLayer(vectorLayer);
 
 map.once('rendercomplete', function(event) {
-	zoom(vectorLayer);
-	//showFeatureProperties( vectorLayer.getSource().getFeatures()[0] )
+	zoomLayer(vectorLayer);
 	onMapLoad();
 });
 map.on('pointermove', (evt) => {
         let ptGeo = ol.proj.transform(evt.coordinate, 'EPSG:3857', 'EPSG:4326');
         let pFormat = ol.coordinate.toStringXY(ptGeo, 4);
         let divPos = document.getElementById('map-mousepos');
-        divPos.innerHTML = pFormat + ' / ' + map.getView().getZoom().toFixed(1);
+        divPos.innerHTML = pFormat + ' - [' + map.getView().getZoom().toFixed(0) + ']';
     });
 function onFeatureClick(evt) {
 	var features = map.getFeaturesAtPixel(evt.pixel);
-	var loc = evt.coordinate
+	var loc = evt.coordinate;
 	if (features) {
-		showFeatureProperties(features[0]);
+		showFeatureProperties( features[0] );
 	}
 }
-function zoom(lyr) {
-	let lyrext = lyr.getSource().getExtent()
-	let sz = Math.max( ol.extent.getWidth(lyrext), ol.extent.getHeight(lyrext) );
-	let ext = ol.extent.buffer( lyrext,  0.2 * sz);
-    map.getView().fit(ext, map.getSize());
+function zoomFeature(feature) {
+    if (! feature) return;
+	zoomExtent( feature.getGeometry().getExtent() );
+}
+function zoomLayer(lyr) {
+	zoomExtent( lyr.getSource().getExtent() );
+}
+function zoomExtent(extent) {
+	let sz = Math.max( ol.extent.getWidth(extent), ol.extent.getHeight(extent) );
+	let zoomext = ol.extent.buffer( extent,  0.2 * sz);
+    map.getView().fit(zoomext, map.getSize());
 }
 function extentGeo() {
 	var extent = map.getView().calculateExtent(map.getSize());
@@ -182,6 +201,9 @@ function showFeatureProperties(feature, showTitle) {
 		let link = 'items/' + id + '.html';
 		titleHTML = '<a href="' + link + '">' + id + '</a>';
 	}
+    document.getElementById('feature-title').onclick = function() {
+        zoomFeature(feature);
+    };
 	titleText.innerHTML = titleHTML;
     //--- fill properties table
 	let prop = feature.getProperties();
