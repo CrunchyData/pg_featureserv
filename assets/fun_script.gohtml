@@ -1,15 +1,17 @@
 {{define "funArgs"}}
 <tr>
-<td></td>
-<td class='section-title'>Function Args</td>
-<td>
+<td class='section-title' colspan='2' style='text-align: left'>Function Args</td>
+</tr>
 {{- $types := .context.Function.Types }}
 {{- range $i, $name := .context.Function.InNames }}
-<span class='param-title'
-title='Arg {{ $name }} is of type {{index $types $name}}'> {{ $name }}
-<input tye='text' id='arg-{{ $name }}' title='Enter a {{index $types $name}} value'></span>
+<tr>
+<td><span class='param-title'
+title='Arg {{ $name }} is of type {{index $types $name}}'> {{ $name }}</span></td>
+<td>
+<input type='text' class='arg-input' id='arg-{{ $name }}' title='Enter a {{index $types $name}} value'></td>
+</tr>
 {{- end }}
-<td></tr>
+
 <script>
 function addFunctionArgs(url) {
     var newurl = url;

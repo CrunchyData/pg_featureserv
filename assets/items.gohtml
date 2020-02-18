@@ -5,14 +5,19 @@
 / Items
 <a style='margin-left: 20px' class='json-link' href='{{ .context.URLJSON }}' title='JSON document for this page'>JSON</a>
 </div>
-<hr>
 
+<div class='mw-query-params map-widget'>
 <table>
 <tr>
-<td><button onclick='doQuery();' title='Click to requery with the parameters'>Query</button></td>
-<td class='section-title'>Parameters</td>
+<td></td>
+<td style='text-align: right;'><button onclick='doQuery();' title='Click to requery with the parameters'>Requery</button></td>
+</tr>
+<tr>
+<td class='section-title' colspan='2' style='text-align: left'>Parameters</td>
+</tr>
+<tr>
+<td class='param-title' title='Limits the number of features in the response'>Limit</span></td>
 <td>
-<span class='param-title' title='Limits the number of features in the response'>Limit</span>
 <select id='item-limit'>
 <option></option>
 <option>10</option>
@@ -23,21 +28,27 @@
 <option>5000</option>
 <option>10000</option>
 </select>
-<span class='param-title' title='Sets the BBOX query parameter to the map extent'>Map BBox</span>
+</td>
+</tr>
+<tr>
+<td style='text-align: right'><span class='param-title' title='Sets the BBOX query parameter to the map extent'>BBox</span></td>
+<td>
 <input type='checkbox' id='chk-bbox'>
-</td></tr>
+</td>
+</tr>
 {{template "funArgs" .}}
 </table>
+</div>
 
-<h2>Features: {{ .context.Title }}</h2>
-<table width='100%'>
-<tr>
-<td valign='top' width='1%'><div id="map" class="map"></div></td>
-<td valign='top' style='padding-left:10px;'>
+<div class='mw-title map-widget'>{{ .context.Title }}</div>
+
+<div id="map" class="map"></div>
+<div id='map-mousepos' class='mw-mousepos map-widget'></div>
+<div class='info-container'>
+    <div class='mw-info map-widget' id='mw-info' style='display: none;'>
 {{template "propsTable" .}}
-</td>
-</tr></table>
-<div id="popup-container" class="arrow_box"></div>
+    </div>
+</div>
 
 <script>
 var DATA_URL = "{{ .context.URLJSON }}";
@@ -47,7 +58,6 @@ ITEMS_PAGE = true;
 <script>
 function onMapLoad() {
 	map.on('click', function(evt) {  onFeatureClick(evt); } );
-	document.getElementById('feature-title').style.display = 'block';
 }
 function doQuery() {
 	var url = window.location.pathname;

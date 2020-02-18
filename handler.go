@@ -197,6 +197,7 @@ func addCollectionLinks(coll *api.CollectionInfo, urlBase string, isJSON bool, i
 		coll.URLMetadataJSON = urlPathFormat(urlBase, path, api.FormatJSON)
 		coll.URLMetadataHTML = urlPathFormat(urlBase, path, api.FormatHTML)
 		coll.URLItemsHTML = urlPathFormat(urlBase, pathItems, api.FormatHTML)
+		coll.URLItemsJSON = urlPathFormat(urlBase, pathItems, api.FormatJSON)
 	}
 }
 
@@ -380,6 +381,7 @@ func writeItemHTML(w http.ResponseWriter, tbl *data.Table, name string, fid stri
 	context.Group = "Collections"
 	context.Title = tbl.Title
 	context.FeatureID = fid
+	context.IDColumn = tbl.IDColumn
 
 	// feature is not needed for item page (page queries for them)
 	return writeHTML(w, nil, context, ui.PageItem())

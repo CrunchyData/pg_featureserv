@@ -3,58 +3,94 @@
 
 <style>
 .map {
-	height: 400px;
-	width: 400px;
-	margin-bottom: 10px;
+    position: absolute;
+    top: 72px;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
 }
-.arrow_box {
-	border-radius: 5px;
-	padding: 10px;
-}
-.arrow_box {
-	position: relative;
-	background: #fff;
-	border: 1px solid #003c88;
-}
-.arrow_box:after, .arrow_box:before {
-	top: 100%;
-	left: 50%;
-	border: solid transparent;
-	content: " ";
-	height: 0;
-	width: 0;
-	position: absolute;
-	pointer-events: none;
-}
-.arrow_box:after {
-	border-color: rgba(255, 255, 255, 0);
-	border-top-color: #fff;
-	border-width: 10px;
-	margin-left: -10px;
-}
-.arrow_box:before {
-	border-color: rgba(153, 153, 153, 0);
-	border-top-color: #003c88;
-	border-width: 11px;
-	margin-left: -11px;
+.div-props {
+    xoverflow-y: auto;
+    height: 95%;
 }
 #tbl-props {
 	font-size: 12px;
 	border-spacing: 3px;
+    width: 100%;
 }
 #tbl-props tr:nth-child(even) {
 	background-color: #EEE;
 }
+.tbl-props-name {
+    width: 40%;
+}
+.arg-input {
+    width: 80px;
+}
+#feature-title {
+    font-weight: bold;
+}
+.map-widget {
+    padding: 6px;
+    background-color: #ffffffe0;
+    z-index: 1000;
+    border: 1px solid #0167B4;
+}
+.mw-title {
+    position: absolute;
+    top: 85px;
+    left: 50px;
+    border-radius: 8px;
+    font-weight: bold;
+}
+.mw-query-params {
+    position: absolute;
+    top: 145px;
+    left: 0px;
+    border-radius: 0px 8px 8px 0px;
+    border-left: 0px;
+}
+.info-container {
+    position: absolute;
+    top: 85px;
+    right: 0px;
+    bottom: 100px;
+    background: transparent;
+    pointer-events: none;
+}
+.mw-info {
+    width: 300px;
+    max-height: 95%;
+    overflow-y: auto;
+    border-radius: 8px 0px 0px 8px;
+    border-right: 0px;
+    pointer-events: auto;
+}
+.mw-mousepos {
+    position: absolute;
+    right: 0px;
+    bottom: 0px;
+    height: 12px;
+    width: 140px;
+    padding: 4px;
+    border-right: 0px;
+    border-bottom: 0px;
+    background-color: white;
+    font-size: 12px;
+    text-align: right;
+}
 </style>
 {{ end }}
 {{define "propsTable"}}
-	<h3 id='feature-title' style='margin-top: 0; display: none;'>Feature ID ({{ .context.IDColumn }}): <span id='feature-title-span'></span></h3>
-	<table id='tbl-props' class='tbl-props' style='border: 1px solid grey; width:400px'>
+	<div id='feature-title' style='margin-top: 0;'>Feature ID ({{ .context.IDColumn }}): <span id='feature-title-span'></span></div>
+    <div class='div-props'>
+	<table id='tbl-props' class='tbl-props' style='border: none; '>
 	<thead style='background-color: lightgrey;'>
-		<tr><th>Name</th><th>Value</th></tr>
+		<tr><th class='tbl-props-name'>Name</th><th>Value</th></tr>
 	</thead>
 	<tbody></tbody>
 	</table>
+    </div>
 {{end}}
 {{define "mapScript"}}
 <script src="https://openlayers.org/en/v6.1.1/build/ol.js"></script>
@@ -79,11 +115,7 @@ var map = new ol.Map({
 		}),
 	],
 	target: 'map',
-	controls: ol.control.defaults({
-		attributionOptions: {
-			collapsible: false
-		}
-	}),
+	controls: ol.control.defaults({	attribution: false }),
 	view: new ol.View({
 		center: [0,0],
 		zoom: 10
@@ -93,30 +125,20 @@ map.addLayer(vectorLayer);
 
 map.once('rendercomplete', function(event) {
 	zoom(vectorLayer);
-	showFeatureProperties( vectorLayer.getSource().getFeatures()[0] )
+	//showFeatureProperties( vectorLayer.getSource().getFeatures()[0] )
 	onMapLoad();
 });
-var overlay = new ol.Overlay({
-	element: document.getElementById('popup-container'),
-	positioning: 'bottom-center',
-	offset: [0, -10]
-});
-map.addOverlay(overlay);
-//map.on('click', function(evt) {  onMapClick(evt); }
+map.on('pointermove', (evt) => {
+        let ptGeo = ol.proj.transform(evt.coordinate, 'EPSG:3857', 'EPSG:4326');
+        let pFormat = ol.coordinate.toStringXY(ptGeo, 4);
+        let divPos = document.getElementById('map-mousepos');
+        divPos.innerHTML = pFormat + ' / ' + map.getView().getZoom().toFixed(1);
+    });
 function onFeatureClick(evt) {
-	overlay.setPosition();
 	var features = map.getFeaturesAtPixel(evt.pixel);
 	var loc = evt.coordinate
 	if (features) {
 		showFeatureProperties(features[0]);
-		if (features.length <= 0) return;
-		var identifier = features[0].getId();
-		var popup = 'Id: ' + identifier
-		if (SHOW_FEATURE_LINK && identifier && ! document.location.href.includes('/items/')) {
-			popup = '<a href="items/' + identifier + '.html">' + popup + '</a>'
-		}
-		overlay.getElement().innerHTML = popup;
-		overlay.setPosition(loc);
 	}
 }
 function zoom(lyr) {
@@ -141,6 +163,11 @@ function bboxStr(numDecimals) {
 	return bboxStr;
 }
 function showFeatureProperties(feature, showTitle) {
+    if (! feature) {
+        document.getElementById('mw-info').style.display = 'none';
+        return;
+    }
+
 	let titleText = document.getElementById('feature-title-span');
 	if (! showTitle) {
 
@@ -149,7 +176,8 @@ function showFeatureProperties(feature, showTitle) {
 	let tbl = document.getElementById('tbl-props');
 	tableClear(tbl);
 
-	if (! feature) return;
+    document.getElementById('mw-info').style.display = 'block';
+
 	let id = feature.getId();
 	let titleHTML = id;
 	if (SHOW_FEATURE_LINK && id) {
@@ -157,7 +185,7 @@ function showFeatureProperties(feature, showTitle) {
 		titleHTML = '<a href="' + link + '">' + id + '</a>';
 	}
 	titleText.innerHTML = titleHTML;
-
+    //--- fill properties table
 	let prop = feature.getProperties();
     let tblbody = tbl.getElementsByTagName('tbody')[0];
     for (var key in prop) {

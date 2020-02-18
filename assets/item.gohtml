@@ -6,17 +6,16 @@
 / {{ .context.FeatureID }}
 <a style='margin-left: 20px' class='json-link' href='{{ .context.URLJSON }}' title='JSON document for this page'>JSON</a>
 </div>
-<hr>
-<h2>{{ .context.Title }} Feature: {{ .context.FeatureID }}</h2>
 
-<table width='100%'>
-<tr>
-<td valign='top' width='1%'><div id="map" class="map"></div></td>
-<td valign='top' style='padding-left:10px;'>
+<div class='mw-title map-widget'>{{ .context.Title }}</div>
+
+<div id="map" class="map"></div>
+<div id='map-mousepos' class='mw-mousepos map-widget'></div>
+<div class='info-container'>
+    <div class='mw-info map-widget' id='mw-info' style='display: block;'>
 {{template "propsTable" .}}
-</td>
-</tr></table>
-<div id="popup-container" class="arrow_box"></div>
+    </div>
+</div>
 
 <script>
 var DATA_URL = "{{ .context.URLJSON }}";
@@ -24,7 +23,7 @@ var DATA_URL = "{{ .context.URLJSON }}";
 {{template "mapScript" .}}
 <script>
 function onMapLoad() {
-	// nothing extra to do
+	showFeatureProperties( vectorLayer.getSource().getFeatures()[0], true )
 }
 </script>
 {{ end }}
