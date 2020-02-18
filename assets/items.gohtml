@@ -9,8 +9,9 @@
 <div class='mw-query-params map-widget'>
 <table>
 <tr>
-<td></td>
-<td style='text-align: right;'><button onclick='doQuery();' title='Click to requery with the parameters'>Requery</button></td>
+<td><button id='zoom-layer' class='btn-zoom' title='Zoom to layer'></button></td>
+<td style='text-align: right;'>
+<button onclick='doQuery();' title='Click to requery with the parameters'>Requery</button></td>
 </tr>
 <tr>
 <td class='section-title' colspan='2' style='text-align: left'>Parameters</td>
@@ -56,6 +57,9 @@ ITEMS_PAGE = true;
 </script>
 {{template "mapScript" .}}
 <script>
+document.getElementById('zoom-layer').onclick = function() {
+        zoomLayer(vectorLayer);
+};
 function onMapLoad() {
 	map.on('click', function(evt) {  onFeatureClick(evt); } );
 }
