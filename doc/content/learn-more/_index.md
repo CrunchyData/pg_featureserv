@@ -2,7 +2,7 @@
 title: "Learn More"
 date:
 draft: false
-weight: 50
+weight: 60
 ---
 
 # Where to Learn More (or Next Steps)

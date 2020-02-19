@@ -30,11 +30,11 @@ pg_featureserv.exe
 
 |  Option  |  Description  |
 |-------------|-----------|
-| `-?` | show command usage |
-| `--config <file>.toml` | specify configuration file to use |
-| `--debug` | set logging level to TRACE (can also be set in config file) |
-| `--devel`| run in development mode (i.e. assets are reloaded for every request) |
-| `--test` | run in test mode, using an internal catalog of sample tables and data rather than a database |
+| `-?` | Show command usage |
+| `--config <file>.toml` | Specify configuration file to use |
+| `--debug` | Set logging level to TRACE (can also be set in config file) |
+| `--devel`| Run in development mode (i.e. assets are reloaded for every request) |
+| `--test` | Run in test mode, using an internal catalog of sample tables and data rather than a database |
 
 
 ### Configuration File
@@ -50,11 +50,11 @@ If you want to specify a different file, use the `--config` commandline paramete
 
 If no configuration is specified, the server runs using internal defaults
 (which are the same as provided in the example configuration file).
-Where possible the program autodetects things like the `UrlBase`.
+Where possible, the program autodetects values such as the `UrlBase`.
 
 The only required configuration is the `DbConnection` setting,
 if not provided in the environment variable `DATABASE_URL`.
-Even this can be omitted if the server is run with the `--test` flag.
+(Even this can be omitted if the server is run with the `--test` flag.)
 
 The default configuration file is shown below.
 
