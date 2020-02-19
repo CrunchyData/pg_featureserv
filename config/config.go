@@ -34,6 +34,8 @@ func setDefaultConfig() {
 	viper.SetDefault("Server.CORSOrigins", "*")
 	viper.SetDefault("Server.Debug", false)
 	viper.SetDefault("Server.AssetsPath", "./assets")
+	viper.SetDefault("Server.ReadTimeoutSec", 1)
+	viper.SetDefault("Server.WriteTimeoutSec", 10)
 
 	viper.SetDefault("Paging.LimitDefault", 10)
 	viper.SetDefault("Paging.LimitMax", 1000)
@@ -55,12 +57,14 @@ type Config struct {
 
 // Server config
 type Server struct {
-	HttpHost    string
-	HttpPort    int
-	UrlBase     string
-	CORSOrigins string
-	Debug       bool
-	AssetsPath  string
+	HttpHost        string
+	HttpPort        int
+	UrlBase         string
+	CORSOrigins     string
+	Debug           bool
+	AssetsPath      string
+	ReadTimeoutSec  int
+	WriteTimeoutSec int
 }
 
 // Paging config

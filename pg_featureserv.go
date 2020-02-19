@@ -119,8 +119,8 @@ func serve() {
 	// more "production friendly" timeouts
 	// https://blog.simon-frey.eu/go-as-in-golang-standard-net-http-config-will-break-your-production/#You_should_at_least_do_this_The_easy_path
 	server := &http.Server{
-		ReadTimeout:  1 * time.Second,
-		WriteTimeout: 10 * time.Second,
+		ReadTimeout:  time.Duration(config.Configuration.Server.ReadTimeoutSec) * time.Second,
+		WriteTimeout: time.Duration(config.Configuration.Server.WriteTimeoutSec) * time.Second,
 		Addr:         bindAddress,
 		Handler:      handlers.CompressHandler(handlers.CORS(corsOpt)(router)),
 	}
