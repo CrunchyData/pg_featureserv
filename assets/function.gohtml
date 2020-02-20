@@ -8,7 +8,10 @@
 <h3>Function: {{ .data.Name }}</h3>
 <div class='coll-desc'>{{ .data.Description }}</div>
 <p>
+<b>Items:</b>
+{{- if .data.URLItemsHTML }}
 <a class='preview-link' href="{{ .data.URLItemsHTML }}">Preview</a>
+{{- end}}
 <a class='json-link' href="{{ .data.URLItemsJSON }}">JSON</a>
 </p>
 <h4>Metadata</h4>

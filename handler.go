@@ -489,6 +489,10 @@ func addFunctionLinks(content *api.FunctionInfo, urlBase string, isJSON bool, is
 		content.URLMetadataJSON = urlPathFormat(urlBase, path, api.FormatJSON)
 		content.URLMetadataHTML = urlPathFormat(urlBase, path, api.FormatHTML)
 		content.URLItemsHTML = urlPathFormat(urlBase, pathItems, api.FormatHTML)
+		if !isGeomFun {
+			// there is no HTML view for non-spatial (for now)
+			content.URLItemsHTML = ""
+		}
 		content.URLItemsJSON = urlPathFormat(urlBase, pathItems, api.FormatJSON)
 	}
 }
