@@ -41,7 +41,10 @@
 </table>
 </div>
 
-<div class='mw-title map-widget'>{{ .context.Title }}</div>
+<div class='mw-title map-widget'>
+<div>{{ .context.Title }}</div>
+<div style='font-size: 10px; font-weight: normal; font-style: italic; margin-top: 2px;'>Feature count: <span id='feature-count'>-</span></div>
+</div>
 
 <div id="map" class="map"></div>
 <div id='map-mousepos' class='mw-mousepos map-widget'></div>
@@ -62,6 +65,10 @@ document.getElementById('zoom-layer').onclick = function() {
 };
 function onMapLoad() {
 	map.on('click', function(evt) {  onFeatureClick(evt); } );
+
+    let numFeat = vectorLayer.getSource().getFeatures().length;
+    document.getElementById('feature-count').innerHTML = numFeat;
+
 }
 function doQuery() {
 	var url = window.location.pathname;

@@ -23,6 +23,7 @@
 }
 .tbl-props-name {
     width: 40%;
+    text-align: right;
 }
 .arg-input {
     width: 80px;
@@ -217,6 +218,7 @@ function showFeatureProperties(feature, showTitle) {
 		var row = tblbody.insertRow(-1);
 		var cell0 = row.insertCell();
 		cell0.innerText = key;
+        cell0.className = 'tbl-props-name';
 		var cell1 = row.insertCell();
 		cell1.innerText = prop[key];
     }
