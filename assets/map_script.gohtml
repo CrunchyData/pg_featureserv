@@ -242,15 +242,17 @@ function styleFunction(feature) {
             font: '14px sans-serif',
             fill: new ol.style.Fill({ color: '#000000' }),
         };
-        // label offset for points and lines
+        // label offset for points
         if (ftype == 'Point') {
             textSpec.offsetY = -14;	}
         sty.setText( new ol.style.Text(textSpec) );
     }
     //--- set fill from feature styleFill property, if any
-    let styleFillColor = feature.get('style_fill_color');
-    if (styleFillColor) {
-        sty.setFill(new ol.style.Fill({ color: styleFillColor } ));
+    if (sty.getFill()) {
+        let styleFillColor = feature.get('style_fill_color');
+        if (styleFillColor) {
+            sty.setFill(new ol.style.Fill({ color: styleFillColor } ));
+        }
     }
     if (sty.getStroke()) {
         let strokeClr = sty.getStroke().getColor();
@@ -263,9 +265,9 @@ function styleFunction(feature) {
         if (styleStrokeWidth == 0) {
             strokeW = styleStrokeWidth;
         }
+        // OL bug?  looks like need width to be > 0
         if (styleStrokeWidth) {
             strokeW = styleStrokeWidth
-            // OL bug?  need width to be > 0...
         }
         if (! strokeW || strokeW <= 0) strokeW = 0.00001;
 
@@ -276,7 +278,7 @@ function styleFunction(feature) {
     return sty;
 }
 var image = new ol.style.Circle({ radius: 5,
-	fill: new ol.style.Fill({ color: 'rgb(255, 0, 0)' }),
+	fill: new ol.style.Fill({ color: 'red' }),
 	stroke: new ol.style.Stroke({color: 'red', width: 1})
 });
 var styles = {
