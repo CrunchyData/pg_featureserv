@@ -5,34 +5,46 @@ draft: false
 weight: 100
 ---
 
-## Expose Database tables as Collections
+## Expose Database tables as Feature Collections
 
 
 
-## List collections
+## List Feature Collections
 
 `/collections`
 
-## Query Collection metadata
+## Query Feature Collection metadata
 
 `/collections/{collid}`
 
-## Query Collection features
+## Query Feature Collection features
 
 `/collections/{collid}/items`
 
-### Parameter limit
+- response is GeoJSON
 
-### Parameter offset
+### Limiting and paging results
 
-### Parameter orderBy
+`limit`
+`offset`
+
+### Ordering results
+
+`orderBy=PROP`
+`orderBy=PROP:A` or `orderBy=PROP:D`
 
 ### Filter by bbox
 
-### Specify response properties
+`bbox=MINX,MINY,MAXX,MAXY`
 
-## Query Collection feature
+- lon/lat
+
+### Specify properties in result
+
+`properties=PROP1,PROP2,PROP3...`
+
+## Query single feature
 
 `/collections/{collid}/items/{fid}`
 
-### Specify response properties
+### Specify properties in result
