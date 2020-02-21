@@ -11,7 +11,7 @@
     <a href="{{ .URLMetadataHTML }}"><span class='coll-title'>{{ .Name }}</span></a>
     <a class='json-link' href="{{ .URLMetadataJSON }}">JSON</a>
 {{- if .URLItemsHTML }}
-    <a class='preview-link' href="{{ .URLItemsHTML }}">Preview</a>
+    <a class='view-link' href="{{ .URLItemsHTML }}" title='View features on a map'>View</a>
 {{- end}}
 </div>
 <div class='coll-desc'>{{ .Description }}</div>
