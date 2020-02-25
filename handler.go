@@ -394,7 +394,7 @@ func writeItemJSON(w http.ResponseWriter, name string, fid string, param *data.Q
 		return appErrorInternalFmt(err, api.ErrMsgDataRead, name)
 	}
 	if len(feature) == 0 {
-		return appErrorNotFoundFmt(nil, api.ErrCodeFeatureNotFound, fid)
+		return appErrorNotFoundFmt(nil, api.ErrMsgFeatureNotFound, fid)
 	}
 
 	//--- assemble resonse
