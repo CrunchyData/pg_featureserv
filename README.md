@@ -9,7 +9,7 @@ It supports the [OGC API - Features](http://docs.opengeospatial.org/is/17-069r3/
 
 ## Features
 
-* Implements the [OGC API for Features](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html) standard.
+* Implements the [OGC API - Features](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html) standard.
   * Supports standard request parameters `limit`, `bbox`
   * Extended parameters include `offset`, `properties`, `orderBy`, `transform`, `precision`
 * Data reponses are formatted in JSON and GeoJSON
