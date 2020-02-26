@@ -1,5 +1,5 @@
 ---
-title: "Install and Deploy pg_featureserv"
+title: "Install and Deploy"
 date:
 draft: false
 weight: 20
