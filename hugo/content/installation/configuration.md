@@ -1,40 +1,9 @@
 ---
-title: "Deploying"
+title: "Configuration"
 date:
 draft: false
-weight: 250
+weight: 400
 ---
-
-### Basic Operation
-
-The service can be run with minimal configuration.
-Only the database connection information is required.
-(Even that can be omitted
-if run with the `--test` option.)
-The database connection information can be provided in an environment variable
-`DATABASE_URL` containing a Postgres [connection string](https://www.postgresql.org/docs/12/libpq-connect.html#LIBPQ-CONNSTRING)
-
-#### Linux or OSX
-```sh
-export DATABASE_URL=postgresql://username:password@host/dbname
-./pg_featureserv
-```
-
-#### Windows
-```
-SET DATABASE_URL=postgresql://username:password@host/dbname
-pg_featureserv.exe
-```
-
-### Command options
-
-|  Option  |  Description  |
-|-------------|-----------|
-| `-?` | Show command usage |
-| `--config <file>.toml` | Specify configuration file to use |
-| `--debug` | Set logging level to TRACE (can also be set in config file) |
-| `--devel`| Run in development mode (i.e. assets are reloaded for every request) |
-| `--test` | Run in test mode, using an internal catalog of sample tables and data rather than a database |
 
 
 ### Configuration File
@@ -103,3 +72,18 @@ LimitMax = 10000
 # Description of this service
 #Description = "Crunchy Data Feature Server for PostGIS"
 ```
+
+### Configuration Options
+
+#### UrlBase
+
+The Server Base URL is the URL at which users access the service.
+It is also used for any URL paths returned by the service (such as response links).
+
+The `UrlBase` can specify a value for the Base URL.
+This accomodates running the service behind a reverse proxy.
+
+If `UrlBase` is not set, `pg_featureserv` dynamically detects the base URL
+by inspecting the incoming request.
+Also, if the HTTP headers `Forwarded` or `X-Forwarded-Proto` and `X-Forwarded-Host` are present
+they are respected.

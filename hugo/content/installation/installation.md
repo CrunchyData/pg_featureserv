@@ -2,7 +2,7 @@
 title: "Installing"
 date:
 draft: false
-weight: 225
+weight: 200
 ---
 
 ## Installation
