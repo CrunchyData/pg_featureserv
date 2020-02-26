@@ -42,7 +42,7 @@ By focussing on the single aspect of serving spatial features, `pg_featureserv` 
 
 ### PostGIS for the Web
 
-`pg_featureserv` is one component of **PostGIS for the Web** (aka "PostGIS FTW"), a growing family of Go spatial micro-services. Database-centric applications naturally have a central source of coordinating state, the database, which allows otherwise independent microservices to provide HTTP-level access to the database with minimal middleware complexity.
+`pg_featureserv` is one component of **PostGIS for the Web** (aka "PostGIS FTW"), a growing family of spatial micro-services. Database-centric applications naturally have a central source of coordinating state, the database, which allows otherwise independent microservices to provide HTTP-level access to the database with minimal middleware complexity.
 
 * [pg_tileserv](https:access.crunchydata.com/documentation/pg_featureserv/latest/) provides MVT tiles for interactive clients and smooth rendering
 * [pg_featureserv](.) provides GeoJSON feature services for reading and writing vector and attribute data from tables
