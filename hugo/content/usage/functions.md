@@ -24,14 +24,34 @@ weight: 200
 `/functions/{funid}/items`
 `/functions/{funid}/items.json`
 
+- response is GeoJSON for result dataset
+
 ### Function arguments
 
-### Parameter limit
+`param=value`
 
-### Parameter offset
+Omitted arguments will use the default specified in the function definition (if any).
 
-### Parameter orderBy
+### Limiting and paging results
+
+`limit=N`
+
+`offset=N`
+
+### Ordering results
+
+`orderBy=PROP`
+
+`orderBy=PROP:A`
+
+`orderBy=PROP:D`
 
 ### Filter by bbox
 
-### Specify response properties
+`bbox=MINX,MINY,MAXX,MAXY`
+
+- extent is in lon/lat (4326)
+
+### Specify properties in result
+
+`properties=PROP1,PROP2,PROP3...`

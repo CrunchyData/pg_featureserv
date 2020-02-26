@@ -5,16 +5,19 @@ draft: false
 weight: 500
 ---
 
-The basic principle of security is to connect the server to the database with a user that has just the access you want it to have, and no more. 
+The basic principle of security is to connect the server to the database with a user that has just the access you want it to have, and no more. (Note: Postgres uses the term [database role](https://www.postgresql.org/docs/current/user-manag.html) when discussing user access permisions.)
 
-To support different access patterns, create different users with access to different tables/functions, and run multiple services, connecting with those different users.
-
-Start with a new, blank user. A blank user will have no select privileges on tables it does not own. It will have execute privileges on functions. However, the user has no select privileges on tables accessed by functions, so effectively the user will still have no access to data.
+Start with a new, blank user. A blank user has no select privileges on tables it does not own.
+It does have execute privileges on functions.
+However, the user has no select privileges on tables accessed by functions, so effectively the user will still have no access to data.
 ```sql
 CREATE USER featureserver;
 ```
 
-## Tables
+To support different access patterns, create different users with access to different tables/functions.
+Then run multiple service instances, connecting with those different users.
+
+## Table and View Access
 
 If your tables are in a schema other than `public`, you must also grant usage on that schema to your user.
 ```sql
@@ -29,7 +32,7 @@ Alternatively, you can grant access to all the tables at once.
 GRANT SELECT ON ALL TABLES IN SCHEMA myschema TO featureserver;
 ```
 
-## Functions
+## Function Access
 
 As noted above, functions that access table data effectively are restricted by the access levels the user has to the tables the function reads. If you want to completely restrict access to the function, including visibility in the user interface, you can strip execution privileges from the function.
 ```sql
