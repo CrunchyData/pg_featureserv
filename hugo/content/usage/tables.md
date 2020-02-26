@@ -5,9 +5,9 @@ draft: false
 weight: 100
 ---
 
-## Expose Database Tables and Views as Feature Collections
+## Expose Tables and Views as Feature Collections
 
-`pg_featurserv` exposes database spatial tables and views in the API as **feature collections**.
+`pg_featureserv` exposes database spatial tables and views in the API as **feature collections**.
 
 Spatial tables and views are those which:
 
