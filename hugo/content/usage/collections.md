@@ -42,6 +42,11 @@ The metadata includes:
 The path `/collections` returns a list of the feature collections
 available in the service as a JSON document.
 
+#### Example
+```
+http://localhost:9000/collections
+```
+
 Each listed feature collection provides a name, title, description and extent.
 A set of links provide the URLs for accessing:
 
@@ -49,12 +54,18 @@ A set of links provide the URLs for accessing:
 * `alt` - the feature collection metadata as an HTML view
 * `items` - the feature collection items
 
+
 ## Describe Feature Collection metadata
 
 The path `/collections/{coll-name}` returns a JSON object describing
 the metadata for a feature collection.
 The `{coll-name}` is the schema-qualified name of the database table or view
 backing the feature collection.
+
+#### Example
+```
+http://localhost:9000/collections/ne.admin_0_countries
+```
 
 The response is a JSON document ontaining metadata about the collection, including:
 

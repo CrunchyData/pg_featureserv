@@ -5,40 +5,115 @@ draft: false
 weight: 150
 ---
 
+Feature collections can be queried to provide sets of features,
+or to return a single feature.
+
 ## Query features
 
-`/collections/{collid}/items`
+The path `/collections/{collid}/items` is the basic query to return
+a set of features from a feature collection.
 
-- response is GeoJSON for result dataset
+The response is a GeoJSON feature collection containing the result.
+
+#### Example
+```
+http://localhost:9000/collections/ne.admin_0_countries/items
+```
+
+Additional query parameters can be appended to the basic query
+to provide control over what sets of features are returned.
+
+These are analagous to using SQL statement clauses to control
+the results of a query.
+In fact the service
+implements these using exactly that technique.
+This provides maximum performance since it allows
+the Postgres SQL engine to optimize the query execution plan.
 
 ### Limiting and paging results
 
-`limit=N`
+The query parameter `limit=N` can be added to the query to control
+the maximum number of features returned in a response document.
+There is also a server-defined maximum which cannot be exceeded.
 
-`offset=N`
+The query parameter `offset=N` specifies the offset in the
+actual query result at which the response feature set starts.
+
+Used together these two parameters allow paging through large result
+sets.
+
+#### Example
+```
+http://localhost:9000/collections/ne.admin_0_countries/items?limit=50&offset=200
+```
+
 
 ### Ordering results
 
-`orderBy=PROP`
+The result set can be ordered by any property it contains.
+This allows performing "greatest N" or "smallest N" queries.
 
-`orderBy=PROP:A`
+* `orderBy=PROP` orders results by `PROP` in ascending order
 
-`orderBy=PROP:D`
+The sort order can be specified by appending `:A` (ascending)
+or `:D` (descending) to the ordering property name.
+The default is ascending order.
+
+* `orderBy=PROP:A` orders results by `PROP` in ascending order
+* `orderBy=PROP:D` orders results by `PROP` in descending order
+
+#### Example
+```
+http://localhost:9000/collections/ne.admin_0_countries/items?orderBy=name
+```
 
 ### Filter by bbox
 
-`bbox=MINX,MINY,MAXX,MAXY`
+The query parameter `bbox=MINX,MINY,MAXX,MAXY`
+can be used
+to limit the features returned to those that intersect
+a specified bounding box.
+The bounding box is specified in geographic coordinates (longitude/latitude).
 
-- extent is in lon/lat (4326)
+#### Example
+```
+http://localhost:9000/collections/ne.admin_0_countries/items?bbox=10.4,43.3,26.4,47.7
+```
 
 ### Specify result properties
 
-`properties=PROP1,PROP2,PROP3...`
+The query parameter `properties=PROP1,PROP2,PROP3...`
+can be used to restrict the properties which are returned
+in the response.
+This allows reducing the response size of feature collections
+which have a large number of properties.
+
+#### Example
+```
+http://localhost:9000/collections/ne.admin_0_countries/items?properties=name,abbrev,pop_est
+```
 
 ## Query a single feature
 
-`/collections/{collid}/items/{fid}`
+The path `/collections/{collid}/items/{fid}`
+allows querying a single feature in a feature collection
+by specifying its ID.
+
+The response is a GeoJSON feature containing the result.
+
+#### Example
+```
+http://localhost:9000/collections/ne.admin_0_countries/items/23
+```
+
 
 ### Specify properties in result
 
-`properties=PROP1,PROP2,PROP3...`
+The query parameter `properties=PROP1,PROP2,PROP3...`
+can be used to restrict the properties which are returned
+in the response.
+
+#### Example
+```
+http://localhost:9000/collections/ne.admin_0_countries/items/23?properties=name,abbrev,pop_est
+```
