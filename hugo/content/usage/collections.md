@@ -11,7 +11,7 @@ PostGIS tables and views as **feature collections**.
 The available feature collections can be listed.
 Each feature collection can report metadata about its definition,
 and can be queried to return datasets of features.
-It is also possible to query individual features by **id** in tables which have
+It is also possible to query individual features in tables which have
 defined primary keys.
 
 ## Expose Tables and Views as Feature Collections
@@ -40,12 +40,16 @@ The metadata includes:
 ## List Feature Collections
 
 The path `/collections` returns a list of the feature collections
-available in the service.
+available in the service as a JSON document.
 
-- response is JSON containing list of collections
+Each listed feature collection provides a name, title, description and extent.
+A set of links provide the URLs for accessing:
+
+* `self` - the feature collection metadata
+* `alt` - the feature collection metadata as an HTML view
+* `items` - the feature collection items
 
 ## Describe Feature Collection metadata
-
 
 The path `/collections/{coll-name}` returns a JSON object describing
 the metadata for a feature collection.
@@ -54,5 +58,15 @@ backing the feature collection.
 
 The response is a JSON document ontaining metadata about the collection, including:
 
+* The geometry column name
+* The geometry type
+* The geometry spatial reference code (SRID)
+* The extent of the feature collection (if available)
 * The column name providing the feature identifiers (if any)
-* A list of the properties and their JSON type
+* A list of the properties and their JSON types
+
+A set of links provide the URLs for accessing:
+
+* `self` - the feature collection metadata
+* `alt` - the feature collection metadata as an HTML view
+* `items` - the feature collection items
