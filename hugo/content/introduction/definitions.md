@@ -2,7 +2,7 @@
 title: "Definitions"
 date:
 draft: false
-weight: 150
+weight: 100
 ---
 
 ### Feature
@@ -15,7 +15,7 @@ A set of **features** from a spatial dataset.  In `pg_featureserv`, these are ma
 A database that includes a "geometry" column type. The PostGIS extension to PostgreSQL adds a geometry column type, as well as hundreds of functions to operate on that type.  For example, it provides the [ST_AsGeoJSON()](https://postgis.net/docs/ST_AsGeoJSON.html) function that `pg_featureserv` uses.
 
 ### Web API
-An Application Program Interface (API) allows client software to make programmatic requests to a service and retrieve information from it. 
+An Application Program Interface (API) allows client software to make programmatic requests to a service and retrieve information from it.
 
 A Web API is an API which is founded on the technologies of the Web.
 These include:

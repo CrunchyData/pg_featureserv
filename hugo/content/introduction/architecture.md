@@ -2,7 +2,7 @@
 title: "Architecture"
 date:
 draft: false
-weight: 175
+weight: 200
 ---
 
 `pg_featureserv` has a simple architecture.
