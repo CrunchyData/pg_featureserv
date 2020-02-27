@@ -11,7 +11,7 @@ There are numerous services available which can be used to serve features, such 
 and generate feature datasets in various formats.
 They tend to be large, complex applications which require significnat expertise to install, configure, secure and tune.
 
-### PostGIS-Only
+## PostGIS-Only
 
 In contrast, `pg_featureserv` works exclusively with PostGIS, which allows for greater flexibility of usage.
 By targetting PostGIS as the sole data provider, `pg_featureserv` gains significant capabilties:
@@ -31,7 +31,7 @@ By targetting PostGIS as the sole data provider, `pg_featureserv` gains signific
 By utilizing a single powerful spatial data source, the `pg_featureserv` codebase is significantly smaller and simpler.
 This means more rapid development, fewer software defects, a more secure interface, and easier deployment on a wider variety of platforms.
 
-### Modern Web Service Architecture
+## Modern Web Service Architecture
 
 `pg_featureserv` follows the modern architectural paradigm of web-friendly, RESTful microservices.
 
@@ -40,7 +40,7 @@ For instance, `pg_featureserv` allows querying spatial functions as well as stat
 
 By focussing on the single aspect of serving spatial features, `pg_featureserv` makes it easier to deploy, provision, manage, and secure feature services within a containerized environment.
 
-### PostGIS for the Web
+## PostGIS for the Web
 
 `pg_featureserv` is one component of **PostGIS for the Web** (aka "PostGIS FTW"), a growing family of spatial micro-services. Database-centric applications naturally have a central source of coordinating state, the database, which allows otherwise independent microservices to provide HTTP-level access to the database with minimal middleware complexity.
 
