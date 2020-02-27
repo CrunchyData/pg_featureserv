@@ -5,7 +5,7 @@ draft: false
 weight: 150
 ---
 
-## Query Features
+## Query features
 
 `/collections/{collid}/items`
 
@@ -31,7 +31,7 @@ weight: 150
 
 - extent is in lon/lat (4326)
 
-### Specify properties in result
+### Specify result properties
 
 `properties=PROP1,PROP2,PROP3...`
 
