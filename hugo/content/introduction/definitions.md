@@ -17,9 +17,9 @@ A database that includes a "geometry" column type. The PostGIS extension to Post
 ### Web API
 An Application Program Interface (API) allows client software to make programmatic requests to a service and retrieve information from it.
 
-A Web API is an API which is founded on the technologies of the Web.
+A Web API is an API founded on Web technologies.
 These include:
 
-* use of the HTTP protocol to provide high-level semantics for operations, as well as efficient mechanisms for querying, security and transporting data to clients
-* following the REST paradigm to simplify the model of interacting with data
-* using the standard JSON and GeoJSON formats as the primary way of encoding data
+* Use of the HTTP protocol to provide high-level semantics for operations, as well as efficient mechanisms for querying, security and transporting data to clients
+* Following the REST paradigm to simplify the model of interacting with data
+* Using the standard JSON and GeoJSON formats as the primary way of encoding data

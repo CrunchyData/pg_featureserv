@@ -5,14 +5,14 @@ draft: false
 weight: 500
 ---
 
-## Home page
+## Home Page
 
 The home page shows the service title and description,
 and provides links to the listings of collections and functions,
 the OpenAPI definition, and the conformance metadata.
 
 ```
-http://localhosst:9000/home.html
+http://localhost:9000/home.html
 ```
 
 ## API User Interface
@@ -23,7 +23,7 @@ A user interface for the service API is available at the path `/api.html`.
 
 The path `/collections.html` shows a list of the feature collections exposed by the service.
 
-## Show Feature Collection metadata
+## Show Feature Collection Metadata
 
 The path  `/collections/{collid}.html` shows metadata about the specified feature collection.
 
@@ -44,11 +44,11 @@ Any applicable query parameters may be appended to the URL.
 
 The path `/functions.html` shows a list of the functions exposed by the service.
 
-## Show function metadata
+## Show Function Metadata
 
 The path `/functions/{funid}.html` shows metadata about the specified function.
 
-## View function result data on a map
+## View Function Result Data on a Map
 
 The path `/functions/{funid}/items.html` shows the features returned
 by a basic function query in a web map interface.
