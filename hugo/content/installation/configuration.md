@@ -5,7 +5,7 @@ draft: false
 weight: 400
 ---
 
-### Configuration File
+## Configuration File
 
 The configuration file is automatically read from the file `config.toml`
 in the directory the application starts in, if it exists.
@@ -72,16 +72,16 @@ LimitMax = 10000
 #Description = "Crunchy Data Feature Server for PostGIS"
 ```
 
-### Configuration Options
+## Configuration Options
 
-#### UrlBase
+### UrlBase
 
-The Server Base URL is the URL at which users access the service.
+The Base URL is the URL endpoint at which users access the service.
 It is also used for any URL paths returned by the service (such as response links).
 
 The `UrlBase` can specify a value for the Base URL.
 This accomodates running the service behind a reverse proxy.
 
-If `UrlBase` is not set, `pg_featureserv` dynamically detects the base URL
-by inspecting the incoming request.
+If `UrlBase` is not set, `pg_featureserv` dynamically detects the base URL.
 Also, if the HTTP headers `Forwarded` or `X-Forwarded-Proto` and `X-Forwarded-Host` are present, they are respected.
+Otherwise, the base URL is determined by inspecting the incoming request.
