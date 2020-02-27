@@ -13,5 +13,5 @@ The service API follows the [OGC API for Features Version 1.0](http://docs.openg
 It extends the API to expose more of the powerful spatial capabilities of PostGIS.
 
 This guide walks you through how to install and use `pg_featureserv` for your spatial applications.
-The [Usage](./usage) section goes in-depth on how the service works.
-It also includes some [basic examples](./examples) of web map applications that source feature data from `pg_featureserv`.
+The [Usage](/usage/) section goes in-depth on how the service works.
+We'll soon be adding more [basic examples](/examples/) of web map applications that source feature data from `pg_featureserv`.

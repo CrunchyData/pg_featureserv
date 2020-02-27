@@ -5,7 +5,6 @@ draft: false
 weight: 400
 ---
 
-
 ### Configuration File
 
 The configuration file is automatically read from the file `config.toml`
@@ -85,5 +84,4 @@ This accomodates running the service behind a reverse proxy.
 
 If `UrlBase` is not set, `pg_featureserv` dynamically detects the base URL
 by inspecting the incoming request.
-Also, if the HTTP headers `Forwarded` or `X-Forwarded-Proto` and `X-Forwarded-Host` are present
-they are respected.
+Also, if the HTTP headers `Forwarded` or `X-Forwarded-Proto` and `X-Forwarded-Host` are present, they are respected.

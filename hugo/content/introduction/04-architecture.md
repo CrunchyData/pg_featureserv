@@ -28,4 +28,4 @@ to a desktop GIS application such as `QGIS`), or a web proxy mediating access to
 The context diagram below shows `pg_featureserv` running alongside `pg_tileserv` to
 provide a PostGIS-centric "platform for the spatial web".
 
-![pg_feaureserv Architecture](../../static/pg_fs_architecture.png)
+![pg_feaureserv Architecture](/pg_fs_architecture.png)

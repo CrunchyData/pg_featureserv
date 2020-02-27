@@ -13,7 +13,7 @@ Spatial tables and views are those which:
 
 * include a geometry column;
 * declare a geometry type; and,
-* declare an SRID (spatial reference ID)
+* declare an SRID (spatial reference ID).
 
 Each feature collection can report metadata about its definition,
 and can be queried to return datasets of features.
@@ -22,54 +22,51 @@ defined primary keys.
 
 Exposed tables and views are also limited by the database access permissions
 defined for the service database user.
-See the [Security]({{< relref "security" >}}) section for more information.
-
-
+See the [Security](/usage/security/) section for more information.
 
 ## List Feature Collections
 
-
 `/collections`
 
-- response is JSON containing list of collections
+- Response is JSON containing list of collections.
 
-## Query Feature Collection metadata
+## Query Feature Collection Metadata
 
 `/collections/{collid}`
 
-- response is JSON containing metadata about collection
+- Response is JSON containing metadata about collection.
 
-## Query Feature Collection features
+## Query Feature Collection Features
 
 `/collections/{collid}/items`
 
-- response is GeoJSON for result dataset
+- Response is GeoJSON for result dataset.
 
 ### Limiting and paging results
 
-`limit=N`
+- `limit=N` specifies the maximum number of records returned. The default is 10.
 
-`offset=N`
-
-### Ordering results
-
-`orderBy=PROP`
-
-`orderBy=PROP:A`
-
-`orderBy=PROP:D`
-
-### Filter by bbox
-
-`bbox=MINX,MINY,MAXX,MAXY`
-
-- extent is in lon/lat (4326)
+- `offset=N` specifies the number of rows to skip before beginning to return rows.
 
 ### Specify properties in result
 
 `properties=PROP1,PROP2,PROP3...`
 
-## Query single feature
+### Ordering results
+
+`orderBy=PROP`
+
+- `orderBy=PROP:A` returns results based on the specified property in ascending order.
+
+- `orderBy=PROP:D` returns results based on the specified property in descending order.
+
+### Filter by bbox
+
+`bbox=MINX,MINY,MAXX,MAXY`
+
+- Extent is in lon/lat (4326)
+
+## Query a Single Feature
 
 `/collections/{collid}/items/{fid}`
 

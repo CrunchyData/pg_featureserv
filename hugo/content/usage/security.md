@@ -10,6 +10,7 @@ The basic principle of security is to connect the server to the database with a 
 Start with a new, blank user. A blank user has no select privileges on tables it does not own.
 It does have execute privileges on functions.
 However, the user has no select privileges on tables accessed by functions, so effectively the user will still have no access to data.
+
 ```sql
 CREATE USER featureserver;
 ```
