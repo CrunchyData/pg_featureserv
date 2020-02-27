@@ -2,7 +2,7 @@
 title: "API"
 date:
 draft: false
-weight: 300
+weight: 50
 ---
 
 ## OGC API For Features
@@ -12,6 +12,16 @@ weight: 300
 - feature collection
 - feature
 -  Conformance
+- linked data
 
 
 ## OpenAPI
+
+
+## Request Headers
+
+## Response formats
+
+- links
+
+## Error codes and messages

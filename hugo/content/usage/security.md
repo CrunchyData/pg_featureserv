@@ -2,7 +2,7 @@
 title: "Security"
 date:
 draft: false
-weight: 500
+weight: 400
 ---
 
 The basic principle of security is to connect the server to the database with a user that has just the access you want it to have, and no more. (Note: Postgres uses the term [database role](https://www.postgresql.org/docs/current/user-manag.html) when discussing user access permisions.)
