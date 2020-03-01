@@ -30,7 +30,7 @@ implements these using exactly that technique.
 This provides maximum performance since it allows
 the Postgres SQL engine to optimize the query execution plan.
 
-### Limiting and paging results
+### Limiting and Paging
 
 The query parameter `limit=N` can be added to the query to control
 the maximum number of features returned in a response document.
@@ -48,7 +48,7 @@ http://localhost:9000/collections/ne.admin_0_countries/items?limit=50&offset=200
 ```
 
 
-### Ordering results
+### Ordering
 
 The result set can be ordered by any property it contains.
 This allows performing "greatest N" or "smallest N" queries.
@@ -67,20 +67,23 @@ The default is ascending order.
 http://localhost:9000/collections/ne.admin_0_countries/items?orderBy=name
 ```
 
-### Filter by bbox
+### Filter by Bounding Box
 
 The query parameter `bbox=MINX,MINY,MAXX,MAXY`
-can be used
-to limit the features returned to those that intersect
+is used to limit the features returned to those that intersect
 a specified bounding box.
-The bounding box is specified in geographic coordinates (longitude/latitude).
+The bounding box is specified in geographic coordinates
+(longitude/latitude, SRID = 4326).
+If the source data has a non-geographic coordinate system
+the bounding box is transformed to the source coordinate system
+to perform the query.
 
 #### Example
 ```
 http://localhost:9000/collections/ne.admin_0_countries/items?bbox=10.4,43.3,26.4,47.7
 ```
 
-### Specify result properties
+### Restrict Properties
 
 The query parameter `properties=PROP1,PROP2,PROP3...`
 can be used to restrict the properties which are returned
@@ -93,7 +96,7 @@ which have a large number of properties.
 http://localhost:9000/collections/ne.admin_0_countries/items?properties=name,abbrev,pop_est
 ```
 
-## Query a single feature
+## Query a Single Feature
 
 The path `/collections/{collid}/items/{fid}`
 allows querying a single feature in a feature collection
@@ -107,7 +110,7 @@ http://localhost:9000/collections/ne.admin_0_countries/items/23
 ```
 
 
-### Specify properties in result
+### Restrict Properties
 
 The query parameter `properties=PROP1,PROP2,PROP3...`
 can be used to restrict the properties which are returned
