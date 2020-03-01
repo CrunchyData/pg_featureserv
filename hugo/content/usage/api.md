@@ -1,12 +1,13 @@
 ---
-title: "API"
+title: "Web Service API"
 date:
 draft: false
 weight: 50
 ---
 
-`pg_featureserv` provides a HTTP-based RESTful web API to access metadata and data
-about the PostGIS resources it exposes.
+`pg_featureserv` provides a HTTP-based RESTful web service API
+to access metadata about and data from
+the PostGIS objects it exposes.
 This section discusses general aspects of the API.
 
 ## OGC API - Features
@@ -23,36 +24,38 @@ it implements the following paths defined by the standard:
 * `collections/{id}/items` - dataset of features from a feature collection
 * `collections/{id}/items/{fid}` - data for a specific feature
 
-Some of the paths accept various query parameters.
-Some of these are not yet implemented.
+The standard defines various query parameters for certain paths.
+Many these are provided.
 
-The service also extends the API to provide access to the
-richer capabilities of PostGIS.
+The service extends the standard API to provide richer access to the
+capabilities of PostGIS.
+Extensions include the `/functions` paths, and additional query parameters.
 
 See the subsequent sections for details.
 
 ## Linked Data
 
-The **OCG API - Features** promotes the concept of [Linked Data](https://www.w3.org/TR/sdw-bp/#linked-data).
-This makes web data more usable by providing stable links from requested resources
-to related resources.
-To enable this the standard mandates that response documents should
+The **OCG API - Features** standard promotes the concept of [Linked Data](https://www.w3.org/TR/sdw-bp/#linked-data).
+This makes web data more usable by providing stable links between related resources.
+To enable this the standard mandates that response documents
 include structured links to other resources.
+
 A structured link includes the following properties:
 
-* `rel` - the relationship of the linked resource to the current resource
+* `rel` - the name describing the relationship of the current resource to the linked resource
 * `href` - the URI for the link
 * `type` - the format of the linked resource
-* `title` - a title for the link resource
+* `title` - a title for the linked resource
 
 Most service resources include a `links` property containing an array of links
 to related resources.
 
 ## OpenAPI
 
-The service API is described by an [OpenAPI](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md) specification.
-This is available as a JSON document at the service path `/api`.
-The service also provides an interactive user interface for
+The service API is described by an
+[OpenAPI](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md) specification.
+This is available as a JSON document at the path `/api`.
+The service provides an interactive user interface for
 the API at `/api.html`.
 
 ## CORS

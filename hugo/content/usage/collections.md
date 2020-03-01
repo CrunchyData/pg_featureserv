@@ -47,8 +47,9 @@ available in the service as a JSON document.
 http://localhost:9000/collections
 ```
 
-Each listed feature collection provides a name, title, description and extent.
-A set of links provide the URLs for accessing:
+Each listed feature collection is described by a subset of its metadata,
+including name, title, description and extent.
+A set of links provide URLs for accessing:
 
 * `self` - the feature collection metadata
 * `alt` - the feature collection metadata as an HTML view
@@ -76,7 +77,7 @@ The response is a JSON document ontaining metadata about the collection, includi
 * The column name providing the feature identifiers (if any)
 * A list of the properties and their JSON types
 
-A set of links provide the URLs for accessing:
+A set of links provide URLs for accessing:
 
 * `self` - the feature collection metadata
 * `alt` - the feature collection metadata as an HTML view
