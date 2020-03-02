@@ -21,8 +21,8 @@ it implements the following paths defined by the standard:
 * `/api` - API specification OpenAPI document
 * `/collections` - list of feature scollections
 * `/collections/{id}` - metadata for a feature collection
-* `collections/{id}/items` - dataset of features from a feature collection
-* `collections/{id}/items/{fid}` - data for a specific feature
+* `/collections/{id}/items` - dataset of features from a feature collection
+* `/collections/{id}/items/{fid}` - data for a specific feature
 
 The standard defines various query parameters for certain paths.
 Many these are provided.
