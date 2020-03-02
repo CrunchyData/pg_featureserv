@@ -71,25 +71,6 @@ func addRoute(router *mux.Router, path string, handler func(http.ResponseWriter,
 	router.Handle(path, appHandler(handler))
 }
 
-// ServeHTTP is the base Handler for routed requests.
-// Common handling logic is placed here
-func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	// --- log the request
-	log.Printf("%v %v %v\n", r.RemoteAddr, r.Method, r.URL)
-
-	// execute the handler
-	e := fn(w, r)
-
-	if e != nil { // e is *appError, not os.Error.
-		// TODO: is this the desire behaviour?
-		// perhaps detect format and emit accordingly?
-		// log error here?
-		// should log attached error?
-		// panic on severe error?
-		http.Error(w, e.Message, e.Code)
-	}
-}
-
 func handleRootJSON(w http.ResponseWriter, r *http.Request) *appError {
 	return doRoot(w, r, api.FormatJSON)
 }
@@ -152,7 +133,7 @@ func linkAlt(urlBase string, path string, desc string) *api.Link {
 }
 
 func handleCollections(w http.ResponseWriter, r *http.Request) *appError {
-	format := api.PathFormat(r.URL)
+	format := api.RequestedFormat(r)
 	isJSON := format == api.FormatJSON
 	urlBase := serveURLBase(r)
 
@@ -225,7 +206,7 @@ func linksCollection(name string, urlBase string, isSummary bool) []*api.Link {
 }
 
 func handleCollection(w http.ResponseWriter, r *http.Request) *appError {
-	format := api.PathFormat(r.URL)
+	format := api.RequestedFormat(r)
 	urlBase := serveURLBase(r)
 
 	name := getRequestVar(routeVarID, r)
@@ -260,7 +241,7 @@ func handleCollection(w http.ResponseWriter, r *http.Request) *appError {
 
 func handleCollectionItems(w http.ResponseWriter, r *http.Request) *appError {
 	// TODO: determine content from request header?
-	format := api.PathFormat(r.URL)
+	format := api.RequestedFormat(r)
 	urlBase := serveURLBase(r)
 	query := api.URLQuery(r.URL)
 
@@ -337,7 +318,7 @@ func linksItems(name string, urlBase string) []*api.Link {
 
 func handleItem(w http.ResponseWriter, r *http.Request) *appError {
 	// TODO: determine content from request header?
-	format := api.PathFormat(r.URL)
+	format := api.RequestedFormat(r)
 	urlBase := serveURLBase(r)
 
 	query := api.URLQuery(r.URL)
@@ -408,7 +389,7 @@ func writeItemJSON(w http.ResponseWriter, name string, fid string, param *data.Q
 
 func handleConformance(w http.ResponseWriter, r *http.Request) *appError {
 	// TODO: determine content from request header?
-	format := api.PathFormat(r.URL)
+	format := api.RequestedFormat(r)
 	urlBase := serveURLBase(r)
 
 	content := api.GetConformance()
@@ -427,7 +408,7 @@ func handleConformance(w http.ResponseWriter, r *http.Request) *appError {
 
 func handleAPI(w http.ResponseWriter, r *http.Request) *appError {
 	// TODO: determine content from request header?
-	format := api.PathFormat(r.URL)
+	format := api.RequestedFormat(r)
 	urlBase := serveURLBase(r)
 
 	content := api.GetAPIContent()
@@ -445,7 +426,7 @@ func handleAPI(w http.ResponseWriter, r *http.Request) *appError {
 }
 
 func handleFunctions(w http.ResponseWriter, r *http.Request) *appError {
-	format := api.PathFormat(r.URL)
+	format := api.RequestedFormat(r)
 	isJSON := format == api.FormatJSON
 	urlBase := serveURLBase(r)
 
@@ -526,7 +507,7 @@ func linksFunction(id string, urlBase string, isSummary bool, isGeomFun bool) []
 }
 
 func handleFunction(w http.ResponseWriter, r *http.Request) *appError {
-	format := api.PathFormat(r.URL)
+	format := api.RequestedFormat(r)
 	urlBase := serveURLBase(r)
 
 	name := getRequestVar(routeVarID, r)
@@ -562,7 +543,7 @@ func handleFunction(w http.ResponseWriter, r *http.Request) *appError {
 
 func handleFunctionItems(w http.ResponseWriter, r *http.Request) *appError {
 	// TODO: determine content from request header?
-	format := api.PathFormat(r.URL)
+	format := api.RequestedFormat(r)
 	urlBase := serveURLBase(r)
 
 	//--- extract request parameters

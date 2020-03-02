@@ -14,7 +14,6 @@ package api
 */
 
 import (
-	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
@@ -65,7 +64,7 @@ func RequestedFormat(r *http.Request) string {
 	}
 	// Use Accept header if present
 	hdrAccept := r.Header.Get("Accept")
-	fmt.Println(hdrAccept)
+	//fmt.Println(hdrAccept)
 	if strings.Index(hdrAccept, ContentTypeHTML) >= 0 {
 		return FormatHTML
 	}

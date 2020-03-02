@@ -31,6 +31,8 @@ import (
 
 //--- simple request handler error framework
 // see https://blog.golang.org/error-handling-and-go
+// Allows handlers to return structure error messages,
+// and centralizes common logic in the ServeHTTP method
 
 type appError struct {
 	Error   error
@@ -38,7 +40,33 @@ type appError struct {
 	Code    int
 }
 
+// appHandler is a named function type which is augmented
+// with a ServeHTTP method
+// This allows it to be used as an http.Handler.
+// When the ServeHTTP method is called
+// the bound function is called, and
+// can return a structured error message.
 type appHandler func(http.ResponseWriter, *http.Request) *appError
+
+// ServeHTTP is the base Handler for routed requests.
+// Common handling logic is placed here
+// See also https://golang.org/pkg/net/http/#Handler
+func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// --- log the request
+	log.Printf("%v %v %v\n", r.RemoteAddr, r.Method, r.URL)
+
+	// execute the handler
+	e := fn(w, r)
+
+	if e != nil { // e is *appError, not os.Error.
+		// TODO: is this the desire behaviour?
+		// perhaps detect format and emit accordingly?
+		// log error here?
+		// should log attached error?
+		// panic on severe error?
+		http.Error(w, e.Message, e.Code)
+	}
+}
 
 func appErrorMsg(err error, msg string, code int) *appError {
 	return &appError{err, msg, code}
@@ -71,12 +99,12 @@ func serveURLBase(r *http.Request) string {
 	if configUrl != "" {
 		return configUrl + "/"
 	}
-	// Preferred scheme
+	// Preferred protocol
 	ps := "http"
 	// Preferred host:port
 	ph := strings.TrimRight(r.Host, "/")
 
-	// Check for the IETF standard "Forwarded" header
+	// Check IETF standard "Forwarded" header
 	// for reverse proxy information
 	xf := http.CanonicalHeaderKey("Forwarded")
 	if f, ok := r.Header[xf]; ok {
@@ -87,8 +115,7 @@ func serveURLBase(r *http.Request) string {
 		}
 	}
 
-	// Check the X-Forwarded-Host and X-Forwarded-Proto
-	// headers
+	// Check X-Forwarded-Host and X-Forwarded-Proto headers
 	xfh := http.CanonicalHeaderKey("X-Forwarded-Host")
 	if fh, ok := r.Header[xfh]; ok {
 		ph = fh[0]
