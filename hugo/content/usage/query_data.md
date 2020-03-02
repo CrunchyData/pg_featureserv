@@ -25,10 +25,39 @@ to provide control over what sets of features are returned.
 
 These are analagous to using SQL statement clauses to control
 the results of a query.
-In fact the service
-implements these using exactly that technique.
+In fact, the service
+implements these parameters by generating the equivalent SQL.
 This provides maximum performance since it allows
 the Postgres SQL engine to optimize the query execution plan.
+
+### Filter by Bounding Box
+
+The query parameter `bbox=MINX,MINY,MAXX,MAXY`
+is used to limit the features returned to those that intersect
+a specified bounding box.
+The bounding box is specified in geographic coordinates
+(longitude/latitude, SRID = 4326).
+If the source data has a non-geographic coordinate system
+the bounding box is transformed to the source coordinate system
+to perform the query.
+
+#### Example
+```
+http://localhost:9000/collections/ne.admin_0_countries/items?bbox=10.4,43.3,26.4,47.7
+```
+
+### Restrict Properties
+
+The query parameter `properties=PROP1,PROP2,PROP3...`
+can be used to restrict the properties which are returned
+in the response.
+This allows reducing the response size of feature collections
+which have a large number of properties.
+
+#### Example
+```
+http://localhost:9000/collections/ne.admin_0_countries/items?properties=name,abbrev,pop_est
+```
 
 ### Limiting and Paging
 
@@ -67,34 +96,7 @@ The default is ascending order.
 http://localhost:9000/collections/ne.admin_0_countries/items?orderBy=name
 ```
 
-### Filter by Bounding Box
 
-The query parameter `bbox=MINX,MINY,MAXX,MAXY`
-is used to limit the features returned to those that intersect
-a specified bounding box.
-The bounding box is specified in geographic coordinates
-(longitude/latitude, SRID = 4326).
-If the source data has a non-geographic coordinate system
-the bounding box is transformed to the source coordinate system
-to perform the query.
-
-#### Example
-```
-http://localhost:9000/collections/ne.admin_0_countries/items?bbox=10.4,43.3,26.4,47.7
-```
-
-### Restrict Properties
-
-The query parameter `properties=PROP1,PROP2,PROP3...`
-can be used to restrict the properties which are returned
-in the response.
-This allows reducing the response size of feature collections
-which have a large number of properties.
-
-#### Example
-```
-http://localhost:9000/collections/ne.admin_0_countries/items?properties=name,abbrev,pop_est
-```
 
 ## Query a Single Feature
 

@@ -39,8 +39,9 @@ The metadata includes:
 
 ## List Feature Collections
 
-The path `/collections` returns a list of the feature collections
-available in the service as a JSON document.
+The path `/collections` returns a JSON document
+containing a list of the feature collections
+available in the service.
 
 #### Example
 ```
@@ -53,14 +54,14 @@ A set of links provide URLs for accessing:
 
 * `self` - the feature collection metadata
 * `alt` - the feature collection metadata as an HTML view
-* `items` - the feature collection items
+* `items` - the feature collection data items
 
 
 ## Describe Feature Collection metadata
 
 The path `/collections/{coll-name}` returns a JSON object describing
 the metadata for a feature collection.
-The `{coll-name}` is the schema-qualified name of the database table or view
+`{coll-name}` is the schema-qualified name of the database table or view
 backing the feature collection.
 
 #### Example
@@ -81,4 +82,4 @@ A set of links provide URLs for accessing:
 
 * `self` - the feature collection metadata
 * `alt` - the feature collection metadata as an HTML view
-* `items` - the feature collection items
+* `items` - the the data items returned by querying the feature collection
