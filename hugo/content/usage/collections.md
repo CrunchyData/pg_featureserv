@@ -24,10 +24,41 @@ Spatial tables and views are those which:
 * declare a geometry type; and,
 * declare an SRID (spatial reference ID)
 
-Visible tables and views are the available for access by virtue of by the database access permissions defined for the service database user.
+#### Example of a spatial table
+
+Here is a simple example of defining a spatial table
+which contains polygon geometries in coordinate system SRID = 4326
+(See the PostGIS documentation for more information about
+[creating spatial tables](https://postgis.net/docs/manual-3.0/using_postgis_dbmanagement.html#Create_Spatial_Table)
+and using [spatial reference systems](https://postgis.net/docs/manual-3.0/using_postgis_dbmanagement.html#spatial_ref_sys).)
+
+```sql
+CREATE TABLE mytable (
+    geom Geometry(Polygon, 4326),
+    pid text,
+    address text
+);
+```
+
+Visible tables and views are the ones available for access
+by virtue of by the database access permissions defined for the service database user.
 See the [Security]({{< relref "security" >}}) section for more information.
 
-The service relies on the database catalog information to provide metadata about a table or view.
+If a view uses the geometry column of an underlying table directly
+the spatial column metadata is inherited for the view.
+But if a view column is defined as the result of a spatial function
+then the column must be explicitly cast to a geometry type providing the type and SRID.
+Also, depending on the spatial function used it may be necessary to
+explicitly set the SRID of the created geometry.
+
+#### Example of a view definition
+```sql
+CREATE VIEW my_points AS
+  SELECT ST_SetSRID( ST_MakePoint( lon, lat ), 4326)::geometry(Point, 4326)
+  FROM my_geo_table AS t;
+```
+
+The service uses the database catalog information to provide metadata about a feature collection backed by a table or view.
 The metadata includes:
 
 * The feature collection id is the schema-qualified name of the table or view
@@ -36,6 +67,14 @@ The metadata includes:
 * The identifier for features is provided by the primary key column for a table (if any)
 * The property names and types are provided by the non-spatial columsn of the table or view
 * The description for properties is provided by the comments on table/view columns
+
+#### Example of comments on a table
+```sql
+COMMENT ON TABLE mytable IS 'This is my spatial table';
+COMMENT ON COLUMN mytable.geom IS 'The geometry column contains polygons in SRS 4326';
+COMMENT ON COLUMN mytable.pid IS 'The Parcel Identifier is the primary key';
+COMMENT ON COLUMN mytable.address IS 'The address of the Parcel';
+```
 
 ## List Feature Collections
 
