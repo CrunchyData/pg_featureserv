@@ -247,28 +247,17 @@ function styleFunction(feature) {
             textSpec.offsetY = -14;	}
         sty.setText( new ol.style.Text(textSpec) );
     }
-    //--- set fill from feature styleFill property, if any
     if (sty.getFill()) {
-        let styleFillColor = feature.get('style_fill_color');
-        if (styleFillColor) {
-            sty.setFill(new ol.style.Fill({ color: styleFillColor } ));
+        let fillClr = styleVal( feature.get('style_fill_color'), sty.getFill().getColor() );
+        if (fillClr) {
+            sty.setFill(new ol.style.Fill({ color: fillClr } ));
         }
     }
     if (sty.getStroke()) {
-        let strokeClr = sty.getStroke().getColor();
-        let styleStrokeColor = feature.get('style_stroke_color');
-        if (styleStrokeColor) {
-            strokeClr = styleStrokeColor;
-        }
-        let strokeW = sty.getStroke().getWidth();
-        let styleStrokeWidth = feature.get('style_stroke_width');
-        if (styleStrokeWidth == 0) {
-            strokeW = styleStrokeWidth;
-        }
+        let strokeClr = styleVal( feature.get('style_stroke_color'), sty.getStroke().getColor() );
+        let strokeW = styleVal( feature.get('style_stroke_width'), sty.getStroke().getWidth() );
+
         // OL bug?  looks like need width to be > 0
-        if (styleStrokeWidth) {
-            strokeW = styleStrokeWidth
-        }
         if (! strokeW || strokeW <= 0) strokeW = 0.00001;
 
         if (strokeClr || strokeW >= 0) {
@@ -276,17 +265,18 @@ function styleFunction(feature) {
         }
     }
     if (sty.getImage()) {
-        let fillClr = 'red';
-        let styleFillColor = feature.get('style_fill_color');
-        if (styleFillColor) {
-            fillClr = styleFillColor;
-        }
-        let image = new ol.style.Circle({ radius: 5,
+        let fillClr = styleVal(feature.get('style_fill_color'), 'red');
+        let radiusVal = styleVal(feature.get('style_radius'), 5);
+        let image = new ol.style.Circle({ radius: radiusVal,
         	fill: new ol.style.Fill({ color: fillClr})
         });
         sty.setImage(image);
     }
     return sty;
+}
+function styleVal(val, defaultVal) {
+    if (val) return val;
+    return defaultVal;
 }
 var image = new ol.style.Circle({ radius: 5,
 	fill: new ol.style.Fill({ color: 'red' }),
