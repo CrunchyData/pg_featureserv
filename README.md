@@ -38,7 +38,7 @@ Builds of the latest code:
 
 ## Building from Source
 
-pg_featurserv is developed under Go 1.13.  It may also work with earlier versions.
+`pg_featureserv` is developed under Go 1.13.  It may also work with earlier versions.
 
 * Ensure the Go compiler is installed
 * Download or clone this repository into `$GOPATH/src/github.com/CrunchyData/pg_featureserv`
@@ -78,6 +78,7 @@ Features are identified by a _collection name_ and _feature id_ pair.
 
 The default response is in JSON/GeoJSON format.
 Append `.html` to the request path to see the UI page for the resource.
+In a web browser append `.json` to the path to override the browser `Accept` header and request a JSON response.
 
 The example requests assume that the service is running locally and configured
 to listen on port 9000.
