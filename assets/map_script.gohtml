@@ -275,6 +275,17 @@ function styleFunction(feature) {
             sty.setStroke(new ol.style.Stroke( { color: strokeClr, width: strokeW } ));
         }
     }
+    if (sty.getImage()) {
+        let fillClr = 'red';
+        let styleFillColor = feature.get('style_fill_color');
+        if (styleFillColor) {
+            fillClr = styleFillColor;
+        }
+        let image = new ol.style.Circle({ radius: 5,
+        	fill: new ol.style.Fill({ color: fillClr})
+        });
+        sty.setImage(image);
+    }
     return sty;
 }
 var image = new ol.style.Circle({ radius: 5,
