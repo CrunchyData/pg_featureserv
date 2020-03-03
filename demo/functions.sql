@@ -32,6 +32,7 @@ COMMENT ON FUNCTION postgisftw.us_grid IS 'Generates a grid of rectangles coveri
 
 SELECT * FROM postgisftw.us_grid();
 
+
 CREATE OR REPLACE FUNCTION postgisftw.us_grid_noid(
 	num_x integer DEFAULT 10,
 	num_y integer DEFAULT 10)
@@ -61,6 +62,43 @@ LANGUAGE 'plpgsql'
 STABLE
 STRICT;
 
+============================================================================
+
+CREATE OR REPLACE FUNCTION postgisftw.geo_grid(
+  num_x integer DEFAULT 10,
+  num_y integer DEFAULT 10,
+  lon_min numeric DEFAULT -180.0,
+  lat_min numeric DEFAULT -90.0,
+  lon_max numeric DEFAULT 180.0,
+  lat_max numeric DEFAULT 90.0)
+RETURNS TABLE(id text, geom geometry)
+AS $$
+DECLARE
+    dlon numeric;
+    dlat numeric;
+BEGIN
+    dlon := (lon_max - lon_min) / num_x;
+    dlat := (lat_max - lat_min) / num_y;
+	RETURN QUERY
+		SELECT
+			x.x::text || '_' || y.y::text AS id,
+			ST_MakeEnvelope(
+                lon_min + (x.x - 1) * dlon, lat_min + (y.y - 1) * dlat,
+                lon_min + x.x * dlon,       lat_min + y.y * dlat, 4326
+             ) AS geom
+		FROM generate_series(1, num_x) AS x(x)
+        CROSS JOIN generate_series(1, num_y) AS y(y);
+END;
+$$
+LANGUAGE 'plpgsql'
+STABLE
+STRICT;
+
+COMMENT ON FUNCTION postgisftw.geo_grid IS 'Generates a grid of rectangles over a geographic extent';
+
+SELECT * FROM postgisftw.us_grid(5,5,-128,24,-64,49);
+
+============================================================================
 
 CREATE OR REPLACE FUNCTION postgisftw.buffer(
 	input geometry DEFAULT 'POINT(0 0)'::geometry,
