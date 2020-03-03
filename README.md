@@ -24,6 +24,8 @@ It supports the [OGC API - Features](http://docs.opengeospatial.org/is/17-069r3/
   * CORS support with configurable Allowed Origins
   * GZIP response encoding
 
+For a full list of software capabilities see [FEATURES](FEATURES.md).
+
 ## Download
 
 Builds of the latest code:
@@ -32,6 +34,7 @@ Builds of the latest code:
 * [Windows](https://postgisftw.s3.amazonaws.com/pg_featureserv_latest_windows.zip)
 * [OSX](https://postgisftw.s3.amazonaws.com/pg_featureserv_latest_osx.zip)
 * [Docker](https://hub.docker.com/repository/docker/pramsey/pg_featureserv)
+
 
 ## Building from Source
 
@@ -85,7 +88,7 @@ to listen on port 9000.
 - OpenAPI definition: http://localhost:9000/api
 - OpenAPI test UI: http://localhost:9000/api.html
 - Conformance: http://localhost:9000/conformance
-- Collections JSON: http://localhost:9000/collections
+- Collections: http://localhost:9000/collections
 - Collections UI: http://localhost:9000/collections.html
 - Feature collection metadata: http://localhost:9000/collections/{name}
 - Feature collection UI: http://localhost:9000/collections/{name}.html
@@ -99,6 +102,9 @@ to listen on port 9000.
 - Features from a function (JSON): http://localhost:9000/functions/{name}/items
 - Features from a function (Map UI): http://localhost:9000/functions/{name}/items.html
 
+See [API Summary](API.md) for a summary of the web service API.
 
+## Documentation
 
-See [API Summary](API.md) for a summary of the API.
+* [FEATURES](FEATURES.md) - full list of software capabilities
+* [API](API.md) - summary of the web service API
