@@ -14,7 +14,7 @@ To get more information about what is going on behind the scenes, run the server
 ```sh
 ./pg_fileserv --debug
 ```
-Or, turn on debugging in the [configuration file](../deployment#configuration-file):
+Or, turn on debugging in the configuration file:
 ```
 Debug = true
 ```
