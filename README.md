@@ -26,6 +26,13 @@ It supports the [OGC API - Features](http://docs.opengeospatial.org/is/17-069r3/
 
 For a full list of software capabilities see [FEATURES](FEATURES.md).
 
+## Documentation
+
+* [User Guide](https://access.crunchydata.com/documentation/pg_featureserv/latest/)
+* [FEATURES](FEATURES.md) - full list of software capabilities
+* [API](API.md) - summary of the web service API
+
+
 ## Download
 
 Builds of the latest code:
@@ -104,8 +111,3 @@ to listen on port 9000.
 - Features from a function (Map UI): http://localhost:9000/functions/{name}/items.html
 
 See [API Summary](API.md) for a summary of the web service API.
-
-## Documentation
-
-* [FEATURES](FEATURES.md) - full list of software capabilities
-* [API](API.md) - summary of the web service API
