@@ -1,7 +1,7 @@
 # pg_featureserv Version History
 
 ## Version 1.0.1
-???
+*Released: TBD*
 
 ### New Features
 
@@ -13,4 +13,4 @@
 * Fix handling Accept headers to work for all paths
 
 ## Version 1.0.0
-2020 Feb 29
+*Released: 2020 Feb 29*
