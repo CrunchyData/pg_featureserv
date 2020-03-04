@@ -21,7 +21,7 @@ import (
 	"strings"
 
 	"github.com/CrunchyData/pg_featureserv/api"
-	"github.com/CrunchyData/pg_featureserv/config"
+	"github.com/CrunchyData/pg_featureserv/conf"
 	"github.com/CrunchyData/pg_featureserv/data"
 )
 
@@ -30,7 +30,7 @@ func parseRequestParams(r *http.Request) (api.RequestParam, error) {
 	paramValues := extractSingleArgs(queryValues)
 
 	param := api.RequestParam{
-		Limit:     config.Configuration.Paging.LimitDefault,
+		Limit:     conf.Configuration.Paging.LimitDefault,
 		Offset:    0,
 		Precision: -1,
 		Values:    paramValues,
@@ -44,7 +44,7 @@ func parseRequestParams(r *http.Request) (api.RequestParam, error) {
 	param.Limit = limit
 
 	// --- offset parameter
-	offset, err := parseInt(paramValues, api.ParamOffset, 0, config.Configuration.Paging.LimitMax, 0)
+	offset, err := parseInt(paramValues, api.ParamOffset, 0, conf.Configuration.Paging.LimitMax, 0)
 	if err != nil {
 		return param, err
 	}
@@ -116,14 +116,14 @@ func parseInt(values api.NameValMap, key string, minVal int, maxVal int, default
 func parseLimit(values api.NameValMap) (int, error) {
 	val := values[api.ParamLimit]
 	if len(val) < 1 {
-		return config.Configuration.Paging.LimitDefault, nil
+		return conf.Configuration.Paging.LimitDefault, nil
 	}
 	limit, err := strconv.Atoi(val)
 	if err != nil {
 		return 0, fmt.Errorf(api.ErrMsgInvalidParameterValue, api.ParamLimit, val)
 	}
-	if limit < 0 || limit > config.Configuration.Paging.LimitMax {
-		limit = config.Configuration.Paging.LimitMax
+	if limit < 0 || limit > conf.Configuration.Paging.LimitMax {
+		limit = conf.Configuration.Paging.LimitMax
 	}
 	return limit, nil
 }

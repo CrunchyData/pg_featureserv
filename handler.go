@@ -17,7 +17,7 @@ import (
 	"net/http"
 
 	"github.com/CrunchyData/pg_featureserv/api"
-	"github.com/CrunchyData/pg_featureserv/config"
+	"github.com/CrunchyData/pg_featureserv/conf"
 	"github.com/CrunchyData/pg_featureserv/data"
 	"github.com/CrunchyData/pg_featureserv/ui"
 	"github.com/gorilla/mux"
@@ -85,7 +85,7 @@ func doRoot(w http.ResponseWriter, r *http.Request, format string) *appError {
 	urlBase := serveURLBase(r)
 
 	// --- create content
-	content := api.NewRootInfo(&config.Configuration)
+	content := api.NewRootInfo(&conf.Configuration)
 
 	switch format {
 	case api.FormatHTML:

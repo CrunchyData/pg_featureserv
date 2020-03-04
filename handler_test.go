@@ -26,7 +26,7 @@ import (
 	"testing"
 
 	"github.com/CrunchyData/pg_featureserv/api"
-	"github.com/CrunchyData/pg_featureserv/config"
+	"github.com/CrunchyData/pg_featureserv/conf"
 	"github.com/CrunchyData/pg_featureserv/data"
 )
 
@@ -51,18 +51,18 @@ type FeatureCollection struct {
 const urlBase = "http://test"
 
 // testConfir is a config spec for using in running tests
-var testConfig config.Config = config.Config{
-	Server: config.Server{
+var testConfig conf.Config = conf.Config{
+	Server: conf.Server{
 		HttpHost:   "0.0.0.0",
 		HttpPort:   9000,
 		UrlBase:    urlBase,
 		AssetsPath: "./assets",
 	},
-	Paging: config.Paging{
+	Paging: conf.Paging{
 		LimitDefault: 10,
 		LimitMax:     1000,
 	},
-	Metadata: config.Metadata{
+	Metadata: conf.Metadata{
 		Title:       "test",
 		Description: "test",
 	},
@@ -74,7 +74,7 @@ func TestMain(m *testing.M) {
 	catalogMock = data.CatMockInstance()
 	catalogInstance = catalogMock
 	router = initRouter()
-	config.Configuration = testConfig
+	conf.Configuration = testConfig
 	os.Exit(m.Run())
 }
 

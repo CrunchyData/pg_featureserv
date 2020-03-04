@@ -1,4 +1,4 @@
-package config
+package conf
 
 /*
  Copyright 2019 Crunchy Data Solutions, Inc.
@@ -18,10 +18,6 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-)
-
-const (
-	ConfigFileNameDefault = "config"
 )
 
 // Configuration for system
@@ -92,13 +88,15 @@ func InitConfig(configFilename string) {
 	setDefaultConfig()
 
 	isExplictConfigFile := configFilename != ""
-	confFile := ConfigFileNameDefault
+	confFile := AppConfig.Name
 	if configFilename != "" {
 		viper.SetConfigFile(configFilename)
 		confFile = configFilename
 	} else {
 		viper.SetConfigName(confFile)
-		viper.AddConfigPath(".")
+		viper.AddConfigPath("./config")
+		viper.AddConfigPath("/config")
+		viper.AddConfigPath("/etc")
 	}
 	err := viper.ReadInConfig() // Find and read the config file
 	if err != nil {

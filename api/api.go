@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/CrunchyData/pg_featureserv/config"
+	"github.com/CrunchyData/pg_featureserv/conf"
 	"github.com/CrunchyData/pg_featureserv/data"
 	"github.com/getkin/kin-openapi/openapi3"
 )
@@ -399,7 +399,7 @@ func NewLink(href string, rel string, conType string, title string) *Link {
 	}
 }
 
-func NewRootInfo(conf *config.Config) *RootInfo {
+func NewRootInfo(conf *conf.Config) *RootInfo {
 	root := &RootInfo{}
 	root.Title = conf.Metadata.Title
 	root.Description = conf.Metadata.Description

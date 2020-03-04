@@ -8,13 +8,13 @@ weight: 400
 
 ## Configuration File
 
-The configuration file is automatically read from the file `config.toml`
+The configuration file is automatically read from the file `config/pg_featureserv.toml`
 in the directory the application starts in, if it exists.
 
 If you want to specify a different file, use the `--config` commandline parameter to pass in a full path to the configuration file.  When using the `--config` option the local configuration file is ignored.
 
 ```sh
-./pg_featureserv --config /opt/pg_featureserv/pg_featureserv.toml
+./pg_featureserv --config /opt/pg_featureserv/config.toml
 ```
 
 If no configuration is specified, the server runs using internal defaults
@@ -46,7 +46,7 @@ HttpPort = 9000
 # Debug = true
 
 # Read html templates from this directory
-AssetsPath = "./assets"
+AssetsPath = "/usr/share/pg_featurserv/assets"
 
 [Database]
 # Database connection

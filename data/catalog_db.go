@@ -23,7 +23,7 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/CrunchyData/pg_featureserv/config"
+	"github.com/CrunchyData/pg_featureserv/conf"
 	"github.com/jackc/pgtype"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/log/logrusadapter"
@@ -88,19 +88,19 @@ func dbConnect() *pgxpool.Pool {
 }
 
 func dbConfig() *pgxpool.Config {
-	dbconfig, err := pgxpool.ParseConfig(os.Getenv(config.AppConfig.EnvDBURL))
+	dbconfig, err := pgxpool.ParseConfig(os.Getenv(conf.AppConfig.EnvDBURL))
 	if err != nil {
 		log.Fatal(err)
 	}
 	// Read and parse connection lifetime
-	dbPoolMaxLifeTime, errt := time.ParseDuration(config.Configuration.Database.DbPoolMaxConnLifeTime)
+	dbPoolMaxLifeTime, errt := time.ParseDuration(conf.Configuration.Database.DbPoolMaxConnLifeTime)
 	if errt != nil {
 		log.Fatal(errt)
 	}
 	dbconfig.MaxConnLifetime = dbPoolMaxLifeTime
 
 	// Read and parse max connections
-	dbPoolMaxConns := config.Configuration.Database.DbPoolMaxConns
+	dbPoolMaxConns := conf.Configuration.Database.DbPoolMaxConns
 	if dbPoolMaxConns > 0 {
 		dbconfig.MaxConns = int32(dbPoolMaxConns)
 	}

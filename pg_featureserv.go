@@ -37,7 +37,7 @@ import (
 
 	"github.com/CrunchyData/pg_featureserv/ui"
 
-	"github.com/CrunchyData/pg_featureserv/config"
+	"github.com/CrunchyData/pg_featureserv/conf"
 	"github.com/CrunchyData/pg_featureserv/data"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -76,15 +76,15 @@ func main() {
 	}
 
 	if flagVersion {
-		fmt.Printf("%s %s\n", config.AppConfig.Name, config.AppConfig.Version)
+		fmt.Printf("%s %s\n", conf.AppConfig.Name, conf.AppConfig.Version)
 		os.Exit(1)
 	}
 
-	log.Infof("----  %s - Version %s ----------\n", config.AppConfig.Name, config.AppConfig.Version)
+	log.Infof("----  %s - Version %s ----------\n", conf.AppConfig.Name, conf.AppConfig.Version)
 
-	config.InitConfig(flagConfigFilename)
+	conf.InitConfig(flagConfigFilename)
 
-	log.Infof("%s\n", config.Configuration.Metadata.Title)
+	log.Infof("%s\n", conf.Configuration.Metadata.Title)
 
 	if flagTestModeOn {
 		catalogInstance = data.CatMockInstance()
@@ -96,7 +96,7 @@ func main() {
 		log.Info("Running in development mode")
 	}
 	// Commandline over-rides config file for debugging
-	if flagDebugOn || config.Configuration.Server.Debug {
+	if flagDebugOn || conf.Configuration.Server.Debug {
 		log.SetLevel(log.TraceLevel)
 		log.Debugf("Log level = DEBUG\n")
 	}
@@ -105,22 +105,22 @@ func main() {
 
 func serve() {
 
-	confServ := config.Configuration.Server
+	confServ := conf.Configuration.Server
 
 	bindAddress := fmt.Sprintf("%v:%v", confServ.HttpHost, confServ.HttpPort)
 	log.Infof("Serving at %v\n", bindAddress)
-	log.Infof("CORS Allowed Origins: %v\n", config.Configuration.Server.CORSOrigins)
+	log.Infof("CORS Allowed Origins: %v\n", conf.Configuration.Server.CORSOrigins)
 
 	router = initRouter()
 
 	// set CORS handling according to config
-	corsOpt := handlers.AllowedOrigins([]string{config.Configuration.Server.CORSOrigins})
+	corsOpt := handlers.AllowedOrigins([]string{conf.Configuration.Server.CORSOrigins})
 
 	// more "production friendly" timeouts
 	// https://blog.simon-frey.eu/go-as-in-golang-standard-net-http-config-will-break-your-production/#You_should_at_least_do_this_The_easy_path
 	server := &http.Server{
-		ReadTimeout:  time.Duration(config.Configuration.Server.ReadTimeoutSec) * time.Second,
-		WriteTimeout: time.Duration(config.Configuration.Server.WriteTimeoutSec) * time.Second,
+		ReadTimeout:  time.Duration(conf.Configuration.Server.ReadTimeoutSec) * time.Second,
+		WriteTimeout: time.Duration(conf.Configuration.Server.WriteTimeoutSec) * time.Second,
 		Addr:         bindAddress,
 		Handler:      handlers.CompressHandler(handlers.CORS(corsOpt)(router)),
 	}
