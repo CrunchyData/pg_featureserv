@@ -7,18 +7,19 @@ weight: 200
 
 A powerful feature of Postgres is the ability to create
 [user-defined functions](https://www.postgresql.org/docs/current/xfunc.html).
-Functions allow encapulating complex logic behind a simple
-interface (namely that of providing some arguments
-and getting a set of records).
+Functions allow encapsulating complex logic behind a simple
+interface (namely that of providing some input arguments
+and getting output as a set of records).
 This makes them easy to expose via a simple web API.
 
 Functions can execute any data processing that is
 possible to perform with Postgres and PostGIS.
-They can even return non-spatial datasets (which are returned as plain JSON).
+They can return either spatial or non-spatial results
+(which are returned as GeoJSON or plain JSON).
 They thus provide a powerful extension to the capabilities of
 the `pg_featureserv` API.
 
-Potential use cases include:
+Potential use include:
 
 * Query a spatial database table or view with custom SQL
   (which can include things such as special filters or aggregation)
@@ -52,13 +53,16 @@ The example below illustrates
 the basic structure of a spatial set-returning function.
 See the [Examples](/examples/) section for more complex examples.
 
-#### Example of a spatial function with custom SQL
+#### Example of a spatial function
 
 This is about the simplest function example possible.
-It executes a simple select query with a custom filter condition using `LIKE`.
+returns a filtered subset of a table ([ne_50m_admin_0_countries](https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/50m/cultural/ne_50m_admin_0_countries.zip) which is in [EPSG:4326](https://epsg.io/4326)).
+The filter in this case is the first letter of the name.
+
+Note that the `name_prefix` parameter includes a **default value**: this is useful for clients (like the preview interface for this server) that read arbitrary function definitions and need a default value to fill into interface fields.
 
 ```sql
-CREATE OR REPLACE FUNCTION postgisftw.country_by_name(
+CREATE OR REPLACE FUNCTION postgisftw.countries_name(
 	name_prefix text DEFAULT 'A')
 RETURNS TABLE(name text, geom geometry)
 AS $$
@@ -69,22 +73,27 @@ BEGIN
     WHERE t.name ILIKE name_prefix || '%';
 END;
 $$
-LANGUAGE 'plpgsql' STABLE STRICT;
+LANGUAGE 'plpgsql' STABLE PARALLEL SAFE;
+
+COMMENT ON FUNCTION postgisftw.countries_name IS 'Filters the countries table by the initial letters of the name using the "name_prefix" parameter.';
 ```
 
 Key aspects to note are:
 
-* The function is defined in the `postgisftw` schema
-* it has a single input parameter `name_prefix`, with default value 'A'
-* It returns a table (set) of type `(name text, geom geometry)`
+* The function is defined in the `postgisftw` schema.
+* it has a single input parameter `name_prefix`, with the `DEFAULT` value 'A'.
+* It returns a table (set) of type `(name text, geom geometry)`.
 * The function body is a simple `SELECT` query which uses the input parameter as part of a `ILIKE` filter,
-  and returns a column list matching the output table definition
+  and returns a column list matching the output table definition.
+* The function "[volatility](https://www.postgresql.org/docs/current/xfunc-volatility.html)" is declared as `STABLE` because within one transaction context, multiple runs with the same inputs will return the same outputs. It is not marked as `IMMUTABLE` because changes in the base table can change the outputs over time, even for the same inputs.
+* The function is declared as `PARALLEL SAFE` because it doesn't depend on any global state that might get confused by running multiple copies of the function at once.
+
 
 The function can be called via the API by providing a value for the `name_prefix` parameter
 (which could be omitted, due to the presence of a default value):
 
 ```
-http://localhost:9000/functions/country_by_name/items?name_prefix=T
+http://localhost:9000/functions/countries_name/items?name_prefix=T
 ```
 
 The response is a GeoJSON document containing the 13 countries starting with the letter 'T'.
