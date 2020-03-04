@@ -1,16 +1,16 @@
 ---
-title: "Querying Functions"
+title: "Executing Functions"
 date:
 draft: false
 weight: 250
 ---
 
-Functions can be queried to provide sets of features or data.
+Functions can be executed to provide sets of features or data.
 
-## Query Function Features or Data
+## Execute a Function
 
-The path `/functions/{funid}/items` is the basic query to return
-a set of features or data from a function.
+The path `/functions/{funid}/items` is the basic query to execute
+a function and return the set of features or data it produces.
 
 The response from a spatial function is a GeoJSON feature collection containing the result.
 The response from a non-spatial function is a JSON dataset containing the result.
@@ -25,9 +25,16 @@ function to reduce the number of records generated.)
 
 ### Function arguments
 
-`param=value`
+Functions provide query parameters of the form `param=arg-value`
+to provide an argument value for each function parameter.
+Omitted parameters use the default specified in the function definition (if any).
+If a function parameter does not provide a default
+then it must be supplied.
 
-Omitted arguments will use the default specified in the function definition (if any).
+#### Example
+```
+http://localhost:9000/functions/countries_name/items?name_prefix=T
+```
 
 ### Filter by Bounding Box
 
