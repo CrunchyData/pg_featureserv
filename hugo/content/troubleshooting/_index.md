@@ -12,7 +12,7 @@ By default, the log level is set to show errors and warnings only.
 
 To get more information about what is going on behind the scenes, run the server with the `--debug` commandline parameter on
 ```sh
-./pg_fileserv --debug
+./pg_featureserv --debug
 ```
 Or, turn on debugging in the configuration file:
 ```
