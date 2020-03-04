@@ -64,11 +64,14 @@ Note that the `name_prefix` parameter includes a **default value**: this is usef
 ```sql
 CREATE OR REPLACE FUNCTION postgisftw.countries_name(
 	name_prefix text DEFAULT 'A')
-RETURNS TABLE(name text, geom geometry)
+RETURNS TABLE(name text, abbrev text, continent text, geom geometry)
 AS $$
 BEGIN
 	RETURN QUERY
-		SELECT t.name::text, t.geom
+		SELECT t.name::text,
+            t.abbrev::text,
+            t.continent::text,
+            t.geom
     FROM ne.admin_0_countries t
     WHERE t.name ILIKE name_prefix || '%';
 END;

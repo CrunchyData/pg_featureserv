@@ -76,6 +76,8 @@ sets.
 http://localhost:9000/collections/ne.admin_0_countries/items?limit=50&offset=200
 ```
 
+The default page size and the maximum page size
+are set by the configuration parameters `LimitDefault` and `LimitMax`.
 
 ### Ordering
 
