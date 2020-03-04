@@ -26,6 +26,6 @@ if [ "$TARGET" = "docker" ]; then
     fi
 else
     mkdir upload
-    zip -r upload/${PROJECT}_${TAG}_${TARGET}.zip ${BINARY} README.md LICENSE.md config/pg_featureserv.toml assets/
+    zip -r upload/${PROJECT}_${TAG}_${TARGET}.zip ${BINARY} README.md LICENSE.md config/ assets/
 fi
 
