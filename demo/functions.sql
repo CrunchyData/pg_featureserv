@@ -114,3 +114,18 @@ $$
 LANGUAGE 'plpgsql'
 STABLE
 STRICT;
+
+============================================================================
+
+CREATE OR REPLACE FUNCTION postgisftw.country_by_name(
+	name_prefix text DEFAULT 'A')
+RETURNS TABLE(name text, geom geometry)
+AS $$
+BEGIN
+	RETURN QUERY
+		SELECT t.name::text, t.geom
+    FROM ne.admin_0_countries t
+    WHERE t.name ILIKE name_prefix || '%';
+END;
+$$
+LANGUAGE 'plpgsql' STABLE STRICT;
