@@ -9,7 +9,8 @@ weight: 10
 
 There are numerous services available which can be used to serve features, such as [Geoserver](https://geoserver.org), [Mapserver](https://mapserver.org), and [pygeoapi](https://pygeoapi.io/). These applications typically provide the capability to read from multiple data sources
 and generate feature datasets in various formats.
-They tend to be large, complex applications which require significnat expertise to install, configure, secure and tune.
+They tend to be large, complex applications which require significant expertise
+to install, configure, secure and tune.
 
 ## PostGIS-Only
 
