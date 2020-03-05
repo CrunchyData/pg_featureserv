@@ -21,7 +21,7 @@ import (
 	"strings"
 
 	"github.com/CrunchyData/pg_featureserv/api"
-	"github.com/CrunchyData/pg_featureserv/config"
+	"github.com/CrunchyData/pg_featureserv/conf"
 	"github.com/CrunchyData/pg_featureserv/data"
 	"github.com/CrunchyData/pg_featureserv/ui"
 	"github.com/gorilla/mux"
@@ -94,7 +94,7 @@ func appErrorNotFoundFmt(err error, format string, v string) *appError {
 
 func serveURLBase(r *http.Request) string {
 	// Use configuration file settings if we have them
-	configUrl := config.Configuration.Server.UrlBase
+	configUrl := conf.Configuration.Server.UrlBase
 
 	if configUrl != "" {
 		return configUrl + "/"

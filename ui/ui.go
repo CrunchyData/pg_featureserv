@@ -17,7 +17,7 @@ import (
 	"bytes"
 	"html/template"
 
-	"github.com/CrunchyData/pg_featureserv/config"
+	"github.com/CrunchyData/pg_featureserv/conf"
 	"github.com/CrunchyData/pg_featureserv/data"
 	log "github.com/sirupsen/logrus"
 )
@@ -65,8 +65,8 @@ func init() {
 // NewPageData create a page context initialized with globals.
 func NewPageData() *PageData {
 	con := PageData{}
-	con.AppName = config.AppConfig.Name
-	con.AppVersion = config.AppConfig.Version
+	con.AppName = conf.AppConfig.Name
+	con.AppVersion = conf.AppConfig.Version
 	return &con
 }
 
@@ -84,17 +84,17 @@ func loadTemplate(curr *template.Template, filename ...string) *template.Templat
 
 func loadPageTemplate(curr *template.Template, filename string) *template.Template {
 	files := []string{
-		config.Configuration.Server.AssetsPath + "/page.gohtml",
-		config.Configuration.Server.AssetsPath + "/" + filename,
+		conf.Configuration.Server.AssetsPath + "/page.gohtml",
+		conf.Configuration.Server.AssetsPath + "/" + filename,
 	}
 	return loadTemplate(curr, files...)
 }
 
 func loadMapPageTemplate(curr *template.Template, filename string) *template.Template {
 	files := []string{
-		config.Configuration.Server.AssetsPath + "/page.gohtml",
-		config.Configuration.Server.AssetsPath + "/map_script.gohtml",
-		config.Configuration.Server.AssetsPath + "/" + filename,
+		conf.Configuration.Server.AssetsPath + "/page.gohtml",
+		conf.Configuration.Server.AssetsPath + "/map_script.gohtml",
+		conf.Configuration.Server.AssetsPath + "/" + filename,
 	}
 	return loadTemplate(curr, files...)
 }
@@ -108,7 +108,7 @@ func PageConformance() *template.Template {
 	return htmlTemp.conformance
 }
 func PageAPI() *template.Template {
-	htmlTemp.api = loadTemplate(htmlTemp.api, config.Configuration.Server.AssetsPath+"/api.gohtml")
+	htmlTemp.api = loadTemplate(htmlTemp.api, conf.Configuration.Server.AssetsPath+"/api.gohtml")
 	return htmlTemp.api
 }
 func PageCollections() *template.Template {
@@ -137,10 +137,10 @@ func PageFunction() *template.Template {
 }
 func PageFunctionItems() *template.Template {
 	files := []string{
-		config.Configuration.Server.AssetsPath + "/page.gohtml",
-		config.Configuration.Server.AssetsPath + "/items.gohtml",
-		config.Configuration.Server.AssetsPath + "/map_script.gohtml",
-		config.Configuration.Server.AssetsPath + "/fun_script.gohtml",
+		conf.Configuration.Server.AssetsPath + "/page.gohtml",
+		conf.Configuration.Server.AssetsPath + "/items.gohtml",
+		conf.Configuration.Server.AssetsPath + "/map_script.gohtml",
+		conf.Configuration.Server.AssetsPath + "/fun_script.gohtml",
 	}
 	htmlTemp.functionItems = loadTemplate(htmlTemp.functionItems, files...)
 	return htmlTemp.functionItems
@@ -149,7 +149,7 @@ func PageFunctionItems() *template.Template {
 // RenderHTML tbd
 func RenderHTML(temp *template.Template, content interface{}, context interface{}) ([]byte, error) {
 	bodyData := map[string]interface{}{
-		"config":  config.Configuration,
+		"config":  conf.Configuration,
 		"context": context,
 		"data":    content}
 	contentBytes, err := renderTemplate(temp, bodyData)

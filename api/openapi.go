@@ -14,7 +14,7 @@ package api
 */
 
 import (
-	"github.com/CrunchyData/pg_featureserv/config"
+	"github.com/CrunchyData/pg_featureserv/conf"
 	"github.com/getkin/kin-openapi/openapi3"
 )
 
@@ -105,8 +105,8 @@ func GetAPIContent() *openapi3.Swagger {
 				Value: &openapi3.Schema{
 					Type:    "integer",
 					Min:     openapi3.Float64Ptr(1),
-					Max:     openapi3.Float64Ptr(float64(config.Configuration.Paging.LimitMax)),
-					Default: config.Configuration.Paging.LimitDefault,
+					Max:     openapi3.Float64Ptr(float64(conf.Configuration.Paging.LimitMax)),
+					Default: conf.Configuration.Paging.LimitDefault,
 				},
 			},
 			AllowEmptyValue: false,
@@ -122,7 +122,7 @@ func GetAPIContent() *openapi3.Swagger {
 				Value: &openapi3.Schema{
 					Type: "integer",
 					Min:  openapi3.Float64Ptr(0),
-					//Max:     openapi3.Float64Ptr(float64(config.Configuration.Paging.LimitMax)),
+					//Max:     openapi3.Float64Ptr(float64(conf.Configuration.Paging.LimitMax)),
 					Default: 0,
 				},
 			},
@@ -132,9 +132,9 @@ func GetAPIContent() *openapi3.Swagger {
 	return &openapi3.Swagger{
 		OpenAPI: "3.0.0",
 		Info: openapi3.Info{
-			Title:       config.Configuration.Metadata.Title,
-			Description: config.Configuration.Metadata.Description,
-			Version:     config.AppConfig.Version,
+			Title:       conf.Configuration.Metadata.Title,
+			Description: conf.Configuration.Metadata.Description,
+			Version:     conf.AppConfig.Version,
 			License: &openapi3.License{
 				Name: "Apache 2.0",
 				URL:  "http://www.apache.org/licenses/LICENSE-2.0",

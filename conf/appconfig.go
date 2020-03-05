@@ -1,4 +1,4 @@
-package config
+package conf
 
 /*
  Copyright 2019 Crunchy Data Solutions, Inc.
