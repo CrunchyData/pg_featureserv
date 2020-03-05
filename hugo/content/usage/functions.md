@@ -10,7 +10,7 @@ A powerful feature of Postgres is the ability to create
 Functions allow encapsulating complex logic behind a simple
 interface (namely that of providing some input arguments
 and getting output as a set of records).
-This makes them easy to expose via a simple web API.
+This makes them easy to publish via a simple web API.
 
 Functions can execute any data processing that is
 possible to perform with Postgres and PostGIS.
@@ -27,13 +27,14 @@ Potential use include:
 * Generate spatial data controlled by a set of parameters
 * Expose a geometric computation,
   by accepting a geometric input value and returning a single record containing the result
+* Functions can even be used to update data (as long as appropriate security is in place).
 
-## Expose Database Functions
+## Publish Database Functions
 
-The service is able to expose any function which returns a set or a `TABLE`
+The service is able to publish any function which returns a set or a `TABLE`
 (see the Postgres manual section on [set-returning functions](https://www.postgresql.org/docs/current/xfunc-sql.html#XFUNC-SQL-FUNCTIONS-RETURNING-SET).)
 Because there are potentially many functions in a Postgres instance,
-the service only exposes functions in the `postgisftw` schema.
+the service only publishes functions in the `postgisftw` schema.
 
 A function accepts zero or more input parameters.
 An input parameter can be of any Postgres type

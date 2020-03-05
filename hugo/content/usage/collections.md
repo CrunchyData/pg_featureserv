@@ -5,7 +5,7 @@ draft: false
 weight: 100
 ---
 
-Following the OCG Features information model, the service API exposes
+Following the OCG Features information model, the service API s
 PostGIS tables and views as **feature collections**.
 
 The available feature collections can be listed.
@@ -14,9 +14,9 @@ and can be queried to return datasets of features.
 It is also possible to query individual features in tables which have
 defined primary keys.
 
-## Expose Tables and Views as Feature Collections
+## Publish Tables and Views as Feature Collections
 
-`pg_featureserv` exposes all spatial tables and views which are visible in the database.
+`pg_featureserv` publishes all spatial tables and views which are visible in the database.
 
 Spatial tables and views are those which:
 
@@ -79,8 +79,7 @@ COMMENT ON COLUMN mytable.address IS 'The address of the Parcel';
 ## List Feature Collections
 
 The path `/collections` returns a JSON document
-containing a list of the feature collections
-available in the service.
+containing a list of the feature collections published by the service.
 
 #### Example
 ```

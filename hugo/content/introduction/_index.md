@@ -23,9 +23,9 @@ By targetting PostGIS as the sole data provider, `pg_featureserv` gains signific
 
 * **Full SQL power.** The server relies on the database to conduct all data operations, including converting geometry records into GeoJSON. Since the database is optimized to perform operations such as filtering and sorting, this increases your application's performance.
 
-    By using functions as data sources, the server can run any SQL at all to generate features. Any data processing, feature filtering, or record aggregation that you can express in SQL can be exposed as feature datasets. Function parameters are also exposed as URL query parameters, which allows dynamically changing the data returned.
+    By using functions as data sources, the server can run any SQL at all to generate features. Any data processing, feature filtering, or record aggregation that you can express in SQL can be published as feature datasets. Function parameters are also exposed as URL query parameters, which allows dynamically changing the data returned.
 
-    Using the full power of SQL means that it is easy to expose any already-developed database functionality via the service, and the learning curve for developers can be minimized.
+    Using the full power of SQL means that it is easy to publish any existing database functionality via the service, and the learning curve for developers can be minimized.
 
 * **Database security model.** You can restrict access to tables and functions using standard database access control. This means you can also use advanced access control techniques like row-level security to dynamically filter access based on the login role.
 
