@@ -17,7 +17,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
 	"sort"
 	"strings"
 	"text/template"
@@ -88,7 +87,13 @@ func dbConnect() *pgxpool.Pool {
 }
 
 func dbConfig() *pgxpool.Config {
-	dbconfig, err := pgxpool.ParseConfig(os.Getenv(conf.AppConfig.EnvDBURL))
+	dbconf := conf.Configuration.Database.DbConnection
+	// disallow blank config for safety
+	if dbconf == "" {
+		log.Fatal("Blank DbConnection is disallowed for security reasons")
+	}
+
+	dbconfig, err := pgxpool.ParseConfig(conf.Configuration.Database.DbConnection)
 	if err != nil {
 		log.Fatal(err)
 	}
