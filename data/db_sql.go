@@ -84,8 +84,9 @@ SELECT
 	coalesce(d.description, '') AS description,
 	aa.arginnames AS input_names,
 	aa.argintypes AS input_types,
-    coalesce(string_to_array(regexp_replace(pg_get_expr(p.proargdefaults, 0::Oid), '''([a-zA-Z0-9_]+)''::text', '\1'),', '), ARRAY[]::text[]) AS input_defaults,
-    argoutnames AS output_names,
+	coalesce(string_to_array(regexp_replace(pg_get_expr(p.proargdefaults, 0::Oid),
+		'''([a-zA-Z0-9_\-\.]+)''::\w+', '\1', 'g'),', '), ARRAY[]::text[]) AS argdefaults,
+	argoutnames AS output_names,
     argouttypes AS output_types
 FROM pg_proc p
 JOIN pg_namespace n ON (p.pronamespace = n.oid)
