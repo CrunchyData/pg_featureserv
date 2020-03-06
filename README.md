@@ -64,7 +64,7 @@ go build
 
 * Set the environment variable `DATABASE_URL` with a Postgres [connection string](https://www.postgresql.org/docs/12/libpq-connect.html#LIBPQ-CONNSTRING)
   * Example: `export DATABASE_URL="host=localhost user=postgres"`
-* Edit the configuration file `config/pg_featureserv.toml`, located in the application directory
+* Edit the configuration file `pg_featureserv.toml`, located in `./config`, `/config`, or `/etc`
 
 ## Running the service
 
