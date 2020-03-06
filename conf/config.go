@@ -88,12 +88,6 @@ func InitConfig(configFilename string) {
 	// --- defaults
 	setDefaultConfig()
 
-	// Read environment configuration first
-	if dbUrl := os.Getenv(AppConfig.EnvDBURL); dbUrl != "" {
-		log.Debugf("Using database connection info in %v")
-		viper.Set("DbConnection", dbUrl)
-	}
-
 	isExplictConfigFile := configFilename != ""
 	confFile := AppConfig.Name
 	if configFilename != "" {
@@ -117,9 +111,16 @@ func InitConfig(configFilename string) {
 			log.Fatal(errrConfRead)
 		}
 	}
+
 	log.Infof("Using config file: %s", confFile)
 	viper.Unmarshal(&Configuration)
 
+	// Read environment configuration first
+	if dbUrl := os.Getenv(AppConfig.EnvDBURL); dbUrl != "" {
+		log.Infof("Using database connection info in %v", AppConfig.EnvDBURL)
+		Configuration.Database.DbConnection = dbUrl
+	}
+
 	//fmt.Printf("Viper: %v\n", viper.AllSettings())
-	fmt.Printf("Config: %v\n", Configuration)
+	//fmt.Printf("Config: %v\n", Configuration)
 }
