@@ -69,10 +69,10 @@ proargs AS (
 ),
 proargarrays AS (
 	SELECT p.oid,
-		array_agg(p.argname) FILTER (WHERE p.argmode = 'i') AS arginnames,
-		array_agg(t.typname) FILTER (WHERE p.argmode = 'i') AS argintypes,
-		array_agg(p.argname) FILTER (WHERE p.argmode IN ('o','t')) AS argoutnames,
-		array_agg(t.typname) FILTER (WHERE p.argmode IN ('o','t')) AS argouttypes
+		array_agg(p.argname ORDER BY argorder) FILTER (WHERE p.argmode = 'i') AS arginnames,
+		array_agg(t.typname ORDER BY argorder) FILTER (WHERE p.argmode = 'i') AS argintypes,
+		array_agg(p.argname ORDER BY argorder) FILTER (WHERE p.argmode IN ('o','t')) AS argoutnames,
+		array_agg(t.typname ORDER BY argorder) FILTER (WHERE p.argmode IN ('o','t')) AS argouttypes
 	FROM proargs p
 	JOIN pg_type t ON (p.argtype = t.oid)
 	GROUP BY 1
