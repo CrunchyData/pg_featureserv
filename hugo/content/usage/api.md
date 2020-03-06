@@ -7,7 +7,7 @@ weight: 50
 
 `pg_featureserv` provides a HTTP-based RESTful web service API
 to access metadata about and data from
-the PostGIS objects it exposes.
+the PostGIS objects it publishes
 This section discusses general aspects of the API.
 
 ## OGC API - Features

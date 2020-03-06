@@ -15,6 +15,7 @@ package conf
 
 import (
 	"fmt"
+	"os"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -87,6 +88,12 @@ func InitConfig(configFilename string) {
 	// --- defaults
 	setDefaultConfig()
 
+	// Read environment configuration first
+	if dbUrl := os.Getenv(AppConfig.EnvDBURL); dbUrl != "" {
+		log.Debugf("Using database connection info in %v")
+		viper.Set("DbConnection", dbUrl)
+	}
+
 	isExplictConfigFile := configFilename != ""
 	confFile := AppConfig.Name
 	if configFilename != "" {
@@ -114,5 +121,5 @@ func InitConfig(configFilename string) {
 	viper.Unmarshal(&Configuration)
 
 	//fmt.Printf("Viper: %v\n", viper.AllSettings())
-	//fmt.Printf("Config: %v\n", Configuration)
+	fmt.Printf("Config: %v\n", Configuration)
 }

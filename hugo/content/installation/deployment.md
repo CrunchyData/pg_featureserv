@@ -9,10 +9,12 @@ weight: 300
 
 The service can be run with minimal configuration.
 Only the database connection information is required.
-(Even that can be omitted
-if run with the `--test` option.)
+(The only situtation when this is not needed is when
+running with the `--test` option.)
+
 The database connection information can be provided in an environment variable
 `DATABASE_URL` containing a Postgres [connection string](https://www.postgresql.org/docs/12/libpq-connect.html#LIBPQ-CONNSTRING).
+It can also be provided in the configuration file `DbConnection` setting.
 
 ### Linux or OSX
 ```sh

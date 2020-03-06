@@ -21,7 +21,7 @@ A user interface for the service API is available at the path `/api.html`.
 
 ## List Feature Collections
 
-The path `/collections.html` shows a list of the feature collections exposed by the service.
+The path `/collections.html` shows a list of the feature collections published by the service.
 
 ## Show Feature Collection Metadata
 
@@ -42,7 +42,7 @@ Any applicable query parameters may be appended to the URL.
 
 ## List Functions
 
-The path `/functions.html` shows a list of the functions exposed by the service.
+The path `/functions.html` shows a list of the functions published by the service.
 
 ## Show Function Metadata
 

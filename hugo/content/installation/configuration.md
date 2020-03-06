@@ -23,7 +23,7 @@ Where possible, the program autodetects values such as the `UrlBase`.
 
 The only required configuration is the `DbConnection` setting,
 if not provided in the environment variable `DATABASE_URL`.
-(Even this can be omitted if the server is run with the `--test` flag.)
+(This is not required if the server is run with the `--test` flag.)
 
 The default configuration file is shown below.
 

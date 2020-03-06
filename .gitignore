@@ -3,3 +3,4 @@ pg_featureserv.exe
 launch.json
 docs/
 public/
+config/pg_featureserv.toml
