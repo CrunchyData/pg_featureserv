@@ -82,6 +82,7 @@ go build
 * `--debug` - set logging level to TRACE (can also be set in config file)
 * `--devel` - run in development mode (e.g. HTML templates reloaded every query)
 * `--test` - run in test mode, with an internal catalog of tables and data
+* `--version` - display the version number
 
 ## Requests Overview
 
@@ -89,7 +90,7 @@ Features are identified by a _collection name_ and _feature id_ pair.
 
 The default response is in JSON/GeoJSON format.
 Append `.html` to the request path to see the UI page for the resource.
-In a web browser append `.json` to the path to override the browser `Accept` header and request a JSON response.
+In a web browser, to request a JSON response append `.json` to the path (which overrides the browser `Accept` header).
 
 The example requests assume that the service is running locally and configured
 to listen on port 9000.
