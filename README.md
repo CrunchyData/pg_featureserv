@@ -1,3 +1,7 @@
+<p align="center">
+  <a href="https://access.crunchydata.com/documentation/pg_tileserv/latest/"><img width="180" height="180" src="./hugo/static/crunchy-spatial-logo.png?raw=true" /></a>
+</p>
+
 # pg_featureserv
 
 [![Travis Build Status][travisbuild]](https://travis-ci.org/CrunchyData/pg_featureserv)
