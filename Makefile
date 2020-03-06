@@ -2,6 +2,10 @@
 PROGRAM := pg_featureserv
 CONTAINER := pramsey/$(PROGRAM)
 
+RM = /bin/rm
+CP = /bin/cp
+MKDIR = /bin/mkdir
+
 .PHONY: all check clean test docker install uninstall
 
 GOFILES := $(shell find . -type f -name '*.go')
