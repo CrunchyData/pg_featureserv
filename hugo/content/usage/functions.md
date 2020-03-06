@@ -36,17 +36,17 @@ The service is able to publish any function which returns a set or a `TABLE`
 Because there are potentially many functions in a Postgres instance,
 the service only publishes functions in the `postgisftw` schema.
 
-A function accepts zero or more input parameters.
+A function specifies zero or more input parameters.
 An input parameter can be of any Postgres type
-which has a cast from text representation.  This include the PostGIS geometry
+which has a cast from a text representation.  This includes the PostGIS geometry
 and geography types, which support text representations of
 [WKT or WKB](https://postgis.net/docs/manual-3.0/using_postgis_dbmanagement.html#OpenGISWKBWKT).
-Input parameter names are used as query parameters,
-so you should avoid using names which are API qeuery parameters.
+Input parameter names are exposed as query parameters,
+so you should avoid using names which are existing API qeuery parameters.
 
 A function can return a set of records containing one or more
 columns, of any Postgres type.
-A **spatial function** is one which returns a column of type `geoemtry` or `geography`.
+A **spatial function** is one which returns a column of type `geometry` or `geography`.
 Output from spatial functions is returned as GeoJSON datasets.
 The output from non-spatial functions is returned as JSON datasets.
 
@@ -57,10 +57,12 @@ See the [Examples](/examples/) section for more complex examples.
 #### Example of a spatial function
 
 This is about the simplest function example possible.
-returns a filtered subset of a table ([ne_50m_admin_0_countries](https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/50m/cultural/ne_50m_admin_0_countries.zip) which is in [EPSG:4326](https://epsg.io/4326)).
-The filter in this case is the first letter of the name.
+It returns a filtered subset of a table ([ne_50m_admin_0_countries](https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/50m/cultural/ne_50m_admin_0_countries.zip) which is in [EPSG:4326](https://epsg.io/4326)).
+The filter in this case is the first letters of the country name.
 
-Note that the `name_prefix` parameter includes a **default value**: this is useful for clients (like the preview interface for this server) that read arbitrary function definitions and need a default value to fill into interface fields.
+Note that the `name_prefix` parameter includes a **default value**: this is useful for clients
+(like the preview interface for this service)
+that read arbitrary function definitions and need a default value to fill into interface fields.
 
 ```sql
 CREATE OR REPLACE FUNCTION postgisftw.countries_name(
@@ -89,9 +91,8 @@ Key aspects to note are:
 * It returns a table (set) of type `(name text, geom geometry)`.
 * The function body is a simple `SELECT` query which uses the input parameter as part of a `ILIKE` filter,
   and returns a column list matching the output table definition.
-* The function "[volatility](https://www.postgresql.org/docs/current/xfunc-volatility.html)" is declared as `STABLE` because within one transaction context, multiple runs with the same inputs will return the same outputs. It is not marked as `IMMUTABLE` because changes in the base table can change the outputs over time, even for the same inputs.
-* The function is declared as `PARALLEL SAFE` because it doesn't depend on any global state that might get confused by running multiple copies of the function at once.
-
+* The function "[volatility](https://www.postgresql.org/docs/current/xfunc-volatility.html)" is declared as `STABLE` because within a transaction context multiple calls with the same inputs will return the same outputs. It is not marked as `IMMUTABLE` because changes in the base table can change the outputs over time, even for the same inputs.
+* The function is declared as `PARALLEL SAFE` because it doesn't depend on any state that might be altered by making multiple concurrent calls to the function.
 
 The function can be called via the API by providing a value for the `name_prefix` parameter
 (which could be omitted, due to the presence of a default value):
@@ -128,7 +129,9 @@ A list of links provide URLs for accessing:
 
 The path `/functions/{funid}` returns a JSON object describing
 the metadata for a database function.
-The `{funid}` is the name of the function.
+`{funid}` is the name of the function.
+It is not schema-qualified, because functions
+are published from only one schema.
 
 #### Example
 ```
