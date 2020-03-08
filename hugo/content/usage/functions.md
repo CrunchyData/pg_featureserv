@@ -32,7 +32,8 @@ Potential use include:
 ## Publish Database Functions
 
 The service is able to publish any function which returns a set of records
-or (equivalently) a `TABLE`
+using the return type `SETOF record`
+or the equivalent and more standard `TABLE`
 (see the Postgres manual section on [set-returning functions](https://www.postgresql.org/docs/current/xfunc-sql.html#XFUNC-SQL-FUNCTIONS-RETURNING-SET).)
 Because there are usually many functions in a Postgres database,
 the service only publishes functions defined in the `postgisftw` schema.
@@ -49,19 +50,20 @@ A function must return a set of records containing one or more
 columns, of any Postgres type.
 A **spatial function** is one which returns a column of type `geometry` or `geography`.
 Output from spatial functions is returned as GeoJSON datasets.
-The output from non-spatial functions is returned as JSON datasets.
+Output from non-spatial functions is returned as JSON datasets.
 
 The example below illustrates
 the basic structure of a spatial set-returning function.
-See the [Examples](/examples/) section for more complex examples.
+See the [Examples](/examples/) section for further examples.
 
 #### Example of a spatial function
 
-This is about the simplest function example possible.
+This example is about the simplest possible spatial function,
+but it illustrates the most important concepts.
 It returns a filtered subset of a table ([ne_50m_admin_0_countries](https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/50m/cultural/ne_50m_admin_0_countries.zip) which is in [EPSG:4326](https://epsg.io/4326)).
 The filter in this case is the first letters of the country name.
 
-Note that the `name_prefix` parameter includes a **default value**: this is useful for clients
+The `name_prefix` parameter includes a **default value**: this is useful for clients
 (like the preview interface for this service)
 that read arbitrary function definitions and need a default value to fill into interface fields.
 
@@ -85,7 +87,7 @@ LANGUAGE 'plpgsql' STABLE PARALLEL SAFE;
 COMMENT ON FUNCTION postgisftw.countries_name IS 'Filters the countries table by the initial letters of the name using the "name_prefix" parameter.';
 ```
 
-Key aspects to note are:
+Aspects to note are:
 
 * The function is defined in the `postgisftw` schema.
 * it has a single input parameter `name_prefix`, with the `DEFAULT` value 'A'.
