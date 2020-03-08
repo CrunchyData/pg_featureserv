@@ -31,10 +31,11 @@ Potential use include:
 
 ## Publish Database Functions
 
-The service is able to publish any function which returns a set or a `TABLE`
+The service is able to publish any function which returns a set of records
+or (equivalently) a `TABLE`
 (see the Postgres manual section on [set-returning functions](https://www.postgresql.org/docs/current/xfunc-sql.html#XFUNC-SQL-FUNCTIONS-RETURNING-SET).)
-Because there are potentially many functions in a Postgres instance,
-the service only publishes functions in the `postgisftw` schema.
+Because there are usually many functions in a Postgres database,
+the service only publishes functions defined in the `postgisftw` schema.
 
 A function specifies zero or more input parameters.
 An input parameter can be of any Postgres type
@@ -44,7 +45,7 @@ and geography types, which support text representations of
 Input parameter names are exposed as query parameters,
 so you should avoid using names which are existing API qeuery parameters.
 
-A function can return a set of records containing one or more
+A function must return a set of records containing one or more
 columns, of any Postgres type.
 A **spatial function** is one which returns a column of type `geometry` or `geography`.
 Output from spatial functions is returned as GeoJSON datasets.
