@@ -144,11 +144,11 @@ func (cat *catalogDB) TableFeatures(name string, param *QueryParam) ([]string, e
 		return nil, err
 	}
 	cols := param.Columns
-	sql := sqlFeatures(tbl, param)
+	sql, argValues := sqlFeatures(tbl, param)
 	log.Debug("TableFeatures: " + sql)
 	idColIndex := indexOfName(cols, tbl.IDColumn)
 
-	features, err := readFeatures(cat.dbconn, sql, idColIndex, cols)
+	features, err := readFeaturesWithArgs(cat.dbconn, sql, argValues, idColIndex, cols)
 	return features, err
 }
 

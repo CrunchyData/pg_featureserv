@@ -23,6 +23,7 @@ import (
 	"github.com/CrunchyData/pg_featureserv/api"
 	"github.com/CrunchyData/pg_featureserv/conf"
 	"github.com/CrunchyData/pg_featureserv/data"
+	log "github.com/sirupsen/logrus"
 )
 
 func parseRequestParams(r *http.Request) (api.RequestParam, error) {
@@ -281,4 +282,34 @@ func parseTransformFun(def string) data.TransformFunction {
 	// TODO: harden this by checking arg is a valid number
 	// TODO: have whitelist for function names?
 	return data.TransformFunction{Name: name, Arg: args}
+}
+
+// parseFilter creates a filter list from applicable query parameters
+func parseFilter(paramMap map[string]string, colNameMap map[string]string) []*data.FilterCond {
+	var conds []*data.FilterCond
+	for name, val := range paramMap {
+		log.Debugf("testing request param %v", name)
+		if api.IsParameterReservedName(name) {
+			continue
+		}
+		if _, ok := colNameMap[name]; ok {
+			cond := &data.FilterCond{Name: name, Value: val}
+			conds = append(conds, cond)
+			log.Debugf("Adding filter %v = %v ", name, val)
+		}
+	}
+	return conds
+}
+
+func createQueryParams(requestParam *api.RequestParam, colNames []string) *data.QueryParam {
+	param := data.QueryParam{
+		Limit:         requestParam.Limit,
+		Offset:        requestParam.Offset,
+		Bbox:          requestParam.Bbox,
+		OrderBy:       requestParam.OrderBy,
+		Precision:     requestParam.Precision,
+		TransformFuns: requestParam.TransformFuns,
+	}
+	param.Columns = normalizePropNames(requestParam.Properties, colNames)
+	return &param
 }

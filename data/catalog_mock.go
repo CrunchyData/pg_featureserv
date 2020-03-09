@@ -126,21 +126,14 @@ func (cat *CatalogMock) TableFeatures(name string, param *QueryParam) ([]string,
 		// table not found - indicated by nil value returned
 		return nil, nil
 	}
-	start := 0
-	end := len(features) - 1
-	if param.Limit < len(features) {
-		start = param.Offset
-		end = param.Offset + param.Limit - 1
-		if end >= len(features) {
-			end = len(features) - 1
-		}
-	}
+	featFilt := doFilter(features, param.Filter)
+	featuresLim := doLimit(featFilt, param.Limit, param.Offset)
 	// handle empty property list
 	propNames := cat.TableDefs[0].Columns
 	if len(param.Columns) > 0 {
 		propNames = param.Columns
 	}
-	return featuresToJSON(features, start, end, propNames), nil
+	return featuresToJSON(featuresLim, propNames), nil
 }
 
 func (cat *CatalogMock) TableFeature(name string, id string, param *QueryParam) (string, error) {
@@ -229,7 +222,7 @@ func makeFeatureMockPoint(id int, x float64, y float64) *featureMock {
 	geomStr := fmt.Sprintf(geomFmt, x, y)
 
 	idstr := strconv.Itoa(id)
-	feat := featureMock{idstr, geomStr, "propA", id, "propC", 999}
+	feat := featureMock{idstr, geomStr, "propA", id, "propC", id % 10}
 	return &feat
 }
 
@@ -267,11 +260,46 @@ func (fm *featureMock) getProperty(name string) (interface{}, error) {
 	return nil, fmt.Errorf("Unknown property: %v", name)
 }
 
-func featuresToJSON(features []*featureMock, start int, end int, propNames []string) []string {
-	n := end - start + 1
+func doFilter(features []*featureMock, filter []*FilterCond) []*featureMock {
+	var result []*featureMock
+	for _, feat := range features {
+		if isFilterMatches(feat, filter) {
+			result = append(result, feat)
+		}
+	}
+	return result
+}
+
+func isFilterMatches(feature *featureMock, filter []*FilterCond) bool {
+	for _, cond := range filter {
+		val, _ := feature.getProperty(cond.Name)
+		valStr := fmt.Sprintf("%v", val)
+		if cond.Value != valStr {
+			return false
+		}
+	}
+	return true
+}
+
+func doLimit(features []*featureMock, limit int, offset int) []*featureMock {
+	start := 0
+	end := len(features)
+	// handle limit/offset (offset is only respected if limit present)
+	if limit < len(features) {
+		start = offset
+		end = offset + limit
+		if end >= len(features) {
+			end = len(features)
+		}
+	}
+	return features[start:end]
+}
+
+func featuresToJSON(features []*featureMock, propNames []string) []string {
+	n := len(features)
 	featJSON := make([]string, n)
 	for i := 0; i < n; i++ {
-		featJSON[i] = features[start+i].toJSON(propNames)
+		featJSON[i] = features[i].toJSON(propNames)
 	}
 	return featJSON
 }

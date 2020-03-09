@@ -58,13 +58,17 @@ type Ordering struct {
 	IsDesc bool // false = ASC (default), true = DESC
 }
 
-type ParamNameVal map[string]string
+type FilterCond struct {
+	Name  string
+	Value string
+}
 
 // QueryParam holds the optional parameters for a data query
 type QueryParam struct {
 	Limit  int
 	Offset int
 	Bbox   *Extent
+	Filter []*FilterCond
 	// Columns is the list of columns to return
 	Columns       []string
 	OrderBy       []Ordering

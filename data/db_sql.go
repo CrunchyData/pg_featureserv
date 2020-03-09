@@ -97,13 +97,15 @@ ORDER BY id`
 
 const sqlFmtFeatures = "SELECT %v %v FROM %v %v %v LIMIT %v OFFSET %v;"
 
-func sqlFeatures(tbl *Table, param *QueryParam) string {
+func sqlFeatures(tbl *Table, param *QueryParam) (string, []interface{}) {
 	geomCol := sqlGeomCol(tbl.GeometryColumn, param)
 	propCols := sqlColList(param.Columns, tbl.DbTypes, true)
-	sqlWhere := sqlBBoxFilter(tbl, param)
+	bboxFilter := sqlBBoxFilter(tbl, param.Bbox)
+	attrFilter, attrVals := sqlAttrFilter(param.Filter)
+	sqlWhere := sqlWhere(bboxFilter, attrFilter)
 	sqlOrderBy := sqlOrderBy(param.OrderBy)
 	sql := fmt.Sprintf(sqlFmtFeatures, geomCol, propCols, tbl.ID, sqlWhere, sqlOrderBy, param.Limit, param.Offset)
-	return sql
+	return sql, attrVals
 }
 
 // sqlColList creates a comma-separated column list, or blank if no columns
@@ -144,26 +146,53 @@ func sqlFeature(tbl *Table, param *QueryParam) string {
 	return sql
 }
 
-const sqlFmtBBoxFilter = " WHERE ST_Intersects(%v, ST_Transform( ST_MakeEnvelope(%v, %v, %v, %v, 4326), %v)) "
+func sqlWhere(cond1 string, cond2 string) string {
+	var condList []string
+	if len(cond1) > 0 {
+		condList = append(condList, cond1)
+	}
+	if len(cond2) > 0 {
+		condList = append(condList, cond2)
+	}
+	where := strings.Join(condList, " AND ")
+	if len(where) > 0 {
+		where = " WHERE " + where
+	}
+	return where
+}
 
-func sqlBBoxFilter(tbl *Table, param *QueryParam) string {
-	if param.Bbox == nil {
+func sqlAttrFilter(filterConds []*FilterCond) (string, []interface{}) {
+	var vals []interface{}
+	var exprItems []string
+	for i, cond := range filterConds {
+		sqlCond := fmt.Sprintf("%v = $%v", cond.Name, i+1)
+		exprItems = append(exprItems, sqlCond)
+		vals = append(vals, cond.Value)
+	}
+	sql := strings.Join(exprItems, " AND ")
+	return sql, vals
+}
+
+const sqlFmtBBoxFilter = " ST_Intersects(%v, ST_Transform( ST_MakeEnvelope(%v, %v, %v, %v, 4326), %v)) "
+
+func sqlBBoxFilter(tbl *Table, bbox *Extent) string {
+	if bbox == nil {
 		return ""
 	}
 	sql := fmt.Sprintf(sqlFmtBBoxFilter, tbl.GeometryColumn,
-		param.Bbox.Minx, param.Bbox.Miny, param.Bbox.Maxx, param.Bbox.Maxy,
+		bbox.Minx, bbox.Miny, bbox.Maxx, bbox.Maxy,
 		tbl.Srid)
 	return sql
 }
 
-const sqlFmtBBoxGeoFilter = " WHERE ST_Intersects(%v, ST_MakeEnvelope(%v, %v, %v, %v, 4326)) "
+const sqlFmtBBoxGeoFilter = " ST_Intersects(%v, ST_MakeEnvelope(%v, %v, %v, %v, 4326)) "
 
-func sqlBBoxGeoFilter(geomCol string, param *QueryParam) string {
-	if param.Bbox == nil {
+func sqlBBoxGeoFilter(geomCol string, bbox *Extent) string {
+	if bbox == nil {
 		return ""
 	}
 	sql := fmt.Sprintf(sqlFmtBBoxGeoFilter, geomCol,
-		param.Bbox.Minx, param.Bbox.Miny, param.Bbox.Maxx, param.Bbox.Maxy)
+		bbox.Minx, bbox.Miny, bbox.Maxx, bbox.Maxy)
 	return sql
 }
 
@@ -185,6 +214,7 @@ func sqlOrderBy(ordering []Ordering) string {
 	if len(ordering) <= 0 {
 		return ""
 	}
+	// TODO: support more than one ordering
 	col := ordering[0].Name
 	dir := ""
 	if ordering[0].IsDesc {
@@ -210,7 +240,8 @@ func sqlGeomFunction(fn *Function, args map[string]string, propCols []string, pa
 	sqlArgs, argVals := sqlFunctionArgs(fn, args)
 	sqlGeomCol := sqlGeomCol(fn.GeometryColumn, param)
 	sqlPropCols := sqlColList(propCols, fn.Types, true)
-	sqlWhere := sqlBBoxGeoFilter(fn.GeometryColumn, param)
+	bboxFilter := sqlBBoxGeoFilter(fn.GeometryColumn, param.Bbox)
+	sqlWhere := sqlWhere(bboxFilter, "")
 	sqlOrderBy := sqlOrderBy(param.OrderBy)
 	sql := fmt.Sprintf(sqlFmtGeomFunction, sqlGeomCol, sqlPropCols, fn.Schema, fn.Name, sqlArgs, sqlWhere, sqlOrderBy, param.Limit)
 	return sql, argVals

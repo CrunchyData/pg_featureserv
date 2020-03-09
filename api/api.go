@@ -56,6 +56,31 @@ const (
 	GeoJSONFeatureCollection = "FeatureCollection"
 )
 
+var ParamReservedNames = []string{
+	ParamLimit,
+	ParamOffset,
+	ParamBbox,
+	ParamOrderBy,
+	ParamPrecision,
+	ParamProperties,
+	ParamTransform,
+}
+
+var ParamReservedNamesMap = makeSet(ParamReservedNames)
+
+func makeSet(names []string) map[string]string {
+	outMap := make(map[string]string)
+	for _, s := range names {
+		outMap[s] = s
+	}
+	return outMap
+}
+
+func IsParameterReservedName(name string) bool {
+	_, ok := ParamReservedNamesMap[name]
+	return ok
+}
+
 // RootInfo content at root
 type RootInfo struct {
 	Title       string  `json:"title"`

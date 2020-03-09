@@ -260,6 +260,7 @@ func handleCollectionItems(w http.ResponseWriter, r *http.Request) *appError {
 		return appErrorNotFoundFmt(err1, api.ErrMsgCollectionNotFound, name)
 	}
 	param := createQueryParams(&reqParam, tbl.Columns)
+	param.Filter = parseFilter(reqParam.Values, tbl.DbTypes)
 
 	switch format {
 	case api.FormatJSON:

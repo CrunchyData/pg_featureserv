@@ -153,6 +153,42 @@ func TestCollectionItemsResponse(t *testing.T) {
 	checkLink(t, v.Links[1], api.RelAlt, api.ContentTypeHTML, urlBase+path+".html")
 }
 
+func TestFilterB(t *testing.T) {
+	rr := doRequest(t, "/collections/mock_a/items?prop_b=1")
+
+	var v FeatureCollection
+	json.Unmarshal(readBody(rr), &v)
+
+	equals(t, 1, len(v.Features), "# features")
+}
+
+func TestFilterD(t *testing.T) {
+	rr := doRequest(t, "/collections/mock_c/items?prop_d=1")
+
+	var v FeatureCollection
+	json.Unmarshal(readBody(rr), &v)
+
+	equals(t, 10, len(v.Features), "# features")
+}
+
+func TestFilterBD(t *testing.T) {
+	rr := doRequest(t, "/collections/mock_c/items?prop_b=2&prop_d=2")
+
+	var v FeatureCollection
+	json.Unmarshal(readBody(rr), &v)
+
+	equals(t, 1, len(v.Features), "# features")
+}
+
+func TestFilterBDNone(t *testing.T) {
+	rr := doRequest(t, "/collections/mock_c/items?prop_b=1&prop_d=2")
+
+	var v FeatureCollection
+	json.Unmarshal(readBody(rr), &v)
+
+	equals(t, 0, len(v.Features), "# features")
+}
+
 func TestLimit(t *testing.T) {
 	rr := doRequest(t, "/collections/mock_a/items?limit=3")
 
@@ -230,10 +266,11 @@ func TestPropertiesAll(t *testing.T) {
 	// Note that JSON numbers are read as float64
 	equals(t, 2, len(v.Features), "# features")
 	equals(t, 4, len(v.Features[0].Props), "feature 1 # properties")
+
 	equals(t, "propA", v.Features[0].Props["prop_a"], "feature 1 # property A")
 	equals(t, 1.0, v.Features[0].Props["prop_b"], "feature 1 # property B")
 	equals(t, "propC", v.Features[0].Props["prop_c"], "feature 1 # property C")
-	equals(t, 999.0, v.Features[0].Props["prop_d"], "feature 1 # property D")
+	equals(t, 1.0, v.Features[0].Props["prop_d"], "feature 1 # property D")
 }
 
 func TestCollectionNoFound(t *testing.T) {

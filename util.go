@@ -22,7 +22,6 @@ import (
 
 	"github.com/CrunchyData/pg_featureserv/api"
 	"github.com/CrunchyData/pg_featureserv/conf"
-	"github.com/CrunchyData/pg_featureserv/data"
 	"github.com/CrunchyData/pg_featureserv/ui"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
@@ -158,30 +157,24 @@ func urlPathFormatQuery(urlBase string, path string, format string, query string
 	return url
 }
 
-func createQueryParams(requestParam *api.RequestParam, colNames []string) *data.QueryParam {
-	param := data.QueryParam{
-		Limit:         requestParam.Limit,
-		Offset:        requestParam.Offset,
-		Bbox:          requestParam.Bbox,
-		OrderBy:       requestParam.OrderBy,
-		Precision:     requestParam.Precision,
-		TransformFuns: requestParam.TransformFuns,
-	}
-	param.Columns = normalizePropNames(requestParam.Properties, colNames)
-	return &param
-}
-
-// inputArgs extracts function arguments from any provided in the query parameters
+// restrict creates a map containing only entries in names
 func restrict(inMap map[string]string, names []string) map[string]string {
 	outMap := make(map[string]string)
 	for _, name := range names {
-		log.Debugf("testing request param %v", name)
+		//log.Debugf("testing request param %v", name)
 		if val, ok := inMap[name]; ok {
 			outMap[name] = val
-			log.Debugf("copying request param %v = %v ", name, val)
+			//log.Debugf("copying request param %v = %v ", name, val)
 		}
 	}
 	return outMap
+}
+
+// removeNames removes a list of names from a map (map is modified)
+func removeNames(inMap map[string]string, names []string) {
+	for _, name := range names {
+		delete(inMap, name)
+	}
 }
 
 func writeJSON(w http.ResponseWriter, contype string, content interface{}) *appError {

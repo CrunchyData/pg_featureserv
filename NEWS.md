@@ -7,6 +7,7 @@
 
 * Add data-driven styling for points
 * Add data-driven styling column `style_radius`
+* Add query parameters to filter by property value
 
 ### Bug Fixes
 
