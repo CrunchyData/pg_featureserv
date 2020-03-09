@@ -76,6 +76,7 @@ Path: `/collections/{cid}/items`
 * `properties=PROP-LIST`- return only the given properties (comma-separated)
 * `precision=N` - set precision of GeoJSON ordinates to use N decimal places
 * `transform` - transform the feature geometry by the given geometry function pipeline
+* `<propname>=val` - filter features for a property having the given value
 
 ### Response
 
