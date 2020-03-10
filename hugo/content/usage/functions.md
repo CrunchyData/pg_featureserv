@@ -52,6 +52,12 @@ A **spatial function** is one which returns a column of type `geometry` or `geog
 Output from spatial functions is returned as GeoJSON datasets.
 Output from non-spatial functions is returned as JSON datasets.
 
+Geometry values returned by a function can be in any coordinate system,
+but must have their SRID set to the appropriate value.
+If required, they are reprojected to geographic coordinates (SRID = 4326) in the output GeoJSON.
+If geometry is queried from an existing table the SRID may already be set;
+otherwise the function should set it explicitly.
+
 The example below illustrates
 the basic structure of a spatial set-returning function.
 See the [Examples](/examples/) section for further examples.
@@ -94,6 +100,7 @@ Aspects to note are:
 * It returns a table (set) of type `(name text, geom geometry)`.
 * The function body is a simple `SELECT` query which uses the input parameter as part of a `ILIKE` filter,
   and returns a column list matching the output table definition.
+* The geometry values are assumed to carry an SRID specified in the queried table.
 * The function "[volatility](https://www.postgresql.org/docs/current/xfunc-volatility.html)" is declared as `STABLE` because within a transaction context multiple calls with the same inputs will return the same outputs. It is not marked as `IMMUTABLE` because changes in the base table can change the outputs over time, even for the same inputs.
 * The function is declared as `PARALLEL SAFE` because it doesn't depend on any state that might be altered by making multiple concurrent calls to the function.
 
