@@ -115,13 +115,15 @@ func InitConfig(configFilename string) {
 	log.Infof("Using config file: %s", confFile)
 	viper.Unmarshal(&Configuration)
 
-	// Read environment variable database configuation
+	// Read environment variable database configuration
 	// It takes precedence over config file (if any)
 	// A blank value is ignored
-	if dbUrl := os.Getenv(AppConfig.EnvDBURL); dbUrl != "" {
-		log.Infof("Using database connection info in %v", AppConfig.EnvDBURL)
-		Configuration.Database.DbConnection = dbUrl
+	dbconnSrc := "config file"
+	if dbURL := os.Getenv(AppConfig.EnvDBURL); dbURL != "" {
+		Configuration.Database.DbConnection = dbURL
+		dbconnSrc = "environment variable " + AppConfig.EnvDBURL
 	}
+	log.Infof("Using database connection info from %v", dbconnSrc)
 
 	//fmt.Printf("Viper: %v\n", viper.AllSettings())
 	//fmt.Printf("Config: %v\n", Configuration)
