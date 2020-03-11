@@ -122,7 +122,7 @@ var LinkSchema openapi3.Schema = openapi3.Schema{
 	Type:        "object",
 	Required:    []string{"href"},
 	Properties: map[string]*openapi3.SchemaRef{
-		"href":     {Value: &openapi3.Schema{Type: "string"}},
+		"href":     {Value: &openapi3.Schema{Type: "string", Description: "URL for the link"}},
 		"rel":      {Value: &openapi3.Schema{Type: "string"}},
 		"type":     {Value: &openapi3.Schema{Type: "string"}},
 		"hreflang": {Value: &openapi3.Schema{Type: "string"}},
