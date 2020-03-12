@@ -15,11 +15,11 @@ This makes them easy to publish via a simple web API.
 Functions can execute any data processing that is
 possible to perform with Postgres and PostGIS.
 They can return either spatial or non-spatial results
-(which are returned as GeoJSON or plain JSON).
+(as GeoJSON or plain JSON).
 They thus provide a powerful extension to the capabilities of
 the `pg_featureserv` API.
 
-Potential use include:
+Potential uses of functions include:
 
 * Query a spatial database table or view with custom SQL
   (which can include things such as special filters or aggregation)
@@ -31,9 +31,9 @@ Potential use include:
 
 ## Publish Database Functions
 
-The service is able to publish any function which returns a set of records
+The service can publish any function which returns a set of rows
 using the return type `SETOF record`
-or the equivalent and more standard `TABLE`
+or the equivalent (and more standard) `TABLE`
 (see the Postgres manual section on [set-returning functions](https://www.postgresql.org/docs/current/xfunc-sql.html#XFUNC-SQL-FUNCTIONS-RETURNING-SET).)
 Because there are usually many functions in a Postgres database,
 the service only publishes functions defined in the `postgisftw` schema.
