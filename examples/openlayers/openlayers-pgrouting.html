@@ -45,22 +45,16 @@
 
 <script>
 
-var routeServer = "http://localhost:9000/functions/boston_find_route/items.json";
-function routeUrl(coord1, coord2) {
-    var url = routeServer;
-    url += "?from_lon" + coord1[0];
-    url += "&from_lat" + coord1[1];
-    url += "&to_lon" + coord2[0];
-    url += "&to_lat" + coord2[1];
-    return url;
-}
+//********************************************************************************/
+// WAY LAYER (All ways in the table)
+//********************************************************************************/
 
 var vectorUrl = "http://localhost:7800/public.ways/{z}/{x}/{y}.pbf";
 
 var vectorStyle = new ol.style.Style({
   stroke: new ol.style.Stroke({
     width: 2,
-    color: "#ff00ff99"
+    color: "#00000044"
   })
 });
 
@@ -74,43 +68,100 @@ var vectorLayer = new ol.layer.VectorTile({
 
 var baseLayer = new ol.layer.Tile({
   source: new ol.source.XYZ({
-    url: "https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png"    
+    url: "https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png"
   })
 });
+
+//********************************************************************************/
+// CLICK LAYER
+//********************************************************************************/
+
+var clicks = [];
+var clickFeatures = [];
+
+function addClick(coord) {
+  if (clicks.length > 1) {
+    clicks = [];
+    clickFeatures = []
+  }
+
+  // Add click to the map
+  var iconFeature = new ol.Feature({
+    geometry: new ol.geom.Point(coord),
+    name: 'Click'
+  });
+  clickFeatures.push(iconFeature);
+  clicks.push(coord);
+
+  return clicks;
+}
+
+
+
+
+//********************************************************************************/
+// ROUTE LAYER
+//********************************************************************************/
+
+var routeLayer = null;
+
+function routeUrl(coord1, coord2) {
+    var url = "http://localhost:9000/functions/boston_find_route/items.json";
+    url += "?from_lon" + coord1[0];
+    url += "&from_lat" + coord1[1];
+    url += "&to_lon" + coord2[0];
+    url += "&to_lat" + coord2[1];
+    return url;
+}
+
+var routeLayer = new ol.layer.Vector({
+  title: 'Route',
+  source: new ol.source.Vector({
+      format: new ol.format.GeoJSON(),
+      projection : 'EPSG:4326',
+      features: []
+  }),
+  style: new ol.style.Style({
+    stroke: new ol.style.Stroke({
+      width: 3,
+      color: "#ff0000"
+    })
+  })
+});
+
+
+
+var vectorSource = new ol.source.Vector({
+  features: iconFeatures //add an array of features
+});
+
+var iconStyle = new ol.style.Style({
+  image: new ol.style.Icon(/** @type {olx.style.IconOptions} */ ({
+    anchor: [0.5, 46],
+    anchorXUnits: 'fraction',
+    anchorYUnits: 'pixels',
+    opacity: 0.75,
+    src: 'data/icon.png'
+  }))
+});
+
+
 
 var map = new ol.Map({
   target: 'map',
   view: new ol.View({
-    center: [-71.0526, 42.3553],
-    zoom: 12
+    center: ol.proj.transform([-71.0526, 42.3553], 'EPSG:4326', 'EPSG:3857'),
+    zoom: 14
   }),
   layers: [baseLayer, vectorLayer, routeLayer]
 });
 
-var click1 = null;
-var click2 = null;
-var routeLayer = null;
-
-var routeSource = new Vector({
-  format: new GeoJSON()
-});
-
-
 map.on('singleclick', function(evt) {
-    // Start a new pair if we already have a pair 
-    if (click2) {
-        click1 = null;
-        click2 = null;
+    // Start a new pair if we already have a pair
+    var clicks = addClick(evt.coordinate);
+    if (clicks.length > 1) {
+      routeSource.setUrl(routeUrl(click1, click2));
     }
-    // Just capture first point and return
-    if (!click1) {
-        click1 = evt.coordinate;
-        return;
-    } 
-    // Second point! Time to calculate a route...
-    click2 = env.coordinate;
-
-    routeSource.setUrl(routeUrl(click1, click2));
 
 //   var lonlat = ol.proj.transform(evt.coordinate, 'EPSG:3857', 'EPSG:4326');
 //   setClick(lonlat);
