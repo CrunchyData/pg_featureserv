@@ -13,7 +13,7 @@ HttpPort = 9000
 # String to return for Access-Control-Allow-Origin header
 #    CORSOrigins = "*"
 
-# set Debug to true to run in debug mode (can also be done on cmd-line)
+# set Debug to true to run in debug mode (can also be set on cmd-line)
 #    Debug = true
 
 # Read html templates from this directory
