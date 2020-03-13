@@ -5,8 +5,9 @@ HttpHost = "0.0.0.0"
 # The IP port to listen on
 HttpPort = 9000
 
-# Advertise URLs relative to this server name
-# default is to look this up from incoming request headers
+# Advertise URLs relative to this server name.
+# The default is to look this up from incoming request headers
+# Note: do not add a trailing slash.
 #    UrlBase = "http://localhost:9000"
 
 # String to return for Access-Control-Allow-Origin header
