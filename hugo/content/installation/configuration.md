@@ -25,7 +25,7 @@ The only required configuration is the `DbConnection` setting,
 if not provided in the environment variable `DATABASE_URL`.
 (This is not required if the server is run with the `--test` flag.)
 
-The default configuration file is shown below.
+An example configuration file is shown below.
 
 ```toml
 [Server]

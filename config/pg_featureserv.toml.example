@@ -28,6 +28,7 @@ WriteTimeoutSec = 30
 [Database]
 # Database connection
 # postgresql://username:password@host/dbname
+# DATABASE_URL environment variable takes precendence if set.
 # DbConnection = "postgresql://username:password@host/dbname"
 
 # Close pooled connections after this interval
