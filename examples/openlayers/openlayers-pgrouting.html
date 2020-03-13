@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OpenLayers Vector Tiles</title>
+
+  <!-- CSS/JS for OpenLayers map  -->
+  <link rel="stylesheet" href="https://openlayers.org/en/v6.1.1/css/ol.css" type="text/css">
+  <script src="https://openlayers.org/en/v6.1.1/build/ol.js"></script>
+
+  <style>
+    body {
+      padding: 0;
+      margin: 0;
+    }
+    html, body, #map {
+      height: 100%;
+      width: 100%;
+      font-family: sans-serif;
+    }
+    #meta {
+      background-color: rgba(255,255,255,0.75);
+      color: black;
+      z-index: 2;
+      position: absolute;
+      top: 10px;
+      left: 20px;
+      padding: 10px 20px;
+      margin: 0;
+    }
+  </style>
+</head>
+
+<body>
+
+<div id="meta">
+  <h2>OpenLayers Tile Map</h2>
+  <ul>
+    <li><a href="https://openlayers.org/">OpenLayers</a></li>
+  </ul>
+</div>
+
+<div id="map"></div>
+
+<script>
+
+var routeServer = "http://localhost:9000/functions/boston_find_route/items.json";
+function routeUrl(coord1, coord2) {
+    var url = routeServer;
+    url += "?from_lon" + coord1[0];
+    url += "&from_lat" + coord1[1];
+    url += "&to_lon" + coord2[0];
+    url += "&to_lat" + coord2[1];
+    return url;
+}
+
+var vectorUrl = "http://localhost:7800/public.ways/{z}/{x}/{y}.pbf";
+
+var vectorStyle = new ol.style.Style({
+  stroke: new ol.style.Stroke({
+    width: 2,
+    color: "#ff00ff99"
+  })
+});
+
+var vectorLayer = new ol.layer.VectorTile({
+    source: new ol.source.VectorTile({
+      format: new ol.format.MVT(),
+      url: vectorUrl
+    }),
+    style: vectorStyle
+  });
+
+var baseLayer = new ol.layer.Tile({
+  source: new ol.source.XYZ({
+    url: "https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png"    
+  })
+});
+
+var map = new ol.Map({
+  target: 'map',
+  view: new ol.View({
+    center: [-71.0526, 42.3553],
+    zoom: 12
+  }),
+  layers: [baseLayer, vectorLayer, routeLayer]
+});
+
+var click1 = null;
+var click2 = null;
+var routeLayer = null;
+
+var routeSource = new Vector({
+  format: new GeoJSON()
+});
+
+
+map.on('singleclick', function(evt) {
+    // Start a new pair if we already have a pair 
+    if (click2) {
+        click1 = null;
+        click2 = null;
+    }
+    // Just capture first point and return
+    if (!click1) {
+        click1 = evt.coordinate;
+        return;
+    } 
+    // Second point! Time to calculate a route...
+    click2 = env.coordinate;
+
+    routeSource.setUrl(routeUrl(click1, click2));
+
+//   var lonlat = ol.proj.transform(evt.coordinate, 'EPSG:3857', 'EPSG:4326');
+//   setClick(lonlat);
+//   refreshVoronoi(lonlat, getCount());
+});
+
+
+</script>
+
+</body>
+</html>
