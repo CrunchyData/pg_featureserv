@@ -1,11 +1,11 @@
 [Server]
-# The hostname to use in links
+# Accept connections on this subnet (default accepts on all)
 HttpHost = "0.0.0.0"
 
-# The IP port to listen on
+# Accept connections on this port
 HttpPort = 9000
 
-# Advertise URLs relative to this server name.
+# Advertise URLs relative to this server name and path
 # The default is to look this up from incoming request headers
 # Note: do not add a trailing slash.
 #    UrlBase = "http://localhost:9000"

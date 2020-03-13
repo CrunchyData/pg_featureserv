@@ -29,14 +29,15 @@ The default configuration file is shown below.
 
 ```toml
 [Server]
-# The hostname to use in links
+# Accept connections on this subnet (default accepts on all)
 HttpHost = "0.0.0.0"
 
-# The IP port to listen on
+# Accept connections on this port
 HttpPort = 9000
 
-# Advertise URLs relative to this server name
+# Advertise URLs relative to this server name and path
 # default is to look this up from incoming request headers
+# Note: do not add a trailing slash.
 # UrlBase = "http://localhost:9000/"
 
 # String to return for Access-Control-Allow-Origin header
@@ -82,6 +83,12 @@ It is also used for any URL paths returned by the service (such as response link
 
 The `UrlBase` can specify a value for the Base URL.
 This accomodates running the service behind a reverse proxy.
+The provided URL should not have a trailing slash.
+
+#### Example
+```
+UrlBase = https://my-server.org/features
+```
 
 If `UrlBase` is not set, `pg_featureserv` dynamically detects the base URL.
 Also, if the HTTP headers `Forwarded` or `X-Forwarded-Proto` and `X-Forwarded-Host` are present they are respected.
