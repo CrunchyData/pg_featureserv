@@ -5,7 +5,6 @@ draft: false
 weight: 400
 ---
 
-
 ## Configuration File
 
 The configuration file is automatically read from the file `config/pg_featureserv.toml`
@@ -25,24 +24,25 @@ The only required configuration is the `DbConnection` setting,
 if not provided in the environment variable `DATABASE_URL`.
 (This is not required if the server is run with the `--test` flag.)
 
-The default configuration file is shown below.
+An example configuration file is shown below.
 
 ```toml
 [Server]
-# The hostname to use in links
+# Accept connections on this subnet (default accepts on all)
 HttpHost = "0.0.0.0"
 
-# The IP port to listen on
+# Accept connections on this port
 HttpPort = 9000
 
-# Advertise URLs relative to this server name
+# Advertise URLs relative to this server name and path
 # default is to look this up from incoming request headers
+# Note: do not add a trailing slash.
 # UrlBase = "http://localhost:9000/"
 
 # String to return for Access-Control-Allow-Origin header
 # CORSOrigins = "*"
 
-# set Debug to true to run in debug mode (can also be done on cmd-line)
+# set Debug to true to run in debug mode (can also be set on cmd-line)
 # Debug = true
 
 # Read html templates from this directory
@@ -75,14 +75,80 @@ LimitMax = 10000
 
 ## Configuration Options
 
+### HttpHost
+
+The IP address at which connections are accepted.
+
+### HttpPort
+
+The IP port at which connections are accepted.
+
 ### UrlBase
 
-The Base URL is the URL endpoint at which users access the service.
-It is also used for any URL paths returned by the service (such as response links).
+The base URL is the URL endpoint at which the service is advertised.
+It is also used for any URL paths published by the service
+(such as URLs for links in response documents).
 
-The `UrlBase` can specify a value for the Base URL.
+The `UrlBase` parameter specifies a value for the Base URL.
 This accomodates running the service behind a reverse proxy.
+The provided URL should not have a trailing slash.
+
+#### Example
+```
+UrlBase = https://my-server.org/features
+```
 
 If `UrlBase` is not set, `pg_featureserv` dynamically detects the base URL.
 Also, if the HTTP headers `Forwarded` or `X-Forwarded-Proto` and `X-Forwarded-Host` are present they are respected.
 Otherwise the base URL is determined by inspecting the incoming request.
+
+### CORSOrigins
+
+The string to return in the `Access-Control-Allow-Origin` HTTP header,
+which allows providing **Cross-Origin Resource Sharing** (CORS).
+
+### Debug
+
+Set to true to run in debug mode.  This provides debug-level logging.
+
+### AssetsPath
+
+The directory containing file assets used by the service (such as the HTML templates).
+it may be convenient to deploy the asset files
+in a location which is not relative to the service application path.
+
+### DbConnection
+
+The connection to the database can be set in this parameter,
+using a Postgres [connection string](https://www.postgresql.org/docs/12/libpq-connect.html#LIBPQ-CONNSTRING).
+This can also be set via the `DATABASE_URL` environment variable, which takes precendence.
+
+### DbPoolMaxConnLifeTime
+
+The maximum duration for the lifetime for a pooled connection.
+Specified using a Go [duration constant](https://golang.org/pkg/time/#ParseDuration)
+such as `1d`, `2.5h`, or `30m`.
+
+### DbPoolMaxConns
+
+The maximum number of database connections held in the connection pool.
+
+### LimitDefault
+
+The default number of features in a response,
+if not specified by the `limit` query parameter.
+
+### LimitMax
+
+The maximum number of features that can be returned in a response.
+This cannot be overridden by the `limit` query parameter.
+
+### Title
+
+The title for the service.
+Appears in the HTML web pages, JSON responses, and the log.
+
+### Description
+
+The title for the service.
+Appears in the HTML web pages and JSON responses.

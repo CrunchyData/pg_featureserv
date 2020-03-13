@@ -1,18 +1,19 @@
 [Server]
-# The hostname to use in links
+# Accept connections on this subnet (default accepts on all)
 HttpHost = "0.0.0.0"
 
-# The IP port to listen on
+# Accept connections on this port
 HttpPort = 9000
 
-# Advertise URLs relative to this server name
-# default is to look this up from incoming request headers
+# Advertise URLs relative to this server name and path
+# The default is to look this up from incoming request headers
+# Note: do not add a trailing slash.
 #    UrlBase = "http://localhost:9000"
 
 # String to return for Access-Control-Allow-Origin header
 #    CORSOrigins = "*"
 
-# set Debug to true to run in debug mode (can also be done on cmd-line)
+# set Debug to true to run in debug mode (can also be set on cmd-line)
 #    Debug = true
 
 # Read html templates from this directory
@@ -27,6 +28,7 @@ WriteTimeoutSec = 30
 [Database]
 # Database connection
 # postgresql://username:password@host/dbname
+# DATABASE_URL environment variable takes precendence if set.
 # DbConnection = "postgresql://username:password@host/dbname"
 
 # Close pooled connections after this interval
