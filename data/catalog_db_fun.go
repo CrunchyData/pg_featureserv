@@ -90,7 +90,9 @@ func scanFunctionDef(rows pgx.Rows) *Function {
 
 	inNames := toArray(inNamesTA)
 	inTypes := toArray(inTypesTA)
-	inDefaults := extendLeft(toArray(inDefaultsTA), len(inNames))
+	inDefaultsDB := toArray(inDefaultsTA)
+	numNoDefault := len(inNames) - len(inDefaultsDB)
+	inDefaults := extendLeft(inDefaultsDB, len(inNames))
 	outNames := toArray(outNamesTA)
 	outTypes := toArray(outTypesTA)
 	outJSONTypes := toJSONTypeFromPGArray(outTypes)
@@ -118,6 +120,7 @@ func scanFunctionDef(rows pgx.Rows) *Function {
 		InDbTypes:      inTypes,
 		InTypeMap:      inTypeMap,
 		InDefaults:     inDefaults,
+		NumNoDefault:   numNoDefault,
 		OutNames:       outNames,
 		OutDbTypes:     outTypes,
 		OutJSONTypes:   outJSONTypes,

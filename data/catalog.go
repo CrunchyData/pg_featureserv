@@ -109,6 +109,7 @@ type Function struct {
 	InDbTypes      []string
 	InTypeMap      map[string]string
 	InDefaults     []string
+	NumNoDefault   int
 	OutNames       []string
 	OutDbTypes     []string
 	OutJSONTypes   []string
