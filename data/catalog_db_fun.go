@@ -90,7 +90,7 @@ func scanFunctionDef(rows pgx.Rows) *Function {
 
 	inNames := toArray(inNamesTA)
 	inTypes := toArray(inTypesTA)
-	inDefaults := toArray(inDefaultsTA)
+	inDefaults := extendLeft(toArray(inDefaultsTA), len(inNames))
 	outNames := toArray(outNamesTA)
 	outTypes := toArray(outTypesTA)
 	outJSONTypes := toJSONTypeFromPGArray(outTypes)
@@ -109,7 +109,7 @@ func scanFunctionDef(rows pgx.Rows) *Function {
 
 	geomCol := geometryColumn(outNames, datatypes)
 
-	return &Function{
+	funDef := Function{
 		ID:             id,
 		Schema:         schema,
 		Name:           name,
@@ -124,6 +124,8 @@ func scanFunctionDef(rows pgx.Rows) *Function {
 		Types:          datatypes,
 		GeometryColumn: geomCol,
 	}
+	fmt.Println(funDef)
+	return &funDef
 }
 func addTypes(typeMap map[string]string, names []string, types []string) {
 	for i, name := range names {
@@ -154,6 +156,20 @@ func toArray(ta pgtype.TextArray) []string {
 		arr[i] = val
 	}
 	return arr
+}
+
+// extendLeft extends an array to have given size, with original contents right-aligned
+func extendLeft(arr []string, size int) []string {
+	if size <= len(arr) {
+		return arr
+	}
+	// create array of requested size and right-justify input
+	arr2 := make([]string, size)
+	offset := size - len(arr)
+	for i := 0; i < len(arr); i++ {
+		arr2[i+offset] = arr[i]
+	}
+	return arr2
 }
 
 func (cat *catalogDB) FunctionFeatures(name string, args map[string]string, param *QueryParam) ([]string, error) {
