@@ -22,11 +22,12 @@ the `pg_featureserv` API.
 Potential uses for functions include:
 
 * Query a spatial database table or view with custom SQL
-  (which can include things such as special filters or aggregation)
+  (which can include things such as more complex filters than the API provides,
+  joins between multiple tables or aggregation)
 * Query a non-spatial table or view to return data objects or a summary record.
   For example, this could be used to provide values for a client-side drop-down list or autocomplete capability.
 * Generate spatial data controlled by a set of parameters
-* Expose a geometric computation,
+* Provide a geometric computation,
   by accepting a geometric input value and returning a single record containing the result
 * Functions can even be used to update data (as long as appropriate security is in place).
 
