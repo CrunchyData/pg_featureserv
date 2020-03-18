@@ -76,8 +76,13 @@ sets.
 http://localhost:9000/collections/ne.admin_0_countries/items?limit=50&offset=200
 ```
 
-The default page size and the maximum page size
-are set by the configuration parameters `LimitDefault` and `LimitMax`.
+Even if the `limit` parameter is not specified
+the response feature count is limited,
+to avoid overloading the server and client.
+The default number of features in a response
+is set by the configuration parameter `LimitDefault`.
+The maximum number of features which can be requested in the `limit` parameter
+is set by the configuration parameters `LimitMax`.
 
 ### Ordering
 
