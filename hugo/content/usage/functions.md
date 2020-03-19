@@ -23,7 +23,7 @@ Potential uses for functions include:
 
 * Query a spatial database table or view with custom SQL
   (which can include things such as more complex filters than the API provides,
-  joins between multiple tables or aggregation)
+  joins to other tables or aggregation)
 * Query a non-spatial table or view to return data objects or a summary record.
   For example, this could be used to provide values for a client-side drop-down list or autocomplete capability.
 * Generate spatial data controlled by a set of parameters
