@@ -66,9 +66,8 @@ See the [Examples](/examples/) section for further examples.
 
 #### Example of a spatial function
 
-This example is about the simplest possible spatial function,
-but it illustrates the most important concepts.
-It returns a filtered subset of a table ([ne_50m_admin_0_countries](https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/50m/cultural/ne_50m_admin_0_countries.zip) which is in [EPSG:4326](https://epsg.io/4326)).
+This example of a spatial function serves to illustrate the key concepts.
+It returns a filtered subset of a table (created using the Natural Earth [ne_50m_admin_0_countries](https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/50m/cultural/ne_50m_admin_0_countries.zip) dataset which is in [EPSG:4326](https://epsg.io/4326)).
 The filter in this case is the first letters of the country name.
 
 The `name_prefix` parameter includes a **default value**: this is useful for clients
