@@ -53,10 +53,10 @@ This is only useful for spatial functions.
 http://localhost:9000/functions/countries_name/items?bbox=10.4,43.3,26.4,47.7
 ```
 
-### Restrict Properties
+### Specify Properties
 
 The query parameter `properties=PROP1,PROP2,PROP3...`
-can be used to restrict the properties which are returned in the response.
+can be used to specify the properties which are returned in the response.
 This allows reducing the response size of functions
 which produce a large number of records.
 

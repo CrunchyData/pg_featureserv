@@ -46,10 +46,10 @@ to perform the query.
 http://localhost:9000/collections/ne.admin_0_countries/items?bbox=10.4,43.3,26.4,47.7
 ```
 
-### Restrict Properties
+### Specify Properties
 
 The query parameter `properties=PROP1,PROP2,PROP3...`
-can be used to restrict the properties which are returned
+can be used to specify the properties which are returned
 in the response.
 This allows reducing the response size of feature collections
 which have a large number of properties.
