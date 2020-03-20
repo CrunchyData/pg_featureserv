@@ -25,6 +25,13 @@ AssetsPath = "./assets"
 # Maximum duration for writing response (in seconds)
 WriteTimeoutSec = 30
 
+# Database functions allowed in the transform query parameter
+#TransformFunctions = [
+#    "ST_Boundary", "ST_Centroid", "ST_Envelope", "ST_PointOnSurface",
+#    "ST_Buffer", "ST_ConvexHull", "ST_MinimumBoundingCircle", "ST_OffsetCurve",
+#    "ST_GeneratePoints", "ST_Simplify", "ST_ChaikinSmoothing", "ST_LineSubstring"
+#]
+
 [Database]
 # Database connection
 # postgresql://username:password@host/dbname

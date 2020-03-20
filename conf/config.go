@@ -54,14 +54,15 @@ type Config struct {
 
 // Server config
 type Server struct {
-	HttpHost        string
-	HttpPort        int
-	UrlBase         string
-	CORSOrigins     string
-	Debug           bool
-	AssetsPath      string
-	ReadTimeoutSec  int
-	WriteTimeoutSec int
+	HttpHost           string
+	HttpPort           int
+	UrlBase            string
+	CORSOrigins        string
+	Debug              bool
+	AssetsPath         string
+	ReadTimeoutSec     int
+	WriteTimeoutSec    int
+	TransformFunctions []string
 }
 
 // Paging config

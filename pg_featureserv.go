@@ -83,6 +83,7 @@ func main() {
 	log.Infof("----  %s - Version %s ----------\n", conf.AppConfig.Name, conf.AppConfig.Version)
 
 	conf.InitConfig(flagConfigFilename)
+	initTransforms(conf.Configuration.Server.TransformFunctions)
 
 	log.Infof("%s\n", conf.Configuration.Metadata.Title)
 

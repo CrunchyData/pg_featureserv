@@ -57,6 +57,10 @@ var testConfig conf.Config = conf.Config{
 		HttpPort:   9000,
 		UrlBase:    urlBase,
 		AssetsPath: "./assets",
+		TransformFunctions: []string{
+			"ST_Centroid",
+			"ST_PointOnSurface",
+		},
 	},
 	Paging: conf.Paging{
 		LimitDefault: 10,
@@ -75,6 +79,8 @@ func TestMain(m *testing.M) {
 	catalogInstance = catalogMock
 	router = initRouter()
 	conf.Configuration = testConfig
+	initTransforms(conf.Configuration.Server.TransformFunctions)
+
 	os.Exit(m.Run())
 }
 
@@ -229,6 +235,20 @@ func TestOffset(t *testing.T) {
 
 func TestOffsetInvalid(t *testing.T) {
 	doRequestStatus(t, "/collections/mock_a/items?offset=x", http.StatusBadRequest)
+}
+
+func TestTransformValid(t *testing.T) {
+	doRequest(t, "/collections/mock_a/items?transform=centroid")
+	doRequest(t, "/collections/mock_a/items?transform=ST_centroid")
+	doRequest(t, "/collections/mock_a/items?transform=st_centroid")
+	doRequest(t, "/collections/mock_a/items?transform=pointonsurface")
+	doRequest(t, "/collections/mock_a/items?transform=pointonsurface|centroid")
+}
+
+func TestTransformInvalid(t *testing.T) {
+	// envelope is not defined as a transform function
+	doRequestStatus(t, "/collections/mock_a/items?transform=envelope", http.StatusBadRequest)
+	doRequestStatus(t, "/collections/mock_a/items?transform=centroid|envelope", http.StatusBadRequest)
 }
 
 func TestBBox(t *testing.T) {
