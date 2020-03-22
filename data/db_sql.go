@@ -200,10 +200,11 @@ func sqlBBoxGeoFilter(geomCol string, bbox *Extent) string {
 	return sql
 }
 
-const sqlFmtGeomCol = `ST_AsGeoJSON( ST_Transform("%v", 4326) %v ) AS _geojson`
+const sqlFmtGeomCol = `ST_AsGeoJSON( ST_Transform( %v, 4326) %v ) AS _geojson`
 
 func sqlGeomCol(geomCol string, param *QueryParam) string {
-	geomExpr := applyTransform(param.TransformFuns, geomCol)
+	geomColSafe := strconv.Quote(geomCol)
+	geomExpr := applyTransform(param.TransformFuns, geomColSafe)
 	sql := fmt.Sprintf(sqlFmtGeomCol, geomExpr, sqlPrecisionArg(param.Precision))
 	return sql
 }
@@ -216,7 +217,7 @@ func sqlPrecisionArg(precision int) string {
 	return sqlPrecision
 }
 
-const sqlFmtOrderBy = "ORDER By %v%v"
+const sqlFmtOrderBy = `ORDER By "%v" %v`
 
 func sqlOrderBy(ordering []Ordering) string {
 	if len(ordering) <= 0 {
@@ -226,7 +227,7 @@ func sqlOrderBy(ordering []Ordering) string {
 	col := ordering[0].Name
 	dir := ""
 	if ordering[0].IsDesc {
-		dir = " DESC"
+		dir = "DESC"
 	}
 	sql := fmt.Sprintf(sqlFmtOrderBy, col, dir)
 	return sql
