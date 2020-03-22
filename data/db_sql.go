@@ -204,12 +204,16 @@ const sqlFmtGeomCol = `ST_AsGeoJSON( ST_Transform("%v", 4326) %v ) AS _geojson`
 
 func sqlGeomCol(geomCol string, param *QueryParam) string {
 	geomExpr := applyTransform(param.TransformFuns, geomCol)
-	precision := ""
-	if param.Precision >= 0 {
-		precision = fmt.Sprintf(",%v", param.Precision)
-	}
-	sql := fmt.Sprintf(sqlFmtGeomCol, geomExpr, precision)
+	sql := fmt.Sprintf(sqlFmtGeomCol, geomExpr, sqlPrecisionArg(param.Precision))
 	return sql
+}
+
+func sqlPrecisionArg(precision int) string {
+	if precision < 0 {
+		return ""
+	}
+	sqlPrecision := fmt.Sprintf(",%v", precision)
+	return sqlPrecision
 }
 
 const sqlFmtOrderBy = "ORDER By %v%v"
