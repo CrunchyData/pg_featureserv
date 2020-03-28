@@ -94,9 +94,82 @@ func newCatalogMock() CatalogMock {
 	tables = append(tables, layerB)
 	tables = append(tables, layerC)
 
+	fun_a := &Function{
+		ID:          "fun_a",
+		Schema:      "postgisftw",
+		Name:        "fun_a",
+		Description: "Function A",
+		InNames:     []string{"in_param1"},
+		InDbTypes:   []string{"text"},
+		InTypeMap: map[string]string{
+			"in_param1": "text",
+		},
+		InDefaults:   []string{"aa"},
+		NumNoDefault: 0,
+		OutNames:     []string{"out_param1"},
+		OutDbTypes:   []string{"text"},
+		OutJSONTypes: []string{"string"},
+		Types: map[string]string{
+			"in_param1": "text",
+		},
+		GeometryColumn: "",
+		IDColumn:       "",
+	}
+	fun_b := &Function{
+		ID:          "fun_b",
+		Schema:      "postgisftw",
+		Name:        "fun_b",
+		Description: "Function B",
+		InNames:     []string{"in_param1"},
+		InDbTypes:   []string{"int"},
+		InTypeMap: map[string]string{
+			"in_param1": "int",
+		},
+		InDefaults:   []string{"999"},
+		NumNoDefault: 0,
+		OutNames:     []string{"out_geom", "out_id", "out_param1"},
+		OutDbTypes:   []string{"geometry", "int", "text"},
+		OutJSONTypes: []string{"geometry", "int", "string"},
+		Types: map[string]string{
+			"in_param1":  "int",
+			"out_geom":   "geometry",
+			"out_id":     "int",
+			"out_param1": "text",
+		},
+		GeometryColumn: "",
+		IDColumn:       "",
+	}
+	fun_noparam := &Function{
+		ID:           "fun_noparam",
+		Schema:       "postgisftw",
+		Name:         "fun_noparam",
+		Description:  "Function with no parameters",
+		InNames:      []string{},
+		InDbTypes:    []string{},
+		InTypeMap:    map[string]string{},
+		InDefaults:   []string{},
+		NumNoDefault: 0,
+		OutNames:     []string{"out_geom", "out_id", "out_param1"},
+		OutDbTypes:   []string{"geometry", "int", "text"},
+		OutJSONTypes: []string{"geometry", "int", "string"},
+		Types: map[string]string{
+			"in_param1":  "int",
+			"out_geom":   "geometry",
+			"out_id":     "int",
+			"out_param1": "text",
+		},
+		GeometryColumn: "",
+		IDColumn:       "",
+	}
+	funDefs := []*Function{
+		fun_a,
+		fun_b,
+		fun_noparam,
+	}
 	catMock := CatalogMock{
-		TableDefs: tables,
-		tableData: tableData,
+		TableDefs:    tables,
+		tableData:    tableData,
+		FunctionDefs: funDefs,
 	}
 
 	return catMock

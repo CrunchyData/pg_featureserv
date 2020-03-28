@@ -305,7 +305,39 @@ func TestFeatureNotFound(t *testing.T) {
 	doRequestStatus(t, "/collections/mock_a/items/999", http.StatusNotFound)
 }
 
-//--------  Test HTML generation
+//=============  Test functions
+
+func TestFunctionsJSON(t *testing.T) {
+	path := "/functions"
+	resp := doRequest(t, path)
+	body, _ := ioutil.ReadAll(resp.Body)
+
+	var v api.FunctionsInfo
+	json.Unmarshal(body, &v)
+
+	checkLink(t, v.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+path+".json")
+	checkLink(t, v.Links[1], api.RelAlt, api.ContentTypeHTML, urlBase+path+".html")
+
+	checkFunctionSummary(t, v.Functions[0], catalogMock.FunctionDefs[0])
+	checkFunctionSummary(t, v.Functions[1], catalogMock.FunctionDefs[1])
+}
+
+func TestFunctionJSON(t *testing.T) {
+	for _, fun := range catalogMock.FunctionDefs {
+		//fun := catalogMock.FunctionDefs[1]
+		checkFunction(t, fun)
+	}
+}
+
+func TestFunctionNoFound(t *testing.T) {
+	doRequestStatus(t, "/functions/missing", http.StatusNotFound)
+}
+
+func TestFunctionItemsNoFound(t *testing.T) {
+	doRequestStatus(t, "/functions/missing/items", http.StatusNotFound)
+}
+
+//============  Test HTML generation
 func TestHTMLRoot(t *testing.T) {
 	doRequest(t, "/index.html")
 }
@@ -370,6 +402,56 @@ func checkLink(tb testing.TB, link *api.Link, rel string, conType string, href s
 	equals(tb, rel, link.Rel, "Link rel")
 	equals(tb, conType, link.Type, "Link type")
 	equals(tb, href, link.Href, "Link href")
+}
+
+func checkFunctionSummary(tb testing.TB, v *api.FunctionInfo, fun *data.Function) {
+	equals(tb, fun.Name, v.Name, "Function name")
+	equals(tb, fun.Description, v.Description, "Function description")
+
+	path := "/functions/" + fun.Name
+	checkLink(tb, v.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+path+".json")
+	checkLink(tb, v.Links[1], api.RelAlt, api.ContentTypeHTML, urlBase+path+".html")
+
+	pathItems := path + "/items"
+	itemsType := api.ContentTypeJSON
+	if fun.IsGeometryFunction() {
+		itemsType = api.ContentTypeGeoJSON
+	}
+	checkLink(tb, v.Links[2], api.RelItems, itemsType, urlBase+pathItems+".json")
+}
+func checkFunction(t *testing.T, fun *data.Function) {
+	path := "/functions/" + fun.ID
+	resp := doRequest(t, path)
+	body, _ := ioutil.ReadAll(resp.Body)
+
+	var v api.FunctionInfo
+	json.Unmarshal(body, &v)
+
+	equals(t, fun.ID, v.Name, "Name")
+	equals(t, fun.Description, v.Description, "Description")
+
+	//--- check parameters
+	equals(t, len(fun.InNames), len(v.Parameters), "Parameters len")
+	for i := 0; i < len(v.Parameters); i++ {
+		equals(t, fun.InNames[i], v.Parameters[i].Name, "Parameters[].Name")
+		equals(t, fun.InDbTypes[i], v.Parameters[i].Type, "Parameters[].Type")
+	}
+
+	//--- check properties
+	equals(t, len(fun.OutNames), len(v.Properties), "Properties len")
+	for i := 0; i < len(v.Properties); i++ {
+		equals(t, fun.OutNames[i], v.Properties[i].Name, "Properties[].Name")
+		equals(t, fun.OutJSONTypes[i], v.Properties[i].Type, "Properties[].Type")
+	}
+
+	//--- check links
+	checkLink(t, v.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+path+".json")
+	checkLink(t, v.Links[1], api.RelAlt, api.ContentTypeHTML, urlBase+path+".html")
+	itemsType := api.ContentTypeJSON
+	if fun.IsGeometryFunction() {
+		itemsType = api.ContentTypeGeoJSON
+	}
+	checkLink(t, v.Links[2], api.RelItems, itemsType, urlBase+path+"/items.json")
 }
 
 //---- testing utilities from https://github.com/benbjohnson/testing
