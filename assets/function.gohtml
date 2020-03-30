@@ -9,10 +9,10 @@
 <div class='coll-desc'>{{ .data.Description }}</div>
 <p>
 <b>Items:</b>
-{{- if .data.URLItemsHTML }}
-<a class='view-link' href="{{ .data.URLItemsHTML }}" title='View features on a map'>View</a>
+{{- if .context.URLItems}}
+<a class='view-link' href="{{ .context.URLItems }}" title='View features on a map'>View</a>
 {{- end}}
-<a class='json-link' href="{{ .data.URLItemsJSON }}">JSON</a>
+<a class='json-link' href="{{ .context.URLItemsJSON }}">JSON</a>
 </p>
 <h4>Metadata</h4>
 <table cellspacing='4px'>

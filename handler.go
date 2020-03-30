@@ -438,7 +438,7 @@ func handleFunctions(w http.ResponseWriter, r *http.Request) *appError {
 	content := api.NewFunctionsInfo(fns)
 	for _, fn := range content.Functions {
 		isGeomFun := fn.Function.IsGeometryFunction()
-		addFunctionLinks(fn, urlBase, isJSON, true, isGeomFun)
+		addFunctionSummaryLinks(fn, urlBase, isJSON, true, isGeomFun)
 	}
 
 	switch format {
@@ -461,7 +461,7 @@ func linksFunctions(urlBase string) []*api.Link {
 	return links
 }
 
-func addFunctionLinks(content *api.FunctionInfo, urlBase string, isJSON bool, isSummary bool, isGeomFun bool) {
+func addFunctionSummaryLinks(content *api.FunctionSummary, urlBase string, isJSON bool, isSummary bool, isGeomFun bool) {
 	name := content.Name
 	if isJSON {
 		content.Links = linksFunction(name, urlBase, isSummary, isGeomFun)
@@ -470,13 +470,18 @@ func addFunctionLinks(content *api.FunctionInfo, urlBase string, isJSON bool, is
 		pathItems := api.PathFunctionItems(name)
 		content.URLMetadataJSON = urlPathFormat(urlBase, path, api.FormatJSON)
 		content.URLMetadataHTML = urlPathFormat(urlBase, path, api.FormatHTML)
-		content.URLItemsHTML = urlPathFormat(urlBase, pathItems, api.FormatHTML)
-		if !isGeomFun {
-			// there is no HTML view for non-spatial (for now)
-			content.URLItemsHTML = ""
-		}
+		// there is no HTML view for non-spatial (for now)
+		content.URLItemsHTML = urlIfExists(isGeomFun, urlPathFormat(urlBase, pathItems, api.FormatHTML))
 		content.URLItemsJSON = urlPathFormat(urlBase, pathItems, api.FormatJSON)
 	}
+}
+
+// urlIfExists returns the url, or blank if the document does not exist
+func urlIfExists(isExists bool, url string) string {
+	if isExists {
+		return url
+	}
+	return ""
 }
 
 func linksFunction(id string, urlBase string, isSummary bool, isGeomFun bool) []*api.Link {
@@ -519,24 +524,27 @@ func handleFunction(w http.ResponseWriter, r *http.Request) *appError {
 	}
 	content := api.NewFunctionInfo(fn)
 	isGeomFun := fn.IsGeometryFunction()
-	isJSON := format == api.FormatJSON
-	addFunctionLinks(content, urlBase, isJSON, false, isGeomFun)
 	content.Parameters = api.FunctionParameters(fn)
 	content.Properties = api.FunctionProperties(fn)
 
 	// --- encoding
 	switch format {
 	case api.FormatHTML:
+		pathItems := api.PathFunctionItems(name)
 		context := ui.NewPageData()
 		context.URLHome = urlPathFormat(urlBase, "", api.FormatHTML)
 		context.URLFunctions = urlPathFormat(urlBase, api.TagFunctions, api.FormatHTML)
 		context.URLFunction = urlPathFormat(urlBase, api.PathFunction(name), api.FormatHTML)
 		context.URLJSON = urlPathFormat(urlBase, api.PathFunction(name), api.FormatJSON)
+		// there is no HTML view for non-spatial (for now)
+		context.URLItems = urlIfExists(isGeomFun, urlPathFormat(urlBase, pathItems, api.FormatHTML))
+		context.URLItemsJSON = urlPathFormat(urlBase, pathItems, api.FormatJSON)
 		context.Title = fn.ID
 		context.Function = fn
 
 		return writeHTML(w, content, context, ui.PageFunction())
 	default:
+		content.Links = linksFunction(name, urlBase, false, isGeomFun)
 
 		return writeJSON(w, api.ContentTypeJSON, content)
 	}

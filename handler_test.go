@@ -50,7 +50,7 @@ type FeatureCollection struct {
 
 const urlBase = "http://test"
 
-// testConfir is a config spec for using in running tests
+// testConfig is a config spec for using in running tests
 var testConfig conf.Config = conf.Config{
 	Server: conf.Server{
 		HttpHost:   "0.0.0.0",
@@ -318,8 +318,9 @@ func TestFunctionsJSON(t *testing.T) {
 	checkLink(t, v.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+path+".json")
 	checkLink(t, v.Links[1], api.RelAlt, api.ContentTypeHTML, urlBase+path+".html")
 
-	checkFunctionSummary(t, v.Functions[0], catalogMock.FunctionDefs[0])
-	checkFunctionSummary(t, v.Functions[1], catalogMock.FunctionDefs[1])
+	for i, fun := range catalogMock.FunctionDefs {
+		checkFunctionSummary(t, v.Functions[i], fun)
+	}
 }
 
 func TestFunctionJSON(t *testing.T) {
@@ -338,6 +339,8 @@ func TestFunctionItemsNoFound(t *testing.T) {
 }
 
 //============  Test HTML generation
+// For now these just test that the template executes correctly
+// correctness/completess of HTML is not tested
 func TestHTMLRoot(t *testing.T) {
 	doRequest(t, "/index.html")
 }
@@ -355,6 +358,12 @@ func TestHTMLItems(t *testing.T) {
 }
 func TestHTMLItem(t *testing.T) {
 	doRequest(t, "/collections/mock_a/items/1.html")
+}
+func TestHTMLFunctions(t *testing.T) {
+	doRequest(t, "/functions.html")
+}
+func TestHTMLFunction(t *testing.T) {
+	doRequest(t, "/functions/fun_a.html")
 }
 
 //===================================================
@@ -404,7 +413,7 @@ func checkLink(tb testing.TB, link *api.Link, rel string, conType string, href s
 	equals(tb, href, link.Href, "Link href")
 }
 
-func checkFunctionSummary(tb testing.TB, v *api.FunctionInfo, fun *data.Function) {
+func checkFunctionSummary(tb testing.TB, v *api.FunctionSummary, fun *data.Function) {
 	equals(tb, fun.Name, v.Name, "Function name")
 	equals(tb, fun.Description, v.Description, "Function description")
 
@@ -431,6 +440,7 @@ func checkFunction(t *testing.T, fun *data.Function) {
 	equals(t, fun.Description, v.Description, "Description")
 
 	//--- check parameters
+	assert(t, v.Parameters != nil, "Parameters property must be present")
 	equals(t, len(fun.InNames), len(v.Parameters), "Parameters len")
 	for i := 0; i < len(v.Parameters); i++ {
 		equals(t, fun.InNames[i], v.Parameters[i].Name, "Parameters[].Name")
@@ -438,6 +448,7 @@ func checkFunction(t *testing.T, fun *data.Function) {
 	}
 
 	//--- check properties
+	assert(t, v.Properties != nil, "Properties property must be present")
 	equals(t, len(fun.OutNames), len(v.Properties), "Properties len")
 	for i := 0; i < len(v.Properties); i++ {
 		equals(t, fun.OutNames[i], v.Properties[i].Name, "Properties[].Name")
