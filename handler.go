@@ -144,7 +144,7 @@ func handleCollections(w http.ResponseWriter, r *http.Request) *appError {
 
 	content := api.NewCollectionsInfo(colls)
 	for _, coll := range content.Collections {
-		addCollectionLinks(coll, urlBase, isJSON, true)
+		addCollectionSummaryLinks(coll, urlBase, isJSON, true)
 	}
 
 	switch format {
@@ -167,7 +167,7 @@ func linksCollections(urlBase string) []*api.Link {
 	return links
 }
 
-func addCollectionLinks(coll *api.CollectionInfo, urlBase string, isJSON bool, isSummary bool) {
+func addCollectionSummaryLinks(coll *api.CollectionInfo, urlBase string, isJSON bool, isSummary bool) {
 	name := coll.Name
 	path := api.PathCollection(name)
 	pathItems := api.PathCollectionItems(name)
@@ -216,25 +216,27 @@ func handleCollection(w http.ResponseWriter, r *http.Request) *appError {
 		return appErrorNotFoundFmt(err, api.ErrMsgCollectionNotFound, name)
 	}
 	content := api.NewCollectionInfo(tbl)
-	isJSON := format == api.FormatJSON
-	addCollectionLinks(content, urlBase, isJSON, false)
 	content.GeometryType = &tbl.GeometryType
 	content.Properties = api.TableProperties(tbl)
 
 	// --- encoding
 	switch format {
 	case api.FormatHTML:
+		pathItems := api.PathCollectionItems(name)
 		context := ui.NewPageData()
 		context.URLHome = urlPathFormat(urlBase, "", api.FormatHTML)
 		context.URLCollections = urlPathFormat(urlBase, api.TagCollections, api.FormatHTML)
 		context.URLCollection = urlPathFormat(urlBase, api.PathCollection(name), api.FormatHTML)
 		context.URLJSON = urlPathFormat(urlBase, api.PathCollection(name), api.FormatJSON)
+		context.URLItems = urlPathFormat(urlBase, pathItems, api.FormatHTML)
+		context.URLItemsJSON = urlPathFormat(urlBase, pathItems, api.FormatJSON)
 		context.Title = tbl.Title
 		context.Table = tbl
 		context.IDColumn = tbl.IDColumn
 
 		return writeHTML(w, content, context, ui.PageCollection())
 	default:
+		content.Links = linksCollection(name, urlBase, false)
 		return writeJSON(w, api.ContentTypeJSON, content)
 	}
 }
