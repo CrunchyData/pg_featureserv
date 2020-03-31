@@ -91,7 +91,7 @@ func doRoot(w http.ResponseWriter, r *http.Request, format string) *appError {
 	case api.FormatHTML:
 		context := ui.NewPageData()
 		context.URLHome = urlPathFormat(urlBase, "", api.FormatHTML)
-		context.URLJSON = urlPathFormat(urlBase, "", api.FormatJSON)
+		context.URLJSON = urlPathFormat(urlBase, api.RootPageName, api.FormatJSON)
 
 		return writeHTML(w, content, context, ui.PageHome())
 	default:
@@ -103,8 +103,8 @@ func doRoot(w http.ResponseWriter, r *http.Request, format string) *appError {
 func linksRoot(urlBase string) []*api.Link {
 	var links []*api.Link
 	format := api.FormatJSON
-	links = append(links, linkSelf(urlBase, "", api.TitleDocument))
-	links = append(links, linkAlt(urlBase, "", api.TitleDocument))
+	links = append(links, linkSelf(urlBase, api.RootPageName, api.TitleDocument))
+	links = append(links, linkAlt(urlBase, api.RootPageName, api.TitleDocument))
 
 	links = append(links, &api.Link{
 		Href: urlPathFormat(urlBase, api.TagCollections, format),
