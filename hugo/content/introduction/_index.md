@@ -36,7 +36,7 @@ This means more rapid development, fewer software defects, a more secure interfa
 
 `pg_featureserv` follows the modern architectural paradigm of web-friendly, RESTful microservices.
 
-A key benefit of following the lightweight [OGC API for Features Core](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html) standard is the ease of extending it to expose service-specific capabilities.
+As noted in the W3C/OGC [Spatial Data on the Web Best Practices](https://www.w3.org/TR/sdw-bp/), exposing spatial data using modern web standards improves spatial data discoverability, accessibility and interoperability. A key benefit of following the lightweight [OGC API for Features Core](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html) standard is the ease of extending it to expose service-specific capabilities.
 For instance, `pg_featureserv` allows querying spatial functions as well as static collections, using a similar API.
 
 By focussing on the single aspect of serving spatial features, `pg_featureserv` makes it easier to deploy, provision, manage, and secure feature services within a containerized environment.
