@@ -91,7 +91,7 @@ func TestRoot(t *testing.T) {
 	var v api.RootInfo
 	json.Unmarshal(body, &v)
 
-	checkLink(t, v.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+"/")
+	checkLink(t, v.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+"/"+api.RootPageName+".json")
 	checkLink(t, v.Links[1], api.RelAlt, api.ContentTypeHTML, urlBase+"/"+api.RootPageName+".html")
 	checkLink(t, v.Links[2], api.RelData, api.ContentTypeJSON, urlBase+"/collections.json")
 	checkLink(t, v.Links[3], api.RelFunctions, api.ContentTypeJSON, urlBase+"/functions.json")
