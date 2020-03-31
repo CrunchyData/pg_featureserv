@@ -16,6 +16,7 @@ package data
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/jackc/pgtype"
 	"github.com/jackc/pgx/v4"
@@ -188,7 +189,8 @@ func (cat *catalogDB) FunctionFeatures(name string, args map[string]string, para
 	propCols := removeNames(param.Columns, fn.GeometryColumn, "")
 	idColIndex := indexOfName(propCols, FunctionIDColumnName)
 	sql, argValues := sqlGeomFunction(fn, args, propCols, param)
-	log.Debugf("%v -- Args: %v", sql, argValues)
+	log.Debugf("Function features query: %v", sql)
+	log.Debugf("Function %v Args: %v", name, argValues)
 	features, err := readFeaturesWithArgs(cat.dbconn, sql, argValues, idColIndex, propCols)
 	return features, err
 }
@@ -204,7 +206,8 @@ func (cat *catalogDB) FunctionData(name string, args map[string]string, param *Q
 	}
 	propCols := param.Columns
 	sql, argValues := sqlFunction(fn, args, propCols, param)
-	log.Debugf("%v -- Args: %v", sql, argValues)
+	log.Debugf("Function data query: %v", sql)
+	log.Debugf("Function %v Args: %v", name, argValues)
 	data, err := readDataWithArgs(cat.dbconn, propCols, sql, argValues)
 	return data, err
 }
@@ -232,12 +235,15 @@ func removeNames(names []string, ex1 string, ex2 string) []string {
 }
 
 func readDataWithArgs(db *pgxpool.Pool, propCols []string, sql string, args []interface{}) ([]map[string]interface{}, error) {
+	start := time.Now()
 	rows, err := db.Query(context.Background(), sql, args...)
 	if err != nil {
 		log.Warnf("Error running Data query: %v", err)
 		return nil, err
 	}
-	return scanData(rows, propCols), nil
+	data := scanData(rows, propCols)
+	log.Debugf(fmtQueryStats, len(data), time.Since(start))
+	return data, nil
 }
 
 func scanData(rows pgx.Rows, propCols []string) []map[string]interface{} {

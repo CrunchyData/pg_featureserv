@@ -53,6 +53,8 @@ var isFunctionsLoaded bool
 var instanceDB catalogDB
 var templateFeature *template.Template
 
+const fmtQueryStats = "Query result: %v rows in %v"
+
 func init() {
 	isStartup = true
 }
@@ -145,7 +147,7 @@ func (cat *catalogDB) TableFeatures(name string, param *QueryParam) ([]string, e
 	}
 	cols := param.Columns
 	sql, argValues := sqlFeatures(tbl, param)
-	log.Debug("TableFeatures: " + sql)
+	log.Debug("Features query: " + sql)
 	idColIndex := indexOfName(cols, tbl.IDColumn)
 
 	features, err := readFeaturesWithArgs(cat.dbconn, sql, argValues, idColIndex, cols)
@@ -159,7 +161,7 @@ func (cat *catalogDB) TableFeature(name string, id string, param *QueryParam) (s
 	}
 	cols := param.Columns
 	sql := sqlFeature(tbl, param)
-	log.Debug(sql)
+	log.Debug("Feature query: " + sql)
 	idColIndex := indexOfName(cols, tbl.IDColumn)
 
 	//--- Add a SQL arg for the feature ID
@@ -296,12 +298,15 @@ func readFeatures(db *pgxpool.Pool, sql string, idColIndex int, propCols []strin
 }
 
 func readFeaturesWithArgs(db *pgxpool.Pool, sql string, args []interface{}, idColIndex int, propCols []string) ([]string, error) {
+	start := time.Now()
 	rows, err := db.Query(context.Background(), sql, args...)
 	if err != nil {
 		log.Warnf("Error running Features query: %v", err)
 		return nil, err
 	}
-	return scanFeatures(rows, idColIndex, propCols), nil
+	data := scanFeatures(rows, idColIndex, propCols)
+	log.Debugf(fmtQueryStats, len(data), time.Since(start))
+	return data, nil
 }
 
 func scanFeatures(rows pgx.Rows, idColIndex int, propCols []string) []string {

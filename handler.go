@@ -21,7 +21,6 @@ import (
 	"github.com/CrunchyData/pg_featureserv/data"
 	"github.com/CrunchyData/pg_featureserv/ui"
 	"github.com/gorilla/mux"
-	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -571,7 +570,7 @@ func handleFunctionItems(w http.ResponseWriter, r *http.Request) *appError {
 	}
 	param := createQueryParams(&reqParam, fn.OutNames)
 	fnArgs := restrict(reqParam.Values, fn.InNames)
-	log.Debugf("fnArgs: %v ", fnArgs)
+	//log.Debugf("Function request args: %v ", fnArgs)
 
 	switch format {
 	case api.FormatJSON:
