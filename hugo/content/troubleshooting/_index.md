@@ -5,33 +5,52 @@ draft: false
 weight: 50
 ---
 
-## Feature Server
+## Approaches
 
-The server outputs logging information to the console.
+If the service is not behaving as expected, there are a few approaches that can be used
+to determine what is going wrong.
+
+### Service Logging
+
+The service outputs logging information to the console.
 By default, the log level is set to show errors and warnings only.
-
-To get more information about what is going on behind the scenes, run the server with the `--debug` commandline parameter on
+To get more information about what is going on behind the scenes,
+run the server with the `--debug` commandline parameter:
 ```sh
 ./pg_featureserv --debug
 ```
-Or, turn on debugging in the configuration file:
+Debug logging can also be turned on in the configuration file:
 ```
 Debug = true
 ```
 
-## Web Layer
+### HTTP Response
 
-Hitting the service endpoints with a command-line utility like [curl](https://curl.haxx.se/) can also yield useful information:
+Hitting the service endpoints with a command-line utility like [curl](https://curl.haxx.se/)
+can yield useful information:
 ```sh
 curl -I http://localhost:9000/home.json
 ```
 
-## Database Layer
+### SQL Logging
 
-The debug mode of the feature server returns the SQL that is being called on the database. If you want to delve more deeply into the SQL that is being run on the database, you can turn on [statement logging](https://www.postgresql.org/docs/current/runtime-config-logging.html#GUC-LOG-STATEMENT) in PostgreSQL by editing the `postgresql.conf` file for your database and restarting.
+The `debug` mode of the server logs the SQL that is being emitted to the database.
+If you have access to the database that the service is querying it can
+be useful to manually execute the SQL.
+This can provide more detailed database error reporting.
+For issues involving access permissions it may be useful to
+connect as the same user that the service is using.
+
+If you want to delve more deeply into the SQL that is being run on the database, you can turn on [statement logging](https://www.postgresql.org/docs/current/runtime-config-logging.html#GUC-LOG-STATEMENT) in PostgreSQL by editing the `postgresql.conf` file for your database and restarting.
 
 ## Bug Reporting
 
-If you find an issue with the feature server, bugs can be reported on GitHub at the issue tracker:
+If you find an issue with the feature server, it can be reported on the GitHub issue tracker:
 
 * https://github.com/crunchydata/pg_featureserv/issues
+
+When reporting an issue please provide the software version being used.
+This can be obtained from the service log, or by running:
+```sh
+./pg_featureserv --version
+```
