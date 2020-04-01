@@ -7,29 +7,38 @@ weight: 50
 
 ## Approaches
 
-If the service is not behaving as expected, there are a few approaches that can be used
-to determine what is going wrong.
+If the service is not behaving as expected, there are several approaches
+to determine what is happening.
+
+### HTTP Response
+
+The service indicates the status of reponses using standard HTTP status codes,
+along with text messages.  See the [API section]({{< relref "api" >}})
+for details of status codes and their meanings.
+
+HTTP status codes and headers returned in service responses can be displayed
+by running them with a command-line utility like [curl](https://curl.haxx.se/):
+```sh
+curl -I http://localhost:9000/home.json
+```
+Alternatively, most web browsers provide a debugger which can display detailed response information.
 
 ### Service Logging
 
 The service outputs logging information to the console.
 By default, the log level is set to show errors and warnings only.
-To get more information about what is going on behind the scenes,
-run the server with the `--debug` commandline parameter:
+Running the service with debug level logging will
+provide more information about request processing.
+This includes things like the actual SQL emitted to the database,
+SQL errors, and timing of queries and responses.
+
+To invoke debug mode, run the server with the `--debug` commandline parameter:
 ```sh
 ./pg_featureserv --debug
 ```
 Debug logging can also be turned on in the configuration file:
 ```
 Debug = true
-```
-
-### HTTP Response
-
-Hitting the service endpoints with a command-line utility like [curl](https://curl.haxx.se/)
-can yield useful information:
-```sh
-curl -I http://localhost:9000/home.json
 ```
 
 ### SQL Logging
