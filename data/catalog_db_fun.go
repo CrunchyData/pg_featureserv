@@ -128,7 +128,7 @@ func scanFunctionDef(rows pgx.Rows) *Function {
 		Types:          datatypes,
 		GeometryColumn: geomCol,
 	}
-	fmt.Println(funDef)
+	//fmt.Printf("DEBUG: Function definitions: %v\n", funDef)
 	return &funDef
 }
 func addTypes(typeMap map[string]string, names []string, types []string) {
