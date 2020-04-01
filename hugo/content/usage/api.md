@@ -116,3 +116,4 @@ The HTTP protocol defines a standard set of status codes returned by responses.
 | `400 Bad Request` | The server could not understand the request due to invalid syntax. |
 | `404 Not Found` | The server can not find the requested resource. |
 | `500 Internal Server Error` | The server has encountered a situation it is unable to handle. |
+| `503 Service Unavailable` | The server is unable to handle the request. Can indicate a timeout caused by a long-running query or very large response. |
