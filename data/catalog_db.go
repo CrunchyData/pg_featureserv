@@ -53,7 +53,7 @@ var isFunctionsLoaded bool
 var instanceDB catalogDB
 var templateFeature *template.Template
 
-const fmtQueryStats = "Query result: %v rows in %v"
+const fmtQueryStats = "Database query result: %v rows in %v"
 
 func init() {
 	isStartup = true

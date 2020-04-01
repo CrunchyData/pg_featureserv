@@ -56,6 +56,25 @@ const (
 	GeoJSONFeatureCollection = "FeatureCollection"
 )
 
+const (
+	ErrMsgEncoding              = "Error encoding response"
+	ErrMsgLoadCollections       = "Unable to access Collections"
+	ErrMsgCollectionNotFound    = "Collection not found: %v"
+	ErrMsgCollectionAccess      = "Unable to access Collection: %v"
+	ErrMsgFeatureNotFound       = "Feature not found: %v"
+	ErrMsgLoadFunctions         = "Unable to access Functions"
+	ErrMsgFunctionNotFound      = "Function not found: %v"
+	ErrMsgFunctionAccess        = "Unable to access Function: %v"
+	ErrMsgInvalidParameterValue = "Invalid value for parameter %v: %v"
+	ErrMsgDataRead              = "Unable to read data from: %v"
+	ErrMsgRequestTimeout        = "Maximum time exceeded.  Request cancelled."
+)
+
+const (
+	ErrCodeCollectionNotFound = "CollectionNotFound"
+	ErrCodeFeatureNotFound    = "FeatureNotFound"
+)
+
 var ParamReservedNames = []string{
 	ParamLimit,
 	ParamOffset,
@@ -410,24 +429,6 @@ var ConformanceSchema openapi3.Schema = openapi3.Schema{
 		},
 	},
 }
-
-const (
-	ErrMsgEncoding              = "Error encoding response"
-	ErrMsgLoadCollections       = "Unable to access Collections"
-	ErrMsgCollectionNotFound    = "Collection not found: %v"
-	ErrMsgCollectionAccess      = "Unable to access Collection: %v"
-	ErrMsgFeatureNotFound       = "Feature not found: %v"
-	ErrMsgLoadFunctions         = "Unable to access Functions"
-	ErrMsgFunctionNotFound      = "Function not found: %v"
-	ErrMsgFunctionAccess        = "Unable to access Function: %v"
-	ErrMsgInvalidParameterValue = "Invalid value for parameter %v: %v"
-	ErrMsgDataRead              = "Unable to read data from: %v"
-)
-
-const (
-	ErrCodeCollectionNotFound = "CollectionNotFound"
-	ErrCodeFeatureNotFound    = "FeatureNotFound"
-)
 
 var conformance = Conformance{
 	ConformsTo: []string{

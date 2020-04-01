@@ -37,6 +37,7 @@ import (
 
 	"github.com/CrunchyData/pg_featureserv/ui"
 
+	"github.com/CrunchyData/pg_featureserv/api"
 	"github.com/CrunchyData/pg_featureserv/conf"
 	"github.com/CrunchyData/pg_featureserv/data"
 	"github.com/gorilla/handlers"
@@ -114,16 +115,27 @@ func serve() {
 
 	router = initRouter()
 
+	// writeTimeout is slighlty longer than request timeout to allow writing error response
+	timeoutSecRequest := conf.Configuration.Server.WriteTimeoutSec
+	timeoutSecWrite := timeoutSecRequest + 1
+
+	// ----  Handler chain  --------
 	// set CORS handling according to config
 	corsOpt := handlers.AllowedOrigins([]string{conf.Configuration.Server.CORSOrigins})
+	corsHandler := handlers.CORS(corsOpt)(router)
+	compressHandler := handlers.CompressHandler(corsHandler)
+	// if timeout expires, service returns 503
+	timeoutHandler := http.TimeoutHandler(compressHandler,
+		time.Duration(timeoutSecRequest)*time.Second,
+		api.ErrMsgRequestTimeout)
 
 	// more "production friendly" timeouts
 	// https://blog.simon-frey.eu/go-as-in-golang-standard-net-http-config-will-break-your-production/#You_should_at_least_do_this_The_easy_path
 	server := &http.Server{
 		ReadTimeout:  time.Duration(conf.Configuration.Server.ReadTimeoutSec) * time.Second,
-		WriteTimeout: time.Duration(conf.Configuration.Server.WriteTimeoutSec) * time.Second,
+		WriteTimeout: time.Duration(timeoutSecWrite) * time.Second,
 		Addr:         bindAddress,
-		Handler:      handlers.CompressHandler(handlers.CORS(corsOpt)(router)),
+		Handler:      timeoutHandler,
 	}
 
 	// start http service
@@ -146,6 +158,9 @@ func serve() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	server.Shutdown(ctx)
+
+	// this causes an immediate stop
+	//log.Fatalln("Aborting")
 
 	log.Debugln("Closing DB connections")
 	catalogInstance.Close()
