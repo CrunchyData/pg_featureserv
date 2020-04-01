@@ -5,7 +5,7 @@ draft: false
 weight: 400
 ---
 
-The basic principle of security is to connect the server to the database with a user that has just the access you want it to have, and no more. (Note: Postgres uses the term [database role](https://www.postgresql.org/docs/current/user-manag.html) when discussing user access permisions.)
+The basic principle of security in `pg_featureserv` is to connect the server to the database with a user that has just the access you want it to have, and no more. (Note: Postgres uses the term [database role](https://www.postgresql.org/docs/current/user-manag.html) when discussing user access permisions.)
 
 Start with a new, blank user. A blank user has no select privileges on tables it does not own.
 It does have execute privileges on functions.
@@ -16,9 +16,9 @@ CREATE USER featureserver;
 ```
 
 To support different access patterns, create different users with access to different tables/functions.
-Then run multiple service instances, connecting with those different users.
+Then, run multiple service instances, connecting with those different users.
 
-## Table and View Access
+## Table and view access
 
 If your tables are in a schema other than `public`, you must also grant usage on that schema to your user.
 ```sql
@@ -33,7 +33,7 @@ Alternatively, you can grant access to all the tables at once.
 GRANT SELECT ON ALL TABLES IN SCHEMA myschema TO featureserver;
 ```
 
-## Function Access
+## Function access
 
 As noted above, functions that access table data effectively are restricted by the access levels the user has to the tables the function reads. If you want to completely restrict access to the function, including visibility in the user interface, you can strip execution privileges from the function.
 ```sql

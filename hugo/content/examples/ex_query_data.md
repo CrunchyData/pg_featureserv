@@ -6,11 +6,11 @@ weight: 200
 ---
 
 This example shows how to use the `pg_featureserv` API to query the
-`ne.admin_0_countries` feature collection
-created in the [Setup]({{< relref "ex_setup" >}}) section.
+`ne.countries` feature collection
+created in the [Quick Start](/quickstart/) section.
 
-For more information about querying feature collections
-see the [Usage]({{< relref "query_data" >}}) section.
+For more information about querying feature collections,
+see the [Usage](/usage/) section.
 
 ## Basic Query
 

@@ -5,7 +5,7 @@ draft: false
 weight: 300
 ---
 
-## Basic Operation
+## Basic operation
 
 The service can be run with minimal configuration.
 Only the database connection information is required.
@@ -14,7 +14,7 @@ running with the `--test` option.)
 
 The database connection information can be provided in an environment variable
 `DATABASE_URL` containing a Postgres [connection string](https://www.postgresql.org/docs/12/libpq-connect.html#LIBPQ-CONNSTRING).
-It can also be provided in the configuration file `DbConnection` setting.
+It can also be provided in the configuration file `DbConnection` parameter.
 
 ### Linux or OSX
 ```sh

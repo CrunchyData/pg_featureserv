@@ -28,7 +28,7 @@ A Docker image is available on DockerHub:
 When you run the container, provide the database connection information in the `DATABASE_URL` environment variable and map the default service port (9000).
 
 ```sh
-docker run -e DATABASE_URL=postgres://user:pass@host/dbname -p 9000:9000 pramsey/pg_featureserv
+docker run -e DATABASE_URL=postgres://username:password@host/dbname -p 9000:9000 pramsey/pg_featureserv
 ```
 
 ### C. Build from source
@@ -48,6 +48,6 @@ go build
 To run the build to verify it, set the `DATABASE_URL` environment variable to the database you want to connect to, and run the binary.
 
 ```sh
-export DATABASE_URL=postgres://user:pass@host/dbname
+export DATABASE_URL=postgres://username:password@host/dbname
 $GOPATH/bin/pg_featureserv
 ```
