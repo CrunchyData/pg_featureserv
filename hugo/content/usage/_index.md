@@ -5,10 +5,10 @@ draft: false
 weight: 30
 ---
 
-This section describes how to use `pg_featureserv`.  It covers the followingn topics:
+This section describes how to use `pg_featureserv`. It covers the following topics:
 
-* How the service [Web Service API]({{< relref "api" >}}) works
-* How to publish [feature collections]({{< relref "collections" >}}) backed by PostGIS tables or views
-* How to [query features]({{< relref "query_data" >}}) from feature collections
-* How to publish database [functions]({{< relref "functions" >}})
-* How to [execute functions]({{< relref "query_function" >}})
+* How the [Web Service API](./api/) works
+* How to publish [feature collections](./collections/) backed by PostGIS tables or views
+* How to [query features](./query_data/) from feature collections
+* How to publish database [functions](./functions/)
+* How to [execute functions](./query_function/)

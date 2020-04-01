@@ -7,7 +7,7 @@ weight: 5
 
 This section describes how to set up `pg_featureserv` and connect the service to a spatial database.
 
-The first half of this section walks through how to prepare a spatial database and import spatial data, using the terminal. If you already have a spatial database, you can go ahead and start with "Configuring the service."
+The first half walks through how to prepare a spatial database and import spatial data, using the terminal. If you already have a spatial database, you can go ahead and start with "Configuring the service."
 
 ## Database preparation
 
@@ -47,7 +47,7 @@ shp2pgsql -D -s 4326 ne_50m_admin_0_countries.shp ne.countries | psql -U <userna
 You should see the `ne.countries` table using the `\dt ne.*` command in the `psql` SQL shell.
 
 For more information about publishing spatial tables in `pg_featureserv`,
-refer to the [Feature ollections](/usage/collections/)
+refer to the [Feature Collections](/usage/collections/)
 and [Security](/usage/security/) sections.
 
 ## Configuring the service

@@ -8,35 +8,31 @@ weight: 200
 A powerful feature of Postgres is the ability to create
 [user-defined functions](https://www.postgresql.org/docs/current/xfunc.html).
 Functions allow encapsulating complex logic behind a simple
-interface (namely that of providing some input arguments
+interface (namely, providing some input arguments
 and getting output as a set of records).
 This makes them easy to publish via a simple web API.
 
 Functions can execute any data processing that is
 possible to perform with Postgres and PostGIS.
 They can return either spatial or non-spatial results
-(as GeoJSON or plain JSON).
-They thus provide a powerful extension to the capabilities of
-the `pg_featureserv` API.
+(as GeoJSON or plain JSON). They thus provide a further extension to the capabilities of the `pg_featureserv` API.
 
 Potential uses for functions include:
 
-* Query a spatial database table or view with custom SQL
-  (which can include things such as more complex filters than the API provides,
-  joins to other tables or aggregation)
+* Query a spatial database table or view with custom SQL, which can include more  complex filters than the API provides, joins to other tables, or aggregation.
 * Query a non-spatial table or view to return data objects or a summary record.
-  For example, this could be used to provide values for a client-side drop-down list or autocomplete capability.
-* Generate spatial data controlled by a set of parameters
-* Provide a geometric computation,
-  by accepting a geometric input value and returning a single record containing the result
-* Functions can even be used to update data (as long as appropriate security is in place).
+  For example, this could be used to provide values for a client-side drop-down list or an autocomplete feature.
+* Generate spatial data controlled by a set of parameters.
+* Provide a geometric computation, by accepting a geometric input value and returning a single record containing the result.
+* Update data (as long as appropriate security is in place).
 
-## Publish Database Functions
+## Publish database functions
 
 The service can publish any function which returns a set of rows
 using the return type `SETOF record`
 or the equivalent (and more standard) `TABLE`
 (see the Postgres manual section on [set-returning functions](https://www.postgresql.org/docs/current/xfunc-sql.html#XFUNC-SQL-FUNCTIONS-RETURNING-SET).)
+
 Because there are usually many functions in a Postgres database,
 the service only publishes functions defined in the `postgisftw` schema.
 
@@ -51,13 +47,12 @@ so you should avoid using names which are existing API qeuery parameters.
 A function must return a set of records containing one or more
 columns, of any Postgres type.
 A **spatial function** is one which returns a column of type `geometry` or `geography`.
-Output from spatial functions is returned as GeoJSON datasets.
-Output from non-spatial functions is returned as JSON datasets.
+Output from spatial functions is returned as GeoJSON datasets, while output from non-spatial functions is returned as JSON datasets.
 
 Geometry values returned by a function can be in any coordinate system,
 but must have their SRID set to the appropriate value.
 If required, they are reprojected to geographic coordinates (SRID = 4326) in the output GeoJSON.
-If geometry is queried from an existing table the SRID may already be set;
+If geometry is queried from an existing table, the SRID may already be set;
 otherwise the function should set it explicitly.
 
 The example below illustrates
@@ -66,13 +61,10 @@ See the [Examples](/examples/) section for further examples.
 
 #### Example of a spatial function
 
-This example of a spatial function serves to illustrate the key concepts.
-It returns a filtered subset of a table (created using the Natural Earth [ne_50m_admin_0_countries](https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/50m/cultural/ne_50m_admin_0_countries.zip) dataset which is in [EPSG:4326](https://epsg.io/4326)).
+This function returns a filtered subset of a table (created using the Natural Earth [ne_50m_admin_0_countries](https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/50m/cultural/ne_50m_admin_0_countries.zip) dataset which is in [EPSG:4326](https://epsg.io/4326)).
 The filter in this case is the first letters of the country name.
 
-The `name_prefix` parameter includes a **default value**: this is useful for clients
-(like the preview interface for this service)
-that read arbitrary function definitions and need a default value to fill into interface fields.
+The `name_prefix` parameter includes a **default value**: this is useful for clients that read arbitrary function definitions and need a default value to fill into interface fields. The preview interface for `pg_featureserv` is an example.
 
 ```sql
 CREATE OR REPLACE FUNCTION postgisftw.countries_name(
@@ -94,15 +86,15 @@ LANGUAGE 'plpgsql' STABLE PARALLEL SAFE;
 COMMENT ON FUNCTION postgisftw.countries_name IS 'Filters the countries table by the initial letters of the name using the "name_prefix" parameter.';
 ```
 
-Aspects to note are:
+Notes:
 
 * The function is defined in the `postgisftw` schema.
-* it has a single input parameter `name_prefix`, with the `DEFAULT` value 'A'.
+* Tt has a single input parameter `name_prefix`, with the `DEFAULT` value 'A'.
 * It returns a table (set) of type `(name text, geom geometry)`.
 * The function body is a simple `SELECT` query which uses the input parameter as part of a `ILIKE` filter,
   and returns a column list matching the output table definition.
 * The geometry values are assumed to carry an SRID specified in the queried table.
-* The function "[volatility](https://www.postgresql.org/docs/current/xfunc-volatility.html)" is declared as `STABLE` because within a transaction context multiple calls with the same inputs will return the same outputs. It is not marked as `IMMUTABLE` because changes in the base table can change the outputs over time, even for the same inputs.
+* The function "[volatility](https://www.postgresql.org/docs/current/xfunc-volatility.html)" is declared as `STABLE` because within a transaction context, multiple calls with the same inputs will return the same outputs. It is not marked as `IMMUTABLE` because changes in the base table can change the outputs over time, even for the same inputs.
 * The function is declared as `PARALLEL SAFE` because it doesn't depend on any state that might be altered by making multiple concurrent calls to the function.
 
 The function can be called via the API by providing a value for the `name_prefix` parameter
@@ -117,10 +109,9 @@ The response is a GeoJSON document containing the 13 countries starting with the
 As with feature collections, available functions can be listed,
 and each function can supply metadata describing it.
 
-## List Functions
+## List functions
 
-The path `/functions` returns a JSON document
-containing a list of the functions available in the service.
+The path `/functions` returns a JSON document containing a list of the functions available in the service.
 
 #### Example
 ```
@@ -136,7 +127,7 @@ A list of links provide URLs for accessing:
 * `items` - the function data items
 
 
-## Describe Function metadata
+## Describe function metadata
 
 The path `/functions/{funid}` returns a JSON object describing
 the metadata for a database function.
@@ -149,7 +140,7 @@ are published from only one schema.
 http://localhost:9000/functions/geonames_geom
 ```
 
-The response is a JSON document ontaining metadata about the function, including:
+The response is a JSON document containing metadata about the function, including:
 
 * The function description
 * A list of the input parameters, described by name, type, description, and default value (if any)
