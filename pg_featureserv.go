@@ -159,12 +159,14 @@ func serve() {
 	defer cancel()
 	server.Shutdown(ctx)
 
-	// this causes an immediate stop
-	//log.Fatalln("Aborting")
+	// abort after waiting long enough for service to shutdown gracefully
+	// this terminates long-running DB queries, which otherwise block shutdown
+	chanCancelFatal := FatalAfter(timeoutSecWrite+10, "Timeout on shutdown - aborting.")
 
 	log.Debugln("Closing DB connections")
 	catalogInstance.Close()
 
 	log.Infoln("Server stopped.")
-	//log.Fatal(server.ListenAndServe())
+	// cancel the abort since it is not needed
+	close(chanCancelFatal)
 }

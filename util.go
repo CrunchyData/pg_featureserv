@@ -91,6 +91,23 @@ func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	close(handlerDone)
 }
 
+// FatalAfter aborts by logging a fatal message, after a time delay.
+// The abort can be cancelled by closing the returned channel
+func FatalAfter(delaySec int, msg string) chan struct{} {
+	chanCancel := make(chan struct{})
+	go func() {
+		select {
+		case <-chanCancel:
+			// do nothing if cancelled
+			return
+		case <-time.After(time.Duration(delaySec) * time.Second):
+			// terminate with extreme predjudice
+			log.Fatalln(msg)
+		}
+	}()
+	return chanCancel
+}
+
 func appErrorMsg(err error, msg string, code int) *appError {
 	return &appError{err, msg, code}
 }
