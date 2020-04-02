@@ -176,7 +176,7 @@ func extendLeft(arr []string, size int) []string {
 	return arr2
 }
 
-func (cat *catalogDB) FunctionFeatures(name string, args map[string]string, param *QueryParam) ([]string, error) {
+func (cat *catalogDB) FunctionFeatures(ctx context.Context, name string, args map[string]string, param *QueryParam) ([]string, error) {
 	fn, err := cat.FunctionByName(name)
 	if err != nil || fn == nil {
 		return nil, err
@@ -191,11 +191,11 @@ func (cat *catalogDB) FunctionFeatures(name string, args map[string]string, para
 	sql, argValues := sqlGeomFunction(fn, args, propCols, param)
 	log.Debugf("Function features query: %v", sql)
 	log.Debugf("Function %v Args: %v", name, argValues)
-	features, err := readFeaturesWithArgs(cat.dbconn, sql, argValues, idColIndex, propCols)
+	features, err := readFeaturesWithArgs(ctx, cat.dbconn, sql, argValues, idColIndex, propCols)
 	return features, err
 }
 
-func (cat *catalogDB) FunctionData(name string, args map[string]string, param *QueryParam) ([]map[string]interface{}, error) {
+func (cat *catalogDB) FunctionData(ctx context.Context, name string, args map[string]string, param *QueryParam) ([]map[string]interface{}, error) {
 	fn, err := cat.FunctionByName(name)
 	if err != nil || fn == nil {
 		return nil, err
@@ -208,7 +208,7 @@ func (cat *catalogDB) FunctionData(name string, args map[string]string, param *Q
 	sql, argValues := sqlFunction(fn, args, propCols, param)
 	log.Debugf("Function data query: %v", sql)
 	log.Debugf("Function %v Args: %v", name, argValues)
-	data, err := readDataWithArgs(cat.dbconn, propCols, sql, argValues)
+	data, err := readDataWithArgs(ctx, cat.dbconn, propCols, sql, argValues)
 	return data, err
 }
 
@@ -234,30 +234,36 @@ func removeNames(names []string, ex1 string, ex2 string) []string {
 	return newNames
 }
 
-func readDataWithArgs(db *pgxpool.Pool, propCols []string, sql string, args []interface{}) ([]map[string]interface{}, error) {
+func readDataWithArgs(ctx context.Context, db *pgxpool.Pool, propCols []string, sql string, args []interface{}) ([]map[string]interface{}, error) {
 	start := time.Now()
 	rows, err := db.Query(context.Background(), sql, args...)
+	defer rows.Close()
 	if err != nil {
 		log.Warnf("Error running Data query: %v", err)
 		return nil, err
 	}
-	data := scanData(rows, propCols)
+	data := scanData(ctx, rows, propCols)
 	log.Debugf(fmtQueryStats, len(data), time.Since(start))
 	return data, nil
 }
 
-func scanData(rows pgx.Rows, propCols []string) []map[string]interface{} {
+func scanData(ctx context.Context, rows pgx.Rows, propCols []string) []map[string]interface{} {
 	var data []map[string]interface{}
 	for rows.Next() {
 		obj := scanDataRow(rows, true, propCols)
 		//log.Println(feature)
 		data = append(data, obj)
 	}
+	// context check done outside rows loop,
+	// because a long-running function might not produce any rows before timeout
+	if err := ctx.Err(); err != nil {
+		//log.Debugf("Context error scanning Features: %v", err)
+		return data
+	}
 	// Check for errors from iterating over rows.
 	if err := rows.Err(); err != nil {
 		log.Warnf("Error reading Data rows: %v", err)
 	}
-	rows.Close()
 	return data
 }
 

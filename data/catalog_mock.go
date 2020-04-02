@@ -14,6 +14,7 @@ package data
 */
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 
@@ -193,7 +194,7 @@ func (cat *CatalogMock) TableByName(name string) (*Table, error) {
 	return nil, nil
 }
 
-func (cat *CatalogMock) TableFeatures(name string, param *QueryParam) ([]string, error) {
+func (cat *CatalogMock) TableFeatures(ctx context.Context, name string, param *QueryParam) ([]string, error) {
 	features, ok := cat.tableData[name]
 	if !ok {
 		// table not found - indicated by nil value returned
@@ -209,7 +210,7 @@ func (cat *CatalogMock) TableFeatures(name string, param *QueryParam) ([]string,
 	return featuresToJSON(featuresLim, propNames), nil
 }
 
-func (cat *CatalogMock) TableFeature(name string, id string, param *QueryParam) (string, error) {
+func (cat *CatalogMock) TableFeature(ctx context.Context, name string, id string, param *QueryParam) (string, error) {
 	features, ok := cat.tableData[name]
 	if !ok {
 		// table not found - indicated by empty value returned
@@ -248,12 +249,12 @@ func (cat *CatalogMock) FunctionByName(name string) (*Function, error) {
 	return nil, nil
 }
 
-func (cat *CatalogMock) FunctionFeatures(name string, args map[string]string, param *QueryParam) ([]string, error) {
+func (cat *CatalogMock) FunctionFeatures(ctx context.Context, name string, args map[string]string, param *QueryParam) ([]string, error) {
 	// TODO:
 	return nil, nil
 }
 
-func (cat *CatalogMock) FunctionData(name string, args map[string]string, param *QueryParam) ([]map[string]interface{}, error) {
+func (cat *CatalogMock) FunctionData(ctx context.Context, name string, args map[string]string, param *QueryParam) ([]map[string]interface{}, error) {
 	// TODO:
 	return nil, nil
 }
