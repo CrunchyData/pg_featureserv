@@ -84,7 +84,7 @@ func dbConnect() *pgxpool.Pool {
 	dbName := dbconfig.ConnConfig.Config.Database
 	dbUser := dbconfig.ConnConfig.Config.User
 	dbHost := dbconfig.ConnConfig.Config.Host
-	log.Infof("Connected as '%s' to '%s' @ '%s'", dbUser, dbName, dbHost)
+	log.Infof("Connected as %s to %s @ %s", dbUser, dbName, dbHost)
 	return db
 }
 
@@ -113,7 +113,6 @@ func dbConfig() *pgxpool.Config {
 	}
 
 	// Read current log level and use one less-fine level
-	// below that
 	dbconfig.ConnConfig.Logger = logrusadapter.NewLogger(log.New())
 	levelString, _ := (log.GetLevel() - 1).MarshalText()
 	pgxLevel, _ := pgx.LogLevelFromString(string(levelString))
