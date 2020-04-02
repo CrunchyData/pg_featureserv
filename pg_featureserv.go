@@ -105,8 +105,7 @@ func main() {
 	serve()
 }
 
-func serve() {
-
+func createServer() *http.Server {
 	confServ := conf.Configuration.Server
 
 	bindAddress := fmt.Sprintf("%v:%v", confServ.HttpHost, confServ.HttpPort)
@@ -137,6 +136,12 @@ func serve() {
 		Addr:         bindAddress,
 		Handler:      timeoutHandler,
 	}
+	return server
+}
+
+func serve() {
+
+	server := createServer()
 
 	// start http service
 	go func() {
@@ -161,7 +166,8 @@ func serve() {
 
 	// abort after waiting long enough for service to shutdown gracefully
 	// this terminates long-running DB queries, which otherwise block shutdown
-	chanCancelFatal := FatalAfter(timeoutSecWrite+10, "Timeout on shutdown - aborting.")
+	abortTimeoutSec := conf.Configuration.Server.WriteTimeoutSec + 10
+	chanCancelFatal := FatalAfter(abortTimeoutSec, "Timeout on shutdown - aborting.")
 
 	log.Debugln("Closing DB connections")
 	catalogInstance.Close()
