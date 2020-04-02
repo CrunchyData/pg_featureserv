@@ -14,6 +14,7 @@ package main
 */
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/CrunchyData/pg_featureserv/api"
@@ -263,9 +264,10 @@ func handleCollectionItems(w http.ResponseWriter, r *http.Request) *appError {
 	param := createQueryParams(&reqParam, tbl.Columns)
 	param.Filter = parseFilter(reqParam.Values, tbl.DbTypes)
 
+	ctx := r.Context()
 	switch format {
 	case api.FormatJSON:
-		return writeItemsJSON(w, name, param, urlBase)
+		return writeItemsJSON(ctx, w, name, param, urlBase)
 	case api.FormatHTML:
 		return writeItemsHTML(w, tbl, name, query, urlBase)
 	}
@@ -291,9 +293,9 @@ func writeItemsHTML(w http.ResponseWriter, tbl *data.Table, name string, query s
 	return writeHTML(w, nil, context, ui.PageItems())
 }
 
-func writeItemsJSON(w http.ResponseWriter, name string, param *data.QueryParam, urlBase string) *appError {
+func writeItemsJSON(ctx context.Context, w http.ResponseWriter, name string, param *data.QueryParam, urlBase string) *appError {
 	//--- query features data
-	features, err := catalogInstance.TableFeatures(name, param)
+	features, err := catalogInstance.TableFeatures(ctx, name, param)
 	if err != nil {
 		return appErrorInternalFmt(err, api.ErrMsgDataRead, name)
 	}
@@ -341,9 +343,10 @@ func handleItem(w http.ResponseWriter, r *http.Request) *appError {
 	}
 	param := createQueryParams(&reqParam, tbl.Columns)
 
+	ctx := r.Context()
 	switch format {
 	case api.FormatJSON:
-		return writeItemJSON(w, name, fid, param, urlBase)
+		return writeItemJSON(ctx, w, name, fid, param, urlBase)
 	case api.FormatHTML:
 		return writeItemHTML(w, tbl, name, fid, query, urlBase)
 	}
@@ -370,9 +373,9 @@ func writeItemHTML(w http.ResponseWriter, tbl *data.Table, name string, fid stri
 	return writeHTML(w, nil, context, ui.PageItem())
 }
 
-func writeItemJSON(w http.ResponseWriter, name string, fid string, param *data.QueryParam, urlBase string) *appError {
+func writeItemJSON(ctx context.Context, w http.ResponseWriter, name string, fid string, param *data.QueryParam, urlBase string) *appError {
 	//--- query data for request
-	feature, err := catalogInstance.TableFeature(name, fid, param)
+	feature, err := catalogInstance.TableFeature(ctx, name, fid, param)
 	if err != nil {
 		return appErrorInternalFmt(err, api.ErrMsgDataRead, name)
 	}
@@ -572,12 +575,13 @@ func handleFunctionItems(w http.ResponseWriter, r *http.Request) *appError {
 	fnArgs := restrict(reqParam.Values, fn.InNames)
 	//log.Debugf("Function request args: %v ", fnArgs)
 
+	ctx := r.Context()
 	switch format {
 	case api.FormatJSON:
 		if fn.IsGeometryFunction() {
-			return writeFunItemsGeoJSON(w, name, fnArgs, param, urlBase)
+			return writeFunItemsGeoJSON(ctx, w, name, fnArgs, param, urlBase)
 		}
-		return writeFunItemsJSON(w, name, fnArgs, param)
+		return writeFunItemsJSON(ctx, w, name, fnArgs, param)
 	case api.FormatHTML:
 		return writeFunItemsHTML(w, name, query, urlBase)
 	}
@@ -609,9 +613,9 @@ func writeFunItemsHTML(w http.ResponseWriter, name string, query string, urlBase
 	return writeHTML(w, nil, context, ui.PageFunctionItems())
 }
 
-func writeFunItemsGeoJSON(w http.ResponseWriter, name string, args map[string]string, param *data.QueryParam, urlBase string) *appError {
+func writeFunItemsGeoJSON(ctx context.Context, w http.ResponseWriter, name string, args map[string]string, param *data.QueryParam, urlBase string) *appError {
 	//--- query features data
-	features, err := catalogInstance.FunctionFeatures(name, args, param)
+	features, err := catalogInstance.FunctionFeatures(ctx, name, args, param)
 	if err != nil {
 		return appErrorInternalFmt(err, api.ErrMsgDataRead, name)
 	}
@@ -626,9 +630,9 @@ func writeFunItemsGeoJSON(w http.ResponseWriter, name string, args map[string]st
 	return writeJSON(w, api.ContentTypeGeoJSON, content)
 }
 
-func writeFunItemsJSON(w http.ResponseWriter, name string, args map[string]string, param *data.QueryParam) *appError {
+func writeFunItemsJSON(ctx context.Context, w http.ResponseWriter, name string, args map[string]string, param *data.QueryParam) *appError {
 	//--- query features data
-	features, err := catalogInstance.FunctionData(name, args, param)
+	features, err := catalogInstance.FunctionData(ctx, name, args, param)
 	if err != nil {
 		return appErrorInternalFmt(err, api.ErrMsgFunctionAccess, name)
 	}
