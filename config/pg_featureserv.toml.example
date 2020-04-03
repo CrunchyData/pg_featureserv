@@ -20,9 +20,10 @@ HttpPort = 9000
 AssetsPath = "./assets"
 
 # Maximum duration for reading entire request (in seconds)
-#ReadTimeoutSec = 1
+ReadTimeoutSec = 5
 
 # Maximum duration for writing response (in seconds)
+# Also controls maximum time for processing request
 WriteTimeoutSec = 30
 
 # Database functions allowed in the transform query parameter

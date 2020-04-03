@@ -123,7 +123,13 @@ func createServer() *http.Server {
 	corsOpt := handlers.AllowedOrigins([]string{conf.Configuration.Server.CORSOrigins})
 	corsHandler := handlers.CORS(corsOpt)(router)
 	compressHandler := handlers.CompressHandler(corsHandler)
-	// if timeout expires, service returns 503
+
+	// Use a TimeoutHandler to ensure a request does not run past the WriteTimeout duration.
+	// This provides a context that allows cancellation to be propagated
+	// down to the database driver.
+	//(Unfortunately this does not propagate to the database itself.
+	// That will require another mechanism such as session config statement_timeout)
+	// If timeout expires, service returns 503 and a text message
 	timeoutHandler := http.TimeoutHandler(compressHandler,
 		time.Duration(timeoutSecRequest)*time.Second,
 		api.ErrMsgRequestTimeout)

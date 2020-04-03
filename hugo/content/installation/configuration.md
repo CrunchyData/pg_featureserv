@@ -48,6 +48,13 @@ HttpPort = 9000
 # Read html templates from this directory
 AssetsPath = "/usr/share/pg_featurserv/assets"
 
+# Maximum duration for reading entire request (in seconds)
+ReadTimeoutSec = 1
+
+# Maximum duration for writing response (in seconds)
+# Also controls maximum time for processing request
+WriteTimeoutSec = 30
+
 [Database]
 # Database connection
 # postgresql://username:password@host/dbname
@@ -115,6 +122,21 @@ Set to `true` to run in debug mode.  This provides debug-level logging.
 
 The directory containing file assets used by the service (such as the HTML templates). It may be more convenient to deploy the asset files
 in a location which is not relative to the service application path.
+
+#### ReadTimeoutSec
+
+The maximum duration (in seconds) the service allows for reading the HTTP request.
+This can be relatively short, since service requests are small.
+
+#### WriteTimeoutSec
+
+The maximum duration (in seconds) the service allows for
+processing and writing the HTTP response.
+This should be long enough to allow expected requests to complete,
+but not so long that the service can be saturated
+by long-running requests.
+Long request times may be caused by long execution times for database queries or functions,
+or by returning very large responses.
 
 #### DbConnection
 
