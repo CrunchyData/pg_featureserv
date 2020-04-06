@@ -11,8 +11,8 @@
 * Improved collection metadata JSON doc
 * Data-driven styling for points
 * Data-driven styling column `style_radius`
-* Configuration whitelist for geoemtry transformation functions
-* Quote database columns in queries
+* Configuration whitelist for geometry transformation functions
+* Quote database columns in queries to allow upper case, reserved SQL words
 * More detailed debug logging
 
 
