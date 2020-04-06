@@ -200,7 +200,7 @@ func tablesSorted(tableMap map[string]*Table) []*Table {
 }
 
 func readTables(db *pgxpool.Pool) map[string]*Table {
-	log.Debug(sqlTables)
+	log.Debugf("Load table catalog:\n%v", sqlTables)
 	rows, err := db.Query(context.Background(), sqlTables)
 	if err != nil {
 		log.Fatal(err)
@@ -306,6 +306,7 @@ func readFeaturesWithArgs(ctx context.Context, db *pgxpool.Pool, sql string, arg
 	}
 
 	data := scanFeatures(ctx, rows, idColIndex, propCols)
+	rows.Close()
 	log.Debugf(fmtQueryStats, len(data), time.Since(start))
 	return data, nil
 }

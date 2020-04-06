@@ -54,7 +54,7 @@ func (cat *catalogDB) loadFunctions() {
 }
 
 func readFunctionDefs(db *pgxpool.Pool) ([]*Function, map[string]*Function) {
-	log.Debug(sqlFunctions)
+	log.Debugf("Load function catalog:\n%v", sqlFunctions)
 	rows, err := db.Query(context.Background(), sqlFunctions)
 	if err != nil {
 		log.Fatal(err)
