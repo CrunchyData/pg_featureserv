@@ -169,7 +169,7 @@ func sqlAttrFilter(filterConds []*FilterCond) (string, []interface{}) {
 	var vals []interface{}
 	var exprItems []string
 	for i, cond := range filterConds {
-		sqlCond := fmt.Sprintf("%v = $%v", cond.Name, i+1)
+		sqlCond := fmt.Sprintf("\"%v\" = $%v", cond.Name, i+1)
 		exprItems = append(exprItems, sqlCond)
 		vals = append(vals, cond.Value)
 	}
