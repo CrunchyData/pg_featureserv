@@ -96,14 +96,14 @@ The actual format returned is determined in one of the following ways (in descen
 * The path extension. Values allowed are:
   * `.json`, which indicates JSON or GeoJSON (the resource itself determines which)
   * `.html`, which indicates an HTML page should be returned, if available
-* The `Accept` request header value.
+* The `Accept` request header value (see above for supported values).
 * If the path extension or `Accept` request header is not specified, the default is to return a data document (JSON or GeoJSON).
 
 
-
-A web browser generally provides an `Accept` header of `text/html`,
-so you may need to explicitly specify the `.json` extension
-to retrieve a data document.
+When using a web browser to query the service,
+the browser generally provides an `Accept` header of `text/html`.
+So you may need to explicitly specify the `.json` extension
+to retrieve a data document instead of an HTML page.
 
 ## Status codes and messages
 
