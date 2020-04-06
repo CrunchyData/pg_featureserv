@@ -53,7 +53,7 @@ This parameter is only useful for spatial functions.
 http://localhost:9000/functions/countries_name/items?bbox=10.4,43.3,26.4,47.7
 ```
 
-### Specify properties
+### Specify response properties
 
 The query parameter `properties=PROP1,PROP2,PROP3...`
 specifies the properties returned in the response.

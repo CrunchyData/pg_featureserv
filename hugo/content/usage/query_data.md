@@ -12,7 +12,6 @@ or to return a single feature.
 
 The path `/collections/{collid}/items` is the basic query to return
 a set of features from a feature collection.
-
 The response is a GeoJSON feature collection containing the result.
 
 #### Example
@@ -45,13 +44,24 @@ to perform the query.
 http://localhost:9000/collections/ne.countries/items?bbox=10.4,43.3,26.4,47.7
 ```
 
-### Specify properties
+### Filter by properties
+
+The response feature set can be filtered to include
+only features which have a given value for one or more properties.
+This is done by including query parameters which have the same name as the property
+to be filtered.  The value of the parameter is the desired property value.
+
+#### Example
+```
+http://localhost:9000/collections/ne.countries/items?continent=Europe
+```
+
+### Specify respones properties
 
 The query parameter `properties=PROP1,PROP2,PROP3...`
-specifies the properties returned
-in the response.
-This reduces the response size of feature collections
-which can have a large number of properties.
+specifies the feature properties returned in the response.
+This can reduce the response size of feature collections
+which have a large number of properties.
 
 #### Example
 ```
