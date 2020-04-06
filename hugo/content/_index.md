@@ -5,6 +5,9 @@ draft: false
 ---
 
 # pg_featureserv
+
+This is the documentation for `pg_featureserv` version 1.1.
+
 `pg_featureserv` is a [PostGIS](https://postgis.net/)-based feature server written in [Go](https://golang.org/).
 It is a lightweight, low-configuration RESTful web service that provides
 access to spatial data stored in PostGIS tables, as well as spatial processing capability

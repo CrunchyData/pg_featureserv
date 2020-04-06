@@ -1,7 +1,7 @@
 # pg_featureserv Version History
 
-## Version 1.0.1
-*Released: TBD*
+## Version 1.1
+*Released: 2020 Apr 6*
 
 ### New Features
 
