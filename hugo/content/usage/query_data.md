@@ -124,7 +124,6 @@ The response is a GeoJSON feature containing the result.
 http://localhost:9000/collections/ne.countries/items/23
 ```
 
-
 ### Restrict properties
 
 The query parameter `properties=PROP1,PROP2,PROP3...`
