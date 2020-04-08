@@ -5,9 +5,9 @@ draft: false
 weight: 210
 ---
 
-This is the same spatial function example shown in the [Usage](/usage/functions/) section, but we'll show a sample GeoJSON response, as well as the web UI preview. 
+This is the same spatial function example shown in the [Usage](/usage/functions/) section, but we'll include a sample GeoJSON response, as well as the web UI preview. 
 
-### Create a spatial function that returns a filtered set of countries 
+## Create a spatial function that returns a filtered set of countries 
 
 ```sql
 CREATE OR REPLACE FUNCTION postgisftw.countries_name(
@@ -29,15 +29,15 @@ LANGUAGE 'plpgsql' STABLE PARALLEL SAFE;
 COMMENT ON FUNCTION postgisftw.countries_name IS 'Filters the countries table by the initial letters of the name using the "name_prefix" parameter.';
 ```
 
-### Example of API query
+## Example of API query
 
-The function can be called via the API by providing a value for the `name_prefix` parameter. 
+The function can be called via the API by providing a value for the `name_prefix` parameter.
 
-```http://localhost:9000/functions/countries_name/items?name_prefix=Mo```
+`http://localhost:9000/functions/countries_name/items?name_prefix=Mo`
 
 Since a default value is included in the function declaration, you could omit the parameter in the call -- a random sample of features will be returned.
 
-### Sample GeoJSON response
+## Sample GeoJSON response
 
 The response is a GeoJSON document containing the 7 countries starting with the letters 'Mo'.
 
@@ -96,6 +96,6 @@ The response is a GeoJSON document containing the 7 countries starting with the 
 }
 ```
 
-### Web preview
+## Web preview
 
 ![Countries starting with 'Mo'](/ex-query-countries.png)

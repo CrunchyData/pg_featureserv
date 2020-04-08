@@ -44,11 +44,11 @@ Tables and views are visible when they are available for access
 based on the database access permissions defined for the service database user (role).
 See the [Security](./security/) section for examples of setting role priviledges.
 
-If a view uses the geometry column of an underlying table directly
-the spatial column metadata is inherited for the view.***
-But if a view column is defined as the result of a spatial function
+If a view directly uses the geometry column of an underlying table,
+the spatial column metadata is inherited for the view.
+But if a view column is defined as the result of a spatial function,
 then the column must be explicitly cast to a geometry type providing the type and SRID.
-Also, depending on the spatial function used, it may be necessary to
+Depending on the spatial function used, it may also be necessary to
 explicitly set the SRID of the created geometry.
 
 #### Example of a view definition
@@ -86,7 +86,7 @@ http://localhost:9000/collections
 
 Each listed feature collection is described by a subset of its metadata,
 including name, title, description and extent.
-A list of links provide URLs for accessing: ***need to specify where they can see?
+A list of `links` provide URLs for accessing:
 
 * `self` - the feature collection metadata
 * `alternate` - the feature collection metadata as an HTML view
@@ -110,7 +110,7 @@ The response is a JSON document ontaining metadata about the collection, includi
 * The geometry column name
 * The geometry type
 * The geometry spatial reference code (SRID)
-* The extent*** of the feature collection (if available)
+* The extent of the feature collection (if available)
 * The column name providing the feature identifiers (if any)
 * A list of the properties and their JSON types
 

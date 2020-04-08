@@ -171,5 +171,5 @@ Appears in the HTML web pages, JSON responses, and the log.
 
 #### Description
 
-The description for the service.***
+The description for the service.
 Appears in the HTML web pages and JSON responses.
