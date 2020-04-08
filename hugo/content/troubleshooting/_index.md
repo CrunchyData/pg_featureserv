@@ -28,10 +28,10 @@ The service outputs logging information to the console.
 By default, the log level is set to show errors and warnings only.
 Running the service with debug level logging will
 provide more information about request processing.
-This includes things like the actual SQL emitted to the database,
+This can include the actual SQL emitted to the database,
 SQL errors, and timing of queries and responses.
 
-To invoke debug mode, run the server with the `--debug` commandline parameter:
+To invoke debug mode, run the server with the `--debug` command-line parameter:
 ```sh
 ./pg_featureserv --debug
 ```

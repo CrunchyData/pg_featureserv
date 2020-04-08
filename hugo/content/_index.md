@@ -4,6 +4,8 @@ date:
 draft: false
 ---
 
+![Crunchy Spatial](/crunchy-spatial-logo.png)
+
 # pg_featureserv
 
 This is the documentation for `pg_featureserv` version 1.1.
@@ -22,4 +24,4 @@ to spatial data enables richer functionality.  Use cases include:
 * Download spatial data for use in applications
 
 This guide walks you through how to install and use `pg_featureserv` for your spatial applications. See [Quick Start](/quickstart/) to learn how to get the service up and running with a spatial database. The [Usage](/usage/) section goes in-depth on how the service works.
-We'll soon be adding more [basic examples](/examples/) of web map applications that source feature data from `pg_featureserv`.
+We're continuing to add [basic examples](/examples/) of working with feature data from `pg_featureserv`.

@@ -65,7 +65,7 @@ that produce a large number of records.
 http://localhost:9000/functions/countries_name/items?properties=name
 ```
 
-### Limiting and Paging
+### Limiting and paging
 
 The query parameter `limit=N` can controls
 the maximum number of data items returned in a response.
