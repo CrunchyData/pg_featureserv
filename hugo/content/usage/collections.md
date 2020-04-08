@@ -42,7 +42,7 @@ CREATE TABLE mytable (
 
 Tables and views are visible when they are available for access
 based on the database access permissions defined for the service database user (role).
-See the [Security](./security/) section for examples of setting role priviledges.
+See the [Security](./security/) section for examples of setting role privileges.
 
 If a view directly uses the geometry column of an underlying table,
 the spatial column metadata is inherited for the view.
@@ -86,7 +86,7 @@ http://localhost:9000/collections
 
 Each listed feature collection is described by a subset of its metadata,
 including name, title, description and extent.
-A list of `links` provide URLs for accessing:
+A list of links provide URLs for accessing:
 
 * `self` - the feature collection metadata
 * `alternate` - the feature collection metadata as an HTML view
@@ -105,7 +105,7 @@ backing the feature collection.
 http://localhost:9000/collections/ne.admin_0_countries
 ```
 
-The response is a JSON document ontaining metadata about the collection, including:
+The response is a JSON document containing metadata about the collection, including:
 
 * The geometry column name
 * The geometry type

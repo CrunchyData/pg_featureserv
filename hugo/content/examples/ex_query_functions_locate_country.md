@@ -46,7 +46,7 @@ The coordinate pair (47,8) can be passed into the function:
 
 `http://localhost:9000/functions/country_by_loc/items.json?lat=47&lon=8`
 
-## JSON response
+## Sample JSON response
 
 The service returns data from non-spatial functions in JSON, instead of GeoJSON.
 
