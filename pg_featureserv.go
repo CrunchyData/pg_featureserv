@@ -37,6 +37,7 @@ import (
 
 	"github.com/CrunchyData/pg_featureserv/ui"
 
+	"github.com/CrunchyData/pg_featureserv/api"
 	"github.com/CrunchyData/pg_featureserv/conf"
 	"github.com/CrunchyData/pg_featureserv/data"
 	"github.com/gorilla/handlers"
@@ -83,6 +84,7 @@ func main() {
 	log.Infof("----  %s - Version %s ----------\n", conf.AppConfig.Name, conf.AppConfig.Version)
 
 	conf.InitConfig(flagConfigFilename)
+	initTransforms(conf.Configuration.Server.TransformFunctions)
 
 	log.Infof("%s\n", conf.Configuration.Metadata.Title)
 
@@ -103,8 +105,7 @@ func main() {
 	serve()
 }
 
-func serve() {
-
+func createServer() *http.Server {
 	confServ := conf.Configuration.Server
 
 	bindAddress := fmt.Sprintf("%v:%v", confServ.HttpHost, confServ.HttpPort)
@@ -113,17 +114,40 @@ func serve() {
 
 	router = initRouter()
 
+	// writeTimeout is slighlty longer than request timeout to allow writing error response
+	timeoutSecRequest := conf.Configuration.Server.WriteTimeoutSec
+	timeoutSecWrite := timeoutSecRequest + 1
+
+	// ----  Handler chain  --------
 	// set CORS handling according to config
 	corsOpt := handlers.AllowedOrigins([]string{conf.Configuration.Server.CORSOrigins})
+	corsHandler := handlers.CORS(corsOpt)(router)
+	compressHandler := handlers.CompressHandler(corsHandler)
+
+	// Use a TimeoutHandler to ensure a request does not run past the WriteTimeout duration.
+	// This provides a context that allows cancellation to be propagated
+	// down to the database driver.
+	//(Unfortunately this does not propagate to the database itself.
+	// That will require another mechanism such as session config statement_timeout)
+	// If timeout expires, service returns 503 and a text message
+	timeoutHandler := http.TimeoutHandler(compressHandler,
+		time.Duration(timeoutSecRequest)*time.Second,
+		api.ErrMsgRequestTimeout)
 
 	// more "production friendly" timeouts
 	// https://blog.simon-frey.eu/go-as-in-golang-standard-net-http-config-will-break-your-production/#You_should_at_least_do_this_The_easy_path
 	server := &http.Server{
 		ReadTimeout:  time.Duration(conf.Configuration.Server.ReadTimeoutSec) * time.Second,
-		WriteTimeout: time.Duration(conf.Configuration.Server.WriteTimeoutSec) * time.Second,
+		WriteTimeout: time.Duration(timeoutSecWrite) * time.Second,
 		Addr:         bindAddress,
-		Handler:      handlers.CompressHandler(handlers.CORS(corsOpt)(router)),
+		Handler:      timeoutHandler,
 	}
+	return server
+}
+
+func serve() {
+
+	server := createServer()
 
 	// start http service
 	go func() {
@@ -146,9 +170,15 @@ func serve() {
 	defer cancel()
 	server.Shutdown(ctx)
 
+	// abort after waiting long enough for service to shutdown gracefully
+	// this terminates long-running DB queries, which otherwise block shutdown
+	abortTimeoutSec := conf.Configuration.Server.WriteTimeoutSec + 10
+	chanCancelFatal := FatalAfter(abortTimeoutSec, "Timeout on shutdown - aborting.")
+
 	log.Debugln("Closing DB connections")
 	catalogInstance.Close()
 
 	log.Infoln("Server stopped.")
-	//log.Fatal(server.ListenAndServe())
+	// cancel the abort since it is not needed
+	close(chanCancelFatal)
 }

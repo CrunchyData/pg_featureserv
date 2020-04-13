@@ -79,7 +79,10 @@ func parseRequestParams(r *http.Request) (api.RequestParam, error) {
 	param.Precision = precision
 
 	// --- transform parameter
-	param.TransformFuns = parseTransform(paramValues)
+	param.TransformFuns, err = parseTransform(paramValues)
+	if err != nil {
+		return param, err
+	}
 
 	return param, nil
 }
@@ -255,22 +258,56 @@ func toNameSet(strs []string) map[string]bool {
 
 const transformFunSep = "|"
 const transformParamSep = ","
+const functionPrefixST = "st_"
 
-func parseTransform(values api.NameValMap) []data.TransformFunction {
+var transformFunctionWhitelist map[string]string
+
+func initTransforms(funNames []string) {
+	transformFunctionWhitelist = make(map[string]string)
+	for _, name := range funNames {
+		nameLow := strings.ToLower(name)
+		transformFunctionWhitelist[nameLow] = name
+	}
+}
+
+// actualFunctionName converts an input function name
+// to an actual function name from the whitelist
+func actualFunctionName(name string) string {
+	nameLow := strings.ToLower(name)
+	if actual, ok := transformFunctionWhitelist[nameLow]; ok {
+		return actual
+	}
+	if !strings.HasPrefix(nameLow, functionPrefixST) {
+		// supply ST_ prefix if not there and try again
+		stName := functionPrefixST + nameLow
+		if actual, ok := transformFunctionWhitelist[stName]; ok {
+			return actual
+		}
+	}
+	return ""
+}
+
+func parseTransform(values api.NameValMap) ([]data.TransformFunction, error) {
 	val := values[api.ParamTransform]
 	if len(val) < 1 {
-		return nil
+		return nil, nil
 	}
 	funDefs := strings.Split(val, transformFunSep)
 
 	funList := make([]data.TransformFunction, 0)
 	for _, fun := range funDefs {
 		tf := parseTransformFun(fun)
+		actualName := actualFunctionName(tf.Name)
+		if len(actualName) <= 0 {
+			err := fmt.Errorf(api.ErrMsgInvalidParameterValue, api.ParamTransform, tf.Name)
+			return nil, err
+		}
+		tf.Name = actualName
 		if tf.Name != "" {
 			funList = append(funList, tf)
 		}
 	}
-	return funList
+	return funList, nil
 }
 
 func parseTransformFun(def string) data.TransformFunction {

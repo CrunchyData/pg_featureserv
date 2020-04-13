@@ -14,6 +14,7 @@ package main
 */
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/CrunchyData/pg_featureserv/api"
@@ -21,7 +22,6 @@ import (
 	"github.com/CrunchyData/pg_featureserv/data"
 	"github.com/CrunchyData/pg_featureserv/ui"
 	"github.com/gorilla/mux"
-	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -91,7 +91,7 @@ func doRoot(w http.ResponseWriter, r *http.Request, format string) *appError {
 	case api.FormatHTML:
 		context := ui.NewPageData()
 		context.URLHome = urlPathFormat(urlBase, "", api.FormatHTML)
-		context.URLJSON = urlPathFormat(urlBase, "", api.FormatJSON)
+		context.URLJSON = urlPathFormat(urlBase, api.RootPageName, api.FormatJSON)
 
 		return writeHTML(w, content, context, ui.PageHome())
 	default:
@@ -103,8 +103,8 @@ func doRoot(w http.ResponseWriter, r *http.Request, format string) *appError {
 func linksRoot(urlBase string) []*api.Link {
 	var links []*api.Link
 	format := api.FormatJSON
-	links = append(links, linkSelf(urlBase, "", api.TitleDocument))
-	links = append(links, linkAlt(urlBase, "", api.TitleDocument))
+	links = append(links, linkSelf(urlBase, api.RootPageName, api.TitleDocument))
+	links = append(links, linkAlt(urlBase, api.RootPageName, api.TitleDocument))
 
 	links = append(links, &api.Link{
 		Href: urlPathFormat(urlBase, api.TagCollections, format),
@@ -144,7 +144,7 @@ func handleCollections(w http.ResponseWriter, r *http.Request) *appError {
 
 	content := api.NewCollectionsInfo(colls)
 	for _, coll := range content.Collections {
-		addCollectionLinks(coll, urlBase, isJSON, true)
+		addCollectionSummaryLinks(coll, urlBase, isJSON, true)
 	}
 
 	switch format {
@@ -167,7 +167,7 @@ func linksCollections(urlBase string) []*api.Link {
 	return links
 }
 
-func addCollectionLinks(coll *api.CollectionInfo, urlBase string, isJSON bool, isSummary bool) {
+func addCollectionSummaryLinks(coll *api.CollectionInfo, urlBase string, isJSON bool, isSummary bool) {
 	name := coll.Name
 	path := api.PathCollection(name)
 	pathItems := api.PathCollectionItems(name)
@@ -216,25 +216,27 @@ func handleCollection(w http.ResponseWriter, r *http.Request) *appError {
 		return appErrorNotFoundFmt(err, api.ErrMsgCollectionNotFound, name)
 	}
 	content := api.NewCollectionInfo(tbl)
-	isJSON := format == api.FormatJSON
-	addCollectionLinks(content, urlBase, isJSON, false)
 	content.GeometryType = &tbl.GeometryType
 	content.Properties = api.TableProperties(tbl)
 
 	// --- encoding
 	switch format {
 	case api.FormatHTML:
+		pathItems := api.PathCollectionItems(name)
 		context := ui.NewPageData()
 		context.URLHome = urlPathFormat(urlBase, "", api.FormatHTML)
 		context.URLCollections = urlPathFormat(urlBase, api.TagCollections, api.FormatHTML)
 		context.URLCollection = urlPathFormat(urlBase, api.PathCollection(name), api.FormatHTML)
 		context.URLJSON = urlPathFormat(urlBase, api.PathCollection(name), api.FormatJSON)
+		context.URLItems = urlPathFormat(urlBase, pathItems, api.FormatHTML)
+		context.URLItemsJSON = urlPathFormat(urlBase, pathItems, api.FormatJSON)
 		context.Title = tbl.Title
 		context.Table = tbl
 		context.IDColumn = tbl.IDColumn
 
 		return writeHTML(w, content, context, ui.PageCollection())
 	default:
+		content.Links = linksCollection(name, urlBase, false)
 		return writeJSON(w, api.ContentTypeJSON, content)
 	}
 }
@@ -262,9 +264,10 @@ func handleCollectionItems(w http.ResponseWriter, r *http.Request) *appError {
 	param := createQueryParams(&reqParam, tbl.Columns)
 	param.Filter = parseFilter(reqParam.Values, tbl.DbTypes)
 
+	ctx := r.Context()
 	switch format {
 	case api.FormatJSON:
-		return writeItemsJSON(w, name, param, urlBase)
+		return writeItemsJSON(ctx, w, name, param, urlBase)
 	case api.FormatHTML:
 		return writeItemsHTML(w, tbl, name, query, urlBase)
 	}
@@ -290,9 +293,9 @@ func writeItemsHTML(w http.ResponseWriter, tbl *data.Table, name string, query s
 	return writeHTML(w, nil, context, ui.PageItems())
 }
 
-func writeItemsJSON(w http.ResponseWriter, name string, param *data.QueryParam, urlBase string) *appError {
+func writeItemsJSON(ctx context.Context, w http.ResponseWriter, name string, param *data.QueryParam, urlBase string) *appError {
 	//--- query features data
-	features, err := catalogInstance.TableFeatures(name, param)
+	features, err := catalogInstance.TableFeatures(ctx, name, param)
 	if err != nil {
 		return appErrorInternalFmt(err, api.ErrMsgDataRead, name)
 	}
@@ -340,9 +343,10 @@ func handleItem(w http.ResponseWriter, r *http.Request) *appError {
 	}
 	param := createQueryParams(&reqParam, tbl.Columns)
 
+	ctx := r.Context()
 	switch format {
 	case api.FormatJSON:
-		return writeItemJSON(w, name, fid, param, urlBase)
+		return writeItemJSON(ctx, w, name, fid, param, urlBase)
 	case api.FormatHTML:
 		return writeItemHTML(w, tbl, name, fid, query, urlBase)
 	}
@@ -369,9 +373,9 @@ func writeItemHTML(w http.ResponseWriter, tbl *data.Table, name string, fid stri
 	return writeHTML(w, nil, context, ui.PageItem())
 }
 
-func writeItemJSON(w http.ResponseWriter, name string, fid string, param *data.QueryParam, urlBase string) *appError {
+func writeItemJSON(ctx context.Context, w http.ResponseWriter, name string, fid string, param *data.QueryParam, urlBase string) *appError {
 	//--- query data for request
-	feature, err := catalogInstance.TableFeature(name, fid, param)
+	feature, err := catalogInstance.TableFeature(ctx, name, fid, param)
 	if err != nil {
 		return appErrorInternalFmt(err, api.ErrMsgDataRead, name)
 	}
@@ -438,7 +442,7 @@ func handleFunctions(w http.ResponseWriter, r *http.Request) *appError {
 	content := api.NewFunctionsInfo(fns)
 	for _, fn := range content.Functions {
 		isGeomFun := fn.Function.IsGeometryFunction()
-		addFunctionLinks(fn, urlBase, isJSON, true, isGeomFun)
+		addFunctionSummaryLinks(fn, urlBase, isJSON, true, isGeomFun)
 	}
 
 	switch format {
@@ -461,7 +465,7 @@ func linksFunctions(urlBase string) []*api.Link {
 	return links
 }
 
-func addFunctionLinks(content *api.FunctionInfo, urlBase string, isJSON bool, isSummary bool, isGeomFun bool) {
+func addFunctionSummaryLinks(content *api.FunctionSummary, urlBase string, isJSON bool, isSummary bool, isGeomFun bool) {
 	name := content.Name
 	if isJSON {
 		content.Links = linksFunction(name, urlBase, isSummary, isGeomFun)
@@ -470,13 +474,18 @@ func addFunctionLinks(content *api.FunctionInfo, urlBase string, isJSON bool, is
 		pathItems := api.PathFunctionItems(name)
 		content.URLMetadataJSON = urlPathFormat(urlBase, path, api.FormatJSON)
 		content.URLMetadataHTML = urlPathFormat(urlBase, path, api.FormatHTML)
-		content.URLItemsHTML = urlPathFormat(urlBase, pathItems, api.FormatHTML)
-		if !isGeomFun {
-			// there is no HTML view for non-spatial (for now)
-			content.URLItemsHTML = ""
-		}
+		// there is no HTML view for non-spatial (for now)
+		content.URLItemsHTML = urlIfExists(isGeomFun, urlPathFormat(urlBase, pathItems, api.FormatHTML))
 		content.URLItemsJSON = urlPathFormat(urlBase, pathItems, api.FormatJSON)
 	}
+}
+
+// urlIfExists returns the url, or blank if the document does not exist
+func urlIfExists(isExists bool, url string) string {
+	if isExists {
+		return url
+	}
+	return ""
 }
 
 func linksFunction(id string, urlBase string, isSummary bool, isGeomFun bool) []*api.Link {
@@ -519,24 +528,27 @@ func handleFunction(w http.ResponseWriter, r *http.Request) *appError {
 	}
 	content := api.NewFunctionInfo(fn)
 	isGeomFun := fn.IsGeometryFunction()
-	isJSON := format == api.FormatJSON
-	addFunctionLinks(content, urlBase, isJSON, false, isGeomFun)
 	content.Parameters = api.FunctionParameters(fn)
 	content.Properties = api.FunctionProperties(fn)
 
 	// --- encoding
 	switch format {
 	case api.FormatHTML:
+		pathItems := api.PathFunctionItems(name)
 		context := ui.NewPageData()
 		context.URLHome = urlPathFormat(urlBase, "", api.FormatHTML)
 		context.URLFunctions = urlPathFormat(urlBase, api.TagFunctions, api.FormatHTML)
 		context.URLFunction = urlPathFormat(urlBase, api.PathFunction(name), api.FormatHTML)
 		context.URLJSON = urlPathFormat(urlBase, api.PathFunction(name), api.FormatJSON)
+		// there is no HTML view for non-spatial (for now)
+		context.URLItems = urlIfExists(isGeomFun, urlPathFormat(urlBase, pathItems, api.FormatHTML))
+		context.URLItemsJSON = urlPathFormat(urlBase, pathItems, api.FormatJSON)
 		context.Title = fn.ID
 		context.Function = fn
 
 		return writeHTML(w, content, context, ui.PageFunction())
 	default:
+		content.Links = linksFunction(name, urlBase, false, isGeomFun)
 
 		return writeJSON(w, api.ContentTypeJSON, content)
 	}
@@ -561,14 +573,15 @@ func handleFunctionItems(w http.ResponseWriter, r *http.Request) *appError {
 	}
 	param := createQueryParams(&reqParam, fn.OutNames)
 	fnArgs := restrict(reqParam.Values, fn.InNames)
-	log.Debugf("fnArgs: %v ", fnArgs)
+	//log.Debugf("Function request args: %v ", fnArgs)
 
+	ctx := r.Context()
 	switch format {
 	case api.FormatJSON:
 		if fn.IsGeometryFunction() {
-			return writeFunItemsGeoJSON(w, name, fnArgs, param, urlBase)
+			return writeFunItemsGeoJSON(ctx, w, name, fnArgs, param, urlBase)
 		}
-		return writeFunItemsJSON(w, name, fnArgs, param)
+		return writeFunItemsJSON(ctx, w, name, fnArgs, param)
 	case api.FormatHTML:
 		return writeFunItemsHTML(w, name, query, urlBase)
 	}
@@ -600,9 +613,9 @@ func writeFunItemsHTML(w http.ResponseWriter, name string, query string, urlBase
 	return writeHTML(w, nil, context, ui.PageFunctionItems())
 }
 
-func writeFunItemsGeoJSON(w http.ResponseWriter, name string, args map[string]string, param *data.QueryParam, urlBase string) *appError {
+func writeFunItemsGeoJSON(ctx context.Context, w http.ResponseWriter, name string, args map[string]string, param *data.QueryParam, urlBase string) *appError {
 	//--- query features data
-	features, err := catalogInstance.FunctionFeatures(name, args, param)
+	features, err := catalogInstance.FunctionFeatures(ctx, name, args, param)
 	if err != nil {
 		return appErrorInternalFmt(err, api.ErrMsgDataRead, name)
 	}
@@ -617,9 +630,9 @@ func writeFunItemsGeoJSON(w http.ResponseWriter, name string, args map[string]st
 	return writeJSON(w, api.ContentTypeGeoJSON, content)
 }
 
-func writeFunItemsJSON(w http.ResponseWriter, name string, args map[string]string, param *data.QueryParam) *appError {
+func writeFunItemsJSON(ctx context.Context, w http.ResponseWriter, name string, args map[string]string, param *data.QueryParam) *appError {
 	//--- query features data
-	features, err := catalogInstance.FunctionData(name, args, param)
+	features, err := catalogInstance.FunctionData(ctx, name, args, param)
 	if err != nil {
 		return appErrorInternalFmt(err, api.ErrMsgFunctionAccess, name)
 	}

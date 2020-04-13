@@ -16,6 +16,7 @@ package data
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/jackc/pgtype"
 	"github.com/jackc/pgx/v4"
@@ -53,7 +54,7 @@ func (cat *catalogDB) loadFunctions() {
 }
 
 func readFunctionDefs(db *pgxpool.Pool) ([]*Function, map[string]*Function) {
-	log.Debug(sqlFunctions)
+	log.Debugf("Load function catalog:\n%v", sqlFunctions)
 	rows, err := db.Query(context.Background(), sqlFunctions)
 	if err != nil {
 		log.Fatal(err)
@@ -90,7 +91,9 @@ func scanFunctionDef(rows pgx.Rows) *Function {
 
 	inNames := toArray(inNamesTA)
 	inTypes := toArray(inTypesTA)
-	inDefaults := toArray(inDefaultsTA)
+	inDefaultsDB := toArray(inDefaultsTA)
+	numNoDefault := len(inNames) - len(inDefaultsDB)
+	inDefaults := extendLeft(inDefaultsDB, len(inNames))
 	outNames := toArray(outNamesTA)
 	outTypes := toArray(outTypesTA)
 	outJSONTypes := toJSONTypeFromPGArray(outTypes)
@@ -109,7 +112,7 @@ func scanFunctionDef(rows pgx.Rows) *Function {
 
 	geomCol := geometryColumn(outNames, datatypes)
 
-	return &Function{
+	funDef := Function{
 		ID:             id,
 		Schema:         schema,
 		Name:           name,
@@ -118,12 +121,15 @@ func scanFunctionDef(rows pgx.Rows) *Function {
 		InDbTypes:      inTypes,
 		InTypeMap:      inTypeMap,
 		InDefaults:     inDefaults,
+		NumNoDefault:   numNoDefault,
 		OutNames:       outNames,
 		OutDbTypes:     outTypes,
 		OutJSONTypes:   outJSONTypes,
 		Types:          datatypes,
 		GeometryColumn: geomCol,
 	}
+	//fmt.Printf("DEBUG: Function definitions: %v\n", funDef)
+	return &funDef
 }
 func addTypes(typeMap map[string]string, names []string, types []string) {
 	for i, name := range names {
@@ -156,7 +162,21 @@ func toArray(ta pgtype.TextArray) []string {
 	return arr
 }
 
-func (cat *catalogDB) FunctionFeatures(name string, args map[string]string, param *QueryParam) ([]string, error) {
+// extendLeft extends an array to have given size, with original contents right-aligned
+func extendLeft(arr []string, size int) []string {
+	if size <= len(arr) {
+		return arr
+	}
+	// create array of requested size and right-justify input
+	arr2 := make([]string, size)
+	offset := size - len(arr)
+	for i := 0; i < len(arr); i++ {
+		arr2[i+offset] = arr[i]
+	}
+	return arr2
+}
+
+func (cat *catalogDB) FunctionFeatures(ctx context.Context, name string, args map[string]string, param *QueryParam) ([]string, error) {
 	fn, err := cat.FunctionByName(name)
 	if err != nil || fn == nil {
 		return nil, err
@@ -169,12 +189,13 @@ func (cat *catalogDB) FunctionFeatures(name string, args map[string]string, para
 	propCols := removeNames(param.Columns, fn.GeometryColumn, "")
 	idColIndex := indexOfName(propCols, FunctionIDColumnName)
 	sql, argValues := sqlGeomFunction(fn, args, propCols, param)
-	log.Debugf("%v -- Args: %v", sql, argValues)
-	features, err := readFeaturesWithArgs(cat.dbconn, sql, argValues, idColIndex, propCols)
+	log.Debugf("Function features query: %v", sql)
+	log.Debugf("Function %v Args: %v", name, argValues)
+	features, err := readFeaturesWithArgs(ctx, cat.dbconn, sql, argValues, idColIndex, propCols)
 	return features, err
 }
 
-func (cat *catalogDB) FunctionData(name string, args map[string]string, param *QueryParam) ([]map[string]interface{}, error) {
+func (cat *catalogDB) FunctionData(ctx context.Context, name string, args map[string]string, param *QueryParam) ([]map[string]interface{}, error) {
 	fn, err := cat.FunctionByName(name)
 	if err != nil || fn == nil {
 		return nil, err
@@ -185,8 +206,9 @@ func (cat *catalogDB) FunctionData(name string, args map[string]string, param *Q
 	}
 	propCols := param.Columns
 	sql, argValues := sqlFunction(fn, args, propCols, param)
-	log.Debugf("%v -- Args: %v", sql, argValues)
-	data, err := readDataWithArgs(cat.dbconn, propCols, sql, argValues)
+	log.Debugf("Function data query: %v", sql)
+	log.Debugf("Function %v Args: %v", name, argValues)
+	data, err := readDataWithArgs(ctx, cat.dbconn, propCols, sql, argValues)
 	return data, err
 }
 
@@ -212,27 +234,36 @@ func removeNames(names []string, ex1 string, ex2 string) []string {
 	return newNames
 }
 
-func readDataWithArgs(db *pgxpool.Pool, propCols []string, sql string, args []interface{}) ([]map[string]interface{}, error) {
+func readDataWithArgs(ctx context.Context, db *pgxpool.Pool, propCols []string, sql string, args []interface{}) ([]map[string]interface{}, error) {
+	start := time.Now()
 	rows, err := db.Query(context.Background(), sql, args...)
+	defer rows.Close()
 	if err != nil {
 		log.Warnf("Error running Data query: %v", err)
 		return nil, err
 	}
-	return scanData(rows, propCols), nil
+	data := scanData(ctx, rows, propCols)
+	log.Debugf(fmtQueryStats, len(data), time.Since(start))
+	return data, nil
 }
 
-func scanData(rows pgx.Rows, propCols []string) []map[string]interface{} {
+func scanData(ctx context.Context, rows pgx.Rows, propCols []string) []map[string]interface{} {
 	var data []map[string]interface{}
 	for rows.Next() {
 		obj := scanDataRow(rows, true, propCols)
 		//log.Println(feature)
 		data = append(data, obj)
 	}
+	// context check done outside rows loop,
+	// because a long-running function might not produce any rows before timeout
+	if err := ctx.Err(); err != nil {
+		//log.Debugf("Context error scanning Features: %v", err)
+		return data
+	}
 	// Check for errors from iterating over rows.
 	if err := rows.Err(); err != nil {
 		log.Warnf("Error reading Data rows: %v", err)
 	}
-	rows.Close()
 	return data
 }
 

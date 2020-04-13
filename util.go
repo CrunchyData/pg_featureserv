@@ -14,11 +14,13 @@ package main
 */
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"html/template"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/CrunchyData/pg_featureserv/api"
 	"github.com/CrunchyData/pg_featureserv/conf"
@@ -54,6 +56,26 @@ func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// --- log the request
 	log.Printf("%v %v %v\n", r.RemoteAddr, r.Method, r.URL)
 
+	// signal for normal completion of handler
+	handlerDone := make(chan struct{})
+	start := time.Now()
+
+	// monitor context status and log anything abnormal
+	go func() {
+		select {
+		case <-handlerDone:
+			log.Debugf("---- Request complete in %v", time.Since(start))
+		case <-r.Context().Done():
+			// log cancelations
+			switch r.Context().Err() {
+			case context.DeadlineExceeded:
+				log.Warnf("---- Request processing terminated by write timeout after %v", time.Since(start))
+			case context.Canceled:
+				log.Debugf("---- Request cancelled by client after %v", time.Since(start))
+			}
+		}
+	}()
+
 	// execute the handler
 	e := fn(w, r)
 
@@ -63,8 +85,27 @@ func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		// log error here?
 		// should log attached error?
 		// panic on severe error?
+		log.Debugf("Request processing error: %v (%v)\n", e.Message, e.Code)
 		http.Error(w, e.Message, e.Code)
 	}
+	close(handlerDone)
+}
+
+// FatalAfter aborts by logging a fatal message, after a time delay.
+// The abort can be cancelled by closing the returned channel
+func FatalAfter(delaySec int, msg string) chan struct{} {
+	chanCancel := make(chan struct{})
+	go func() {
+		select {
+		case <-chanCancel:
+			// do nothing if cancelled
+			return
+		case <-time.After(time.Duration(delaySec) * time.Second):
+			// terminate with extreme predjudice
+			log.Fatalln(msg)
+		}
+	}()
+	return chanCancel
 }
 
 func appErrorMsg(err error, msg string, code int) *appError {

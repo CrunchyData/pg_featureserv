@@ -53,6 +53,8 @@ var isFunctionsLoaded bool
 var instanceDB catalogDB
 var templateFeature *template.Template
 
+const fmtQueryStats = "Database query result: %v rows in %v"
+
 func init() {
 	isStartup = true
 }
@@ -82,7 +84,7 @@ func dbConnect() *pgxpool.Pool {
 	dbName := dbconfig.ConnConfig.Config.Database
 	dbUser := dbconfig.ConnConfig.Config.User
 	dbHost := dbconfig.ConnConfig.Config.Host
-	log.Infof("Connected as '%s' to '%s' @ '%s'", dbUser, dbName, dbHost)
+	log.Infof("Connected as %s to %s @ %s", dbUser, dbName, dbHost)
 	return db
 }
 
@@ -111,7 +113,6 @@ func dbConfig() *pgxpool.Config {
 	}
 
 	// Read current log level and use one less-fine level
-	// below that
 	dbconfig.ConnConfig.Logger = logrusadapter.NewLogger(log.New())
 	levelString, _ := (log.GetLevel() - 1).MarshalText()
 	pgxLevel, _ := pgx.LogLevelFromString(string(levelString))
@@ -138,34 +139,34 @@ func (cat *catalogDB) TableByName(name string) (*Table, error) {
 	return tbl, nil
 }
 
-func (cat *catalogDB) TableFeatures(name string, param *QueryParam) ([]string, error) {
+func (cat *catalogDB) TableFeatures(ctx context.Context, name string, param *QueryParam) ([]string, error) {
 	tbl, err := cat.TableByName(name)
 	if err != nil || tbl == nil {
 		return nil, err
 	}
 	cols := param.Columns
 	sql, argValues := sqlFeatures(tbl, param)
-	log.Debug("TableFeatures: " + sql)
+	log.Debug("Features query: " + sql)
 	idColIndex := indexOfName(cols, tbl.IDColumn)
 
-	features, err := readFeaturesWithArgs(cat.dbconn, sql, argValues, idColIndex, cols)
+	features, err := readFeaturesWithArgs(ctx, cat.dbconn, sql, argValues, idColIndex, cols)
 	return features, err
 }
 
-func (cat *catalogDB) TableFeature(name string, id string, param *QueryParam) (string, error) {
+func (cat *catalogDB) TableFeature(ctx context.Context, name string, id string, param *QueryParam) (string, error) {
 	tbl, err := cat.TableByName(name)
 	if err != nil {
 		return "", err
 	}
 	cols := param.Columns
 	sql := sqlFeature(tbl, param)
-	log.Debug(sql)
+	log.Debug("Feature query: " + sql)
 	idColIndex := indexOfName(cols, tbl.IDColumn)
 
 	//--- Add a SQL arg for the feature ID
 	argValues := make([]interface{}, 0)
 	argValues = append(argValues, id)
-	features, err := readFeaturesWithArgs(cat.dbconn, sql, argValues, idColIndex, cols)
+	features, err := readFeaturesWithArgs(ctx, cat.dbconn, sql, argValues, idColIndex, cols)
 
 	if len(features) == 0 {
 		return "", err
@@ -199,7 +200,7 @@ func tablesSorted(tableMap map[string]*Table) []*Table {
 }
 
 func readTables(db *pgxpool.Pool) map[string]*Table {
-	log.Debug(sqlTables)
+	log.Debugf("Load table catalog:\n%v", sqlTables)
 	rows, err := db.Query(context.Background(), sqlTables)
 	if err != nil {
 		log.Fatal(err)
@@ -291,31 +292,42 @@ func scanTable(rows pgx.Rows) *Table {
 
 //=================================================
 
-func readFeatures(db *pgxpool.Pool, sql string, idColIndex int, propCols []string) ([]string, error) {
-	return readFeaturesWithArgs(db, sql, nil, idColIndex, propCols)
+func readFeatures(ctx context.Context, db *pgxpool.Pool, sql string, idColIndex int, propCols []string) ([]string, error) {
+	return readFeaturesWithArgs(ctx, db, sql, nil, idColIndex, propCols)
 }
 
-func readFeaturesWithArgs(db *pgxpool.Pool, sql string, args []interface{}, idColIndex int, propCols []string) ([]string, error) {
-	rows, err := db.Query(context.Background(), sql, args...)
+func readFeaturesWithArgs(ctx context.Context, db *pgxpool.Pool, sql string, args []interface{}, idColIndex int, propCols []string) ([]string, error) {
+	start := time.Now()
+	rows, err := db.Query(ctx, sql, args...)
+	defer rows.Close()
 	if err != nil {
 		log.Warnf("Error running Features query: %v", err)
 		return nil, err
 	}
-	return scanFeatures(rows, idColIndex, propCols), nil
+
+	data := scanFeatures(ctx, rows, idColIndex, propCols)
+	rows.Close()
+	log.Debugf(fmtQueryStats, len(data), time.Since(start))
+	return data, nil
 }
 
-func scanFeatures(rows pgx.Rows, idColIndex int, propCols []string) []string {
+func scanFeatures(ctx context.Context, rows pgx.Rows, idColIndex int, propCols []string) []string {
 	var features []string
 	for rows.Next() {
 		feature := scanFeature(rows, idColIndex, propCols)
 		//log.Println(feature)
 		features = append(features, feature)
 	}
-	// Check for errors from iterating over rows.
+	// context check done outside rows loop,
+	// because a long-running function might not produce any rows before timeout
+	if err := ctx.Err(); err != nil {
+		//log.Debugf("Context error scanning Features: %v", err)
+		return features
+	}
+	// Check for errors from scanning rows.
 	if err := rows.Err(); err != nil {
 		log.Warnf("Error scanning rows for Features: %v", err)
 	}
-	rows.Close()
 	return features
 }
 

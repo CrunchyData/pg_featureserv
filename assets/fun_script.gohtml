@@ -3,12 +3,15 @@
 <td class='section-title' colspan='2' style='text-align: left'>Function Args</td>
 </tr>
 {{- $types := .context.Function.Types }}
+{{- $defaults := .context.Function.InDefaults }}
 {{- range $i, $name := .context.Function.InNames }}
 <tr>
 <td><span class='param-title'
 title='Arg {{ $name }} is of type {{index $types $name}}'> {{ $name }}</span></td>
 <td>
-<input type='text' class='arg-input' id='arg-{{ $name }}' title='Enter a {{index $types $name}} value'></td>
+<input type='text' class='arg-input' id='arg-{{ $name }}'
+  title='Enter a {{index $types $name}} value'
+  placeholder='{{index $defaults $i}}'></td>
 </tr>
 {{- end }}
 

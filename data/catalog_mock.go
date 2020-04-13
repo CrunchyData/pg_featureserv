@@ -14,6 +14,7 @@ package data
 */
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 
@@ -94,9 +95,82 @@ func newCatalogMock() CatalogMock {
 	tables = append(tables, layerB)
 	tables = append(tables, layerC)
 
+	fun_a := &Function{
+		ID:          "fun_a",
+		Schema:      "postgisftw",
+		Name:        "fun_a",
+		Description: "Function A",
+		InNames:     []string{"in_param1"},
+		InDbTypes:   []string{"text"},
+		InTypeMap: map[string]string{
+			"in_param1": "text",
+		},
+		InDefaults:   []string{"aa"},
+		NumNoDefault: 0,
+		OutNames:     []string{"out_param1"},
+		OutDbTypes:   []string{"text"},
+		OutJSONTypes: []string{"string"},
+		Types: map[string]string{
+			"in_param1": "text",
+		},
+		GeometryColumn: "",
+		IDColumn:       "",
+	}
+	fun_b := &Function{
+		ID:          "fun_b",
+		Schema:      "postgisftw",
+		Name:        "fun_b",
+		Description: "Function B",
+		InNames:     []string{"in_param1"},
+		InDbTypes:   []string{"int"},
+		InTypeMap: map[string]string{
+			"in_param1": "int",
+		},
+		InDefaults:   []string{"999"},
+		NumNoDefault: 0,
+		OutNames:     []string{"out_geom", "out_id", "out_param1"},
+		OutDbTypes:   []string{"geometry", "int", "text"},
+		OutJSONTypes: []string{"geometry", "int", "string"},
+		Types: map[string]string{
+			"in_param1":  "int",
+			"out_geom":   "geometry",
+			"out_id":     "int",
+			"out_param1": "text",
+		},
+		GeometryColumn: "",
+		IDColumn:       "",
+	}
+	fun_noparam := &Function{
+		ID:           "fun_noparam",
+		Schema:       "postgisftw",
+		Name:         "fun_noparam",
+		Description:  "Function with no parameters",
+		InNames:      []string{},
+		InDbTypes:    []string{},
+		InTypeMap:    map[string]string{},
+		InDefaults:   []string{},
+		NumNoDefault: 0,
+		OutNames:     []string{"out_geom", "out_id", "out_param1"},
+		OutDbTypes:   []string{"geometry", "int", "text"},
+		OutJSONTypes: []string{"geometry", "int", "string"},
+		Types: map[string]string{
+			"in_param1":  "int",
+			"out_geom":   "geometry",
+			"out_id":     "int",
+			"out_param1": "text",
+		},
+		GeometryColumn: "",
+		IDColumn:       "",
+	}
+	funDefs := []*Function{
+		fun_a,
+		fun_b,
+		fun_noparam,
+	}
 	catMock := CatalogMock{
-		TableDefs: tables,
-		tableData: tableData,
+		TableDefs:    tables,
+		tableData:    tableData,
+		FunctionDefs: funDefs,
 	}
 
 	return catMock
@@ -120,7 +194,7 @@ func (cat *CatalogMock) TableByName(name string) (*Table, error) {
 	return nil, nil
 }
 
-func (cat *CatalogMock) TableFeatures(name string, param *QueryParam) ([]string, error) {
+func (cat *CatalogMock) TableFeatures(ctx context.Context, name string, param *QueryParam) ([]string, error) {
 	features, ok := cat.tableData[name]
 	if !ok {
 		// table not found - indicated by nil value returned
@@ -136,7 +210,7 @@ func (cat *CatalogMock) TableFeatures(name string, param *QueryParam) ([]string,
 	return featuresToJSON(featuresLim, propNames), nil
 }
 
-func (cat *CatalogMock) TableFeature(name string, id string, param *QueryParam) (string, error) {
+func (cat *CatalogMock) TableFeature(ctx context.Context, name string, id string, param *QueryParam) (string, error) {
 	features, ok := cat.tableData[name]
 	if !ok {
 		// table not found - indicated by empty value returned
@@ -175,12 +249,12 @@ func (cat *CatalogMock) FunctionByName(name string) (*Function, error) {
 	return nil, nil
 }
 
-func (cat *CatalogMock) FunctionFeatures(name string, args map[string]string, param *QueryParam) ([]string, error) {
+func (cat *CatalogMock) FunctionFeatures(ctx context.Context, name string, args map[string]string, param *QueryParam) ([]string, error) {
 	// TODO:
 	return nil, nil
 }
 
-func (cat *CatalogMock) FunctionData(name string, args map[string]string, param *QueryParam) ([]map[string]interface{}, error) {
+func (cat *CatalogMock) FunctionData(ctx context.Context, name string, args map[string]string, param *QueryParam) ([]map[string]interface{}, error) {
 	// TODO:
 	return nil, nil
 }

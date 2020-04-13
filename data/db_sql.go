@@ -2,6 +2,7 @@ package data
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -129,6 +130,9 @@ func sqlColList(names []string, dbtypes map[string]string, addLeadingComma bool)
 
 // makeSQLColExpr casts a column to text if type is unknown to PGX
 func sqlColExpr(name string, dbtype string) string {
+
+	name = strconv.Quote(name)
+
 	// TODO: make this more data-driven / configurable
 	switch dbtype {
 	case forceTextTSVECTOR:
@@ -165,7 +169,7 @@ func sqlAttrFilter(filterConds []*FilterCond) (string, []interface{}) {
 	var vals []interface{}
 	var exprItems []string
 	for i, cond := range filterConds {
-		sqlCond := fmt.Sprintf("%v = $%v", cond.Name, i+1)
+		sqlCond := fmt.Sprintf("\"%v\" = $%v", cond.Name, i+1)
 		exprItems = append(exprItems, sqlCond)
 		vals = append(vals, cond.Value)
 	}
@@ -173,7 +177,7 @@ func sqlAttrFilter(filterConds []*FilterCond) (string, []interface{}) {
 	return sql, vals
 }
 
-const sqlFmtBBoxFilter = " ST_Intersects(%v, ST_Transform( ST_MakeEnvelope(%v, %v, %v, %v, 4326), %v)) "
+const sqlFmtBBoxFilter = ` ST_Intersects("%v", ST_Transform( ST_MakeEnvelope(%v, %v, %v, %v, 4326), %v)) `
 
 func sqlBBoxFilter(tbl *Table, bbox *Extent) string {
 	if bbox == nil {
@@ -185,7 +189,7 @@ func sqlBBoxFilter(tbl *Table, bbox *Extent) string {
 	return sql
 }
 
-const sqlFmtBBoxGeoFilter = " ST_Intersects(%v, ST_MakeEnvelope(%v, %v, %v, %v, 4326)) "
+const sqlFmtBBoxGeoFilter = ` ST_Intersects("%v", ST_MakeEnvelope(%v, %v, %v, %v, 4326)) `
 
 func sqlBBoxGeoFilter(geomCol string, bbox *Extent) string {
 	if bbox == nil {
@@ -196,19 +200,24 @@ func sqlBBoxGeoFilter(geomCol string, bbox *Extent) string {
 	return sql
 }
 
-const sqlFmtGeomCol = "ST_AsGeoJSON( ST_Transform(%v, 4326) %v ) AS _geojson"
+const sqlFmtGeomCol = `ST_AsGeoJSON( ST_Transform( %v, 4326) %v ) AS _geojson`
 
 func sqlGeomCol(geomCol string, param *QueryParam) string {
-	geomExpr := applyTransform(param.TransformFuns, geomCol)
-	precision := ""
-	if param.Precision >= 0 {
-		precision = fmt.Sprintf(",%v", param.Precision)
-	}
-	sql := fmt.Sprintf(sqlFmtGeomCol, geomExpr, precision)
+	geomColSafe := strconv.Quote(geomCol)
+	geomExpr := applyTransform(param.TransformFuns, geomColSafe)
+	sql := fmt.Sprintf(sqlFmtGeomCol, geomExpr, sqlPrecisionArg(param.Precision))
 	return sql
 }
 
-const sqlFmtOrderBy = "ORDER By %v%v"
+func sqlPrecisionArg(precision int) string {
+	if precision < 0 {
+		return ""
+	}
+	sqlPrecision := fmt.Sprintf(",%v", precision)
+	return sqlPrecision
+}
+
+const sqlFmtOrderBy = `ORDER By "%v" %v`
 
 func sqlOrderBy(ordering []Ordering) string {
 	if len(ordering) <= 0 {
@@ -218,7 +227,7 @@ func sqlOrderBy(ordering []Ordering) string {
 	col := ordering[0].Name
 	dir := ""
 	if ordering[0].IsDesc {
-		dir = " DESC"
+		dir = "DESC"
 	}
 	sql := fmt.Sprintf(sqlFmtOrderBy, col, dir)
 	return sql

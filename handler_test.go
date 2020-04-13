@@ -50,13 +50,17 @@ type FeatureCollection struct {
 
 const urlBase = "http://test"
 
-// testConfir is a config spec for using in running tests
+// testConfig is a config spec for using in running tests
 var testConfig conf.Config = conf.Config{
 	Server: conf.Server{
 		HttpHost:   "0.0.0.0",
 		HttpPort:   9000,
 		UrlBase:    urlBase,
 		AssetsPath: "./assets",
+		TransformFunctions: []string{
+			"ST_Centroid",
+			"ST_PointOnSurface",
+		},
 	},
 	Paging: conf.Paging{
 		LimitDefault: 10,
@@ -75,6 +79,8 @@ func TestMain(m *testing.M) {
 	catalogInstance = catalogMock
 	router = initRouter()
 	conf.Configuration = testConfig
+	initTransforms(conf.Configuration.Server.TransformFunctions)
+
 	os.Exit(m.Run())
 }
 
@@ -85,7 +91,7 @@ func TestRoot(t *testing.T) {
 	var v api.RootInfo
 	json.Unmarshal(body, &v)
 
-	checkLink(t, v.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+"/")
+	checkLink(t, v.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+"/"+api.RootPageName+".json")
 	checkLink(t, v.Links[1], api.RelAlt, api.ContentTypeHTML, urlBase+"/"+api.RootPageName+".html")
 	checkLink(t, v.Links[2], api.RelData, api.ContentTypeJSON, urlBase+"/collections.json")
 	checkLink(t, v.Links[3], api.RelFunctions, api.ContentTypeJSON, urlBase+"/functions.json")
@@ -231,6 +237,20 @@ func TestOffsetInvalid(t *testing.T) {
 	doRequestStatus(t, "/collections/mock_a/items?offset=x", http.StatusBadRequest)
 }
 
+func TestTransformValid(t *testing.T) {
+	doRequest(t, "/collections/mock_a/items?transform=centroid")
+	doRequest(t, "/collections/mock_a/items?transform=ST_centroid")
+	doRequest(t, "/collections/mock_a/items?transform=st_centroid")
+	doRequest(t, "/collections/mock_a/items?transform=pointonsurface")
+	doRequest(t, "/collections/mock_a/items?transform=pointonsurface|centroid")
+}
+
+func TestTransformInvalid(t *testing.T) {
+	// envelope is not defined as a transform function
+	doRequestStatus(t, "/collections/mock_a/items?transform=envelope", http.StatusBadRequest)
+	doRequestStatus(t, "/collections/mock_a/items?transform=centroid|envelope", http.StatusBadRequest)
+}
+
 func TestBBox(t *testing.T) {
 	doRequest(t, "/collections/mock_a/items?bbox=1,2,3,4")
 	// TODO: add some tests
@@ -285,7 +305,42 @@ func TestFeatureNotFound(t *testing.T) {
 	doRequestStatus(t, "/collections/mock_a/items/999", http.StatusNotFound)
 }
 
-//--------  Test HTML generation
+//=============  Test functions
+
+func TestFunctionsJSON(t *testing.T) {
+	path := "/functions"
+	resp := doRequest(t, path)
+	body, _ := ioutil.ReadAll(resp.Body)
+
+	var v api.FunctionsInfo
+	json.Unmarshal(body, &v)
+
+	checkLink(t, v.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+path+".json")
+	checkLink(t, v.Links[1], api.RelAlt, api.ContentTypeHTML, urlBase+path+".html")
+
+	for i, fun := range catalogMock.FunctionDefs {
+		checkFunctionSummary(t, v.Functions[i], fun)
+	}
+}
+
+func TestFunctionJSON(t *testing.T) {
+	for _, fun := range catalogMock.FunctionDefs {
+		//fun := catalogMock.FunctionDefs[1]
+		checkFunction(t, fun)
+	}
+}
+
+func TestFunctionNoFound(t *testing.T) {
+	doRequestStatus(t, "/functions/missing", http.StatusNotFound)
+}
+
+func TestFunctionItemsNoFound(t *testing.T) {
+	doRequestStatus(t, "/functions/missing/items", http.StatusNotFound)
+}
+
+//============  Test HTML generation
+// For now these just test that the template executes correctly
+// correctness/completess of HTML is not tested
 func TestHTMLRoot(t *testing.T) {
 	doRequest(t, "/index.html")
 }
@@ -303,6 +358,12 @@ func TestHTMLItems(t *testing.T) {
 }
 func TestHTMLItem(t *testing.T) {
 	doRequest(t, "/collections/mock_a/items/1.html")
+}
+func TestHTMLFunctions(t *testing.T) {
+	doRequest(t, "/functions.html")
+}
+func TestHTMLFunction(t *testing.T) {
+	doRequest(t, "/functions/fun_a.html")
 }
 
 //===================================================
@@ -350,6 +411,58 @@ func checkLink(tb testing.TB, link *api.Link, rel string, conType string, href s
 	equals(tb, rel, link.Rel, "Link rel")
 	equals(tb, conType, link.Type, "Link type")
 	equals(tb, href, link.Href, "Link href")
+}
+
+func checkFunctionSummary(tb testing.TB, v *api.FunctionSummary, fun *data.Function) {
+	equals(tb, fun.Name, v.Name, "Function name")
+	equals(tb, fun.Description, v.Description, "Function description")
+
+	path := "/functions/" + fun.Name
+	checkLink(tb, v.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+path+".json")
+	checkLink(tb, v.Links[1], api.RelAlt, api.ContentTypeHTML, urlBase+path+".html")
+
+	pathItems := path + "/items"
+	itemsType := api.ContentTypeJSON
+	if fun.IsGeometryFunction() {
+		itemsType = api.ContentTypeGeoJSON
+	}
+	checkLink(tb, v.Links[2], api.RelItems, itemsType, urlBase+pathItems+".json")
+}
+func checkFunction(t *testing.T, fun *data.Function) {
+	path := "/functions/" + fun.ID
+	resp := doRequest(t, path)
+	body, _ := ioutil.ReadAll(resp.Body)
+
+	var v api.FunctionInfo
+	json.Unmarshal(body, &v)
+
+	equals(t, fun.ID, v.Name, "Name")
+	equals(t, fun.Description, v.Description, "Description")
+
+	//--- check parameters
+	assert(t, v.Parameters != nil, "Parameters property must be present")
+	equals(t, len(fun.InNames), len(v.Parameters), "Parameters len")
+	for i := 0; i < len(v.Parameters); i++ {
+		equals(t, fun.InNames[i], v.Parameters[i].Name, "Parameters[].Name")
+		equals(t, fun.InDbTypes[i], v.Parameters[i].Type, "Parameters[].Type")
+	}
+
+	//--- check properties
+	assert(t, v.Properties != nil, "Properties property must be present")
+	equals(t, len(fun.OutNames), len(v.Properties), "Properties len")
+	for i := 0; i < len(v.Properties); i++ {
+		equals(t, fun.OutNames[i], v.Properties[i].Name, "Properties[].Name")
+		equals(t, fun.OutJSONTypes[i], v.Properties[i].Type, "Properties[].Type")
+	}
+
+	//--- check links
+	checkLink(t, v.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+path+".json")
+	checkLink(t, v.Links[1], api.RelAlt, api.ContentTypeHTML, urlBase+path+".html")
+	itemsType := api.ContentTypeJSON
+	if fun.IsGeometryFunction() {
+		itemsType = api.ContentTypeGeoJSON
+	}
+	checkLink(t, v.Links[2], api.RelItems, itemsType, urlBase+path+"/items.json")
 }
 
 //---- testing utilities from https://github.com/benbjohnson/testing

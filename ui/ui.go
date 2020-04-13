@@ -27,12 +27,16 @@ type PageData struct {
 	AppName    string
 	AppVersion string
 	// URLHome - URL for the service home page
-	URLHome         string
-	URLCollections  string
-	URLCollection   string
-	URLItems        string
-	URLFunctions    string
-	URLFunction     string
+	URLHome        string
+	URLCollections string
+	URLCollection  string
+	URLFunctions   string
+	URLFunction    string
+	// URLItems is url for items HTML page
+	URLItems string
+	// URLItemsJSON is url for items JSON
+	URLItemsJSON string
+	// URLJSON is the url for the current page in JSON
 	URLJSON         string
 	Group           string
 	Title           string

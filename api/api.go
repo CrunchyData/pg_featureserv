@@ -56,6 +56,25 @@ const (
 	GeoJSONFeatureCollection = "FeatureCollection"
 )
 
+const (
+	ErrMsgEncoding              = "Error encoding response"
+	ErrMsgLoadCollections       = "Unable to access Collections"
+	ErrMsgCollectionNotFound    = "Collection not found: %v"
+	ErrMsgCollectionAccess      = "Unable to access Collection: %v"
+	ErrMsgFeatureNotFound       = "Feature not found: %v"
+	ErrMsgLoadFunctions         = "Unable to access Functions"
+	ErrMsgFunctionNotFound      = "Function not found: %v"
+	ErrMsgFunctionAccess        = "Unable to access Function: %v"
+	ErrMsgInvalidParameterValue = "Invalid value for parameter %v: %v"
+	ErrMsgDataRead              = "Unable to read data from: %v"
+	ErrMsgRequestTimeout        = "Maximum time exceeded.  Request cancelled."
+)
+
+const (
+	ErrCodeCollectionNotFound = "CollectionNotFound"
+	ErrCodeFeatureNotFound    = "FeatureNotFound"
+)
+
 var ParamReservedNames = []string{
 	ParamLimit,
 	ParamOffset,
@@ -297,8 +316,8 @@ type FeatureCollectionRaw struct {
 
 // FunctionsInfo is the API metadata for all functions
 type FunctionsInfo struct {
-	Links     []*Link         `json:"links"`
-	Functions []*FunctionInfo `json:"functions"`
+	Links     []*Link            `json:"links"`
+	Functions []*FunctionSummary `json:"functions"`
 }
 
 var FunctionsInfoSchema openapi3.Schema = openapi3.Schema{
@@ -314,8 +333,41 @@ var FunctionsInfoSchema openapi3.Schema = openapi3.Schema{
 		"functions": {
 			Value: &openapi3.Schema{
 				Type:  "array",
-				Items: &openapi3.SchemaRef{Value: &FunctionInfoSchema},
+				Items: &openapi3.SchemaRef{Value: &FunctionSummarySchema},
 			},
+		},
+	},
+}
+
+// FunctionSummary contains a restricted set of function metadata for use in list display and JSON
+// This allows not including parameters and properties in list metadata,
+// but ensuring those keys are always present in full metadata JSON.
+// Note: Collections do not follow same pattern because their list JSON metadata
+// is supposed to contain all properties, and they are always expected to have attribute properties
+type FunctionSummary struct {
+	Name        string  `json:"id"`
+	Description string  `json:"description,omitempty"`
+	Links       []*Link `json:"links"`
+
+	//--- additional data used during processing
+	Function *data.Function `json:"-"`
+	// used for HTML response only
+	URLMetadataHTML string `json:"-"`
+	URLMetadataJSON string `json:"-"`
+	URLItemsHTML    string `json:"-"`
+	URLItemsJSON    string `json:"-"`
+}
+
+var FunctionSummarySchema openapi3.Schema = openapi3.Schema{
+	Type:     "object",
+	Required: []string{"id", "links"},
+	Properties: map[string]*openapi3.SchemaRef{
+		"id":          {Value: &openapi3.Schema{Type: "string"}},
+		"description": {Value: &openapi3.Schema{Type: "string"}},
+		"links": {Value: &openapi3.Schema{
+			Type:  "array",
+			Items: &openapi3.SchemaRef{Value: &LinkSchema},
+		},
 		},
 	},
 }
@@ -325,18 +377,14 @@ type FunctionInfo struct {
 	Name        string `json:"id"`
 	Description string `json:"description,omitempty"`
 
-	// these are omitempty so they don't show in summary metadata
-	Parameters []*Parameter `json:"parameters,omitempty"`
-	Properties []*Property  `json:"properties,omitempty"`
+	// these properties are always present but may be empty arrays
+	Parameters []*Parameter `json:"parameters"`
+	Properties []*Property  `json:"properties"`
 
-	Links    []*Link        `json:"links"`
+	Links []*Link `json:"links"`
+
+	//--- additional data used during processing
 	Function *data.Function `json:"-"`
-
-	// used for HTML response only
-	URLMetadataHTML string `json:"-"`
-	URLMetadataJSON string `json:"-"`
-	URLItemsHTML    string `json:"-"`
-	URLItemsJSON    string `json:"-"`
 }
 
 var FunctionInfoSchema openapi3.Schema = openapi3.Schema{
@@ -381,24 +429,6 @@ var ConformanceSchema openapi3.Schema = openapi3.Schema{
 		},
 	},
 }
-
-const (
-	ErrMsgEncoding              = "Error encoding response"
-	ErrMsgLoadCollections       = "Unable to access Collections"
-	ErrMsgCollectionNotFound    = "Collection not found: %v"
-	ErrMsgCollectionAccess      = "Unable to access Collection: %v"
-	ErrMsgFeatureNotFound       = "Feature not found: %v"
-	ErrMsgLoadFunctions         = "Unable to access Functions"
-	ErrMsgFunctionNotFound      = "Function not found: %v"
-	ErrMsgFunctionAccess        = "Unable to access Function: %v"
-	ErrMsgInvalidParameterValue = "Invalid value for parameter %v: %v"
-	ErrMsgDataRead              = "Unable to read data from: %v"
-)
-
-const (
-	ErrCodeCollectionNotFound = "CollectionNotFound"
-	ErrCodeFeatureNotFound    = "FeatureNotFound"
-)
 
 var conformance = Conformance{
 	ConformsTo: []string{
@@ -475,12 +505,21 @@ func NewFeatureCollectionInfo(featureJSON []string) *FeatureCollectionRaw {
 }
 
 func NewFunctionsInfo(fns []*data.Function) *FunctionsInfo {
-	fnsDoc := FunctionsInfo{Links: []*Link{}, Functions: []*FunctionInfo{}}
+	fnsDoc := FunctionsInfo{Links: []*Link{}, Functions: []*FunctionSummary{}}
 	for _, fn := range fns {
-		fnDoc := NewFunctionInfo(fn)
+		fnDoc := NewFunctionSummary(fn)
 		fnsDoc.Functions = append(fnsDoc.Functions, fnDoc)
 	}
 	return &fnsDoc
+}
+
+func NewFunctionSummary(fn *data.Function) *FunctionSummary {
+	info := FunctionSummary{
+		Name:        fn.Name,
+		Description: fn.Description,
+		Function:    fn,
+	}
+	return &info
 }
 
 func NewFunctionInfo(fn *data.Function) *FunctionInfo {
