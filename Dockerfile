@@ -1,6 +1,6 @@
 FROM centos:7
 
-ARG VERSION=0.1
+ARG VERSION
 
 LABEL vendor="Crunchy Data" \
 	url="https://crunchydata.com" \

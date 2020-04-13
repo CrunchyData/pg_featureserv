@@ -1,16 +1,17 @@
 
 PROGRAM := pg_featureserv
-CONTAINER := pramsey/$(PROGRAM)
+CONTAINER := crunchydata/$(PROGRAM)
+APPVERSION=CI
 
 RM = /bin/rm
 CP = /bin/cp
 MKDIR = /bin/mkdir
 
-.PHONY: all check clean test docker install uninstall
+.PHONY: all check clean docs test docker-ci release install uninstall
 
 GOFILES := $(shell find . -type f -name '*.go')
 
-all: $(PROGRAM)
+all: docs release
 
 check:
 	go version
@@ -26,9 +27,12 @@ docs:
 $(PROGRAM): $(GOFILES)
 	go build -v
 
-docker: $(PROGRAM) Dockerfile
-	docker build -f Dockerfile.ci --build-arg VERSION=`./$(PROGRAM) --version | cut -f2 -d' '` -t $(CONTAINER):latest .
+release: $(PROGRAM) Dockerfile
+	docker build -f Dockerfile --build-arg VERSION=$(APPVERSION) -t $(CONTAINER):$(APPVERSION) .
 	docker image prune --force
+
+docker-ci: release
+	docker tag $(CONTAINER):"$(APPVERSION)" $(CONTAINER):latest
 
 test:
 	go test -v
