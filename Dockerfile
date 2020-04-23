@@ -19,3 +19,9 @@ EXPOSE 9000
 
 ENTRYPOINT ["./pg_featureserv"]
 CMD []
+
+# To build
+# make release
+
+# To run
+# docker run -dt -e DATABASE_URL=postgres://user:pass@host/dbname -p 9000:9000 crunchydata/pg_featureserv

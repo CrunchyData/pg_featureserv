@@ -1,13 +1,14 @@
 
+APPVERSION := CI
+GOVERSION := 1.13
 PROGRAM := pg_featureserv
 CONTAINER := crunchydata/$(PROGRAM)
-APPVERSION=CI
 
 RM = /bin/rm
 CP = /bin/cp
 MKDIR = /bin/mkdir
 
-.PHONY: all check clean docs test docker-ci release install uninstall
+.PHONY: all build-local check clean docker-build docs install release test uninstall
 
 GOFILES := $(shell find . -type f -name '*.go')
 
@@ -24,15 +25,14 @@ clean:
 docs:
 	@rm -rf docs/* && cd hugo && hugo && cd ..
 
-$(PROGRAM): $(GOFILES)
+build-local: $(GOFILES)
 	go build -v
 
-release: $(PROGRAM) Dockerfile
+docker-build: Dockerfile clean
+	sudo docker run --rm -v "$(PWD)":/usr/src/myapp:z -w /usr/src/myapp golang:$(GOVERSION) make APPVERSION=$(APPVERSION) build-local
 	docker build -f Dockerfile --build-arg VERSION=$(APPVERSION) -t $(CONTAINER):$(APPVERSION) .
-	docker image prune --force
 
-docker-ci: release
-	docker tag $(CONTAINER):"$(APPVERSION)" $(CONTAINER):latest
+release: docker-build clean build-local
 
 test:
 	go test -v
