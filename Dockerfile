@@ -23,5 +23,8 @@ CMD []
 # To build
 # make APPVERSION=1.1 clean build build-docker
 
-# To run
+# To build using binaries from golang docker image
+# make APPVERSION=1.1 clean bin-docker build-docker
+
+# To run using an image build above
 # docker run -dt -e DATABASE_URL=postgres://user:pass@host/dbname -p 9000:9000 pramsey/pg_featureserv:1.1

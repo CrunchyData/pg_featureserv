@@ -25,13 +25,15 @@ clean:  ##         This will clean all local build artifacts
 docs:   ##          Generate docs
 	@rm -rf docs/* && cd hugo && hugo && cd ..
 
-build: $(GOFILES)  ##         Build a local binary using APPVERSION parameter or CI as default
+$(PROGRAM): $(GOFILES)
 	go build -v -ldflags "-s -w -X github.com/CrunchyData/pg_featureserv/conf.setVersion=$(APPVERSION)"
 
-bin-docker:    ##    Build a local binary based off of a golang base docker image
-	sudo docker run --rm -v "$(PWD)":/usr/src/myapp:z -w /usr/src/myapp golang:$(GOVERSION) make APPVERSION=$(APPVERSION) build-local
+build: $(PROGRAM) ##         Build a local binary using APPVERSION parameter or CI as default
 
-build-docker: Dockerfile  ##  Generate a CentOS 7 container with APPVERSION tag, using binary from current environment
+bin-docker:    ##    Build a local binary based off of a golang base docker image
+	sudo docker run --rm -v "$(PWD)":/usr/src/myapp:z -w /usr/src/myapp golang:$(GOVERSION) make APPVERSION=$(APPVERSION) build
+
+build-docker: build Dockerfile  ##  Generate a CentOS 7 container with APPVERSION tag, using binary from current environment
 	docker build -f Dockerfile --build-arg VERSION=$(APPVERSION) -t $(CONTAINER):$(APPVERSION) .
 	docker image prune --force
 
