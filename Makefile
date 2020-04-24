@@ -2,7 +2,7 @@
 APPVERSION := CI
 GOVERSION := 1.13
 PROGRAM := pg_featureserv
-CONTAINER := crunchydata/$(PROGRAM)
+CONTAINER := pramsey/$(PROGRAM)
 
 RM = /bin/rm
 CP = /bin/cp

@@ -21,7 +21,7 @@ ENTRYPOINT ["./pg_featureserv"]
 CMD []
 
 # To build
-# make release
+# make APPVERSION=1.1 clean build build-docker
 
 # To run
-# docker run -dt -e DATABASE_URL=postgres://user:pass@host/dbname -p 9000:9000 crunchydata/pg_featureserv
+# docker run -dt -e DATABASE_URL=postgres://user:pass@host/dbname -p 9000:9000 pramsey/pg_featureserv:1.1
