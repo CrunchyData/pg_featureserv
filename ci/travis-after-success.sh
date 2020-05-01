@@ -16,9 +16,9 @@ else
 fi
 
 if [ "$TARGET" = "docker" ]; then
-    VERSION=`./$PROJECT --version | cut -f2 -d' '`
     DATE=`date +%Y%m%d`
-    docker build -f Dockerfile.ci --build-arg VERSION=$VERSION -t $DOCKER_REPO:$TAG .
+    #docker build -f Dockerfile.ci --build-arg VERSION=$VERSION -t $DOCKER_REPO:$TAG .
+    make build-docker
     docker tag $DOCKER_REPO:$TAG $DOCKER_REPO:$DATE
     if [ "$TRAVIS_BRANCH" = "master" ]; then
         docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"

@@ -13,6 +13,8 @@ package conf
  limitations under the License.
 */
 
+var setVersion string
+
 // AppConfiguration is the set of global application configuration constants.
 type AppConfiguration struct {
 	// AppName name of the software
@@ -24,6 +26,6 @@ type AppConfiguration struct {
 
 var AppConfig = AppConfiguration{
 	Name:     "pg_featureserv",
-	Version:  "1.1",
+	Version:  setVersion,
 	EnvDBURL: "DATABASE_URL",
 }
