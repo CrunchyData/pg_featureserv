@@ -176,3 +176,23 @@ $$
 LANGUAGE 'plpgsql' STABLE STRICT;
 
 SELECT * FROM postgisftw.country_neighbors(8, 47);
+
+
+============================================================================
+
+CREATE OR REPLACE FUNCTION postgisftw.geonames_nn(
+  pt_lon numeric DEFAULT 0.0,
+  pt_lat numeric DEFAULT 0.0,
+  k integer DEFAULT 1)
+RETURNS TABLE(name text, dist double precision, geom geometry)
+AS $$
+BEGIN
+	RETURN QUERY
+    SELECT gn.name, gn.geom <-> ST_SetSRID( ST_MakePoint(pt_lon, pt_lat), 4326) AS dist, gn.geom
+    FROM geonames gn
+    ORDER BY dist LIMIT k;
+END;
+$$
+LANGUAGE 'plpgsql' STABLE STRICT;
+
+SELECT * FROM postgisftw.geonames_nn( -118.291995, 36.578581, 5 );
