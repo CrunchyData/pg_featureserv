@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PgRouting Example</title>
+
+  <!-- CSS/JS for OpenLayers map  -->
+  <link rel="stylesheet" href="https://openlayers.org/en/v6.1.1/css/ol.css" type="text/css">
+  <script src="https://openlayers.org/en/v6.1.1/build/ol.js"></script>
+
+  <style>
+    body {
+      padding: 0;
+      margin: 0;
+    }
+    html, body, #map {
+      height: 100%;
+      width: 100%;
+      font-family: sans-serif;
+    }
+    #meta {
+      background-color: rgba(255,255,255,0.75);
+      color: black;
+      z-index: 2;
+      position: absolute;
+      top: 10px;
+      left: 20px;
+      padding: 10px 20px;
+      margin: 0;
+      width: min-content;
+    }
+  </style>
+</head>
+
+<body>
+
+<div id="meta">
+  <h2>PgRouting / pg_tileserv / pg_featureserv</h2>
+  <ul>
+    <li><a href="https://openlayers.org/">OpenLayers</a></li>
+    <li><a href="https://pgrouting.org/">PgRouting</a></li>
+    <li><a href="https://github.com/crunchydata/pg_tileserv">pg_tileserv</a></li>
+    <li><a href="https://github.com/crunchydata/pg_featureserv">pg_featureserv</a></li>
+  </ul>
+  <p>Click once to set a start point, and a second time to set an end point and generate a route.</p>
+  <p>Routes are node-to-node so clicks are interpretted as starting from the nearest node.</p>
+</div>
+
+<div id="map"></div>
+
+<script>
+
+
+//********************************************************************************/
+// BASE MAP (Raster tiles from wikimedia)
+//********************************************************************************/
+
+var baseLayer = new ol.layer.Tile({
+  source: new ol.source.XYZ({
+    url: "https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png"
+  })
+});
+
+//********************************************************************************/
+// WAY LAYER (Vector tiles of all ways from pg_tileserv)
+//********************************************************************************/
+
+var vectorUrl = "http://localhost:7800/public.ways/{z}/{x}/{y}.pbf";
+
+var vectorStyle = new ol.style.Style({
+  stroke: new ol.style.Stroke({
+    width: 2,
+    color: "#00000044"
+  })
+});
+
+var vectorLayer = new ol.layer.VectorTile({
+    source: new ol.source.VectorTile({
+      format: new ol.format.MVT(),
+      url: vectorUrl
+    }),
+    style: vectorStyle
+  });
+
+//********************************************************************************/
+// CLICK LAYER (One point for each click)
+//********************************************************************************/
+
+var clicks = [];
+var clickSource = new ol.source.Vector({});
+
+var clickLayer = new ol.layer.Vector({
+  source: clickSource,
+  style: new ol.style.Style({
+    image: new ol.style.RegularShape({
+      fill: new ol.style.Fill({
+        color: 'red'
+      }),
+      stroke: new ol.style.Stroke({
+        width: 1,
+        color: 'grey'
+      }),
+      points: 16,
+      radius: 10,
+      angle: Math.PI / 4
+    })
+  })
+});
+
+//********************************************************************************/
+// ROUTE LAYER (GeoJSON source reading from pg_featureserv)
+//********************************************************************************/
+
+function routeUrl(coord1, coord2) {
+    var url = "http://localhost:9000/functions/boston_find_route/items.json";
+    url += "?from_lon=" + coord1[0];
+    url += "&from_lat=" + coord1[1];
+    url += "&to_lon=" + coord2[0];
+    url += "&to_lat=" + coord2[1];
+    return url;
+}
+
+var routeSource = new ol.source.Vector({
+  format: new ol.format.GeoJSON(),
+  projection : 'EPSG:4326',
+  features: []
+});
+
+var routeLayer = new ol.layer.Vector({
+  title: 'Route',
+  source: routeSource,
+  style: new ol.style.Style({
+    stroke: new ol.style.Stroke({
+      width: 3,
+      color: "#ff0000"
+    })
+  })
+});
+
+//********************************************************************************/
+// MAP SETUP (Layers and click action function)
+//********************************************************************************/
+
+var map = new ol.Map({
+  target: 'map',
+  view: new ol.View({
+    center: ol.proj.transform([-71.0526, 42.3553], 'EPSG:4326', 'EPSG:3857'),
+    zoom: 15
+  }),
+  layers: [baseLayer, vectorLayer, routeLayer, clickLayer]
+});
+
+map.on('singleclick', function(evt) {
+    // Click when we already have 2 clicks means a fresh start
+    if (clicks.length >= 2) {
+      clicks.length = 0;
+      clickSource.clear();
+      routeSource.clear();
+    }
+    // Add latest click to the map
+    clicks.push(ol.proj.transform(evt.coordinate, 'EPSG:3857', 'EPSG:4326'));
+    clickSource.addFeature(new ol.Feature({
+      geometry: new ol.geom.Point(evt.coordinate),
+    }));
+    // Have two clicks? Calculate route!
+    if (clicks.length == 2) {
+      var url = routeUrl(clicks[0], clicks[1]);
+      routeSource.setUrl(url);
+      routeSource.clear();
+      routeSource.refresh();
+    }
+    // Redraw with new elements
+    map.render();
+});
+
+</script>
+</body>
+</html>
