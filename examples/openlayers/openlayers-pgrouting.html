@@ -28,6 +28,7 @@
       left: 20px;
       padding: 10px 20px;
       margin: 0;
+      width: min-content;
     }
   </style>
 </head>
@@ -39,7 +40,11 @@
   <ul>
     <li><a href="https://openlayers.org/">OpenLayers</a></li>
     <li><a href="https://pgrouting.org/">PgRouting</a></li>
+    <li><a href="https://github.com/crunchydata/pg_tileserv">pg_tileserv</a></li>
+    <li><a href="https://github.com/crunchydata/pg_featureserv">pg_featureserv</a></li>
   </ul>
+  <p>Click once to set a start point, and a second time to set an end point and generate a route.</p>
+  <p>Routes are node-to-node so clicks are interpretted as starting from the nearest node.</p>
 </div>
 
 <div id="map"></div>
