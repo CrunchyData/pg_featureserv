@@ -47,17 +47,4 @@ deploy:
     access_key_id: ${AWS_ACCESS_KEY_ID}
     secret_access_key: ${AWS_SECRET_ACCESS_KEY}
     cleanup: false
-  - provider: s3
-    on:
-      repo: CrunchyData/pg_featureserv
-      tags: true
-      condition: $TARGET != docker
-    region: us-east-1
-    bucket: postgisftw
-    local_dir: "./upload"
-    overwrite: true
-    verbose: true
-    edge: true
-    access_key_id: ${AWS_ACCESS_KEY_ID}
-    secret_access_key: ${AWS_SECRET_ACCESS_KEY}
-    cleanup: false
+
