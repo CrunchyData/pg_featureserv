@@ -11,6 +11,10 @@
 A lightweight RESTful geospatial feature server for [PostGIS](https://postgis.net/), written in [Go](https://golang.org/).
 It supports the [OGC API - Features](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html) REST API standard.
 
+## Documentation
+
+* [Crunchy Spatial documentation](https://access.crunchydata.com/documentation/pg_featureserv/latest/)
+
 ## Features
 
 * Implements the [OGC API - Features](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html) standard.
