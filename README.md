@@ -16,7 +16,7 @@ It supports the [OGC API - Features](http://docs.opengeospatial.org/is/17-069r3/
 * Implements the [OGC API - Features](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html) standard.
   * Supports standard request parameters `limit`, `bbox`, property filtering
   * Extended parameters include `offset`, `properties`, `orderBy`, `transform`, `precision`
-* Data reponses are formatted in JSON and GeoJSON
+* Data responses are formatted in JSON and GeoJSON
 * Provides a simple HTML user interface, with web maps to view spatial data
 * Uses the power of PostgreSQL to reduce the amount of code
   and to make data definition easy and familiar.
@@ -78,7 +78,7 @@ go build
 ### Command-line options
 
 * `-?` - show command usage
-* `--config file.toml` - specify configuaration file to use
+* `--config file.toml` - specify configuration file to use
 * `--debug` - set logging level to TRACE (can also be set in config file)
 * `--devel` - run in development mode (e.g. HTML templates reloaded every query)
 * `--test` - run in test mode, with an internal catalog of tables and data
