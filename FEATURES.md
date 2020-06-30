@@ -40,7 +40,7 @@ This is a list of current and planned functionality.  It also includes OGC API f
 ### Query parameters - Extension
 - [x] `orderBy=name`
 - [x] `precision=n` for output precision of GeoJSON coordinates
-- [x] `transform` to specify geometry transformations
+- [x] `transform=fn,arg,arg|fn,arg` to specify geometry transformations
 - [ ] convert transform function names to `ST_` equivalents
 - [x] function arguments (`name=value`)
 - [ ] `f` parameter for formats?  (e.g. `f=json`, `f=html`)
