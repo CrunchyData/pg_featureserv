@@ -27,17 +27,19 @@ This is a list of current and planned functionality.  It also includes OGC API f
 - [x] `/collections/id` JSON includes property names/types
 - [x] `/functions/id` JSON includes parameter names/types/defaults and property names/types
 
-### Query parameters
+### Query parameters - Standard
 - [x] `limit=n`
 - [x] `offset=n`
-- [x] `orderBy=name`
 - [x] `bbox` (4 numbers)
 - [ ] `bbox` (6 numbers)
 - [ ] `bbox-crs`
 - [ ] `datetime`
-- [ ] `f` parameter for formats?  (e.g. `f=json`, `f=html`)
 - [x] `properties` list (to restrict attributes in response)
 - [ ] filtering by property value ( `name=value`, as per [spec sec. 7.15.5](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html#_parameters_for_filtering_on_feature_properties) )
+
+### Query parameters - Extension
+- [ ] `f` parameter for formats?  (e.g. `f=json`, `f=html`)
+- [x] `orderBy=name`
 - [x] function arguments (`name=value`)
 - [x] `precision=n` for output precision of GeoJSON coordinates
 - [x] `transform` to specify geometry transformations
