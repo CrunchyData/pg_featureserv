@@ -38,12 +38,12 @@ This is a list of current and planned functionality.  It also includes OGC API f
 - [ ] filtering by property value ( `name=value`, as per [spec sec. 7.15.5](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html#_parameters_for_filtering_on_feature_properties) )
 
 ### Query parameters - Extension
-- [ ] `f` parameter for formats?  (e.g. `f=json`, `f=html`)
 - [x] `orderBy=name`
-- [x] function arguments (`name=value`)
 - [x] `precision=n` for output precision of GeoJSON coordinates
 - [x] `transform` to specify geometry transformations
 - [ ] convert transform function names to `ST_` equivalents
+- [x] function arguments (`name=value`)
+- [ ] `f` parameter for formats?  (e.g. `f=json`, `f=html`)
 
 ### Output formats
 - [x] GeoJSON
