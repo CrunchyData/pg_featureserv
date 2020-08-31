@@ -1,5 +1,12 @@
 # pg_featureserv Version History
 
+## Version NEXT
+*Released: TBD6*
+
+### Bug Fixes
+
+* Handle specialty column types by casting to text (#52)
+
 ## Version 1.1
 *Released: 2020 Apr 6*
 
