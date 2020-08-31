@@ -1,7 +1,7 @@
 # pg_featureserv Version History
 
 ## Version NEXT
-*Released: TBD6*
+*Released: TBD*
 
 ### Bug Fixes
 
