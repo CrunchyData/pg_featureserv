@@ -51,6 +51,12 @@
 
 <script>
 
+//********************************************************************************/
+// CONSTANTS
+//********************************************************************************/
+
+// var serverName = "localhost";
+var serverName = "ec2-34-222-170-106.us-west-2.compute.amazonaws.com";
 
 //********************************************************************************/
 // BASE MAP (Raster tiles from wikimedia)
@@ -66,12 +72,12 @@ var baseLayer = new ol.layer.Tile({
 // WAY LAYER (Vector tiles of all ways from pg_tileserv)
 //********************************************************************************/
 
-var vectorUrl = "http://localhost:7800/public.ways/{z}/{x}/{y}.pbf";
+var vectorUrl = "http://" + serverName + ":7800/public.ways/{z}/{x}/{y}.pbf";
 
 var vectorStyle = new ol.style.Style({
   stroke: new ol.style.Stroke({
-    width: 2,
-    color: "#00000044"
+    width: 3,
+    color: "#00000055"
   })
 });
 
@@ -113,11 +119,12 @@ var clickLayer = new ol.layer.Vector({
 //********************************************************************************/
 
 function routeUrl(coord1, coord2) {
-    var url = "http://localhost:9000/functions/boston_find_route/items.json";
+    var url = "http://" + serverName + ":9000/functions/boston_find_route/items.json";
     url += "?from_lon=" + coord1[0];
     url += "&from_lat=" + coord1[1];
     url += "&to_lon=" + coord2[0];
     url += "&to_lat=" + coord2[1];
+    url += "&limit=1000"
     return url;
 }
 

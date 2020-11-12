@@ -6,6 +6,7 @@ This example demonstrates generating a point-to-point route in [PgRouting](https
 
 You will need PgRouting installed in order to to point-to-point routing. As "root", install the pg_routing package and utilities:
 ```
+yum install epel-release
 yum install osm2pgrouting_12 pgrouting_12 postgresql12-server
 ```
 Create a database to hold the data.
@@ -72,6 +73,8 @@ PARALLEL SAFE;
 Now that all the pieces are in place, we can expose routing functionality via `pg_featureserv` using the [function publication feature](https://access.crunchydata.com/documentation/pg_featureserv/latest/usage/functions/) that exposes table-valued functions in the "postgisftw" schema.
 
 ```sql
+CREATE SCHEMA IF NOT EXISTS postgisftw;
+
 CREATE OR REPLACE
 FUNCTION postgisftw.boston_find_route(
     from_lon FLOAT8 DEFAULT -71.07246980438231,
@@ -123,11 +126,12 @@ Things to note:
 
 ```js
 function routeUrl(coord1, coord2) {
-    var url = "http://localhost:9000/functions/boston_find_route/items.json";
+    var url = "http://"+serverName+":9000/functions/boston_find_route/items.json";
     url += "?from_lon=" + coord1[0];
     url += "&from_lat=" + coord1[1];
     url += "&to_lon=" + coord2[0];
     url += "&to_lat=" + coord2[1];
+    url += "&limit=1000";
     return url;
 }
 ```
@@ -136,5 +140,5 @@ function routeUrl(coord1, coord2) {
 
 * Turn on `pg_featureserv` with `DATABASE_URL` environment variable pointing to the `routing` database, and confirm is is connecting by pointing your browser at the admin page.
 * Turn on `pg_tileserv` with `DATABASE_URL` environment variable pointing to the `routing` database, and confirm is is connecting by pointing your browser at the admin page.
-* Make sure the `vectorUrl` and `routeUrl` in the HTML file are pointing at your tile and feature servers.
-* Open up the HTML page in your browers.
+* Make sure the `serverName' in the HTML file points at your tile and feature servers.
+* Open up the HTML page in your browser.
