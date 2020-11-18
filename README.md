@@ -44,7 +44,7 @@ Builds of the latest code:
 * [Linux](https://postgisftw.s3.amazonaws.com/pg_featureserv_latest_linux.zip)
 * [Windows](https://postgisftw.s3.amazonaws.com/pg_featureserv_latest_windows.zip)
 * [OSX](https://postgisftw.s3.amazonaws.com/pg_featureserv_latest_osx.zip)
-* [Docker](https://hub.docker.com/repository/docker/pramsey/pg_featureserv)
+* [Docker](https://hub.docker.com/r/pramsey/pg_featureserv)
 
 
 ## Building from Source
