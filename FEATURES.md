@@ -49,7 +49,7 @@ This is a list of current and planned functionality.  It also includes OGC API f
 - [ ] `f` parameter for formats?  (e.g. `f=json`, `f=html`)
 
 ### Query parameters - Functions
-- [x] function arguments 
+- [x] function arguments
   - `name=value`
 
 ### Output formats
@@ -85,7 +85,8 @@ This is a list of current and planned functionality.  It also includes OGC API f
 ### Tables / Views
 - [x] table column schema
 - [x] support tables with no primary key
-- [ ] support views (with PK as `fid` or missing)
+- [x] support views (with PK as `fid` or missing)
+- [x] support materialized views
 - [x] read property descriptions from table/view column comments
 - [ ] read table estimated and actual extents lazily
 
