@@ -3,6 +3,10 @@
 ## Version NEXT
 *Released: TBD*
 
+### New Features
+
+* Display materialized views as collections
+
 ### Bug Fixes
 
 * Handle specialty column types by casting to text (#52)
