@@ -67,6 +67,7 @@ const (
 	ErrMsgFunctionAccess        = "Unable to access Function: %v"
 	ErrMsgInvalidParameterValue = "Invalid value for parameter %v: %v"
 	ErrMsgDataRead              = "Unable to read data from: %v"
+	ErrMsgNoDataRead            = "No data read from: %v"
 	ErrMsgRequestTimeout        = "Maximum time exceeded.  Request cancelled."
 )
 

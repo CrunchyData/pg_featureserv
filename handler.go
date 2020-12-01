@@ -620,7 +620,7 @@ func writeFunItemsGeoJSON(ctx context.Context, w http.ResponseWriter, name strin
 		return appErrorInternalFmt(err, api.ErrMsgDataRead, name)
 	}
 	if features == nil {
-		return appErrorNotFoundFmt(err, api.ErrMsgDataRead, name)
+		return appErrorNotFoundFmt(err, api.ErrMsgNoDataRead, name)
 	}
 
 	//--- assemble resonse
@@ -637,7 +637,7 @@ func writeFunItemsJSON(ctx context.Context, w http.ResponseWriter, name string, 
 		return appErrorInternalFmt(err, api.ErrMsgFunctionAccess, name)
 	}
 	if features == nil {
-		return appErrorNotFoundFmt(err, api.ErrMsgDataRead, name)
+		return appErrorNotFoundFmt(err, api.ErrMsgNoDataRead, name)
 	}
 	return writeJSON(w, api.ContentTypeJSON, features)
 }
