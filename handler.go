@@ -297,7 +297,7 @@ func writeItemsJSON(ctx context.Context, w http.ResponseWriter, name string, par
 	//--- query features data
 	features, err := catalogInstance.TableFeatures(ctx, name, param)
 	if err != nil {
-		return appErrorInternalFmt(err, api.ErrMsgDataRead, name)
+		return appErrorInternalFmt(err, api.ErrMsgDataReadError, name)
 	}
 	if features == nil {
 		return appErrorNotFoundFmt(err, api.ErrMsgCollectionNotFound, name)
@@ -377,7 +377,7 @@ func writeItemJSON(ctx context.Context, w http.ResponseWriter, name string, fid 
 	//--- query data for request
 	feature, err := catalogInstance.TableFeature(ctx, name, fid, param)
 	if err != nil {
-		return appErrorInternalFmt(err, api.ErrMsgDataRead, name)
+		return appErrorInternalFmt(err, api.ErrMsgDataReadError, name)
 	}
 	if len(feature) == 0 {
 		return appErrorNotFoundFmt(nil, api.ErrMsgFeatureNotFound, fid)
@@ -617,7 +617,7 @@ func writeFunItemsGeoJSON(ctx context.Context, w http.ResponseWriter, name strin
 	//--- query features data
 	features, err := catalogInstance.FunctionFeatures(ctx, name, args, param)
 	if err != nil {
-		return appErrorInternalFmt(err, api.ErrMsgDataRead, name)
+		return appErrorInternalFmt(err, api.ErrMsgDataReadError, name)
 	}
 	if features == nil {
 		return appErrorNotFoundFmt(err, api.ErrMsgNoDataRead, name)
