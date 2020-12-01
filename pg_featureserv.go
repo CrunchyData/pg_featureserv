@@ -86,7 +86,7 @@ func main() {
 	conf.InitConfig(flagConfigFilename)
 	initTransforms(conf.Configuration.Server.TransformFunctions)
 
-	log.Infof("%s\n", conf.Configuration.Metadata.Title)
+	log.Infof("=== %s ===\n", conf.Configuration.Metadata.Title)
 
 	if flagTestModeOn {
 		catalogInstance = data.CatMockInstance()
