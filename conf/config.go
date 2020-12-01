@@ -90,7 +90,7 @@ func InitConfig(configFilename string) {
 	setDefaultConfig()
 
 	isExplictConfigFile := configFilename != ""
-	confFile := AppConfig.Name
+	confFile := AppConfig.Name + ".toml"
 	if configFilename != "" {
 		viper.SetConfigFile(configFilename)
 		confFile = configFilename
@@ -113,7 +113,7 @@ func InitConfig(configFilename string) {
 		}
 	}
 
-	log.Infof("Using config file: %s", confFile)
+	log.Infof("Using config file: %s", viper.ConfigFileUsed())
 	viper.Unmarshal(&Configuration)
 
 	// Read environment variable database configuration
