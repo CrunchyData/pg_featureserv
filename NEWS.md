@@ -1,11 +1,12 @@
 # pg_featureserv Version History
 
-## Version NEXT
-*Released: TBD*
+## Version 1.2
+*Released: 2020 Dec 1*
 
 ### New Features
 
 * Display materialized views as collections
+* Improve logging and error messages
 
 ### Bug Fixes
 
