@@ -293,11 +293,11 @@ func TestPropertiesAll(t *testing.T) {
 	equals(t, 1.0, v.Features[0].Props["prop_d"], "feature 1 # property D")
 }
 
-func TestCollectionNoFound(t *testing.T) {
+func TestCollectionNotFound(t *testing.T) {
 	doRequestStatus(t, "/collections/missing", http.StatusNotFound)
 }
 
-func TestCollectionItemsNoFound(t *testing.T) {
+func TestCollectionMissingItemsNotFound(t *testing.T) {
 	doRequestStatus(t, "/collections/missing/items", http.StatusNotFound)
 }
 
@@ -330,11 +330,11 @@ func TestFunctionJSON(t *testing.T) {
 	}
 }
 
-func TestFunctionNoFound(t *testing.T) {
+func TestFunctionNotFound(t *testing.T) {
 	doRequestStatus(t, "/functions/missing", http.StatusNotFound)
 }
 
-func TestFunctionItemsNoFound(t *testing.T) {
+func TestFunctionMissingItemsNotFound(t *testing.T) {
 	doRequestStatus(t, "/functions/missing/items", http.StatusNotFound)
 }
 
