@@ -79,7 +79,7 @@ func TestMain(m *testing.M) {
 	catalogInstance = catalogMock
 	router = initRouter()
 	conf.Configuration = testConfig
-	initTransforms(conf.Configuration.Server.TransformFunctions)
+	initialize()
 
 	os.Exit(m.Run())
 }
@@ -205,6 +205,16 @@ func TestLimit(t *testing.T) {
 	equals(t, "1", v.Features[0].ID, "feature 1 id")
 	equals(t, "2", v.Features[1].ID, "feature 2 id")
 	equals(t, "3", v.Features[2].ID, "feature 3 id")
+}
+
+func TestLimitZero(t *testing.T) {
+	rr := doRequest(t, "/collections/mock_a/items?limit=0")
+
+	var v FeatureCollection
+	json.Unmarshal(readBody(rr), &v)
+
+	equals(t, "FeatureCollection", v.Type, "type FeatureCollection")
+	equals(t, 0, len(v.Features), "# features")
 }
 
 func TestLimitInvalid(t *testing.T) {

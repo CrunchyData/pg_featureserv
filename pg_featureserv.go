@@ -84,7 +84,6 @@ func main() {
 	log.Infof("----  %s - Version %s ----------\n", conf.AppConfig.Name, conf.AppConfig.Version)
 
 	conf.InitConfig(flagConfigFilename)
-	initTransforms(conf.Configuration.Server.TransformFunctions)
 
 	log.Infof("=== %s ===\n", conf.Configuration.Metadata.Title)
 
@@ -102,7 +101,13 @@ func main() {
 		log.SetLevel(log.TraceLevel)
 		log.Debugf("Log level = DEBUG\n")
 	}
+	initialize()
 	serve()
+}
+
+// Initializes the service state from configuration
+func initialize() {
+	initTransforms(conf.Configuration.Server.TransformFunctions)
 }
 
 func createServer() *http.Server {
