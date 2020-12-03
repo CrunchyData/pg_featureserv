@@ -22,7 +22,7 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/CrunchyData/pg_featureserv/conf"
+	"github.com/CrunchyData/pg_featureserv/internal/conf"
 	"github.com/jackc/pgtype"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/log/logrusadapter"

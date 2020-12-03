@@ -14,7 +14,7 @@ package api
 */
 
 import (
-	"github.com/CrunchyData/pg_featureserv/conf"
+	"github.com/CrunchyData/pg_featureserv/internal/conf"
 	"github.com/getkin/kin-openapi/openapi3"
 )
 

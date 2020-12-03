@@ -20,9 +20,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/CrunchyData/pg_featureserv/api"
-	"github.com/CrunchyData/pg_featureserv/conf"
-	"github.com/CrunchyData/pg_featureserv/data"
+	"github.com/CrunchyData/pg_featureserv/internal/api"
+	"github.com/CrunchyData/pg_featureserv/internal/conf"
+	"github.com/CrunchyData/pg_featureserv/internal/data"
 )
 
 func parseRequestParams(r *http.Request) (api.RequestParam, error) {

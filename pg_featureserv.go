@@ -35,11 +35,11 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/CrunchyData/pg_featureserv/ui"
+	"github.com/CrunchyData/pg_featureserv/internal/ui"
 
-	"github.com/CrunchyData/pg_featureserv/api"
-	"github.com/CrunchyData/pg_featureserv/conf"
-	"github.com/CrunchyData/pg_featureserv/data"
+	"github.com/CrunchyData/pg_featureserv/internal/api"
+	"github.com/CrunchyData/pg_featureserv/internal/conf"
+	"github.com/CrunchyData/pg_featureserv/internal/data"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/pborman/getopt/v2"

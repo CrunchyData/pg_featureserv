@@ -18,8 +18,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/CrunchyData/pg_featureserv/conf"
-	"github.com/CrunchyData/pg_featureserv/data"
+	"github.com/CrunchyData/pg_featureserv/internal/conf"
+	"github.com/CrunchyData/pg_featureserv/internal/data"
 	"github.com/getkin/kin-openapi/openapi3"
 )
 

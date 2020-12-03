@@ -22,9 +22,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/CrunchyData/pg_featureserv/api"
-	"github.com/CrunchyData/pg_featureserv/conf"
-	"github.com/CrunchyData/pg_featureserv/ui"
+	"github.com/CrunchyData/pg_featureserv/internal/api"
+	"github.com/CrunchyData/pg_featureserv/internal/conf"
+	"github.com/CrunchyData/pg_featureserv/internal/ui"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"github.com/theckman/httpforwarded"
