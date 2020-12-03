@@ -59,6 +59,7 @@ cd $GOPATH/src/github.com/CrunchyData/pg_featureserv/
 go build
 ```
 * This should create a `pg_featureserv` executable in the application directory
+* (Optional) Run the unit tests using `go test ./...`
 
 ## Configuring the service
 
