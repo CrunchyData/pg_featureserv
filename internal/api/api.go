@@ -40,6 +40,10 @@ const (
 	ParamProperties = "properties"
 	ParamTransform  = "transform"
 
+	OrderByDirSep = ":"
+	OrderByDirD   = "d"
+	OrderByDirA   = "a"
+
 	RelSelf      = "self"
 	RelAlt       = "alternate"
 	RelData      = "data"
