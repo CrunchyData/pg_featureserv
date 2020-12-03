@@ -134,10 +134,10 @@ func appErrorNotFoundFmt(err error, format string, v string) *appError {
 
 func serveURLBase(r *http.Request) string {
 	// Use configuration file settings if we have them
-	configUrl := conf.Configuration.Server.UrlBase
+	configURL := conf.Configuration.Server.UrlBase
 
-	if configUrl != "" {
-		return configUrl + "/"
+	if configURL != "" {
+		return configURL + "/"
 	}
 	// Preferred protocol
 	ps := "http"
