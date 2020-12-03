@@ -1,4 +1,4 @@
-package main
+package service
 
 /*
  Copyright 2019 Crunchy Data Solutions, Inc.

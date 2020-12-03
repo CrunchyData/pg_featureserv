@@ -1,4 +1,4 @@
-package main
+package service
 
 /*
  Copyright 2019 Crunchy Data Solutions, Inc.
@@ -56,7 +56,7 @@ var testConfig conf.Config = conf.Config{
 		HttpHost:   "0.0.0.0",
 		HttpPort:   9000,
 		UrlBase:    urlBase,
-		AssetsPath: "./assets",
+		AssetsPath: "../../assets",
 		TransformFunctions: []string{
 			"ST_Centroid",
 			"ST_PointOnSurface",
@@ -79,7 +79,7 @@ func TestMain(m *testing.M) {
 	catalogInstance = catalogMock
 	router = initRouter()
 	conf.Configuration = testConfig
-	initialize()
+	Initialize()
 
 	os.Exit(m.Run())
 }
