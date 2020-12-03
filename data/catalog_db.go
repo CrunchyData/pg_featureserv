@@ -30,6 +30,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// Constants
 const (
 	JSONTypeString  = "string"
 	JSONTypeNumber  = "number"
@@ -312,7 +313,8 @@ func readFeaturesWithArgs(ctx context.Context, db *pgxpool.Pool, sql string, arg
 }
 
 func scanFeatures(ctx context.Context, rows pgx.Rows, idColIndex int, propCols []string) []string {
-	var features []string
+	// init features array to empty (not nil)
+	var features []string = []string{}
 	for rows.Next() {
 		feature := scanFeature(rows, idColIndex, propCols)
 		//log.Println(feature)
@@ -327,6 +329,7 @@ func scanFeatures(ctx context.Context, rows pgx.Rows, idColIndex int, propCols [
 	// Check for errors from scanning rows.
 	if err := rows.Err(); err != nil {
 		log.Warnf("Error scanning rows for Features: %v", err)
+		// TODO: return nil here ?
 	}
 	return features
 }
