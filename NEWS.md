@@ -1,5 +1,14 @@
 # pg_featureserv Version History
 
+## Version NEXT
+*Released: TBD*
+
+### Bug Fixes
+
+* Fix response value for empty query results for collections and functions
+* Fix OpenAPI document to respect configuration `UrlBase`
+* Quote query table and function names to support mixed case
+
 ## Version 1.2
 *Released: 2020 Dec 1*
 
