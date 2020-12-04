@@ -14,11 +14,23 @@ package api
 */
 
 import (
+	"net/url"
+
 	"github.com/CrunchyData/pg_featureserv/internal/conf"
 	"github.com/getkin/kin-openapi/openapi3"
+	log "github.com/sirupsen/logrus"
 )
 
-func GetAPIContent() *openapi3.Swagger {
+// GetOpenAPIContent returns a Swagger OpenAPI structure
+func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
+
+	apiBase := "/"
+	u, err := url.Parse(urlBase)
+	if err == nil {
+		apiBase = u.Path
+	}
+	log.Debugf("API base path = %v", apiBase)
+
 	paramCollectionID := openapi3.ParameterRef{
 		Value: &openapi3.Parameter{
 			Description:     "ID of collection.",
@@ -141,7 +153,7 @@ func GetAPIContent() *openapi3.Swagger {
 			},
 		},
 		Paths: openapi3.Paths{
-			"/": &openapi3.PathItem{
+			apiBase: &openapi3.PathItem{
 				Summary:     "top-level endpoints available",
 				Description: "Root of API, all metadata & services are beneath these links",
 				Get: &openapi3.Operation{
@@ -157,7 +169,7 @@ func GetAPIContent() *openapi3.Swagger {
 					},
 				},
 			},
-			"/api": &openapi3.PathItem{
+			apiBase + "api": &openapi3.PathItem{
 				Summary:     "API definition",
 				Description: "OpenAPI 3.0 definition of this service",
 				Get: &openapi3.Operation{
@@ -171,7 +183,7 @@ func GetAPIContent() *openapi3.Swagger {
 					},
 				},
 			},
-			"/conformance": &openapi3.PathItem{
+			apiBase + "conformance": &openapi3.PathItem{
 				Summary:     "Conformance classes",
 				Description: "Functionality requirements this api conforms to.",
 				Get: &openapi3.Operation{
@@ -186,7 +198,7 @@ func GetAPIContent() *openapi3.Swagger {
 					},
 				},
 			},
-			"/collections": &openapi3.PathItem{
+			apiBase + "collections": &openapi3.PathItem{
 				Summary:     "Feature collections metadata",
 				Description: "Provides details about feature collections served",
 				Get: &openapi3.Operation{
@@ -201,7 +213,7 @@ func GetAPIContent() *openapi3.Swagger {
 					},
 				},
 			},
-			"/collections/{collectionId}": &openapi3.PathItem{
+			apiBase + "collections/{collectionId}": &openapi3.PathItem{
 				Summary:     "Feature collection metadata",
 				Description: "Provides details about the specified feature collection",
 				Get: &openapi3.Operation{
@@ -218,7 +230,7 @@ func GetAPIContent() *openapi3.Swagger {
 					},
 				},
 			},
-			"/collections/{collectionId}/items": &openapi3.PathItem{
+			apiBase + "collections/{collectionId}/items": &openapi3.PathItem{
 				Summary:     "Feature data for collection",
 				Description: "Provides paged access to data for all features in specified collection",
 				Get: &openapi3.Operation{
@@ -260,7 +272,7 @@ func GetAPIContent() *openapi3.Swagger {
 					},
 				},
 			},
-			"/collections/{collectionId}/items/{featureId}": &openapi3.PathItem{
+			apiBase + "collections/{collectionId}/items/{featureId}": &openapi3.PathItem{
 				Summary:     "Single feature data from collection",
 				Description: "Provides access to a single feature identitfied by {featureId} from the specified collection",
 				Get: &openapi3.Operation{
@@ -297,7 +309,7 @@ func GetAPIContent() *openapi3.Swagger {
 					},
 				},
 			},
-			"/functions": &openapi3.PathItem{
+			apiBase + "functions": &openapi3.PathItem{
 				Summary:     "Functions metadata",
 				Description: "Provides details about functions served",
 				Get: &openapi3.Operation{
@@ -312,7 +324,7 @@ func GetAPIContent() *openapi3.Swagger {
 					},
 				},
 			},
-			"/functions/{functionId}": &openapi3.PathItem{
+			apiBase + "functions/{functionId}": &openapi3.PathItem{
 				Summary:     "Function metadata",
 				Description: "Provides details about the specified function",
 				Get: &openapi3.Operation{
@@ -332,7 +344,7 @@ func GetAPIContent() *openapi3.Swagger {
 					},
 				},
 			},
-			"/functions/{functionId}/items": &openapi3.PathItem{
+			apiBase + "functions/{functionId}/items": &openapi3.PathItem{
 				Summary:     "Features or data for a function result",
 				Description: "Provides paged access to data in specified function result",
 				Get: &openapi3.Operation{

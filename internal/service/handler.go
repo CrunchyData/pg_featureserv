@@ -416,7 +416,7 @@ func handleAPI(w http.ResponseWriter, r *http.Request) *appError {
 	format := api.RequestedFormat(r)
 	urlBase := serveURLBase(r)
 
-	content := api.GetAPIContent()
+	content := api.GetOpenAPIContent(urlBase)
 
 	switch format {
 	case api.FormatHTML:
