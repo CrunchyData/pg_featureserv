@@ -96,7 +96,7 @@ JOIN proargarrays aa ON (p.oid = aa.oid)
 LEFT JOIN pg_description d ON (p.oid = d.objoid)
 ORDER BY id`
 
-const sqlFmtFeatures = "SELECT %v %v FROM %v %v %v LIMIT %v OFFSET %v;"
+const sqlFmtFeatures = "SELECT %v %v FROM \"%s\".\"%s\" %v %v LIMIT %v OFFSET %v;"
 
 func sqlFeatures(tbl *Table, param *QueryParam) (string, []interface{}) {
 	geomCol := sqlGeomCol(tbl.GeometryColumn, param)
@@ -105,7 +105,7 @@ func sqlFeatures(tbl *Table, param *QueryParam) (string, []interface{}) {
 	attrFilter, attrVals := sqlAttrFilter(param.Filter)
 	sqlWhere := sqlWhere(bboxFilter, attrFilter)
 	sqlOrderBy := sqlOrderBy(param.OrderBy)
-	sql := fmt.Sprintf(sqlFmtFeatures, geomCol, propCols, tbl.ID, sqlWhere, sqlOrderBy, param.Limit, param.Offset)
+	sql := fmt.Sprintf(sqlFmtFeatures, geomCol, propCols, tbl.Schema, tbl.Table, sqlWhere, sqlOrderBy, param.Limit, param.Offset)
 	return sql, attrVals
 }
 
@@ -149,12 +149,12 @@ func sqlColExpr(name string, dbtype string) string {
 	return name
 }
 
-const sqlFmtFeature = "SELECT %v %v FROM %v WHERE %v = $1 LIMIT 1"
+const sqlFmtFeature = "SELECT %v %v FROM \"%s\".\"%s\" WHERE %v = $1 LIMIT 1"
 
 func sqlFeature(tbl *Table, param *QueryParam) string {
 	geomCol := sqlGeomCol(tbl.GeometryColumn, param)
 	propCols := sqlColList(param.Columns, tbl.DbTypes, true)
-	sql := fmt.Sprintf(sqlFmtFeature, geomCol, propCols, tbl.ID, tbl.IDColumn)
+	sql := fmt.Sprintf(sqlFmtFeature, geomCol, propCols, tbl.Schema, tbl.Table, tbl.IDColumn)
 	return sql
 }
 
@@ -251,7 +251,7 @@ func applyTransform(funs []TransformFunction, expr string) string {
 	return expr
 }
 
-const sqlFmtGeomFunction = "SELECT %v %v FROM %v.%v( %v ) %v %v LIMIT %v;"
+const sqlFmtGeomFunction = "SELECT %s %s FROM \"%s\".\"%s\"( %v ) %v %v LIMIT %v;"
 
 func sqlGeomFunction(fn *Function, args map[string]string, propCols []string, param *QueryParam) (string, []interface{}) {
 	sqlArgs, argVals := sqlFunctionArgs(fn, args)
@@ -264,7 +264,7 @@ func sqlGeomFunction(fn *Function, args map[string]string, propCols []string, pa
 	return sql, argVals
 }
 
-const sqlFmtFunction = "SELECT %v FROM %v.%v( %v ) %v LIMIT %v;"
+const sqlFmtFunction = "SELECT %v FROM \"%s\".\"%s\"( %v ) %v LIMIT %v;"
 
 func sqlFunction(fn *Function, args map[string]string, propCols []string, param *QueryParam) (string, []interface{}) {
 	sqlArgs, argVals := sqlFunctionArgs(fn, args)
