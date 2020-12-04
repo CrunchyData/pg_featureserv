@@ -27,6 +27,7 @@ It supports the [OGC API - Features](http://docs.opengeospatial.org/is/17-069r3/
 * Full-featured HTTP support
   * CORS support with configurable Allowed Origins
   * GZIP response encoding
+  * HTTP and HTTPS support
 
 For a full list of software capabilities see [FEATURES](FEATURES.md).
 

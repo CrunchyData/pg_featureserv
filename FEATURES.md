@@ -7,6 +7,8 @@ This is a list of current and planned functionality.  It also includes OGC API f
 - [x] determine response format from request headers `Content-Type`, `Accept`
 - [x] CORS support
 - [x] GZIP encoding
+- [x] HTTPS support
+- [x] Proxy support via configurable base URL
 
 ### Schema
 
@@ -102,21 +104,17 @@ This is a list of current and planned functionality.  It also includes OGC API f
 
 ## Operational
 
-- [x] graceful shutdown (see [here](https://github.com/pramsey/pg_tileserv/pull/1))
+- [x] graceful shutdown
+- [x] enforce request timeouts
 
 ### Configuration
 - [x] read config from file
 - [ ] log levels
 - [x] DB pool parameters
 - [x] database connection string
-- [ ] whitelist for transformation functions (default: none)
+- [x] whitelist for transformation functions (default: none)
 
 ### Security
 - [ ] Authentication - TBD
 - [ ] OpenID - TBD
 - [x] Authorization via database role & grants
-
-## Unit Tests
-- [x] links - type, content
-- [x] `limit`
-- [ ] `bbox`

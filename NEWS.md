@@ -3,6 +3,10 @@
 ## Version NEXT
 *Released: TBD*
 
+### New Features
+
+* Support for HTTPS
+
 ### Bug Fixes
 
 * Fix response value for empty query results for collections and functions

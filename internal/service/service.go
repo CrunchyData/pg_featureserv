@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"net/http"
 	"os"
@@ -31,17 +32,27 @@ import (
 
 var catalogInstance data.Catalog
 var router *mux.Router
+var server *http.Server
+var isTLSEnabled bool
+var serverTLS *http.Server
 
 // Initialize sets the service state from configuration
 func Initialize() {
 	initTransforms(conf.Configuration.Server.TransformFunctions)
 }
 
-func createServer() *http.Server {
+func createServers() {
 	confServ := conf.Configuration.Server
 
 	bindAddress := fmt.Sprintf("%v:%v", confServ.HttpHost, confServ.HttpPort)
-	log.Infof("Serving at %v\n", bindAddress)
+	bindAddressTLS := fmt.Sprintf("%v:%v", confServ.HttpHost, confServ.HttpsPort)
+	// Use HTTPS only if server certificate and private key files specified
+	isTLSEnabled = conf.Configuration.IsTLSEnabled()
+
+	log.Infof("Serving HTTP  at %s", bindAddress)
+	if isTLSEnabled {
+		log.Infof("Serving HTTPS at %s", bindAddressTLS)
+	}
 	log.Infof("CORS Allowed Origins: %v\n", conf.Configuration.Server.CORSOrigins)
 
 	router = initRouter()
@@ -68,19 +79,31 @@ func createServer() *http.Server {
 
 	// more "production friendly" timeouts
 	// https://blog.simon-frey.eu/go-as-in-golang-standard-net-http-config-will-break-your-production/#You_should_at_least_do_this_The_easy_path
-	server := &http.Server{
+	server = &http.Server{
 		ReadTimeout:  time.Duration(conf.Configuration.Server.ReadTimeoutSec) * time.Second,
 		WriteTimeout: time.Duration(timeoutSecWrite) * time.Second,
 		Addr:         bindAddress,
 		Handler:      timeoutHandler,
 	}
-	return server
+
+	if isTLSEnabled {
+		serverTLS = &http.Server{
+			ReadTimeout:  time.Duration(conf.Configuration.Server.ReadTimeoutSec) * time.Second,
+			WriteTimeout: time.Duration(timeoutSecWrite) * time.Second,
+			Addr:         bindAddressTLS,
+			Handler:      timeoutHandler,
+			TLSConfig: &tls.Config{
+				MinVersion: tls.VersionTLS12, // Secure TLS versions only
+			},
+		}
+	}
 }
 
 // Serve starts the web service
 func Serve(catalog data.Catalog) {
+	confServ := conf.Configuration.Server
 	catalogInstance = catalog
-	server := createServer()
+	createServers()
 
 	log.Infof("====  Service: %s  ====\n", conf.Configuration.Metadata.Title)
 
@@ -93,6 +116,17 @@ func Serve(catalog data.Catalog) {
 		}
 	}()
 
+	// start https service
+	if isTLSEnabled {
+		go func() {
+			// ListenAndServe returns http.ErrServerClosed when the server receives
+			// a call to Shutdown(). Other errors are unexpected.
+			if err := serverTLS.ListenAndServeTLS(confServ.TlsServerCertificateFile, confServ.TlsServerPrivateKeyFile); err != nil && err != http.ErrServerClosed {
+				log.Fatal(err)
+			}
+		}()
+	}
+
 	// wait here for interrupt signal (^C)
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt)
@@ -104,6 +138,9 @@ func Serve(catalog data.Catalog) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	server.Shutdown(ctx)
+	if isTLSEnabled {
+		serverTLS.Shutdown(ctx)
+	}
 
 	// abort after waiting long enough for service to shutdown gracefully
 	// this terminates long-running DB queries, which otherwise block shutdown
@@ -113,7 +150,7 @@ func Serve(catalog data.Catalog) {
 	log.Debugln("Closing DB connections")
 	catalogInstance.Close()
 
-	log.Infoln("Server stopped.")
+	log.Infoln("Service stopped.")
 	// cancel the abort since it is not needed
 	close(chanCancelFatal)
 }

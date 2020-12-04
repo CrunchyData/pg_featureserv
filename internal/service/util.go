@@ -30,6 +30,11 @@ import (
 	"github.com/theckman/httpforwarded"
 )
 
+const (
+	schemeHTTP  = "http"
+	schemeHTTPS = "https"
+)
+
 //--- simple request handler error framework
 // see https://blog.golang.org/error-handling-and-go
 // Allows handlers to return structure error messages,
@@ -139,8 +144,12 @@ func serveURLBase(r *http.Request) string {
 	if configURL != "" {
 		return configURL + "/"
 	}
-	// Preferred protocol
-	ps := "http"
+	// Preferred scheme
+	ps := schemeHTTP
+	// check if HTTPS (TLS) is being used
+	if r.TLS != nil {
+		ps = schemeHTTPS
+	}
 	// Preferred host:port
 	ph := strings.TrimRight(r.Host, "/")
 

@@ -27,6 +27,9 @@ var Configuration Config
 func setDefaultConfig() {
 	viper.SetDefault("Server.HttpHost", "0.0.0.0")
 	viper.SetDefault("Server.HttpPort", 9000)
+	viper.SetDefault("Server.HttpsPort", 9001)
+	viper.SetDefault("Server.TlsServerCertificateFile", "")
+	viper.SetDefault("Server.TlsServerPrivateKeyFile", "")
 	viper.SetDefault("Server.UrlBase", "")
 	viper.SetDefault("Server.CORSOrigins", "*")
 	viper.SetDefault("Server.Debug", false)
@@ -54,15 +57,18 @@ type Config struct {
 
 // Server config
 type Server struct {
-	HttpHost           string
-	HttpPort           int
-	UrlBase            string
-	CORSOrigins        string
-	Debug              bool
-	AssetsPath         string
-	ReadTimeoutSec     int
-	WriteTimeoutSec    int
-	TransformFunctions []string
+	HttpHost                 string
+	HttpPort                 int
+	HttpsPort                int
+	TlsServerCertificateFile string
+	TlsServerPrivateKeyFile  string
+	UrlBase                  string
+	CORSOrigins              string
+	Debug                    bool
+	AssetsPath               string
+	ReadTimeoutSec           int
+	WriteTimeoutSec          int
+	TransformFunctions       []string
 }
 
 // Paging config
@@ -82,6 +88,11 @@ type Database struct {
 type Metadata struct {
 	Title       string
 	Description string
+}
+
+// IsHTTPSEnabled tests whether HTTPS is enabled
+func (conf *Config) IsTLSEnabled() bool {
+	return conf.Server.TlsServerCertificateFile != "" && conf.Server.TlsServerPrivateKeyFile != ""
 }
 
 // InitConfig initializes the configuration from the config file

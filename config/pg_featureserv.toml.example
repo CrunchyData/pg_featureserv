@@ -2,8 +2,14 @@
 # Accept connections on this subnet (default accepts on all)
 HttpHost = "0.0.0.0"
 
-# Accept connections on this port
+# IP ports to listen on
 HttpPort = 9000
+# HttpsPort = 9001
+
+# HTTPS configuration - TLS server certificate full chain and key
+# If these are not specified, the TLS server will not be started
+# TlsServerCertificateFile = ""
+# TlsServerPrivateKeyFile = ""
 
 # Advertise URLs relative to this server name and path
 # The default is to look this up from incoming request headers
