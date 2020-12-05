@@ -29,12 +29,14 @@ const (
 	// ContentTypeHTML tbd
 	ContentTypeHTML = "text/html"
 
+	// FormatJSON code and extension for JSON
 	FormatJSON = "json"
 
+	// FormatHTML code and extension for HTML
 	FormatHTML = "html"
 )
 
-// ContentType tbd
+// ContentType gets the contentType for a data format
 func ContentType(format string) string {
 	switch format {
 	case FormatJSON:
@@ -45,6 +47,7 @@ func ContentType(format string) string {
 	return ""
 }
 
+// PathFormat gets the data format for a path
 func PathFormat(url *url.URL) string {
 	path := url.EscapedPath()
 	if strings.HasSuffix(path, ".html") {
@@ -53,6 +56,7 @@ func PathFormat(url *url.URL) string {
 	return FormatJSON
 }
 
+// RequestedFormat gets the format for a request from extension or headers
 func RequestedFormat(r *http.Request) string {
 	// first check explicit path
 	path := r.URL.EscapedPath()
@@ -71,6 +75,7 @@ func RequestedFormat(r *http.Request) string {
 	return FormatJSON
 }
 
+// PathStripFormat removes a format extension from a path
 func PathStripFormat(path string) string {
 	if strings.HasSuffix(path, ".html") || strings.HasSuffix(path, ".json") {
 		return path[0 : len(path)-5]
@@ -78,6 +83,7 @@ func PathStripFormat(path string) string {
 	return path
 }
 
+// URLQuery gets the query part of a URL
 func URLQuery(url *url.URL) string {
 	uri := url.RequestURI()
 	qloc := strings.Index(uri, "?")
