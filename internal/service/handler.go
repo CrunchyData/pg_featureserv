@@ -215,6 +215,7 @@ func handleCollection(w http.ResponseWriter, r *http.Request) *appError {
 	if tbl == nil && err == nil {
 		return appErrorNotFoundFmt(err, api.ErrMsgCollectionNotFound, name)
 	}
+	catalogInstance.TableReload(name)
 	content := api.NewCollectionInfo(tbl)
 	content.GeometryType = &tbl.GeometryType
 	content.Properties = api.TableProperties(tbl)

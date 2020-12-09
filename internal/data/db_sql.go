@@ -96,6 +96,23 @@ JOIN proargarrays aa ON (p.oid = aa.oid)
 LEFT JOIN pg_description d ON (p.oid = d.objoid)
 ORDER BY id`
 
+//const sqlFmtExtentEst = `WITH ext AS (SELECT ST_Transform(ST_SetSRID(ST_EstimatedExtent('%s', '%s', '%s'), %d), 4326) AS geom)
+//      SELECT ST_XMin(ext.geom) AS xmin, ST_YMin(ext.geom) AS ymin, ST_XMax(ext.geom) AS xmax, ST_YMax(ext.geom) AS ymax FROM ext;`
+
+const sqlFmtExtentEst = `SELECT ST_XMin(ext.geom) AS xmin, ST_YMin(ext.geom) AS ymin, ST_XMax(ext.geom) AS xmax, ST_YMax(ext.geom) AS ymax
+FROM ( SELECT ST_Transform(ST_SetSRID(ST_EstimatedExtent('%s', '%s', '%s'), %d), 4326) AS geom ) AS ext;`
+
+func sqlExtentEstimated(tbl *Table) string {
+	return fmt.Sprintf(sqlFmtExtentEst, tbl.Schema, tbl.Table, tbl.GeometryColumn, tbl.Srid)
+}
+
+const sqlFmtExtentExact = `SELECT ST_XMin(ext.geom) AS xmin, ST_YMin(ext.geom) AS ymin, ST_XMax(ext.geom) AS xmax, ST_YMax(ext.geom) AS ymax
+FROM (SELECT coalesce( ST_Transform(ST_SetSRID(ST_Extent("%s"), %d), 4326),	ST_MakeEnvelope(-180, -90, 180, 90, 4326)) AS geom FROM "%s"."%s" ) AS ext;`
+
+func sqlExtentExact(tbl *Table) string {
+	return fmt.Sprintf(sqlFmtExtentExact, tbl.GeometryColumn, tbl.Srid, tbl.Schema, tbl.Table)
+}
+
 const sqlFmtFeatures = "SELECT %v %v FROM \"%s\".\"%s\" %v %v LIMIT %v OFFSET %v;"
 
 func sqlFeatures(tbl *Table, param *QueryParam) (string, []interface{}) {

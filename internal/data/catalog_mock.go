@@ -184,6 +184,10 @@ func (cat *CatalogMock) Tables() ([]*Table, error) {
 	return cat.TableDefs, nil
 }
 
+func (cat *CatalogMock) TableReload(name string) {
+	// no-op for mock data
+}
+
 func (cat *CatalogMock) TableByName(name string) (*Table, error) {
 	for _, lyr := range cat.TableDefs {
 		if lyr.ID == name {

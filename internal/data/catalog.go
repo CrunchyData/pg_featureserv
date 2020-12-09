@@ -27,6 +27,9 @@ type Catalog interface {
 	// It returns nil if the table does not exist
 	TableByName(name string) (*Table, error)
 
+	// TableReload reloads volatile table data
+	TableReload(name string)
+
 	// TableFeatures returns an array of the JSON for the features in a table
 	// It returns nil if the table does not exist
 	TableFeatures(ctx context.Context, name string, param *QueryParam) ([]string, error)

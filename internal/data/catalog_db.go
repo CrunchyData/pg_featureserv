@@ -131,6 +131,44 @@ func (cat *catalogDB) Tables() ([]*Table, error) {
 	return cat.tables, nil
 }
 
+func (cat *catalogDB) TableReload(name string) {
+	tbl, ok := cat.tableMap[name]
+	if !ok {
+		return
+	}
+	// load extent (which may change over time
+	sqlExtentEst := sqlExtentEstimated(tbl)
+	isExtentLoaded := cat.loadExtent(sqlExtentEst, tbl)
+	if !isExtentLoaded {
+		log.Debugf("Can't get estimated extent for %s", name)
+		sqlExtentExact := sqlExtentExact(tbl)
+		cat.loadExtent(sqlExtentExact, tbl)
+	}
+}
+
+func (cat *catalogDB) loadExtent(sql string, tbl *Table) bool {
+	var (
+		xmin pgtype.Float8
+		xmax pgtype.Float8
+		ymin pgtype.Float8
+		ymax pgtype.Float8
+	)
+	log.Debug("Extent query: " + sql)
+	err := cat.dbconn.QueryRow(context.Background(), sql).Scan(&xmin, &ymin, &xmax, &ymax)
+	if err != nil {
+		log.Debugf("Error querying Extent for %s: %v", tbl.ID, err)
+	}
+	// no extent was read (perhaps a view...)
+	if xmin.Status == pgtype.Null {
+		return false
+	}
+	tbl.Extent.Minx = xmin.Float
+	tbl.Extent.Miny = ymin.Float
+	tbl.Extent.Maxx = xmax.Float
+	tbl.Extent.Maxy = ymax.Float
+	return true
+}
+
 func (cat *catalogDB) TableByName(name string) (*Table, error) {
 	cat.refreshTables(false)
 	tbl, ok := cat.tableMap[name]
