@@ -12,6 +12,7 @@
 * Fix response value for empty query results for collections and functions
 * Fix OpenAPI document to respect configuration `UrlBase`
 * Quote query table and function names to support mixed case
+* Fix `collection` reponse to include actual extent
 
 ## Version 1.2
 *Released: 2020 Dec 1*
