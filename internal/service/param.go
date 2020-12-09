@@ -168,25 +168,22 @@ func parseBbox(values api.NameValMap) (*data.Extent, error) {
 	return &bbox, nil
 }
 
-// parseProperties computes a lower-case, unique list
-// of property names to be returned
+// parseProperties extracts an array of rawo property names to be included
+// returns nil if no properties parameter was specified
+// returns[] if properties is present but with no args
 func parseProperties(values api.NameValMap) ([]string, error) {
-	val := values[api.ParamProperties]
-	if len(val) < 1 {
+	val, ok := values[api.ParamProperties]
+	// no properties param => nil
+	if !ok {
 		return nil, nil
 	}
-	namesRaw := strings.Split(val, ",")
-	var names []string
-	nameMap := make(map[string]bool)
-	for _, name := range namesRaw {
-		nameLow := strings.ToLower(name)
-		// if a new name add to list
-		if _, ok := nameMap[nameLow]; !ok {
-			names = append(names, nameLow)
-			nameMap[nameLow] = true
-		}
+	// empty properties list  => []
+	if len(val) < 1 {
+		return []string{}, nil
 	}
-	return names, nil
+	// return array of raw property names
+	namesRaw := strings.Split(val, ",")
+	return namesRaw, nil
 }
 
 // parseOrderBy determines an order by array
@@ -228,9 +225,13 @@ func parseOrderByDir(dir string) (bool, error) {
 // If the request properties list is empty,
 // the full column list is returned
 func normalizePropNames(requestNames []string, colNames []string) []string {
-	// no props given => use all properties
-	if len(requestNames) == 0 {
+	// no properties parameter => use all columns
+	if requestNames == nil {
 		return colNames
+	}
+	// empty properties parameter => use NO columns
+	if len(requestNames) == 0 {
+		return requestNames
 	}
 	nameSet := toNameSet(requestNames)
 	// select cols which appear in set
