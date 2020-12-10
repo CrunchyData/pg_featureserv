@@ -253,9 +253,11 @@ func toNameSet(strs []string) map[string]bool {
 	return set
 }
 
-const transformFunSep = "|"
-const transformParamSep = ","
-const functionPrefixST = "st_"
+const (
+	transformFunSep   = "|"
+	transformParamSep = ","
+	functionPrefixST  = "st_"
+)
 
 var transformFunctionWhitelist map[string]string
 
