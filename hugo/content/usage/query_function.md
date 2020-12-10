@@ -59,6 +59,8 @@ The query parameter `properties=PROP1,PROP2,PROP3...`
 specifies the properties returned in the response.
 This reduces the response size of functions
 that produce a large number of records.
+If the parameter is specified with an empty list,
+no feature properties are returned.
 
 #### Example
 ```

@@ -73,9 +73,10 @@ Path: `/collections/{cid}/items`
 * `offset=N` - starts the response at the given offset
 * `orderBy=PROP[:A | :D]` - order the response items by the given property (ascending (default) or descending)
 * `bbox=mix,miny,maxx,maxy` - filter features in response to ones intersecting given bounding box (in lon/lat, for now)
-* `properties=PROP-LIST`- return only the given properties (comma-separated)
+* `properties=PROP-LIST`- return only the given properties (comma-separated).
+  If PROP-LIST is empty, no properties are returned.  If not present, all properties are returned.
 * `precision=N` - set precision of GeoJSON ordinates to use N decimal places
-* `transform` - transform the feature geometry by the given geometry function pipeline
+* `transform=fun1[,args][|fun2,args...]` - transform the feature geometry by the given geometry function pipeline
 * `<propname>=val` - filter features for a property having the given value
 
 ### Response
