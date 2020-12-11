@@ -65,6 +65,13 @@ func parseRequestParams(r *http.Request) (api.RequestParam, error) {
 	param.Properties = props
 
 	// --- orderBy parameter
+	groupBy, err := parseGroupBy(paramValues)
+	if err != nil {
+		return param, err
+	}
+	param.GroupBy = groupBy
+
+	// --- orderBy parameter
 	orderBy, err := parseOrderBy(paramValues)
 	if err != nil {
 		return param, err
@@ -182,6 +189,22 @@ func parseProperties(values api.NameValMap) ([]string, error) {
 		return []string{}, nil
 	}
 	// return array of raw property names
+	namesRaw := strings.Split(val, ",")
+	return namesRaw, nil
+}
+
+func parseGroupBy(values api.NameValMap) ([]string, error) {
+	val, ok := values[api.ParamGroupBy]
+	// no properties param => nil
+	if !ok {
+		return nil, nil
+	}
+	// empty list  => []
+	if !ok || len(val) < 1 {
+		return []string{}, nil
+	}
+	// TODO: normalize col names
+	// return array of raw col names
 	namesRaw := strings.Split(val, ",")
 	return namesRaw, nil
 }
@@ -336,15 +359,34 @@ func parseFilter(paramMap map[string]string, colNameMap map[string]string) []*da
 	return conds
 }
 
-func createQueryParams(requestParam *api.RequestParam, colNames []string) *data.QueryParam {
-	param := data.QueryParam{
-		Limit:         requestParam.Limit,
-		Offset:        requestParam.Offset,
-		Bbox:          requestParam.Bbox,
-		OrderBy:       requestParam.OrderBy,
-		Precision:     requestParam.Precision,
-		TransformFuns: requestParam.TransformFuns,
+// createQueryParams applies any cross-parameter logic
+func createQueryParams(param *api.RequestParam, colNames []string) *data.QueryParam {
+	query := data.QueryParam{
+		Limit:         param.Limit,
+		Offset:        param.Offset,
+		Bbox:          param.Bbox,
+		GroupBy:       param.GroupBy,
+		OrderBy:       param.OrderBy,
+		Precision:     param.Precision,
+		TransformFuns: param.TransformFuns,
 	}
-	param.Columns = normalizePropNames(requestParam.Properties, colNames)
-	return &param
+	cols := param.Properties
+	// --- if groupby is present it replaces properties (it may be empty)
+	if param.GroupBy != nil {
+		cols = param.GroupBy
+		// ensure a aggregating transform is set to avoid error
+		if len(param.TransformFuns) == 0 {
+			query.TransformFuns = []data.TransformFunction{
+				{
+					Name: "st_collect",
+				},
+				{
+					Name: "st_envelope",
+				},
+			}
+		}
+	}
+	query.Columns = normalizePropNames(cols, colNames)
+
+	return &query
 }

@@ -69,15 +69,19 @@ Produces a dataset of items from the collection (as GeoJSON)
 Path: `/collections/{cid}/items`
 
 ### Parameters
-* `limit=N` - limits the number of features in the response
-* `offset=N` - starts the response at the given offset
-* `orderBy=PROP[:A | :D]` - order the response items by the given property (ascending (default) or descending)
-* `bbox=mix,miny,maxx,maxy` - filter features in response to ones intersecting given bounding box (in lon/lat, for now)
-* `properties=PROP-LIST`- return only the given properties (comma-separated).
-  If PROP-LIST is empty, no properties are returned.  If not present, all properties are returned.
+* `limit=N` - limits the number of features in the response.
+* `offset=N` - starts the response at an offset.
+* `orderBy=PROP[:A | :D]` - order the response items by a property (ascending (default) or descending).
+* `bbox=mix,miny,maxx,maxy` - filter features in response to ones intersecting a bounding box (in lon/lat).
+* `<propname>=val` - filter features for a property having a value.
+  Multiple property filters are ANDed together.
+* `properties=PROP-LIST`- return only specific properties (comma-separated).
+  If PROP-LIST is empty, no properties are returned.
+  If not present, all properties are returned.
 * `precision=N` - set precision of GeoJSON ordinates to use N decimal places
-* `transform=fun1[,args][|fun2,args...]` - transform the feature geometry by the given geometry function pipeline
-* `<propname>=val` - filter features for a property having the given value
+* `transform=fun1[,args][|fun2,args...]` - transform the feature geometry by a geometry function pipeline.
+* `groupBy=PROP-NAME` - group results on a property.
+Usually used with an aggregate `transform` function.
 
 ### Response
 

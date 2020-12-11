@@ -35,6 +35,7 @@ const (
 	ParamLimit      = "limit"
 	ParamOffset     = "offset"
 	ParamBbox       = "bbox"
+	ParamGroupBy    = "groupby"
 	ParamOrderBy    = "orderby"
 	ParamPrecision  = "precision"
 	ParamProperties = "properties"
@@ -84,6 +85,7 @@ var ParamReservedNames = []string{
 	ParamLimit,
 	ParamOffset,
 	ParamBbox,
+	ParamGroupBy,
 	ParamOrderBy,
 	ParamPrecision,
 	ParamProperties,
@@ -212,6 +214,7 @@ type RequestParam struct {
 	Offset        int
 	Bbox          *data.Extent
 	Properties    []string
+	GroupBy       []string
 	OrderBy       []data.Ordering
 	Precision     int
 	TransformFuns []data.TransformFunction

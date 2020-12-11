@@ -75,6 +75,7 @@ type QueryParam struct {
 	Filter []*FilterCond
 	// Columns is the list of columns to return
 	Columns       []string
+	GroupBy       []string
 	OrderBy       []Ordering
 	Precision     int
 	TransformFuns []TransformFunction

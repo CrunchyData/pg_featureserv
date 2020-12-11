@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 )
 
 /*
@@ -113,7 +115,7 @@ func sqlExtentExact(tbl *Table) string {
 	return fmt.Sprintf(sqlFmtExtentExact, tbl.GeometryColumn, tbl.Srid, tbl.Schema, tbl.Table)
 }
 
-const sqlFmtFeatures = "SELECT %v %v FROM \"%s\".\"%s\" %v %v LIMIT %v OFFSET %v;"
+const sqlFmtFeatures = "SELECT %v %v FROM \"%s\".\"%s\" %v %v %v %s;"
 
 func sqlFeatures(tbl *Table, param *QueryParam) (string, []interface{}) {
 	geomCol := sqlGeomCol(tbl.GeometryColumn, param)
@@ -121,8 +123,10 @@ func sqlFeatures(tbl *Table, param *QueryParam) (string, []interface{}) {
 	bboxFilter := sqlBBoxFilter(tbl, param.Bbox)
 	attrFilter, attrVals := sqlAttrFilter(param.Filter)
 	sqlWhere := sqlWhere(bboxFilter, attrFilter)
+	sqlGroupBy := sqlGroupBy(param.GroupBy)
 	sqlOrderBy := sqlOrderBy(param.OrderBy)
-	sql := fmt.Sprintf(sqlFmtFeatures, geomCol, propCols, tbl.Schema, tbl.Table, sqlWhere, sqlOrderBy, param.Limit, param.Offset)
+	sqlLimitOffset := sqlLimitOffset(param.Limit, param.Offset)
+	sql := fmt.Sprintf(sqlFmtFeatures, geomCol, propCols, tbl.Schema, tbl.Table, sqlWhere, sqlGroupBy, sqlOrderBy, sqlLimitOffset)
 	return sql, attrVals
 }
 
@@ -242,7 +246,7 @@ func sqlPrecisionArg(precision int) string {
 	return sqlPrecision
 }
 
-const sqlFmtOrderBy = `ORDER By "%v" %v`
+const sqlFmtOrderBy = `ORDER BY "%v" %v`
 
 func sqlOrderBy(ordering []Ordering) string {
 	if len(ordering) <= 0 {
@@ -256,6 +260,31 @@ func sqlOrderBy(ordering []Ordering) string {
 	}
 	sql := fmt.Sprintf(sqlFmtOrderBy, col, dir)
 	return sql
+}
+
+const sqlFmtGroupBy = `GROUP BY "%v"`
+
+func sqlGroupBy(groupBy []string) string {
+	if len(groupBy) <= 0 {
+		return ""
+	}
+	// TODO: support more than one grouping
+	col := groupBy[0]
+	sql := fmt.Sprintf(sqlFmtGroupBy, col)
+	log.Debugf("group by: %s", sql)
+	return sql
+}
+
+func sqlLimitOffset(limit int, offset int) string {
+	sqlLim := ""
+	if limit >= 0 {
+		sqlLim = fmt.Sprintf(" LIMIT %d", limit)
+	}
+	sqlOff := ""
+	if offset > 0 {
+		sqlOff = fmt.Sprintf(" OFFSET %d", offset)
+	}
+	return sqlLim + sqlOff
 }
 
 func applyTransform(funs []TransformFunction, expr string) string {
