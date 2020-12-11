@@ -184,6 +184,11 @@ type Bbox struct {
 	Extent []float64 `json:"bbox"`
 }
 
+// Extent OAPIF Extent structure (partial)
+type Extent struct {
+	Spatial *Bbox `json:"spatial"`
+}
+
 // --- @See https://raw.githubusercontent.com/opengeospatial/WFS_FES/master/core/openapi/schemas/bbox.yaml
 //	for bbox schema
 
@@ -203,6 +208,14 @@ var BboxSchema openapi3.Schema = openapi3.Schema{
 				Items:    openapi3.NewSchemaRef("", openapi3.NewFloat64Schema().WithMin(-180).WithMax(180)),
 			},
 		},
+	},
+}
+
+var ExtentSchema openapi3.Schema = openapi3.Schema{
+	Type:     "object",
+	Required: []string{"extent"},
+	Properties: map[string]*openapi3.SchemaRef{
+		"spatial": {Value: &BboxSchema},
 	},
 }
 
@@ -268,7 +281,7 @@ type CollectionInfo struct {
 	Name         string   `json:"id"`
 	Title        string   `json:"title,omitempty"`
 	Description  string   `json:"description,omitempty"`
-	Extent       *Bbox    `json:"extent,omitempty"`
+	Extent       *Extent  `json:"extent,omitempty"`
 	Crs          []string `json:"crs,omitempty"`
 	GeometryType *string  `json:"geometrytype,omitempty"`
 
@@ -290,7 +303,7 @@ var CollectionInfoSchema openapi3.Schema = openapi3.Schema{
 		"id":          {Value: &openapi3.Schema{Type: "string"}},
 		"title":       {Value: &openapi3.Schema{Type: "string"}},
 		"description": {Value: &openapi3.Schema{Type: "string"}},
-		"extent":      {Value: &BboxSchema},
+		"extent":      {Value: &ExtentSchema},
 		"crs": {Value: &openapi3.Schema{
 			Type: "array",
 			Items: &openapi3.SchemaRef{
@@ -447,8 +460,10 @@ var conformance = Conformance{
 }
 
 func toBbox(cc *data.Table) *Bbox {
+	// extent bbox is always in 4326 for now
+	crs := "http://www.opengis.net/def/crs/EPSG/0/4326"
 	return &Bbox{
-		Crs:    fmt.Sprintf("EPSG:%v", cc.Srid),
+		Crs:    crs,
 		Extent: []float64{cc.Extent.Minx, cc.Extent.Miny, cc.Extent.Maxx, cc.Extent.Maxy},
 	}
 }
@@ -483,7 +498,9 @@ func NewCollectionInfo(tbl *data.Table) *CollectionInfo {
 		Name:        tbl.ID,
 		Title:       tbl.Title,
 		Description: tbl.Description,
-		Extent:      toBbox(tbl),
+		Extent: &Extent{
+			Spatial: toBbox(tbl),
+		},
 	}
 	return &doc
 }
