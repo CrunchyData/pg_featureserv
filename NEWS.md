@@ -6,6 +6,7 @@
 ### New Features
 
 * Support for HTTPS
+* Provide the `groupBy` query parameter, and ability to aggregate query features
 
 ### Bug Fixes
 
