@@ -107,6 +107,12 @@ func linksRoot(urlBase string) []*api.Link {
 	links = append(links, linkAlt(urlBase, api.RootPageName, api.TitleDocument))
 
 	links = append(links, &api.Link{
+		Href: urlPathFormat(urlBase, api.TagAPI, format),
+		Rel:  api.RelServiceDesc, Type: api.ContentTypeOpenAPI, Title: "API definition"})
+	links = append(links, &api.Link{
+		Href: urlPathFormat(urlBase, api.TagConformance, format),
+		Rel:  api.RelConformance, Type: api.ContentType(format), Title: "OGC API conformance classes implemented by this server"})
+	links = append(links, &api.Link{
 		Href: urlPathFormat(urlBase, api.TagCollections, format),
 		Rel:  api.RelData, Type: api.ContentType(format), Title: "collections"})
 	links = append(links, &api.Link{

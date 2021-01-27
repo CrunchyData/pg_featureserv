@@ -233,6 +233,7 @@ func writeJSON(w http.ResponseWriter, contype string, content interface{}) *appE
 		log.Printf("JSON encoding error: %v", err.Error())
 		return appErrorInternal(err, api.ErrMsgEncoding)
 	}
+	//fmt.Println(string(encodedContent))
 	writeResponse(w, contype, encodedContent)
 	return nil
 }

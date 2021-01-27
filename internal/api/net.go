@@ -20,14 +20,17 @@ import (
 )
 
 const (
-	// ContentTypeJSON tbd
+	// ContentTypeJSON
 	ContentTypeJSON = "application/json"
 
-	// ContentTypeGeoJSON tbd
+	// ContentTypeGeoJSON
 	ContentTypeGeoJSON = "application/geo+json"
 
-	// ContentTypeHTML tbd
+	// ContentTypeHTML
 	ContentTypeHTML = "text/html"
+
+	// ContentTypeHTML
+	ContentTypeOpenAPI = "application/vnd.oai.openapi+json;version=3.0"
 
 	// FormatJSON code and extension for JSON
 	FormatJSON = "json"
@@ -68,7 +71,7 @@ func RequestedFormat(r *http.Request) string {
 	}
 	// Use Accept header if present
 	hdrAccept := r.Header.Get("Accept")
-	//fmt.Println(hdrAccept)
+	//fmt.Println("Accept:" + hdrAccept)
 	if strings.Index(hdrAccept, ContentTypeHTML) >= 0 {
 		return FormatHTML
 	}
