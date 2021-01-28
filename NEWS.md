@@ -16,6 +16,7 @@
 * Fix `collection` reponse to include actual extent (#54)
 * Fix `collection` response JSON `extent` property to be OAPIF-compliant (#54)
 * Fix landing page document to include links to resources `service-desc` and `conformance`
+* Fix links in JSON responses to not include JSON format (required for QGIS)
 
 ## Version 1.2
 *Released: 2020 Dec 1*
