@@ -102,29 +102,28 @@ func doRoot(w http.ResponseWriter, r *http.Request, format string) *appError {
 
 func linksRoot(urlBase string) []*api.Link {
 	var links []*api.Link
-	format := api.FormatJSON
 	links = append(links, linkSelf(urlBase, api.RootPageName, api.TitleDocument))
 	links = append(links, linkAlt(urlBase, api.RootPageName, api.TitleDocument))
 
 	links = append(links, &api.Link{
-		Href: urlPathFormat(urlBase, api.TagAPI, format),
+		Href: urlPath(urlBase, api.TagAPI),
 		Rel:  api.RelServiceDesc, Type: api.ContentTypeOpenAPI, Title: "API definition"})
 	links = append(links, &api.Link{
-		Href: urlPathFormat(urlBase, api.TagConformance, format),
-		Rel:  api.RelConformance, Type: api.ContentType(format), Title: "OGC API conformance classes implemented by this server"})
+		Href: urlPath(urlBase, api.TagConformance),
+		Rel:  api.RelConformance, Type: api.ContentTypeJSON, Title: "OGC API conformance classes implemented by this server"})
 	links = append(links, &api.Link{
-		Href: urlPathFormat(urlBase, api.TagCollections, format),
-		Rel:  api.RelData, Type: api.ContentType(format), Title: "collections"})
+		Href: urlPath(urlBase, api.TagCollections),
+		Rel:  api.RelData, Type: api.ContentTypeJSON, Title: "collections"})
 	links = append(links, &api.Link{
-		Href: urlPathFormat(urlBase, api.TagFunctions, format),
-		Rel:  api.RelFunctions, Type: api.ContentType(format), Title: "functions"})
+		Href: urlPath(urlBase, api.TagFunctions),
+		Rel:  api.RelFunctions, Type: api.ContentTypeJSON, Title: "functions"})
 
 	return links
 }
 
 func linkSelf(urlBase string, path string, desc string) *api.Link {
 	return &api.Link{
-		Href:  urlPathFormat(urlBase, path, api.FormatJSON),
+		Href:  urlPath(urlBase, path),
 		Rel:   api.RelSelf,
 		Type:  api.ContentTypeJSON,
 		Title: desc + api.TitleAsJSON}
@@ -201,7 +200,7 @@ func linksCollection(name string, urlBase string, isSummary bool) []*api.Link {
 	links = append(links, linkSelf(urlBase, path, titleDesc))
 	links = append(links, linkAlt(urlBase, path, titleDesc))
 
-	linkItemsJSON := urlPathFormat(urlBase, pathItems, api.FormatJSON)
+	linkItemsJSON := urlPath(urlBase, pathItems)
 	links = append(links, &api.Link{
 		Href:  linkItemsJSON,
 		Rel:   api.RelItems,
@@ -516,7 +515,7 @@ func linksFunction(id string, urlBase string, isSummary bool, isGeomFun bool) []
 	}
 
 	links = append(links, &api.Link{
-		Href:  urlPathFormat(urlBase, pathItems, api.FormatJSON),
+		Href:  urlPath(urlBase, pathItems),
 		Rel:   "items",
 		Type:  conType,
 		Title: dataTitle})

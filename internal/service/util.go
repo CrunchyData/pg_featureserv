@@ -184,18 +184,24 @@ func getRequestVar(varname string, r *http.Request) string {
 	return name
 }
 
+// urlPathFormat provides a URL for the given base and path
+func urlPath(urlBase string, path string) string {
+	url := fmt.Sprintf("%v%v", urlBase, path)
+	return url
+}
+
 // urlPathFormat provides a URL for the given base, path and format
 func urlPathFormat(urlBase string, path string, format string) string {
-	var pathType string
+	var pathFormat string
 	if path == "" {
-		pathType = ""
+		pathFormat = ""
 		if format == api.FormatHTML {
-			pathType = api.RootPageName + ".html"
+			pathFormat = api.RootPageName + ".html"
 		}
 	} else {
-		pathType = path + "." + format
+		pathFormat = path + "." + format
 	}
-	url := fmt.Sprintf("%v%v", urlBase, pathType)
+	url := fmt.Sprintf("%v%v", urlBase, pathFormat)
 	return url
 }
 
