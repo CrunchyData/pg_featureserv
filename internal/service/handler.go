@@ -139,7 +139,6 @@ func linkAlt(urlBase string, path string, desc string) *api.Link {
 
 func handleCollections(w http.ResponseWriter, r *http.Request) *appError {
 	format := api.RequestedFormat(r)
-	isJSON := format == api.FormatJSON
 	urlBase := serveURLBase(r)
 
 	colls, err := catalogInstance.Tables()
@@ -149,7 +148,12 @@ func handleCollections(w http.ResponseWriter, r *http.Request) *appError {
 
 	content := api.NewCollectionsInfo(colls)
 	for _, coll := range content.Collections {
-		addCollectionSummaryLinks(coll, urlBase, isJSON, true)
+		switch format {
+		case api.FormatHTML:
+			addCollectionURLs(coll, urlBase)
+		default:
+			coll.Links = linksCollection(coll.Name, urlBase, true)
+		}
 	}
 
 	switch format {
@@ -172,19 +176,15 @@ func linksCollections(urlBase string) []*api.Link {
 	return links
 }
 
-func addCollectionSummaryLinks(coll *api.CollectionInfo, urlBase string, isJSON bool, isSummary bool) {
+func addCollectionURLs(coll *api.CollectionInfo, urlBase string) {
 	name := coll.Name
 	path := api.PathCollection(name)
 	pathItems := api.PathCollectionItems(name)
 
-	if isJSON {
-		coll.Links = linksCollection(name, urlBase, isSummary)
-	} else {
-		coll.URLMetadataJSON = urlPathFormat(urlBase, path, api.FormatJSON)
-		coll.URLMetadataHTML = urlPathFormat(urlBase, path, api.FormatHTML)
-		coll.URLItemsHTML = urlPathFormat(urlBase, pathItems, api.FormatHTML)
-		coll.URLItemsJSON = urlPathFormat(urlBase, pathItems, api.FormatJSON)
-	}
+	coll.URLMetadataJSON = urlPathFormat(urlBase, path, api.FormatJSON)
+	coll.URLMetadataHTML = urlPathFormat(urlBase, path, api.FormatHTML)
+	coll.URLItemsHTML = urlPathFormat(urlBase, pathItems, api.FormatHTML)
+	coll.URLItemsJSON = urlPathFormat(urlBase, pathItems, api.FormatJSON)
 }
 
 func linksCollection(name string, urlBase string, isSummary bool) []*api.Link {
@@ -438,7 +438,6 @@ func handleAPI(w http.ResponseWriter, r *http.Request) *appError {
 
 func handleFunctions(w http.ResponseWriter, r *http.Request) *appError {
 	format := api.RequestedFormat(r)
-	isJSON := format == api.FormatJSON
 	urlBase := serveURLBase(r)
 
 	fns, err := catalogInstance.Functions()
@@ -448,7 +447,12 @@ func handleFunctions(w http.ResponseWriter, r *http.Request) *appError {
 	content := api.NewFunctionsInfo(fns)
 	for _, fn := range content.Functions {
 		isGeomFun := fn.Function.IsGeometryFunction()
-		addFunctionSummaryLinks(fn, urlBase, isJSON, true, isGeomFun)
+		switch format {
+		case api.FormatHTML:
+			addFunctionURLs(fn, urlBase, isGeomFun)
+		default:
+			fn.Links = linksFunction(fn.Name, urlBase, true, isGeomFun)
+		}
 	}
 
 	switch format {
@@ -471,19 +475,15 @@ func linksFunctions(urlBase string) []*api.Link {
 	return links
 }
 
-func addFunctionSummaryLinks(content *api.FunctionSummary, urlBase string, isJSON bool, isSummary bool, isGeomFun bool) {
+func addFunctionURLs(content *api.FunctionSummary, urlBase string, isGeomFun bool) {
 	name := content.Name
-	if isJSON {
-		content.Links = linksFunction(name, urlBase, isSummary, isGeomFun)
-	} else {
-		path := api.PathFunction(name)
-		pathItems := api.PathFunctionItems(name)
-		content.URLMetadataJSON = urlPathFormat(urlBase, path, api.FormatJSON)
-		content.URLMetadataHTML = urlPathFormat(urlBase, path, api.FormatHTML)
-		// there is no HTML view for non-spatial (for now)
-		content.URLItemsHTML = urlIfExists(isGeomFun, urlPathFormat(urlBase, pathItems, api.FormatHTML))
-		content.URLItemsJSON = urlPathFormat(urlBase, pathItems, api.FormatJSON)
-	}
+	path := api.PathFunction(name)
+	pathItems := api.PathFunctionItems(name)
+	content.URLMetadataJSON = urlPathFormat(urlBase, path, api.FormatJSON)
+	content.URLMetadataHTML = urlPathFormat(urlBase, path, api.FormatHTML)
+	// there is no HTML view for non-spatial (for now)
+	content.URLItemsHTML = urlIfExists(isGeomFun, urlPathFormat(urlBase, pathItems, api.FormatHTML))
+	content.URLItemsJSON = urlPathFormat(urlBase, pathItems, api.FormatJSON)
 }
 
 // urlIfExists returns the url, or blank if the document does not exist
