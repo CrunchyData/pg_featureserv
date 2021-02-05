@@ -33,6 +33,12 @@ HttpHost = "0.0.0.0"
 
 # Accept connections on this port
 HttpPort = 9000
+#HttpsPort = 9001
+
+# HTTPS configuration - TLS server certificate full chain and key
+# If these are not specified, the TLS server will not be started
+#TlsServerCertificateFile = "cert.pem"
+#TlsServerPrivateKeyFile = "key.pem"
 
 # Advertise URLs relative to this server name and path
 # default is to look this up from incoming request headers
@@ -86,9 +92,15 @@ LimitMax = 10000
 
 The IP address at which connections are accepted.
 
-#### HttpPort
+#### HttpPort and HttpsPort
 
-The IP port at which connections are accepted.
+The IP ports at which connections are accepted.
+
+#### HTTPS configuration
+
+If the `TlsServerCertificateFile` and `TlsServerPrivateKeyFile`
+are specified then HTTPS support will be enabled,
+at the port specified by `HttpsPort`.
 
 #### UrlBase
 

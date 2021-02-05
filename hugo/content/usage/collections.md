@@ -16,7 +16,8 @@ defined primary keys.
 
 ## Publish tables and views as feature collections
 
-`pg_featureserv` publishes all spatial tables and views which are visible in the database.
+`pg_featureserv` publishes all spatial tables and views (including materialized views)
+which are visible in the database.
 
 Spatial tables and views are those which:
 

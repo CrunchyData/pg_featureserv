@@ -18,8 +18,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/CrunchyData/pg_featureserv/conf"
-	"github.com/CrunchyData/pg_featureserv/data"
+	"github.com/CrunchyData/pg_featureserv/internal/conf"
+	"github.com/CrunchyData/pg_featureserv/internal/data"
 	"github.com/getkin/kin-openapi/openapi3"
 )
 
@@ -35,16 +35,24 @@ const (
 	ParamLimit      = "limit"
 	ParamOffset     = "offset"
 	ParamBbox       = "bbox"
+	ParamGroupBy    = "groupby"
 	ParamOrderBy    = "orderby"
 	ParamPrecision  = "precision"
 	ParamProperties = "properties"
 	ParamTransform  = "transform"
 
-	RelSelf      = "self"
-	RelAlt       = "alternate"
-	RelData      = "data"
-	RelFunctions = "functions"
-	RelItems     = "items"
+	OrderByDirSep = ":"
+	OrderByDirD   = "d"
+	OrderByDirA   = "a"
+
+	RelSelf        = "self"
+	RelAlt         = "alternate"
+	RelServiceDesc = "service-desc"
+	RelServiceDoc  = "service-doc"
+	RelConformance = "conformance"
+	RelData        = "data"
+	RelFunctions   = "functions"
+	RelItems       = "items"
 
 	TitleFeatuuresGeoJSON = "Features as GeoJSON"
 	TitleDataJSON         = "Data as JSON"
@@ -66,7 +74,8 @@ const (
 	ErrMsgFunctionNotFound      = "Function not found: %v"
 	ErrMsgFunctionAccess        = "Unable to access Function: %v"
 	ErrMsgInvalidParameterValue = "Invalid value for parameter %v: %v"
-	ErrMsgDataRead              = "Unable to read data from: %v"
+	ErrMsgDataReadError         = "Unable to read data from: %v"
+	ErrMsgNoDataRead            = "No data read from: %v"
 	ErrMsgRequestTimeout        = "Maximum time exceeded.  Request cancelled."
 )
 
@@ -79,6 +88,7 @@ var ParamReservedNames = []string{
 	ParamLimit,
 	ParamOffset,
 	ParamBbox,
+	ParamGroupBy,
 	ParamOrderBy,
 	ParamPrecision,
 	ParamProperties,
@@ -177,6 +187,11 @@ type Bbox struct {
 	Extent []float64 `json:"bbox"`
 }
 
+// Extent OAPIF Extent structure (partial)
+type Extent struct {
+	Spatial *Bbox `json:"spatial"`
+}
+
 // --- @See https://raw.githubusercontent.com/opengeospatial/WFS_FES/master/core/openapi/schemas/bbox.yaml
 //	for bbox schema
 
@@ -199,6 +214,14 @@ var BboxSchema openapi3.Schema = openapi3.Schema{
 	},
 }
 
+var ExtentSchema openapi3.Schema = openapi3.Schema{
+	Type:     "object",
+	Required: []string{"extent"},
+	Properties: map[string]*openapi3.SchemaRef{
+		"spatial": {Value: &BboxSchema},
+	},
+}
+
 type NameValMap map[string]string
 
 // RequestParam holds the parameters for a request
@@ -207,6 +230,7 @@ type RequestParam struct {
 	Offset        int
 	Bbox          *data.Extent
 	Properties    []string
+	GroupBy       []string
 	OrderBy       []data.Ordering
 	Precision     int
 	TransformFuns []data.TransformFunction
@@ -260,7 +284,7 @@ type CollectionInfo struct {
 	Name         string   `json:"id"`
 	Title        string   `json:"title,omitempty"`
 	Description  string   `json:"description,omitempty"`
-	Extent       *Bbox    `json:"extent,omitempty"`
+	Extent       *Extent  `json:"extent,omitempty"`
 	Crs          []string `json:"crs,omitempty"`
 	GeometryType *string  `json:"geometrytype,omitempty"`
 
@@ -282,7 +306,7 @@ var CollectionInfoSchema openapi3.Schema = openapi3.Schema{
 		"id":          {Value: &openapi3.Schema{Type: "string"}},
 		"title":       {Value: &openapi3.Schema{Type: "string"}},
 		"description": {Value: &openapi3.Schema{Type: "string"}},
-		"extent":      {Value: &BboxSchema},
+		"extent":      {Value: &ExtentSchema},
 		"crs": {Value: &openapi3.Schema{
 			Type: "array",
 			Items: &openapi3.SchemaRef{
@@ -439,8 +463,10 @@ var conformance = Conformance{
 }
 
 func toBbox(cc *data.Table) *Bbox {
+	// extent bbox is always in 4326 for now
+	crs := "http://www.opengis.net/def/crs/EPSG/0/4326"
 	return &Bbox{
-		Crs:    fmt.Sprintf("EPSG:%v", cc.Srid),
+		Crs:    crs,
 		Extent: []float64{cc.Extent.Minx, cc.Extent.Miny, cc.Extent.Maxx, cc.Extent.Maxy},
 	}
 }
@@ -475,7 +501,9 @@ func NewCollectionInfo(tbl *data.Table) *CollectionInfo {
 		Name:        tbl.ID,
 		Title:       tbl.Title,
 		Description: tbl.Description,
-		Extent:      toBbox(tbl),
+		Extent: &Extent{
+			Spatial: toBbox(tbl),
+		},
 	}
 	return &doc
 }

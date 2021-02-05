@@ -1,4 +1,4 @@
-package main
+package service
 
 /*
  Copyright 2019 Crunchy Data Solutions, Inc.
@@ -17,10 +17,10 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/CrunchyData/pg_featureserv/api"
-	"github.com/CrunchyData/pg_featureserv/conf"
-	"github.com/CrunchyData/pg_featureserv/data"
-	"github.com/CrunchyData/pg_featureserv/ui"
+	"github.com/CrunchyData/pg_featureserv/internal/api"
+	"github.com/CrunchyData/pg_featureserv/internal/conf"
+	"github.com/CrunchyData/pg_featureserv/internal/data"
+	"github.com/CrunchyData/pg_featureserv/internal/ui"
 	"github.com/gorilla/mux"
 )
 
@@ -102,23 +102,28 @@ func doRoot(w http.ResponseWriter, r *http.Request, format string) *appError {
 
 func linksRoot(urlBase string) []*api.Link {
 	var links []*api.Link
-	format := api.FormatJSON
 	links = append(links, linkSelf(urlBase, api.RootPageName, api.TitleDocument))
 	links = append(links, linkAlt(urlBase, api.RootPageName, api.TitleDocument))
 
 	links = append(links, &api.Link{
-		Href: urlPathFormat(urlBase, api.TagCollections, format),
-		Rel:  api.RelData, Type: api.ContentType(format), Title: "collections"})
+		Href: urlPath(urlBase, api.TagAPI),
+		Rel:  api.RelServiceDesc, Type: api.ContentTypeOpenAPI, Title: "API definition"})
 	links = append(links, &api.Link{
-		Href: urlPathFormat(urlBase, api.TagFunctions, format),
-		Rel:  api.RelFunctions, Type: api.ContentType(format), Title: "functions"})
+		Href: urlPath(urlBase, api.TagConformance),
+		Rel:  api.RelConformance, Type: api.ContentTypeJSON, Title: "OGC API conformance classes implemented by this server"})
+	links = append(links, &api.Link{
+		Href: urlPath(urlBase, api.TagCollections),
+		Rel:  api.RelData, Type: api.ContentTypeJSON, Title: "collections"})
+	links = append(links, &api.Link{
+		Href: urlPath(urlBase, api.TagFunctions),
+		Rel:  api.RelFunctions, Type: api.ContentTypeJSON, Title: "functions"})
 
 	return links
 }
 
 func linkSelf(urlBase string, path string, desc string) *api.Link {
 	return &api.Link{
-		Href:  urlPathFormat(urlBase, path, api.FormatJSON),
+		Href:  urlPath(urlBase, path),
 		Rel:   api.RelSelf,
 		Type:  api.ContentTypeJSON,
 		Title: desc + api.TitleAsJSON}
@@ -134,7 +139,6 @@ func linkAlt(urlBase string, path string, desc string) *api.Link {
 
 func handleCollections(w http.ResponseWriter, r *http.Request) *appError {
 	format := api.RequestedFormat(r)
-	isJSON := format == api.FormatJSON
 	urlBase := serveURLBase(r)
 
 	colls, err := catalogInstance.Tables()
@@ -144,7 +148,12 @@ func handleCollections(w http.ResponseWriter, r *http.Request) *appError {
 
 	content := api.NewCollectionsInfo(colls)
 	for _, coll := range content.Collections {
-		addCollectionSummaryLinks(coll, urlBase, isJSON, true)
+		switch format {
+		case api.FormatHTML:
+			addCollectionURLs(coll, urlBase)
+		default:
+			coll.Links = linksCollection(coll.Name, urlBase, true)
+		}
 	}
 
 	switch format {
@@ -167,19 +176,15 @@ func linksCollections(urlBase string) []*api.Link {
 	return links
 }
 
-func addCollectionSummaryLinks(coll *api.CollectionInfo, urlBase string, isJSON bool, isSummary bool) {
+func addCollectionURLs(coll *api.CollectionInfo, urlBase string) {
 	name := coll.Name
 	path := api.PathCollection(name)
 	pathItems := api.PathCollectionItems(name)
 
-	if isJSON {
-		coll.Links = linksCollection(name, urlBase, isSummary)
-	} else {
-		coll.URLMetadataJSON = urlPathFormat(urlBase, path, api.FormatJSON)
-		coll.URLMetadataHTML = urlPathFormat(urlBase, path, api.FormatHTML)
-		coll.URLItemsHTML = urlPathFormat(urlBase, pathItems, api.FormatHTML)
-		coll.URLItemsJSON = urlPathFormat(urlBase, pathItems, api.FormatJSON)
-	}
+	coll.URLMetadataJSON = urlPathFormat(urlBase, path, api.FormatJSON)
+	coll.URLMetadataHTML = urlPathFormat(urlBase, path, api.FormatHTML)
+	coll.URLItemsHTML = urlPathFormat(urlBase, pathItems, api.FormatHTML)
+	coll.URLItemsJSON = urlPathFormat(urlBase, pathItems, api.FormatJSON)
 }
 
 func linksCollection(name string, urlBase string, isSummary bool) []*api.Link {
@@ -195,7 +200,7 @@ func linksCollection(name string, urlBase string, isSummary bool) []*api.Link {
 	links = append(links, linkSelf(urlBase, path, titleDesc))
 	links = append(links, linkAlt(urlBase, path, titleDesc))
 
-	linkItemsJSON := urlPathFormat(urlBase, pathItems, api.FormatJSON)
+	linkItemsJSON := urlPath(urlBase, pathItems)
 	links = append(links, &api.Link{
 		Href:  linkItemsJSON,
 		Rel:   api.RelItems,
@@ -215,6 +220,7 @@ func handleCollection(w http.ResponseWriter, r *http.Request) *appError {
 	if tbl == nil && err == nil {
 		return appErrorNotFoundFmt(err, api.ErrMsgCollectionNotFound, name)
 	}
+	catalogInstance.TableReload(name)
 	content := api.NewCollectionInfo(tbl)
 	content.GeometryType = &tbl.GeometryType
 	content.Properties = api.TableProperties(tbl)
@@ -297,7 +303,7 @@ func writeItemsJSON(ctx context.Context, w http.ResponseWriter, name string, par
 	//--- query features data
 	features, err := catalogInstance.TableFeatures(ctx, name, param)
 	if err != nil {
-		return appErrorInternalFmt(err, api.ErrMsgDataRead, name)
+		return appErrorInternalFmt(err, api.ErrMsgDataReadError, name)
 	}
 	if features == nil {
 		return appErrorNotFoundFmt(err, api.ErrMsgCollectionNotFound, name)
@@ -377,7 +383,7 @@ func writeItemJSON(ctx context.Context, w http.ResponseWriter, name string, fid 
 	//--- query data for request
 	feature, err := catalogInstance.TableFeature(ctx, name, fid, param)
 	if err != nil {
-		return appErrorInternalFmt(err, api.ErrMsgDataRead, name)
+		return appErrorInternalFmt(err, api.ErrMsgDataReadError, name)
 	}
 	if len(feature) == 0 {
 		return appErrorNotFoundFmt(nil, api.ErrMsgFeatureNotFound, fid)
@@ -416,7 +422,7 @@ func handleAPI(w http.ResponseWriter, r *http.Request) *appError {
 	format := api.RequestedFormat(r)
 	urlBase := serveURLBase(r)
 
-	content := api.GetAPIContent()
+	content := api.GetOpenAPIContent(urlBase)
 
 	switch format {
 	case api.FormatHTML:
@@ -432,7 +438,6 @@ func handleAPI(w http.ResponseWriter, r *http.Request) *appError {
 
 func handleFunctions(w http.ResponseWriter, r *http.Request) *appError {
 	format := api.RequestedFormat(r)
-	isJSON := format == api.FormatJSON
 	urlBase := serveURLBase(r)
 
 	fns, err := catalogInstance.Functions()
@@ -442,7 +447,12 @@ func handleFunctions(w http.ResponseWriter, r *http.Request) *appError {
 	content := api.NewFunctionsInfo(fns)
 	for _, fn := range content.Functions {
 		isGeomFun := fn.Function.IsGeometryFunction()
-		addFunctionSummaryLinks(fn, urlBase, isJSON, true, isGeomFun)
+		switch format {
+		case api.FormatHTML:
+			addFunctionURLs(fn, urlBase, isGeomFun)
+		default:
+			fn.Links = linksFunction(fn.Name, urlBase, true, isGeomFun)
+		}
 	}
 
 	switch format {
@@ -465,19 +475,15 @@ func linksFunctions(urlBase string) []*api.Link {
 	return links
 }
 
-func addFunctionSummaryLinks(content *api.FunctionSummary, urlBase string, isJSON bool, isSummary bool, isGeomFun bool) {
+func addFunctionURLs(content *api.FunctionSummary, urlBase string, isGeomFun bool) {
 	name := content.Name
-	if isJSON {
-		content.Links = linksFunction(name, urlBase, isSummary, isGeomFun)
-	} else {
-		path := api.PathFunction(name)
-		pathItems := api.PathFunctionItems(name)
-		content.URLMetadataJSON = urlPathFormat(urlBase, path, api.FormatJSON)
-		content.URLMetadataHTML = urlPathFormat(urlBase, path, api.FormatHTML)
-		// there is no HTML view for non-spatial (for now)
-		content.URLItemsHTML = urlIfExists(isGeomFun, urlPathFormat(urlBase, pathItems, api.FormatHTML))
-		content.URLItemsJSON = urlPathFormat(urlBase, pathItems, api.FormatJSON)
-	}
+	path := api.PathFunction(name)
+	pathItems := api.PathFunctionItems(name)
+	content.URLMetadataJSON = urlPathFormat(urlBase, path, api.FormatJSON)
+	content.URLMetadataHTML = urlPathFormat(urlBase, path, api.FormatHTML)
+	// there is no HTML view for non-spatial (for now)
+	content.URLItemsHTML = urlIfExists(isGeomFun, urlPathFormat(urlBase, pathItems, api.FormatHTML))
+	content.URLItemsJSON = urlPathFormat(urlBase, pathItems, api.FormatJSON)
 }
 
 // urlIfExists returns the url, or blank if the document does not exist
@@ -509,7 +515,7 @@ func linksFunction(id string, urlBase string, isSummary bool, isGeomFun bool) []
 	}
 
 	links = append(links, &api.Link{
-		Href:  urlPathFormat(urlBase, pathItems, api.FormatJSON),
+		Href:  urlPath(urlBase, pathItems),
 		Rel:   "items",
 		Type:  conType,
 		Title: dataTitle})
@@ -617,10 +623,10 @@ func writeFunItemsGeoJSON(ctx context.Context, w http.ResponseWriter, name strin
 	//--- query features data
 	features, err := catalogInstance.FunctionFeatures(ctx, name, args, param)
 	if err != nil {
-		return appErrorInternalFmt(err, api.ErrMsgDataRead, name)
+		return appErrorInternalFmt(err, api.ErrMsgDataReadError, name)
 	}
 	if features == nil {
-		return appErrorNotFoundFmt(err, api.ErrMsgDataRead, name)
+		return appErrorNotFoundFmt(err, api.ErrMsgNoDataRead, name)
 	}
 
 	//--- assemble resonse
@@ -637,7 +643,7 @@ func writeFunItemsJSON(ctx context.Context, w http.ResponseWriter, name string, 
 		return appErrorInternalFmt(err, api.ErrMsgFunctionAccess, name)
 	}
 	if features == nil {
-		return appErrorNotFoundFmt(err, api.ErrMsgDataRead, name)
+		return appErrorNotFoundFmt(err, api.ErrMsgNoDataRead, name)
 	}
 	return writeJSON(w, api.ContentTypeJSON, features)
 }

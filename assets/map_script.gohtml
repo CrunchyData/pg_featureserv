@@ -24,6 +24,7 @@
 .tbl-props-name {
     width: 40%;
     text-align: right;
+    font-weight: bold;
 }
 .arg-input {
     width: 80px;
@@ -54,6 +55,7 @@
     top: 85px;
     left: 50px;
     border-radius: 8px;
+    padding: 5px 10px 5px 10px;
     font-weight: bold;
 }
 .mw-query-params {
@@ -146,7 +148,7 @@ map.on('pointermove', (evt) => {
         let ptGeo = ol.proj.transform(evt.coordinate, 'EPSG:3857', 'EPSG:4326');
         let pFormat = ol.coordinate.toStringXY(ptGeo, 4);
         let divPos = document.getElementById('map-mousepos');
-        divPos.innerHTML = pFormat + ' - [' + map.getView().getZoom().toFixed(0) + ']';
+        divPos.innerHTML = pFormat + '  : ' + map.getView().getZoom().toFixed(0) ;
     });
 function onFeatureClick(evt) {
 	var features = map.getFeaturesAtPixel(evt.pixel);

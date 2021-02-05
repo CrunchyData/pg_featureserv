@@ -95,7 +95,7 @@ func newCatalogMock() CatalogMock {
 	tables = append(tables, layerB)
 	tables = append(tables, layerC)
 
-	fun_a := &Function{
+	funA := &Function{
 		ID:          "fun_a",
 		Schema:      "postgisftw",
 		Name:        "fun_a",
@@ -116,7 +116,7 @@ func newCatalogMock() CatalogMock {
 		GeometryColumn: "",
 		IDColumn:       "",
 	}
-	fun_b := &Function{
+	funB := &Function{
 		ID:          "fun_b",
 		Schema:      "postgisftw",
 		Name:        "fun_b",
@@ -140,7 +140,7 @@ func newCatalogMock() CatalogMock {
 		GeometryColumn: "",
 		IDColumn:       "",
 	}
-	fun_noparam := &Function{
+	funNoParam := &Function{
 		ID:           "fun_noparam",
 		Schema:       "postgisftw",
 		Name:         "fun_noparam",
@@ -163,9 +163,9 @@ func newCatalogMock() CatalogMock {
 		IDColumn:       "",
 	}
 	funDefs := []*Function{
-		fun_a,
-		fun_b,
-		fun_noparam,
+		funA,
+		funB,
+		funNoParam,
 	}
 	catMock := CatalogMock{
 		TableDefs:    tables,
@@ -182,6 +182,10 @@ func (cat *CatalogMock) Close() {
 
 func (cat *CatalogMock) Tables() ([]*Table, error) {
 	return cat.TableDefs, nil
+}
+
+func (cat *CatalogMock) TableReload(name string) {
+	// no-op for mock data
 }
 
 func (cat *CatalogMock) TableByName(name string) (*Table, error) {

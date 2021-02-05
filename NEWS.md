@@ -1,5 +1,35 @@
 # pg_featureserv Version History
 
+## Version NEXT
+*Released: TBD*
+
+### New Features
+
+* Support for HTTPS
+* Provide the `groupBy` query parameter, and ability to aggregate query features
+
+### Bug Fixes
+
+* Fix response value for empty query results for collections and functions
+* Fix OpenAPI document to respect configuration `UrlBase`
+* Quote query table and function names to support mixed case
+* Fix `collection` reponse to include actual extent (#54)
+* Fix `collection` response JSON `extent` property to be OAPIF-compliant (#54)
+* Fix landing page document to include links to resources `service-desc` and `conformance`
+* Fix links in JSON responses to not include JSON format (required for QGIS)
+
+## Version 1.2
+*Released: 2020 Dec 1*
+
+### New Features
+
+* Display materialized views as collections
+* Improve logging and error messages
+
+### Bug Fixes
+
+* Handle specialty column types by casting to text (#52)
+
 ## Version 1.1
 *Released: 2020 Apr 6*
 

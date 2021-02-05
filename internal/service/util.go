@@ -1,4 +1,4 @@
-package main
+package service
 
 /*
  Copyright 2019 Crunchy Data Solutions, Inc.
@@ -22,12 +22,17 @@ import (
 	"strings"
 	"time"
 
-	"github.com/CrunchyData/pg_featureserv/api"
-	"github.com/CrunchyData/pg_featureserv/conf"
-	"github.com/CrunchyData/pg_featureserv/ui"
+	"github.com/CrunchyData/pg_featureserv/internal/api"
+	"github.com/CrunchyData/pg_featureserv/internal/conf"
+	"github.com/CrunchyData/pg_featureserv/internal/ui"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"github.com/theckman/httpforwarded"
+)
+
+const (
+	schemeHTTP  = "http"
+	schemeHTTPS = "https"
 )
 
 //--- simple request handler error framework
@@ -134,13 +139,17 @@ func appErrorNotFoundFmt(err error, format string, v string) *appError {
 
 func serveURLBase(r *http.Request) string {
 	// Use configuration file settings if we have them
-	configUrl := conf.Configuration.Server.UrlBase
+	configURL := conf.Configuration.Server.UrlBase
 
-	if configUrl != "" {
-		return configUrl + "/"
+	if configURL != "" {
+		return configURL + "/"
 	}
-	// Preferred protocol
-	ps := "http"
+	// Preferred scheme
+	ps := schemeHTTP
+	// check if HTTPS (TLS) is being used
+	if r.TLS != nil {
+		ps = schemeHTTPS
+	}
 	// Preferred host:port
 	ph := strings.TrimRight(r.Host, "/")
 
@@ -175,18 +184,24 @@ func getRequestVar(varname string, r *http.Request) string {
 	return name
 }
 
+// urlPathFormat provides a URL for the given base and path
+func urlPath(urlBase string, path string) string {
+	url := fmt.Sprintf("%v%v", urlBase, path)
+	return url
+}
+
 // urlPathFormat provides a URL for the given base, path and format
 func urlPathFormat(urlBase string, path string, format string) string {
-	var pathType string
+	var pathFormat string
 	if path == "" {
-		pathType = ""
+		pathFormat = ""
 		if format == api.FormatHTML {
-			pathType = api.RootPageName + ".html"
+			pathFormat = api.RootPageName + ".html"
 		}
 	} else {
-		pathType = path + "." + format
+		pathFormat = path + "." + format
 	}
-	url := fmt.Sprintf("%v%v", urlBase, pathType)
+	url := fmt.Sprintf("%v%v", urlBase, pathFormat)
 	return url
 }
 
@@ -224,6 +239,7 @@ func writeJSON(w http.ResponseWriter, contype string, content interface{}) *appE
 		log.Printf("JSON encoding error: %v", err.Error())
 		return appErrorInternal(err, api.ErrMsgEncoding)
 	}
+	//fmt.Println(string(encodedContent))
 	writeResponse(w, contype, encodedContent)
 	return nil
 }

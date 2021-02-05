@@ -16,7 +16,7 @@ It supports the [OGC API - Features](http://docs.opengeospatial.org/is/17-069r3/
 * Implements the [OGC API - Features](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html) standard.
   * Supports standard request parameters `limit`, `bbox`, property filtering
   * Extended parameters include `offset`, `properties`, `orderBy`, `transform`, `precision`
-* Data reponses are formatted in JSON and GeoJSON
+* Data responses are formatted in JSON and GeoJSON
 * Provides a simple HTML user interface, with web maps to view spatial data
 * Uses the power of PostgreSQL to reduce the amount of code
   and to make data definition easy and familiar.
@@ -27,6 +27,7 @@ It supports the [OGC API - Features](http://docs.opengeospatial.org/is/17-069r3/
 * Full-featured HTTP support
   * CORS support with configurable Allowed Origins
   * GZIP response encoding
+  * HTTP and HTTPS support
 
 For a full list of software capabilities see [FEATURES](FEATURES.md).
 
@@ -44,7 +45,7 @@ Builds of the latest code:
 * [Linux](https://postgisftw.s3.amazonaws.com/pg_featureserv_latest_linux.zip)
 * [Windows](https://postgisftw.s3.amazonaws.com/pg_featureserv_latest_windows.zip)
 * [OSX](https://postgisftw.s3.amazonaws.com/pg_featureserv_latest_osx.zip)
-* [Docker](https://hub.docker.com/repository/docker/pramsey/pg_featureserv)
+* [Docker](https://hub.docker.com/r/pramsey/pg_featureserv)
 
 
 ## Building from Source
@@ -59,6 +60,7 @@ cd $GOPATH/src/github.com/CrunchyData/pg_featureserv/
 go build
 ```
 * This should create a `pg_featureserv` executable in the application directory
+* (Optional) Run the unit tests using `go test ./...`
 
 ## Configuring the service
 
@@ -78,7 +80,7 @@ go build
 ### Command-line options
 
 * `-?` - show command usage
-* `--config file.toml` - specify configuaration file to use
+* `--config file.toml` - specify configuration file to use
 * `--debug` - set logging level to TRACE (can also be set in config file)
 * `--devel` - run in development mode (e.g. HTML templates reloaded every query)
 * `--test` - run in test mode, with an internal catalog of tables and data

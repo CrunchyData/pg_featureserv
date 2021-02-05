@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 )
 
 /*
@@ -49,7 +51,7 @@ LEFT JOIN pg_index i ON (c.oid = i.indrelid AND i.indisprimary
 AND i.indnatts = 1)
 LEFT JOIN pg_attribute ia ON (ia.attrelid = i.indexrelid)
 LEFT JOIN pg_type it ON (ia.atttypid = it.oid AND it.typname in ('int2', 'int4', 'int8'))
-WHERE c.relkind IN ('r', 'v') -- add 'v' for views
+WHERE c.relkind IN ('r', 'v', 'm') -- add 'v' for views
 AND t.typname = 'geometry'
 AND has_table_privilege(c.oid, 'select')
 AND postgis_typmod_srid(a.atttypmod) > 0
@@ -96,7 +98,24 @@ JOIN proargarrays aa ON (p.oid = aa.oid)
 LEFT JOIN pg_description d ON (p.oid = d.objoid)
 ORDER BY id`
 
-const sqlFmtFeatures = "SELECT %v %v FROM %v %v %v LIMIT %v OFFSET %v;"
+//const sqlFmtExtentEst = `WITH ext AS (SELECT ST_Transform(ST_SetSRID(ST_EstimatedExtent('%s', '%s', '%s'), %d), 4326) AS geom)
+//      SELECT ST_XMin(ext.geom) AS xmin, ST_YMin(ext.geom) AS ymin, ST_XMax(ext.geom) AS xmax, ST_YMax(ext.geom) AS ymax FROM ext;`
+
+const sqlFmtExtentEst = `SELECT ST_XMin(ext.geom) AS xmin, ST_YMin(ext.geom) AS ymin, ST_XMax(ext.geom) AS xmax, ST_YMax(ext.geom) AS ymax
+FROM ( SELECT ST_Transform(ST_SetSRID(ST_EstimatedExtent('%s', '%s', '%s'), %d), 4326) AS geom ) AS ext;`
+
+func sqlExtentEstimated(tbl *Table) string {
+	return fmt.Sprintf(sqlFmtExtentEst, tbl.Schema, tbl.Table, tbl.GeometryColumn, tbl.Srid)
+}
+
+const sqlFmtExtentExact = `SELECT ST_XMin(ext.geom) AS xmin, ST_YMin(ext.geom) AS ymin, ST_XMax(ext.geom) AS xmax, ST_YMax(ext.geom) AS ymax
+FROM (SELECT coalesce( ST_Transform(ST_SetSRID(ST_Extent("%s"), %d), 4326),	ST_MakeEnvelope(-180, -90, 180, 90, 4326)) AS geom FROM "%s"."%s" ) AS ext;`
+
+func sqlExtentExact(tbl *Table) string {
+	return fmt.Sprintf(sqlFmtExtentExact, tbl.GeometryColumn, tbl.Srid, tbl.Schema, tbl.Table)
+}
+
+const sqlFmtFeatures = "SELECT %v %v FROM \"%s\".\"%s\" %v %v %v %s;"
 
 func sqlFeatures(tbl *Table, param *QueryParam) (string, []interface{}) {
 	geomCol := sqlGeomCol(tbl.GeometryColumn, param)
@@ -104,8 +123,10 @@ func sqlFeatures(tbl *Table, param *QueryParam) (string, []interface{}) {
 	bboxFilter := sqlBBoxFilter(tbl, param.Bbox)
 	attrFilter, attrVals := sqlAttrFilter(param.Filter)
 	sqlWhere := sqlWhere(bboxFilter, attrFilter)
+	sqlGroupBy := sqlGroupBy(param.GroupBy)
 	sqlOrderBy := sqlOrderBy(param.OrderBy)
-	sql := fmt.Sprintf(sqlFmtFeatures, geomCol, propCols, tbl.ID, sqlWhere, sqlOrderBy, param.Limit, param.Offset)
+	sqlLimitOffset := sqlLimitOffset(param.Limit, param.Offset)
+	sql := fmt.Sprintf(sqlFmtFeatures, geomCol, propCols, tbl.Schema, tbl.Table, sqlWhere, sqlGroupBy, sqlOrderBy, sqlLimitOffset)
 	return sql, attrVals
 }
 
@@ -138,15 +159,23 @@ func sqlColExpr(name string, dbtype string) string {
 	case forceTextTSVECTOR:
 		return fmt.Sprintf("%s::text", name)
 	}
+
+	// for properties that will be treated as a string in the JSON response,
+	// cast to text.  This allows displaying data types that pgx
+	// does not support out of the box, as long as it can be cast to text.
+	if toJSONTypeFromPG(dbtype) == JSONTypeString {
+		return fmt.Sprintf("%s::text", name)
+	}
+
 	return name
 }
 
-const sqlFmtFeature = "SELECT %v %v FROM %v WHERE %v = $1 LIMIT 1"
+const sqlFmtFeature = "SELECT %v %v FROM \"%s\".\"%s\" WHERE %v = $1 LIMIT 1"
 
 func sqlFeature(tbl *Table, param *QueryParam) string {
 	geomCol := sqlGeomCol(tbl.GeometryColumn, param)
 	propCols := sqlColList(param.Columns, tbl.DbTypes, true)
-	sql := fmt.Sprintf(sqlFmtFeature, geomCol, propCols, tbl.ID, tbl.IDColumn)
+	sql := fmt.Sprintf(sqlFmtFeature, geomCol, propCols, tbl.Schema, tbl.Table, tbl.IDColumn)
 	return sql
 }
 
@@ -217,7 +246,7 @@ func sqlPrecisionArg(precision int) string {
 	return sqlPrecision
 }
 
-const sqlFmtOrderBy = `ORDER By "%v" %v`
+const sqlFmtOrderBy = `ORDER BY "%v" %v`
 
 func sqlOrderBy(ordering []Ordering) string {
 	if len(ordering) <= 0 {
@@ -233,6 +262,31 @@ func sqlOrderBy(ordering []Ordering) string {
 	return sql
 }
 
+const sqlFmtGroupBy = `GROUP BY "%v"`
+
+func sqlGroupBy(groupBy []string) string {
+	if len(groupBy) <= 0 {
+		return ""
+	}
+	// TODO: support more than one grouping
+	col := groupBy[0]
+	sql := fmt.Sprintf(sqlFmtGroupBy, col)
+	log.Debugf("group by: %s", sql)
+	return sql
+}
+
+func sqlLimitOffset(limit int, offset int) string {
+	sqlLim := ""
+	if limit >= 0 {
+		sqlLim = fmt.Sprintf(" LIMIT %d", limit)
+	}
+	sqlOff := ""
+	if offset > 0 {
+		sqlOff = fmt.Sprintf(" OFFSET %d", offset)
+	}
+	return sqlLim + sqlOff
+}
+
 func applyTransform(funs []TransformFunction, expr string) string {
 	if funs == nil {
 		return expr
@@ -243,7 +297,7 @@ func applyTransform(funs []TransformFunction, expr string) string {
 	return expr
 }
 
-const sqlFmtGeomFunction = "SELECT %v %v FROM %v.%v( %v ) %v %v LIMIT %v;"
+const sqlFmtGeomFunction = "SELECT %s %s FROM \"%s\".\"%s\"( %v ) %v %v LIMIT %v;"
 
 func sqlGeomFunction(fn *Function, args map[string]string, propCols []string, param *QueryParam) (string, []interface{}) {
 	sqlArgs, argVals := sqlFunctionArgs(fn, args)
@@ -256,7 +310,7 @@ func sqlGeomFunction(fn *Function, args map[string]string, propCols []string, pa
 	return sql, argVals
 }
 
-const sqlFmtFunction = "SELECT %v FROM %v.%v( %v ) %v LIMIT %v;"
+const sqlFmtFunction = "SELECT %v FROM \"%s\".\"%s\"( %v ) %v LIMIT %v;"
 
 func sqlFunction(fn *Function, args map[string]string, propCols []string, param *QueryParam) (string, []interface{}) {
 	sqlArgs, argVals := sqlFunctionArgs(fn, args)

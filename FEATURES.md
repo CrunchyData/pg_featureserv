@@ -7,6 +7,8 @@ This is a list of current and planned functionality.  It also includes OGC API f
 - [x] determine response format from request headers `Content-Type`, `Accept`
 - [x] CORS support
 - [x] GZIP encoding
+- [x] HTTPS support
+- [x] Proxy support via configurable base URL
 
 ### Schema
 
@@ -27,21 +29,30 @@ This is a list of current and planned functionality.  It also includes OGC API f
 - [x] `/collections/id` JSON includes property names/types
 - [x] `/functions/id` JSON includes parameter names/types/defaults and property names/types
 
-### Query parameters
+### Query parameters - Standard
 - [x] `limit=n`
 - [x] `offset=n`
-- [x] `orderBy=name`
 - [x] `bbox` (4 numbers)
 - [ ] `bbox` (6 numbers)
 - [ ] `bbox-crs`
 - [ ] `datetime`
-- [ ] `f` parameter for formats?  (e.g. `f=json`, `f=html`)
 - [x] `properties` list (to restrict attributes in response)
 - [ ] filtering by property value ( `name=value`, as per [spec sec. 7.15.5](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html#_parameters_for_filtering_on_feature_properties) )
-- [x] function arguments (`name=value`)
-- [x] `precision=n` for output precision of GeoJSON coordinates
+
+### Query parameters - Extension
+- [x] `orderBy` to order output by a property
+  - `orderBy=name`, `orderBy=name:A`, `orderBy=name:D`
+- [x] `precision` to set output precision of GeoJSON coordinates
+  - `precision=n`
 - [x] `transform` to specify geometry transformations
+  - `transform=fn,arg,arg|fn,arg`
 - [ ] convert transform function names to `ST_` equivalents
+
+- [ ] `f` parameter for formats?  (e.g. `f=json`, `f=html`)
+
+### Query parameters - Functions
+- [x] function arguments
+  - `name=value`
 
 ### Output formats
 - [x] GeoJSON
@@ -76,7 +87,8 @@ This is a list of current and planned functionality.  It also includes OGC API f
 ### Tables / Views
 - [x] table column schema
 - [x] support tables with no primary key
-- [ ] support views (with PK as `fid` or missing)
+- [x] support views (with PK as `fid` or missing)
+- [x] support materialized views
 - [x] read property descriptions from table/view column comments
 - [ ] read table estimated and actual extents lazily
 
@@ -92,21 +104,17 @@ This is a list of current and planned functionality.  It also includes OGC API f
 
 ## Operational
 
-- [x] graceful shutdown (see [here](https://github.com/pramsey/pg_tileserv/pull/1))
+- [x] graceful shutdown
+- [x] enforce request timeouts
 
 ### Configuration
 - [x] read config from file
 - [ ] log levels
 - [x] DB pool parameters
 - [x] database connection string
-- [ ] whitelist for transformation functions (default: none)
+- [x] whitelist for transformation functions (default: none)
 
 ### Security
 - [ ] Authentication - TBD
 - [ ] OpenID - TBD
 - [x] Authorization via database role & grants
-
-## Unit Tests
-- [x] links - type, content
-- [x] `limit`
-- [ ] `bbox`

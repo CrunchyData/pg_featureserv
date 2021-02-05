@@ -1,4 +1,4 @@
-package main
+package service
 
 /*
  Copyright 2019 Crunchy Data Solutions, Inc.
@@ -20,9 +20,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/CrunchyData/pg_featureserv/api"
-	"github.com/CrunchyData/pg_featureserv/conf"
-	"github.com/CrunchyData/pg_featureserv/data"
+	"github.com/CrunchyData/pg_featureserv/internal/api"
+	"github.com/CrunchyData/pg_featureserv/internal/conf"
+	"github.com/CrunchyData/pg_featureserv/internal/data"
 )
 
 func parseRequestParams(r *http.Request) (api.RequestParam, error) {
@@ -63,6 +63,13 @@ func parseRequestParams(r *http.Request) (api.RequestParam, error) {
 		return param, err
 	}
 	param.Properties = props
+
+	// --- orderBy parameter
+	groupBy, err := parseGroupBy(paramValues)
+	if err != nil {
+		return param, err
+	}
+	param.GroupBy = groupBy
 
 	// --- orderBy parameter
 	orderBy, err := parseOrderBy(paramValues)
@@ -168,30 +175,39 @@ func parseBbox(values api.NameValMap) (*data.Extent, error) {
 	return &bbox, nil
 }
 
-// parseProperties computes a lower-case, unique list
-// of property names to be returned
+// parseProperties extracts an array of rawo property names to be included
+// returns nil if no properties parameter was specified
+// returns[] if properties is present but with no args
 func parseProperties(values api.NameValMap) ([]string, error) {
-	val := values[api.ParamProperties]
-	if len(val) < 1 {
+	val, ok := values[api.ParamProperties]
+	// no properties param => nil
+	if !ok {
 		return nil, nil
 	}
-	namesRaw := strings.Split(val, ",")
-	var names []string
-	nameMap := make(map[string]bool)
-	for _, name := range namesRaw {
-		nameLow := strings.ToLower(name)
-		// if a new name add to list
-		if _, ok := nameMap[nameLow]; !ok {
-			names = append(names, nameLow)
-			nameMap[nameLow] = true
-		}
+	// empty properties list  => []
+	if len(val) < 1 {
+		return []string{}, nil
 	}
-	return names, nil
+	// return array of raw property names
+	namesRaw := strings.Split(val, ",")
+	return namesRaw, nil
 }
 
-const OrderByDirSep = ":"
-const OrderByDirD = "d"
-const OrderByDirA = "a"
+func parseGroupBy(values api.NameValMap) ([]string, error) {
+	val, ok := values[api.ParamGroupBy]
+	// no properties param => nil
+	if !ok {
+		return nil, nil
+	}
+	// empty list  => []
+	if !ok || len(val) < 1 {
+		return []string{}, nil
+	}
+	// TODO: normalize col names
+	// return array of raw col names
+	namesRaw := strings.Split(val, ",")
+	return namesRaw, nil
+}
 
 // parseOrderBy determines an order by array
 func parseOrderBy(values api.NameValMap) ([]data.Ordering, error) {
@@ -201,7 +217,7 @@ func parseOrderBy(values api.NameValMap) ([]data.Ordering, error) {
 		return orderBy, nil
 	}
 	valLow := strings.ToLower(val)
-	nameDir := strings.Split(valLow, OrderByDirSep)
+	nameDir := strings.Split(valLow, api.OrderByDirSep)
 	name := nameDir[0]
 	isDesc := false
 	var err error
@@ -217,10 +233,10 @@ func parseOrderBy(values api.NameValMap) ([]data.Ordering, error) {
 }
 
 func parseOrderByDir(dir string) (bool, error) {
-	if dir == OrderByDirD {
+	if dir == api.OrderByDirD {
 		return true, nil
 	}
-	if dir == OrderByDirA {
+	if dir == api.OrderByDirA {
 		return false, nil
 	}
 	err := fmt.Errorf(api.ErrMsgInvalidParameterValue, api.ParamOrderBy, dir)
@@ -232,9 +248,13 @@ func parseOrderByDir(dir string) (bool, error) {
 // If the request properties list is empty,
 // the full column list is returned
 func normalizePropNames(requestNames []string, colNames []string) []string {
-	// no props given => use all properties
-	if len(requestNames) == 0 {
+	// no properties parameter => use all columns
+	if requestNames == nil {
 		return colNames
+	}
+	// empty properties parameter => use NO columns
+	if len(requestNames) == 0 {
+		return requestNames
 	}
 	nameSet := toNameSet(requestNames)
 	// select cols which appear in set
@@ -256,9 +276,11 @@ func toNameSet(strs []string) map[string]bool {
 	return set
 }
 
-const transformFunSep = "|"
-const transformParamSep = ","
-const functionPrefixST = "st_"
+const (
+	transformFunSep   = "|"
+	transformParamSep = ","
+	functionPrefixST  = "st_"
+)
 
 var transformFunctionWhitelist map[string]string
 
@@ -337,15 +359,34 @@ func parseFilter(paramMap map[string]string, colNameMap map[string]string) []*da
 	return conds
 }
 
-func createQueryParams(requestParam *api.RequestParam, colNames []string) *data.QueryParam {
-	param := data.QueryParam{
-		Limit:         requestParam.Limit,
-		Offset:        requestParam.Offset,
-		Bbox:          requestParam.Bbox,
-		OrderBy:       requestParam.OrderBy,
-		Precision:     requestParam.Precision,
-		TransformFuns: requestParam.TransformFuns,
+// createQueryParams applies any cross-parameter logic
+func createQueryParams(param *api.RequestParam, colNames []string) *data.QueryParam {
+	query := data.QueryParam{
+		Limit:         param.Limit,
+		Offset:        param.Offset,
+		Bbox:          param.Bbox,
+		GroupBy:       param.GroupBy,
+		OrderBy:       param.OrderBy,
+		Precision:     param.Precision,
+		TransformFuns: param.TransformFuns,
 	}
-	param.Columns = normalizePropNames(requestParam.Properties, colNames)
-	return &param
+	cols := param.Properties
+	// --- if groupby is present it replaces properties (it may be empty)
+	if param.GroupBy != nil {
+		cols = param.GroupBy
+		// ensure a aggregating transform is set to avoid error
+		if len(param.TransformFuns) == 0 {
+			query.TransformFuns = []data.TransformFunction{
+				{
+					Name: "st_collect",
+				},
+				{
+					Name: "st_envelope",
+				},
+			}
+		}
+	}
+	query.Columns = normalizePropNames(cols, colNames)
+
+	return &query
 }

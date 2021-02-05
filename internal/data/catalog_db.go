@@ -22,7 +22,7 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/CrunchyData/pg_featureserv/conf"
+	"github.com/CrunchyData/pg_featureserv/internal/conf"
 	"github.com/jackc/pgtype"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/log/logrusadapter"
@@ -30,6 +30,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// Constants
 const (
 	JSONTypeString  = "string"
 	JSONTypeNumber  = "number"
@@ -128,6 +129,44 @@ func (cat *catalogDB) Close() {
 func (cat *catalogDB) Tables() ([]*Table, error) {
 	cat.refreshTables(true)
 	return cat.tables, nil
+}
+
+func (cat *catalogDB) TableReload(name string) {
+	tbl, ok := cat.tableMap[name]
+	if !ok {
+		return
+	}
+	// load extent (which may change over time
+	sqlExtentEst := sqlExtentEstimated(tbl)
+	isExtentLoaded := cat.loadExtent(sqlExtentEst, tbl)
+	if !isExtentLoaded {
+		log.Debugf("Can't get estimated extent for %s", name)
+		sqlExtentExact := sqlExtentExact(tbl)
+		cat.loadExtent(sqlExtentExact, tbl)
+	}
+}
+
+func (cat *catalogDB) loadExtent(sql string, tbl *Table) bool {
+	var (
+		xmin pgtype.Float8
+		xmax pgtype.Float8
+		ymin pgtype.Float8
+		ymax pgtype.Float8
+	)
+	log.Debug("Extent query: " + sql)
+	err := cat.dbconn.QueryRow(context.Background(), sql).Scan(&xmin, &ymin, &xmax, &ymax)
+	if err != nil {
+		log.Debugf("Error querying Extent for %s: %v", tbl.ID, err)
+	}
+	// no extent was read (perhaps a view...)
+	if xmin.Status == pgtype.Null {
+		return false
+	}
+	tbl.Extent.Minx = xmin.Float
+	tbl.Extent.Miny = ymin.Float
+	tbl.Extent.Maxx = xmax.Float
+	tbl.Extent.Maxy = ymax.Float
+	return true
 }
 
 func (cat *catalogDB) TableByName(name string) (*Table, error) {
@@ -312,7 +351,8 @@ func readFeaturesWithArgs(ctx context.Context, db *pgxpool.Pool, sql string, arg
 }
 
 func scanFeatures(ctx context.Context, rows pgx.Rows, idColIndex int, propCols []string) []string {
-	var features []string
+	// init features array to empty (not nil)
+	var features []string = []string{}
 	for rows.Next() {
 		feature := scanFeature(rows, idColIndex, propCols)
 		//log.Println(feature)
@@ -327,6 +367,7 @@ func scanFeatures(ctx context.Context, rows pgx.Rows, idColIndex int, propCols [
 	// Check for errors from scanning rows.
 	if err := rows.Err(); err != nil {
 		log.Warnf("Error scanning rows for Features: %v", err)
+		// TODO: return nil here ?
 	}
 	return features
 }

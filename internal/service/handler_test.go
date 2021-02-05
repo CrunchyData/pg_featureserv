@@ -1,4 +1,4 @@
-package main
+package service
 
 /*
  Copyright 2019 Crunchy Data Solutions, Inc.
@@ -25,9 +25,9 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/CrunchyData/pg_featureserv/api"
-	"github.com/CrunchyData/pg_featureserv/conf"
-	"github.com/CrunchyData/pg_featureserv/data"
+	"github.com/CrunchyData/pg_featureserv/internal/api"
+	"github.com/CrunchyData/pg_featureserv/internal/conf"
+	"github.com/CrunchyData/pg_featureserv/internal/data"
 )
 
 // Define a FeatureCollection structure for parsing test data
@@ -56,7 +56,7 @@ var testConfig conf.Config = conf.Config{
 		HttpHost:   "0.0.0.0",
 		HttpPort:   9000,
 		UrlBase:    urlBase,
-		AssetsPath: "./assets",
+		AssetsPath: "../../assets",
 		TransformFunctions: []string{
 			"ST_Centroid",
 			"ST_PointOnSurface",
@@ -79,7 +79,7 @@ func TestMain(m *testing.M) {
 	catalogInstance = catalogMock
 	router = initRouter()
 	conf.Configuration = testConfig
-	initTransforms(conf.Configuration.Server.TransformFunctions)
+	Initialize()
 
 	os.Exit(m.Run())
 }
@@ -91,10 +91,12 @@ func TestRoot(t *testing.T) {
 	var v api.RootInfo
 	json.Unmarshal(body, &v)
 
-	checkLink(t, v.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+"/"+api.RootPageName+".json")
+	checkLink(t, v.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+"/"+api.RootPageName)
 	checkLink(t, v.Links[1], api.RelAlt, api.ContentTypeHTML, urlBase+"/"+api.RootPageName+".html")
-	checkLink(t, v.Links[2], api.RelData, api.ContentTypeJSON, urlBase+"/collections.json")
-	checkLink(t, v.Links[3], api.RelFunctions, api.ContentTypeJSON, urlBase+"/functions.json")
+	checkLink(t, v.Links[2], api.RelServiceDesc, api.ContentTypeOpenAPI, urlBase+"/api")
+	checkLink(t, v.Links[3], api.RelConformance, api.ContentTypeJSON, urlBase+"/conformance")
+	checkLink(t, v.Links[4], api.RelData, api.ContentTypeJSON, urlBase+"/collections")
+	checkLink(t, v.Links[5], api.RelFunctions, api.ContentTypeJSON, urlBase+"/functions")
 
 	/*
 		fmt.Println("Response ==>")
@@ -111,7 +113,7 @@ func TestCollectionsResponse(t *testing.T) {
 	var v api.CollectionsInfo
 	json.Unmarshal(body, &v)
 
-	checkLink(t, v.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+path+".json")
+	checkLink(t, v.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+path)
 	checkLink(t, v.Links[1], api.RelAlt, api.ContentTypeHTML, urlBase+path+".html")
 
 	checkCollection(t, v.Collections[0], "mock_a", "Mock A")
@@ -141,9 +143,9 @@ func TestCollectionResponse(t *testing.T) {
 		equals(t, tbl.ColDesc[i], v.Properties[i].Description, "Properties[].Description")
 	}
 
-	checkLink(t, v.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+path+".json")
+	checkLink(t, v.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+path)
 	checkLink(t, v.Links[1], api.RelAlt, api.ContentTypeHTML, urlBase+path+".html")
-	checkLink(t, v.Links[2], api.RelItems, api.ContentTypeGeoJSON, urlBase+path+"/items.json")
+	checkLink(t, v.Links[2], api.RelItems, api.ContentTypeGeoJSON, urlBase+path+"/items")
 }
 
 func TestCollectionItemsResponse(t *testing.T) {
@@ -155,7 +157,7 @@ func TestCollectionItemsResponse(t *testing.T) {
 	json.Unmarshal(body, &v)
 
 	equals(t, 9, len(v.Features), "# features")
-	checkLink(t, v.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+path+".json")
+	checkLink(t, v.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+path)
 	checkLink(t, v.Links[1], api.RelAlt, api.ContentTypeHTML, urlBase+path+".html")
 }
 
@@ -205,6 +207,16 @@ func TestLimit(t *testing.T) {
 	equals(t, "1", v.Features[0].ID, "feature 1 id")
 	equals(t, "2", v.Features[1].ID, "feature 2 id")
 	equals(t, "3", v.Features[2].ID, "feature 3 id")
+}
+
+func TestLimitZero(t *testing.T) {
+	rr := doRequest(t, "/collections/mock_a/items?limit=0")
+
+	var v FeatureCollection
+	json.Unmarshal(readBody(rr), &v)
+
+	equals(t, "FeatureCollection", v.Type, "type FeatureCollection")
+	equals(t, 0, len(v.Features), "# features")
 }
 
 func TestLimitInvalid(t *testing.T) {
@@ -293,11 +305,11 @@ func TestPropertiesAll(t *testing.T) {
 	equals(t, 1.0, v.Features[0].Props["prop_d"], "feature 1 # property D")
 }
 
-func TestCollectionNoFound(t *testing.T) {
+func TestCollectionNotFound(t *testing.T) {
 	doRequestStatus(t, "/collections/missing", http.StatusNotFound)
 }
 
-func TestCollectionItemsNoFound(t *testing.T) {
+func TestCollectionMissingItemsNotFound(t *testing.T) {
 	doRequestStatus(t, "/collections/missing/items", http.StatusNotFound)
 }
 
@@ -315,7 +327,7 @@ func TestFunctionsJSON(t *testing.T) {
 	var v api.FunctionsInfo
 	json.Unmarshal(body, &v)
 
-	checkLink(t, v.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+path+".json")
+	checkLink(t, v.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+path)
 	checkLink(t, v.Links[1], api.RelAlt, api.ContentTypeHTML, urlBase+path+".html")
 
 	for i, fun := range catalogMock.FunctionDefs {
@@ -330,11 +342,11 @@ func TestFunctionJSON(t *testing.T) {
 	}
 }
 
-func TestFunctionNoFound(t *testing.T) {
+func TestFunctionNotFound(t *testing.T) {
 	doRequestStatus(t, "/functions/missing", http.StatusNotFound)
 }
 
-func TestFunctionItemsNoFound(t *testing.T) {
+func TestFunctionMissingItemsNotFound(t *testing.T) {
 	doRequestStatus(t, "/functions/missing/items", http.StatusNotFound)
 }
 
@@ -401,11 +413,11 @@ func checkCollection(tb testing.TB, coll *api.CollectionInfo, name string, title
 	equals(tb, title, coll.Title, "Collection title")
 
 	path := "/collections/" + name
-	checkLink(tb, coll.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+path+".json")
+	checkLink(tb, coll.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+path)
 	checkLink(tb, coll.Links[1], api.RelAlt, api.ContentTypeHTML, urlBase+path+".html")
 
 	pathItems := path + "/items"
-	checkLink(tb, coll.Links[2], api.RelItems, api.ContentTypeGeoJSON, urlBase+pathItems+".json")
+	checkLink(tb, coll.Links[2], api.RelItems, api.ContentTypeGeoJSON, urlBase+pathItems)
 }
 func checkLink(tb testing.TB, link *api.Link, rel string, conType string, href string) {
 	equals(tb, rel, link.Rel, "Link rel")
@@ -418,7 +430,7 @@ func checkFunctionSummary(tb testing.TB, v *api.FunctionSummary, fun *data.Funct
 	equals(tb, fun.Description, v.Description, "Function description")
 
 	path := "/functions/" + fun.Name
-	checkLink(tb, v.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+path+".json")
+	checkLink(tb, v.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+path)
 	checkLink(tb, v.Links[1], api.RelAlt, api.ContentTypeHTML, urlBase+path+".html")
 
 	pathItems := path + "/items"
@@ -426,7 +438,7 @@ func checkFunctionSummary(tb testing.TB, v *api.FunctionSummary, fun *data.Funct
 	if fun.IsGeometryFunction() {
 		itemsType = api.ContentTypeGeoJSON
 	}
-	checkLink(tb, v.Links[2], api.RelItems, itemsType, urlBase+pathItems+".json")
+	checkLink(tb, v.Links[2], api.RelItems, itemsType, urlBase+pathItems)
 }
 func checkFunction(t *testing.T, fun *data.Function) {
 	path := "/functions/" + fun.ID
@@ -456,13 +468,13 @@ func checkFunction(t *testing.T, fun *data.Function) {
 	}
 
 	//--- check links
-	checkLink(t, v.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+path+".json")
+	checkLink(t, v.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+path)
 	checkLink(t, v.Links[1], api.RelAlt, api.ContentTypeHTML, urlBase+path+".html")
 	itemsType := api.ContentTypeJSON
 	if fun.IsGeometryFunction() {
 		itemsType = api.ContentTypeGeoJSON
 	}
-	checkLink(t, v.Links[2], api.RelItems, itemsType, urlBase+path+"/items.json")
+	checkLink(t, v.Links[2], api.RelItems, itemsType, urlBase+path+"/items")
 }
 
 //---- testing utilities from https://github.com/benbjohnson/testing
