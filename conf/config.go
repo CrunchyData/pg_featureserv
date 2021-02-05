@@ -96,6 +96,7 @@ func InitConfig(configFilename string) {
 		confFile = configFilename
 	} else {
 		viper.SetConfigName(confFile)
+		viper.SetConfigType("toml")
 		viper.AddConfigPath("./config")
 		viper.AddConfigPath("/config")
 		viper.AddConfigPath("/etc")

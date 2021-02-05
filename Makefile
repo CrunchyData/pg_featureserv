@@ -7,6 +7,7 @@ CONTAINER := pramsey/$(PROGRAM)
 RM = /bin/rm
 CP = /bin/cp
 MKDIR = /bin/mkdir
+SED = /usr/bin/sed
 
 .PHONY: build bin-docker check clean build-docker docs install release test uninstall
 
@@ -45,7 +46,7 @@ install: $(PROGRAM) docs  ##       This will install the program locally
 	$(MKDIR) -p $(DESTDIR)/usr/share/$(PROGRAM)
 	$(MKDIR) -p $(DESTDIR)/etc
 	$(CP) $(PROGRAM) $(DESTDIR)/usr/bin/$(PROGRAM)
-	$(CP) config/$(PROGRAM).toml.example $(DESTDIR)/etc/$(PROGRAM).toml
+	$(SED) 's,./assets,/user/share/$(PROGRAM)/assets,' config/$(PROGRAM).toml.example > $(DESTDIR)/etc/$(PROGRAM).toml
 	$(CP) -r assets $(DESTDIR)/usr/share/$(PROGRAM)/assets
 	$(CP) -r docs $(DESTDIR)/usr/share/$(PROGRAM)/docs
 
