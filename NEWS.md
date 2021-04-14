@@ -19,6 +19,7 @@
 * Fix landing page document to include links to resources `service-desc` and `conformance`
 * Fix links in JSON responses to not include JSON format (required for QGIS)
 * Fix function feature requests to respect the `offset` parameter (#65)
+* Fix Swagger request to work under HTTPS (#71)
 
 ## Version 1.2
 *Released: 2020 Dec 1*
