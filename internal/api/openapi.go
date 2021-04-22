@@ -178,7 +178,7 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 					Responses: openapi3.Responses{
 						"200": &openapi3.ResponseRef{
 							// TODO: Find better OpenAPI schema ref?
-							Ref: "http://json-schema.org/draft-07/schema",
+							Ref: "https://json-schema.org/draft-07/schema",
 						},
 					},
 				},
