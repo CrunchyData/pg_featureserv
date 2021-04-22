@@ -60,6 +60,8 @@ var htmlTemp struct {
 	functionItems *template.Template
 }
 
+// HTMLDynamicLoad sets whether HTML templates are loaded every time they are used
+// this allows rapid prototyping of changes
 var HTMLDynamicLoad bool
 
 func init() {
@@ -74,33 +76,38 @@ func NewPageData() *PageData {
 	return &con
 }
 
-func loadTemplate(curr *template.Template, filename ...string) *template.Template {
-	if curr == nil || HTMLDynamicLoad {
-		temp, err := template.ParseFiles(filename...)
-		if err != nil {
-			log.Fatalf("Failure loading templates from %v: %v", filename, err)
-		}
-		return temp
+func createTemplate(filename ...string) *template.Template {
+	tmpl, err := template.ParseFiles(filename...)
+	if err != nil {
+		log.Fatalf("Failure loading templates from %v: %v", filename, err)
 	}
-	// return already-loaded template
-	return curr
+	return tmpl
+}
+
+func loadTemplate(curr *template.Template, filename ...string) *template.Template {
+	if curr != nil && !HTMLDynamicLoad {
+		return curr
+	}
+	return createTemplate(filename...)
 }
 
 func loadPageTemplate(curr *template.Template, filename string) *template.Template {
-	files := []string{
-		conf.Configuration.Server.AssetsPath + "/page.gohtml",
-		conf.Configuration.Server.AssetsPath + "/" + filename,
+	if curr != nil && !HTMLDynamicLoad {
+		return curr
 	}
-	return loadTemplate(curr, files...)
+	return createTemplate(
+		conf.Configuration.Server.AssetsPath+"/page.gohtml",
+		conf.Configuration.Server.AssetsPath+"/"+filename)
 }
 
 func loadMapPageTemplate(curr *template.Template, filename string) *template.Template {
-	files := []string{
-		conf.Configuration.Server.AssetsPath + "/page.gohtml",
-		conf.Configuration.Server.AssetsPath + "/map_script.gohtml",
-		conf.Configuration.Server.AssetsPath + "/" + filename,
+	if curr != nil && !HTMLDynamicLoad {
+		return curr
 	}
-	return loadTemplate(curr, files...)
+	return createTemplate(
+		conf.Configuration.Server.AssetsPath+"/page.gohtml",
+		conf.Configuration.Server.AssetsPath+"/map_script.gohtml",
+		conf.Configuration.Server.AssetsPath+"/"+filename)
 }
 
 func PageHome() *template.Template {
@@ -140,13 +147,11 @@ func PageFunction() *template.Template {
 	return htmlTemp.function
 }
 func PageFunctionItems() *template.Template {
-	files := []string{
-		conf.Configuration.Server.AssetsPath + "/page.gohtml",
-		conf.Configuration.Server.AssetsPath + "/items.gohtml",
-		conf.Configuration.Server.AssetsPath + "/map_script.gohtml",
-		conf.Configuration.Server.AssetsPath + "/fun_script.gohtml",
-	}
-	htmlTemp.functionItems = loadTemplate(htmlTemp.functionItems, files...)
+	htmlTemp.functionItems = loadTemplate(htmlTemp.functionItems,
+		conf.Configuration.Server.AssetsPath+"/page.gohtml",
+		conf.Configuration.Server.AssetsPath+"/items.gohtml",
+		conf.Configuration.Server.AssetsPath+"/map_script.gohtml",
+		conf.Configuration.Server.AssetsPath+"/fun_script.gohtml")
 	return htmlTemp.functionItems
 }
 
