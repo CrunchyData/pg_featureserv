@@ -21,6 +21,7 @@
 * Fix links in JSON responses to not include JSON format (required for QGIS)
 * Fix function feature requests to respect the `offset` parameter (#65)
 * Fix Swagger request to work under HTTPS (#71)
+* Fix Collection description to be populated from table description (#70)
 
 ## Version 1.2
 *Released: 2020 Dec 1*
