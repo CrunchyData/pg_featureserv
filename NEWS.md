@@ -8,7 +8,7 @@
 * Support for HTTPS
 * Provide the `groupBy` query parameter, and ability to aggregate query features
 * Add support for partitioned tables and foreign tables
-* Support `sortby` query parameter
+* Support OGC API `sortby` query parameter (`orderBy` is now deprecated)
 
 ### Bug Fixes
 
