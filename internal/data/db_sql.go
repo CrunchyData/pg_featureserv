@@ -46,7 +46,7 @@ FROM pg_class c
 JOIN pg_namespace n ON (c.relnamespace = n.oid)
 JOIN pg_attribute a ON (a.attrelid = c.oid)
 JOIN pg_type t ON (a.atttypid = t.oid)
-LEFT JOIN pg_description d ON (c.oid = d.objoid)
+LEFT JOIN pg_description d ON (c.oid = d.objoid AND d.objsubid = 0)
 LEFT JOIN pg_index i ON (c.oid = i.indrelid AND i.indisprimary
 AND i.indnatts = 1)
 LEFT JOIN pg_attribute ia ON (ia.attrelid = i.indexrelid)
