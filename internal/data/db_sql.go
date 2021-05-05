@@ -124,7 +124,7 @@ func sqlFeatures(tbl *Table, param *QueryParam) (string, []interface{}) {
 	attrFilter, attrVals := sqlAttrFilter(param.Filter)
 	sqlWhere := sqlWhere(bboxFilter, attrFilter)
 	sqlGroupBy := sqlGroupBy(param.GroupBy)
-	sqlOrderBy := sqlOrderBy(param.OrderBy)
+	sqlOrderBy := sqlOrderBy(param.SortBy)
 	sqlLimitOffset := sqlLimitOffset(param.Limit, param.Offset)
 	sql := fmt.Sprintf(sqlFmtFeatures, geomCol, propCols, tbl.Schema, tbl.Table, sqlWhere, sqlGroupBy, sqlOrderBy, sqlLimitOffset)
 	return sql, attrVals
@@ -248,7 +248,7 @@ func sqlPrecisionArg(precision int) string {
 
 const sqlFmtOrderBy = `ORDER BY "%v" %v`
 
-func sqlOrderBy(ordering []Ordering) string {
+func sqlOrderBy(ordering []Sorting) string {
 	if len(ordering) <= 0 {
 		return ""
 	}
@@ -305,7 +305,7 @@ func sqlGeomFunction(fn *Function, args map[string]string, propCols []string, pa
 	sqlPropCols := sqlColList(propCols, fn.Types, true)
 	bboxFilter := sqlBBoxGeoFilter(fn.GeometryColumn, param.Bbox)
 	sqlWhere := sqlWhere(bboxFilter, "")
-	sqlOrderBy := sqlOrderBy(param.OrderBy)
+	sqlOrderBy := sqlOrderBy(param.SortBy)
 	sqlLimitOffset := sqlLimitOffset(param.Limit, param.Offset)
 	sql := fmt.Sprintf(sqlFmtGeomFunction, sqlGeomCol, sqlPropCols, fn.Schema, fn.Name, sqlArgs, sqlWhere, sqlOrderBy, sqlLimitOffset)
 	return sql, argVals
@@ -316,7 +316,7 @@ const sqlFmtFunction = "SELECT %v FROM \"%s\".\"%s\"( %v ) %v %s;"
 func sqlFunction(fn *Function, args map[string]string, propCols []string, param *QueryParam) (string, []interface{}) {
 	sqlArgs, argVals := sqlFunctionArgs(fn, args)
 	sqlPropCols := sqlColList(propCols, fn.Types, false)
-	sqlOrderBy := sqlOrderBy(param.OrderBy)
+	sqlOrderBy := sqlOrderBy(param.SortBy)
 	sqlLimitOffset := sqlLimitOffset(param.Limit, param.Offset)
 	sql := fmt.Sprintf(sqlFmtFunction, sqlPropCols, fn.Schema, fn.Name, sqlArgs, sqlOrderBy, sqlLimitOffset)
 	return sql, argVals

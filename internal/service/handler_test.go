@@ -197,6 +197,33 @@ func TestFilterBDNone(t *testing.T) {
 	equals(t, 0, len(v.Features), "# features")
 }
 
+func TestSortBy(t *testing.T) {
+	rr := doRequest(t, "/collections/mock_a/items?sortby=prop_b")
+
+	var v FeatureCollection
+	json.Unmarshal(readBody(rr), &v)
+
+	equals(t, 9, len(v.Features), "# features")
+}
+
+func TestSortByDesc(t *testing.T) {
+	rr := doRequest(t, "/collections/mock_a/items?sortby=-prop_b")
+
+	var v FeatureCollection
+	json.Unmarshal(readBody(rr), &v)
+
+	equals(t, 9, len(v.Features), "# features")
+}
+
+func TestSortByAsc(t *testing.T) {
+	rr := doRequest(t, "/collections/mock_a/items?sortby=+prop_b")
+
+	var v FeatureCollection
+	json.Unmarshal(readBody(rr), &v)
+
+	equals(t, 9, len(v.Features), "# features")
+}
+
 func TestLimit(t *testing.T) {
 	rr := doRequest(t, "/collections/mock_a/items?limit=3")
 

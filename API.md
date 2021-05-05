@@ -71,7 +71,7 @@ Path: `/collections/{cid}/items`
 ### Parameters
 * `limit=N` - limits the number of features in the response.
 * `offset=N` - starts the response at an offset.
-* `orderBy=PROP[:A | :D]` - order the response items by a property (ascending (default) or descending).
+* `sortby=[+|-]PROP` - sort the response items by a property (ascending (default) or descending).
 * `bbox=mix,miny,maxx,maxy` - filter features in response to ones intersecting a bounding box (in lon/lat).
 * `<propname>=val` - filter features for a property having a value.
   Multiple property filters are ANDed together.
@@ -151,7 +151,7 @@ Path: `/functions/{fid}/items`
 * `name=value` - Supplies a value for the named function parameter
 * `limit=N` - limits the number of features in the response
 * `offset=N` - starts the response at the given offset
-* `orderBy=PROP[:A | :D]` - order the response items by the given property (ascending (default) or descending)
+* `sortby=[+|-]PROP` - sort the response items by a property (ascending (default) or descending).
 * `bbox=mix,miny,maxx,maxy` - filter features in response to ones intersecting given bounding box (in lon/lat, for now)
 * `properties=PROP-LIST`- return only the given properties (comma-separated)
 * `precision=N` - set precision of GeoJSON ordinates to use N decimal places

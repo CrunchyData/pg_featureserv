@@ -8,6 +8,7 @@
 * Support for HTTPS
 * Provide the `groupBy` query parameter, and ability to aggregate query features
 * Add support for partitioned tables and foreign tables
+* Support `sortby` query parameter
 
 ### Bug Fixes
 

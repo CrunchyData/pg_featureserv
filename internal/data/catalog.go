@@ -57,7 +57,7 @@ type TransformFunction struct {
 	Arg  []string
 }
 
-type Ordering struct {
+type Sorting struct {
 	Name   string
 	IsDesc bool // false = ASC (default), true = DESC
 }
@@ -76,7 +76,7 @@ type QueryParam struct {
 	// Columns is the list of columns to return
 	Columns       []string
 	GroupBy       []string
-	OrderBy       []Ordering
+	SortBy        []Sorting
 	Precision     int
 	TransformFuns []TransformFunction
 }

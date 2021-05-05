@@ -141,6 +141,16 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 			AllowEmptyValue: false,
 		},
 	}
+	paramSortBy := openapi3.ParameterRef{
+		Value: &openapi3.Parameter{
+			Name:            "sortby",
+			Description:     "Column to sort by.",
+			In:              "query",
+			Required:        false,
+			Schema:          &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+			AllowEmptyValue: false,
+		},
+	}
 	return &openapi3.Swagger{
 		OpenAPI: "3.0.0",
 		Info: openapi3.Info{
@@ -241,6 +251,7 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 						&paramOffset,
 						&paramBbox,
 						&paramProperties,
+						&paramSortBy,
 						&paramTransform,
 						/* TODO
 						&openapi3.ParameterRef{
@@ -355,7 +366,9 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 						&paramOffset,
 						&paramBbox,
 						&paramProperties,
+						&paramSortBy,
 						&paramTransform,
+
 						/* TODO
 						&openapi3.ParameterRef{
 							Value: &openapi3.Parameter{

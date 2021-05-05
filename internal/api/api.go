@@ -39,6 +39,7 @@ const (
 	ParamOrderBy    = "orderby"
 	ParamPrecision  = "precision"
 	ParamProperties = "properties"
+	ParamSortBy     = "sortby"
 	ParamTransform  = "transform"
 
 	OrderByDirSep = ":"
@@ -92,6 +93,7 @@ var ParamReservedNames = []string{
 	ParamOrderBy,
 	ParamPrecision,
 	ParamProperties,
+	ParamSortBy,
 	ParamTransform,
 }
 
@@ -231,7 +233,7 @@ type RequestParam struct {
 	Bbox          *data.Extent
 	Properties    []string
 	GroupBy       []string
-	OrderBy       []data.Ordering
+	SortBy        []data.Sorting
 	Precision     int
 	TransformFuns []data.TransformFunction
 	Values        NameValMap

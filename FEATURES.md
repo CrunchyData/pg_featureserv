@@ -37,11 +37,11 @@ This is a list of current and planned functionality.  It also includes OGC API f
 - [ ] `bbox-crs`
 - [ ] `datetime`
 - [x] `properties` list (to restrict attributes in response)
+- [x] `sortby` to sort output by a property
+  - `sortby=name`, `sortby=+name`, `sortby=-name`
 - [ ] filtering by property value ( `name=value`, as per [spec sec. 7.15.5](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html#_parameters_for_filtering_on_feature_properties) )
 
 ### Query parameters - Extension
-- [x] `orderBy` to order output by a property
-  - `orderBy=name`, `orderBy=name:A`, `orderBy=name:D`
 - [x] `precision` to set output precision of GeoJSON coordinates
   - `precision=n`
 - [x] `transform` to specify geometry transformations
