@@ -37,7 +37,7 @@ The following Postgres column data types are supported:
 * other data types may be supported, but are output as strings
 
 
-#### Example of a spatial table
+#### *Example of a spatial table*
 
 Here is a simple example of defining a spatial table
 which contains polygon geometries using coordinate system SRID = 4326,
@@ -67,13 +67,15 @@ then the column must be explicitly cast to a geometry type providing the type an
 Depending on the spatial function used, it may also be necessary to
 explicitly set the SRID of the created geometry.
 
-#### Example of a view definition
+#### *Example of a view definition*
 ```sql
 CREATE VIEW my_points AS
   SELECT ST_SetSRID(
            ST_MakePoint( lon, lat ), 4326)::geometry(Point, 4326) AS geom
   FROM my_geo_table AS t;
 ```
+
+#### Feature collection metadata
 
 The service uses the database catalog information to provide metadata about a feature collection backed by a table or view:
 
@@ -84,7 +86,7 @@ The service uses the database catalog information to provide metadata about a fe
 * The **property names and types** are provided by the non-spatial columns of the table or view.
 * The **description for properties** is provided by the column comment.
 
-#### Example of comments on a table
+#### *Example of comments on a table*
 ```sql
 COMMENT ON TABLE mytable IS 'This is my spatial table';
 COMMENT ON COLUMN mytable.geom IS 'The geometry column contains polygons in SRS 4326';
