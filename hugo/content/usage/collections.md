@@ -34,7 +34,7 @@ The following Postgres column data types are supported:
 * `text[]`
 * `integer[]`, `smallint[]`, `bigint[]`, `double precision[]`, `real[]`, `numeric[]`
 * `json`
-* other data types may be supported, but are output as strings
+* other data types may be supported, with output as strings
 
 
 #### *Example of a spatial table*
@@ -56,6 +56,7 @@ CREATE TABLE mytable (
 );
 ```
 
+#### Spatial Views
 If a view directly uses the geometry column of an underlying table,
 the spatial column metadata is inherited for the view.
 But if a view column is defined as the result of a spatial function,
@@ -101,7 +102,7 @@ See the [Security](./security/) section for examples of setting role privileges.
 
 The path `/collections` returns a JSON document containing a list of the feature collections published by the service.
 
-#### Example
+#### *Example*
 ```
 http://localhost:9000/collections
 ```
@@ -122,7 +123,7 @@ the metadata for a feature collection.
 `{coll-name}` is the schema-qualified name of the database table or view
 backing the feature collection.
 
-#### Example
+#### *Example*
 ```
 http://localhost:9000/collections/ne.admin_0_countries
 ```
