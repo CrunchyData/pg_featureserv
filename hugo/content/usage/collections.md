@@ -33,6 +33,7 @@ The following Postgres column data types are supported:
 * `boolean`
 * `text[]`
 * `integer[]`, `smallint[]`, `bigint[]`, `double precision[]`, `real[]`, `numeric[]`
+* `boolean[]`
 * `json`
 * other data types may be supported, with output as strings
 

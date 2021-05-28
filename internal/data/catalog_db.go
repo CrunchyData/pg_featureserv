@@ -17,7 +17,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"reflect"
 	"sort"
 	"strings"
 	"text/template"
@@ -33,12 +32,13 @@ import (
 
 // Constants
 const (
-	JSONTypeString      = "string"
-	JSONTypeNumber      = "number"
-	JSONTypeBoolean     = "boolean"
-	JSONTypeJSON        = "json"
-	JSONTypeStringArray = "string[]"
-	JSONTypeNumberArray = "number[]"
+	JSONTypeString       = "string"
+	JSONTypeNumber       = "number"
+	JSONTypeBoolean      = "boolean"
+	JSONTypeJSON         = "json"
+	JSONTypeBooleanArray = "boolean[]"
+	JSONTypeStringArray  = "string[]"
+	JSONTypeNumberArray  = "number[]"
 
 	PGTypeBool      = "bool"
 	PGTypeNumeric   = "numeric"
@@ -410,7 +410,7 @@ func extractProperties(vals []interface{}, propOffset int, propNames []string) m
 
 // toJSONValue convert PG types to JSON values
 func toJSONValue(value interface{}) interface{} {
-	fmt.Printf("toJSONValue: %v\n", reflect.TypeOf(value))
+	//fmt.Printf("toJSONValue: %v\n", reflect.TypeOf(value))
 	switch v := value.(type) {
 	case *pgtype.Numeric:
 		var num float64
@@ -425,6 +425,10 @@ func toJSONValue(value interface{}) interface{} {
 		var strarr []string
 		v.AssignTo(&strarr)
 		return strarr
+	case *pgtype.BoolArray:
+		var valarr []bool
+		v.AssignTo(&valarr)
+		return valarr
 	case *pgtype.Int2Array:
 		var numarr []int16
 		v.AssignTo(&numarr)
@@ -465,12 +469,15 @@ func toJSONTypeFromPGArray(pgTypes []string) []string {
 }
 
 func toJSONTypeFromPG(pgType string) string {
-	fmt.Printf("toJSONTypeFromPG: %v\n", pgType)
+	//fmt.Printf("toJSONTypeFromPG: %v\n", pgType)
 	if strings.HasPrefix(pgType, "int") || strings.HasPrefix(pgType, "float") {
 		return JSONTypeNumber
 	}
 	if strings.HasPrefix(pgType, "_int") || strings.HasPrefix(pgType, "_float") {
 		return JSONTypeNumberArray
+	}
+	if strings.HasPrefix(pgType, "_bool") {
+		return JSONTypeBooleanArray
 	}
 	switch pgType {
 	case PGTypeNumeric:
