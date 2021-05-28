@@ -17,6 +17,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"sort"
 	"strings"
 	"text/template"
@@ -32,13 +33,18 @@ import (
 
 // Constants
 const (
-	JSONTypeString  = "string"
-	JSONTypeNumber  = "number"
-	JSONTypeBoolean = "boolean"
+	JSONTypeString      = "string"
+	JSONTypeNumber      = "number"
+	JSONTypeBoolean     = "boolean"
+	JSONTypeJSON        = "json"
+	JSONTypeStringArray = "string[]"
+	JSONTypeNumberArray = "number[]"
 
-	PGTypeBool     = "bool"
-	PGTypeNumeric  = "numeric"
-	PGTypeGeometry = "geometry"
+	PGTypeBool      = "bool"
+	PGTypeNumeric   = "numeric"
+	PGTypeJSON      = "json"
+	PGTypeGeometry  = "geometry"
+	PGTypeTextArray = "_text"
 )
 
 type catalogDB struct {
@@ -402,17 +408,51 @@ func extractProperties(vals []interface{}, propOffset int, propNames []string) m
 	return props
 }
 
-// toJSONValue convert PG types to JSON values if needed
+// toJSONValue convert PG types to JSON values
 func toJSONValue(value interface{}) interface{} {
+	fmt.Printf("toJSONValue: %v\n", reflect.TypeOf(value))
 	switch v := value.(type) {
 	case *pgtype.Numeric:
 		var num float64
 		// TODO: handle error
 		v.AssignTo(&num)
 		return num
+	case *pgtype.JSON:
+		var jsonval string
+		v.AssignTo(&jsonval)
+		return json.RawMessage(jsonval)
+	case *pgtype.TextArray:
+		var strarr []string
+		v.AssignTo(&strarr)
+		return strarr
+	case *pgtype.Int2Array:
+		var numarr []int16
+		v.AssignTo(&numarr)
+		return numarr
+	case *pgtype.Int4Array:
+		var numarr []int32
+		v.AssignTo(&numarr)
+		return numarr
+	case *pgtype.Int8Array:
+		var numarr []int64
+		v.AssignTo(&numarr)
+		return numarr
+	case *pgtype.Float4Array:
+		var numarr []float64
+		v.AssignTo(&numarr)
+		return numarr
+	case *pgtype.Float8Array:
+		var numarr []float64
+		v.AssignTo(&numarr)
+		return numarr
+	case *pgtype.NumericArray:
+		var numarr []float64
+		v.AssignTo(&numarr)
+		return numarr
 		// TODO: handle other conversions?
 	}
 	// for now all other values are returned  as is
+	// this is only safe if the values are text!
 	return value
 }
 
@@ -425,21 +465,28 @@ func toJSONTypeFromPGArray(pgTypes []string) []string {
 }
 
 func toJSONTypeFromPG(pgType string) string {
-	if strings.HasPrefix(pgType, "int") {
+	fmt.Printf("toJSONTypeFromPG: %v\n", pgType)
+	if strings.HasPrefix(pgType, "int") || strings.HasPrefix(pgType, "float") {
 		return JSONTypeNumber
 	}
-	if strings.HasPrefix(pgType, "float") {
-		return JSONTypeNumber
+	if strings.HasPrefix(pgType, "_int") || strings.HasPrefix(pgType, "_float") {
+		return JSONTypeNumberArray
 	}
 	switch pgType {
 	case PGTypeNumeric:
 		return JSONTypeNumber
 	case PGTypeBool:
 		return JSONTypeBoolean
+	case PGTypeJSON:
+		return JSONTypeJSON
+	case PGTypeTextArray:
+		return JSONTypeStringArray
 	// hack to allow displaying geometry type
 	case PGTypeGeometry:
 		return PGTypeGeometry
 	}
+	// default is string
+	// this forces conversion to text in SQL query
 	return JSONTypeString
 }
 
