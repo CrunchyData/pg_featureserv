@@ -64,7 +64,7 @@ then the column must be explicitly cast to a geometry type providing the type an
 Depending on the spatial function used, it may also be necessary to
 explicitly set the SRID of the created geometry.
 
-#### *Example of a view definition*
+#### *Example of a spatial view definition*
 ```sql
 CREATE VIEW my_points AS
   SELECT ST_SetSRID(
