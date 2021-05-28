@@ -56,10 +56,6 @@ CREATE TABLE mytable (
 );
 ```
 
-Tables and views are visible when they are available for access
-based on the database access permissions defined for the service database user (role).
-See the [Security](./security/) section for examples of setting role privileges.
-
 If a view directly uses the geometry column of an underlying table,
 the spatial column metadata is inherited for the view.
 But if a view column is defined as the result of a spatial function,
@@ -93,6 +89,13 @@ COMMENT ON COLUMN mytable.geom IS 'The geometry column contains polygons in SRS 
 COMMENT ON COLUMN mytable.pid IS 'The Parcel Identifier is the primary key';
 COMMENT ON COLUMN mytable.address IS 'The address of the Parcel';
 ```
+
+#### Access Control
+
+Tables and views are visible when they are available for access
+based on the database access permissions defined for the service database user (role).
+See the [Security](./security/) section for examples of setting role privileges.
+
 
 ## List feature collections
 
