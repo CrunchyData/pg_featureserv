@@ -84,6 +84,10 @@ This is a list of current and planned functionality.  It also includes OGC API f
 - [x] PostGIS 2.x `AsGeoJSON` geometry with attribute encoding
 - [ ] PostGIS 3.0 `ST_AsGeoJSON` record
 
+### Data Types
+- [x] JSON 
+- [x] Arrays of text, int, float, numeric
+
 ### Tables / Views
 - [x] table column schema
 - [x] support tables with no primary key
