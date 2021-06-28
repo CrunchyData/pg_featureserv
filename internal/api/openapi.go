@@ -164,6 +164,7 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 							Ref: "",
 							Value: &openapi3.Response{
 								Content: openapi3.NewContentWithJSONSchema(&RootInfoSchema),
+								Description: "Results for root of API",
 							},
 						},
 					},
@@ -193,6 +194,7 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 						"200": &openapi3.ResponseRef{
 							Value: &openapi3.Response{
 								Content: openapi3.NewContentWithJSONSchema(&ConformanceSchema),
+								Description: "Results for conformance classes",
 							},
 						},
 					},
@@ -208,6 +210,7 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 							Value: &openapi3.Response{
 								Content: openapi3.NewContentWithJSONSchemaRef(
 									&openapi3.SchemaRef{Value: &CollectionsInfoSchema}),
+								Description: "Results for details about the specified feature collection",
 							},
 						},
 					},
@@ -225,6 +228,7 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 							Value: &openapi3.Response{
 								Content: openapi3.NewContentWithJSONSchemaRef(
 									&openapi3.SchemaRef{Value: &CollectionInfoSchema}),
+								Description: "Results for details about the specified feature collection",
 							},
 						},
 					},
@@ -319,6 +323,7 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 							Value: &openapi3.Response{
 								Content: openapi3.NewContentWithJSONSchemaRef(
 									&openapi3.SchemaRef{Value: &FunctionsInfoSchema}),
+								Description: "Results for details about functions served",
 							},
 						},
 					},
@@ -339,6 +344,8 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 									&openapi3.SchemaRef{
 										Value: &FunctionInfoSchema,
 									}),
+								Description: "Results for details about the specified function",
+
 							},
 						},
 					},
