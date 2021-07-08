@@ -48,11 +48,13 @@ const (
 )
 
 type catalogDB struct {
-	dbconn      *pgxpool.Pool
-	tables      []*Table
-	tableMap    map[string]*Table
-	functions   []*Function
-	functionMap map[string]*Function
+	dbconn        *pgxpool.Pool
+	tableIncludes map[string]string
+	tableExcludes map[string]string
+	tables        []*Table
+	tableMap      map[string]*Table
+	functions     []*Function
+	functionMap   map[string]*Function
 }
 
 var isStartup bool
@@ -126,6 +128,21 @@ func dbConfig() *pgxpool.Config {
 	dbconfig.ConnConfig.LogLevel = pgxLevel
 
 	return dbconfig
+}
+
+func (cat *catalogDB) SetIncludeExclude(includeList []string, excludeList []string) {
+	//-- include schemas / tables
+	cat.tableIncludes = make(map[string]string)
+	for _, name := range includeList {
+		nameLow := strings.ToLower(name)
+		cat.tableIncludes[nameLow] = nameLow
+	}
+	//-- excluded schemas / tables
+	cat.tableExcludes = make(map[string]string)
+	for _, name := range excludeList {
+		nameLow := strings.ToLower(name)
+		cat.tableExcludes[nameLow] = nameLow
+	}
 }
 
 func (cat *catalogDB) Close() {
@@ -228,7 +245,7 @@ func (cat *catalogDB) refreshTables(force bool) {
 }
 
 func (cat *catalogDB) loadTables() {
-	cat.tableMap = readTables(cat.dbconn)
+	cat.tableMap = cat.readTables(cat.dbconn)
 	cat.tables = tablesSorted(cat.tableMap)
 }
 
@@ -244,7 +261,7 @@ func tablesSorted(tableMap map[string]*Table) []*Table {
 	return lsort
 }
 
-func readTables(db *pgxpool.Pool) map[string]*Table {
+func (cat *catalogDB) readTables(db *pgxpool.Pool) map[string]*Table {
 	log.Debugf("Load table catalog:\n%v", sqlTables)
 	rows, err := db.Query(context.Background(), sqlTables)
 	if err != nil {
@@ -253,7 +270,9 @@ func readTables(db *pgxpool.Pool) map[string]*Table {
 	tables := make(map[string]*Table)
 	for rows.Next() {
 		tbl := scanTable(rows)
-		tables[tbl.ID] = tbl
+		if cat.isIncluded(tbl) {
+			tables[tbl.ID] = tbl
+		}
 	}
 	// Check for errors from iterating over rows.
 	if err := rows.Err(); err != nil {
@@ -261,6 +280,31 @@ func readTables(db *pgxpool.Pool) map[string]*Table {
 	}
 	rows.Close()
 	return tables
+}
+
+func (cat *catalogDB) isIncluded(tbl *Table) bool {
+	//--- if no includes defined, always include
+	isIncluded := true
+	if len(cat.tableIncludes) > 0 {
+		isIncluded = isMatchSchemaTable(tbl, cat.tableIncludes)
+	}
+	isExcluded := false
+	if len(cat.tableExcludes) > 0 {
+		isExcluded = isMatchSchemaTable(tbl, cat.tableExcludes)
+	}
+	return isIncluded && !isExcluded
+}
+
+func isMatchSchemaTable(tbl *Table, list map[string]string) bool {
+	schemaLow := strings.ToLower(tbl.Schema)
+	if _, ok := list[schemaLow]; ok {
+		return true
+	}
+	idLow := strings.ToLower(tbl.ID)
+	if _, ok := list[idLow]; ok {
+		return true
+	}
+	return false
 }
 
 func scanTable(rows pgx.Rows) *Table {

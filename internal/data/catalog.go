@@ -21,6 +21,8 @@ import (
 
 // Catalog tbd
 type Catalog interface {
+	SetIncludeExclude(includeList []string, excludeList []string)
+
 	Tables() ([]*Table, error)
 
 	// TableByName returns the table with given name.

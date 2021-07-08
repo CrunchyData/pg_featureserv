@@ -82,6 +82,8 @@ type Database struct {
 	DbConnection          string
 	DbPoolMaxConnLifeTime string
 	DbPoolMaxConns        int
+	TableIncludes         []string
+	TableExcludes         []string
 }
 
 // Metadata config
