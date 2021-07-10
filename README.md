@@ -14,8 +14,8 @@ It supports the [OGC API - Features](http://docs.opengeospatial.org/is/17-069r3/
 ## Features
 
 * Implements the [OGC API - Features](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html) standard.
-  * Supports standard request parameters `limit`, `bbox`, property filtering
-  * Extended parameters include `offset`, `properties`, `orderBy`, `transform`, `precision`
+  * Supports standard request parameters `limit`, `bbox`, property filtering, `sortby`
+  * Extended parameters include `offset`, `properties`, `transform`, `precision`
 * Data responses are formatted in JSON and GeoJSON
 * Provides a simple HTML user interface, with web maps to view spatial data
 * Uses the power of PostgreSQL to reduce the amount of code
@@ -59,13 +59,14 @@ Builds of the latest code:
 cd $GOPATH/src/github.com/CrunchyData/pg_featureserv/
 go build
 ```
-* This should create a `pg_featureserv` executable in the application directory
+* This creates a `pg_featureserv` executable in the application directory
 * (Optional) Run the unit tests using `go test ./...`
 
 ## Configuring the service
 
 * Set the environment variable `DATABASE_URL` with a Postgres [connection string](https://www.postgresql.org/docs/12/libpq-connect.html#LIBPQ-CONNSTRING)
   * Example: `export DATABASE_URL="host=localhost user=postgres"`
+  * Database URL can also be set in the configuration file
 * Edit the configuration file `pg_featureserv.toml`, located in `./config`, `/config`, or `/etc`
 
 ## Running the service

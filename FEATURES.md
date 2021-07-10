@@ -85,7 +85,7 @@ This is a list of current and planned functionality.  It also includes OGC API f
 - [ ] PostGIS 3.0 `ST_AsGeoJSON` record
 
 ### Data Types
-- [x] JSON 
+- [x] JSON
 - [x] Arrays of text, int, float, numeric
 
 ### Tables / Views
@@ -117,6 +117,7 @@ This is a list of current and planned functionality.  It also includes OGC API f
 - [x] DB pool parameters
 - [x] database connection string
 - [x] whitelist for transformation functions (default: none)
+- [X] include/exclude published schemas and tables
 
 ### Security
 - [ ] Authentication - TBD
