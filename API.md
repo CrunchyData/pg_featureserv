@@ -80,7 +80,7 @@ Path: `/collections/{cid}/items`
   If not present, all properties are returned.
 * `precision=N` - set precision of GeoJSON ordinates to use N decimal places
 * `transform=fun1[,args][|fun2,args...]` - transform the feature geometry by a geometry function pipeline.
-* `groupBy=PROP-NAME` - group results on a property.
+* `groupby=PROP-NAME` - group results on a property.
 Usually used with an aggregate `transform` function.
 
 ### Response

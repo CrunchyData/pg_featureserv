@@ -6,10 +6,10 @@
 ### New Features
 
 * Support for HTTPS
-* Provide the `groupBy` query parameter, and ability to aggregate query features
-* Add support for partitioned tables and foreign tables
+* Provide the `groupby` query parameter, and ability to aggregate query features
 * Support OGC API `sortby` query parameter (`orderBy` is deprecated)
 * Support Postgres data types: JSON, array of text/int/float/numeric
+* Add support for partitioned tables and foreign tables
 * Add configuration to include/exclude published schemas and tables
 
 ### Bug Fixes
