@@ -13,9 +13,9 @@ It supports the [OGC API - Features](http://docs.opengeospatial.org/is/17-069r3/
 
 ## Features
 
-* Implements the [OGC API - Features](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html) standard.
+* Implements the [**OGC API - Features**](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html) standard.
   * Supports standard request parameters `limit`, `bbox`, property filtering, `sortby`
-  * Extended parameters include `offset`, `properties`, `transform`, `precision`
+  * Extended parameters include `offset`, `properties`, `transform`, `precision`, `groupby`
 * Data responses are formatted in JSON and GeoJSON
 * Provides a simple HTML user interface, with web maps to view spatial data
 * Uses the power of PostgreSQL to reduce the amount of code
