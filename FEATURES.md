@@ -72,12 +72,16 @@ This is a list of current and planned functionality.  It also includes OGC API f
 - [x] map display of single feature
 - [x] attribute display of single feature
 - [x] function metadata
-- [x] map display for geometry functions (`items` page)
 - [ ] text display for non-geometry functions (`items` page)
-- [x] UI for `limit` parameter on `items` page
-- [x] UI for `offset` parameter on `items` page
-- [x] UI for `bbox` parameter on `items` page
-- [x] UI for setting function parameters on `items` page
+
+### Map UI
+- [x] map display for features (`items` page)
+- [x] map display for geometry functions (`items` page)
+- [x] map panel showing features attributes
+- [x] control for `limit` parameter
+- [x] control for `offset` parameter
+- [x] control for `bbox` parameter
+- [x] control for setting function parameter values
 
 ## Database
 
@@ -85,8 +89,10 @@ This is a list of current and planned functionality.  It also includes OGC API f
 - [ ] PostGIS 3.0 `ST_AsGeoJSON` record
 
 ### Data Types
-- [x] JSON
+- [x] common scalar types: text, int, float, numeric
 - [x] Arrays of text, int, float, numeric
+- [x] JSON
+- [x] Other types converted to text representation
 
 ### Tables / Views
 - [x] table column schema
@@ -95,6 +101,7 @@ This is a list of current and planned functionality.  It also includes OGC API f
 - [x] support materialized views
 - [x] read property descriptions from table/view column comments
 - [ ] read table estimated and actual extents lazily
+- [X] include/exclude published schemas and tables via configuration
 
 ### Functions
 - [x] support functions returning geometry
@@ -117,7 +124,6 @@ This is a list of current and planned functionality.  It also includes OGC API f
 - [x] DB pool parameters
 - [x] database connection string
 - [x] whitelist for transformation functions (default: none)
-- [X] include/exclude published schemas and tables
 
 ### Security
 - [ ] Authentication - TBD
