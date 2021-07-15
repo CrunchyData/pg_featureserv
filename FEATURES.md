@@ -1,7 +1,7 @@
 # `pg-featureserv` Functionality
 
 This is a list of current and planned functionality.
-It includes [**OGC API - Features**](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html) core requirements (although some of them are not on the current development roadmap).
+It includes [*OGC API - Features*](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html) core requirements (although some of them are not on the current development roadmap).
 
 ## API
 
