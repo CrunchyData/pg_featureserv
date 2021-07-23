@@ -431,7 +431,13 @@ func scanFeature(rows pgx.Rows, idColIndex int, propNames []string) string {
 	}
 	//fmt.Println(vals)
 	//--- geom value is expected to be a GeoJSON string
-	geom = vals[0].(string)
+	//--- convert NULL to an empty string
+	if vals[0] != nil {
+		geom = vals[0].(string)
+	} else {
+		geom = ""
+	}
+
 	propOffset := 1
 	if idColIndex >= 0 {
 		id = fmt.Sprintf("%v", vals[idColIndex+propOffset])
@@ -549,7 +555,12 @@ type featureData struct {
 }
 
 func makeFeatureJSON(id string, geom string, props map[string]interface{}) string {
-	geomRaw := json.RawMessage(geom)
+	//--- convert empty geom string to JSON null
+	var geomRaw json.RawMessage
+	if geom != "" {
+		geomRaw = json.RawMessage(geom)
+	}
+
 	featData := featureData{
 		Type:  "Feature",
 		ID:    id,
