@@ -24,6 +24,7 @@
 * Fix function feature requests to respect the `offset` parameter (#65)
 * Fix Swagger request to work under HTTPS (#71)
 * Fix Collection description to be populated from table description (#70)
+* Fix output of NULL geometry values to be JSON null
 
 ## Version 1.2
 *Released: 2020 Dec 1*
