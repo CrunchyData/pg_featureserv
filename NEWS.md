@@ -12,6 +12,10 @@
 * Add support for partitioned tables and foreign tables
 * Add configuration to include/exclude published schemas and tables
 
+### Performance Improvements
+
+* Improve performance of page template loading using caching
+
 ### Bug Fixes
 
 * Fix response value for empty query results for collections and functions
