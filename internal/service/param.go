@@ -44,7 +44,7 @@ func parseRequestParams(r *http.Request) (api.RequestParam, error) {
 	param.Limit = limit
 
 	// --- offset parameter
-	offset, err := parseInt(paramValues, api.ParamOffset, 0, conf.Configuration.Paging.LimitMax, 0)
+	offset, err := parseInt(paramValues, api.ParamOffset, 0, -1, 0)
 	if err != nil {
 		return param, err
 	}
@@ -124,7 +124,7 @@ func parseInt(values api.NameValMap, key string, minVal int, maxVal int, default
 	if val < minVal {
 		val = minVal
 	}
-	if val > maxVal {
+	if maxVal >= 0 && val > maxVal {
 		val = maxVal
 	}
 	return val, nil

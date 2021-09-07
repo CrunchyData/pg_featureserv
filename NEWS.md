@@ -29,6 +29,7 @@
 * Fix Swagger request to work under HTTPS (#71)
 * Fix Collection description to be populated from table description (#70)
 * Fix output of NULL geometry values to be JSON null
+* Fix `offset` parameter to allow any non-negative value
 
 ## Version 1.2
 *Released: 2020 Dec 1*
