@@ -458,9 +458,17 @@ var ConformanceSchema openapi3.Schema = openapi3.Schema{
 
 var conformance = Conformance{
 	ConformsTo: []string{
-		"http://www.opengis.net/spec/wfs-1/3.0/req/core",
-		"http://www.opengis.net/spec/wfs-1/3.0/req/geojson",
-		"http://www.opengis.net/spec/wfs-1/3.0/req/html",
+		"http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core",
+		"http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/oas3",
+		"http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson",
+		"http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/html",
+		"http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core",
+		"http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/landing-page",
+		"http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/json",
+		"http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/html",
+		"http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/oas30",
+		"http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/collections",
+		"http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/simple-query",
 	},
 }
 
