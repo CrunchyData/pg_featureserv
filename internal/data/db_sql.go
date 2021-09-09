@@ -170,7 +170,7 @@ func sqlColExpr(name string, dbtype string) string {
 	return name
 }
 
-const sqlFmtFeature = "SELECT %v %v FROM \"%s\".\"%s\" WHERE %v = $1 LIMIT 1"
+const sqlFmtFeature = "SELECT %v %v FROM \"%s\".\"%s\" WHERE \"%v\" = $1 LIMIT 1"
 
 func sqlFeature(tbl *Table, param *QueryParam) string {
 	geomCol := sqlGeomCol(tbl.GeometryColumn, param)
