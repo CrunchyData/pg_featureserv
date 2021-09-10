@@ -48,7 +48,7 @@ It includes [*OGC API - Features*](http://docs.opengeospatial.org/is/17-069r3/17
 - [x] `transform` to specify geometry transformations
   - `transform=fn,arg,arg|fn,arg`
 - [ ] convert transform function names to `ST_` equivalents
-
+- [x] `groupBy=colname` to group by column (used with a `transform` spatial aggregate function)
 - [ ] `f` parameter for formats?  (e.g. `f=json`, `f=html`)
 
 ### Query parameters - Functions
