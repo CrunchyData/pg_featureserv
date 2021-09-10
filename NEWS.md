@@ -30,6 +30,7 @@
 * Fix Collection description to be populated from table description (#70)
 * Fix output of NULL geometry values to be JSON null
 * Fix `offset` parameter to allow any non-negative value
+* Fix encoding of primary key column names in item requests (#80)
 
 ## Version 1.2
 *Released: 2020 Dec 1*
