@@ -40,7 +40,7 @@ It includes [*OGC API - Features*](http://docs.opengeospatial.org/is/17-069r3/17
 - [x] `properties` list (to restrict attributes in response)
 - [x] `sortby` to sort output by a property
   - `sortby=name`, `sortby=+name`, `sortby=-name`
-- [ ] filtering by property value ( `name=value`, as per [spec sec. 7.15.5](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html#_parameters_for_filtering_on_feature_properties) )
+- [x] filtering by property value ( `name=value`, as per [spec sec. 7.15.5](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html#_parameters_for_filtering_on_feature_properties) )
 
 ### Query parameters - Extension
 - [x] `precision` to set output precision of GeoJSON coordinates
