@@ -69,3 +69,7 @@ LimitMax = 10000
 #Title = "pg-featureserv"
 # Description of this service
 #Description = "Crunchy Data Feature Server for PostGIS"
+
+[Website]
+# URL for the map view basemap
+BasemapUrl = "http://a.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"

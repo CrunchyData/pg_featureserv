@@ -83,6 +83,7 @@ It includes [*OGC API - Features*](http://docs.opengeospatial.org/is/17-069r3/17
 - [x] control for `offset` parameter
 - [x] control for `bbox` parameter
 - [x] control for setting function parameter values
+- [x] configurable base map URL
 
 ## Database
 

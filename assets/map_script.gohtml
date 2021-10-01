@@ -115,6 +115,7 @@
 <script src="https://openlayers.org/en/v6.1.1/build/ol.js"></script>
 <script>
 var SHOW_FEATURE_LINK = {{ .context.ShowFeatureLink }};
+var BASEMAP_URL = "{{ .config.Website.BasemapUrl }}";
 
 var vectorLayer = new ol.layer.Vector({
 	source: new ol.source.Vector({
@@ -127,7 +128,7 @@ var map = new ol.Map({
 	layers: [
 		new ol.layer.Tile({
 			source: new ol.source.OSM({
-				"url" : "https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png"
+				"url" : BASEMAP_URL
 			})
 		}),
 	],

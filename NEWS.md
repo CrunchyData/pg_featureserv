@@ -11,6 +11,7 @@
 * Support Postgres data types: JSON, array of text/int/float/numeric
 * Add support for partitioned tables and foreign tables
 * Add configuration to include/exclude published schemas and tables
+* Add configuration for web UI map view basemap URL template
 
 ### Performance Improvements
 
