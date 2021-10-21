@@ -62,19 +62,19 @@ go build
 * This creates a `pg_featureserv` executable in the application directory
 * (Optional) Run the unit tests using `go test ./...`
 
-### Building docker image
+### Building a Docker image
 
-You should build the executable with:
+* Build the `pg_featureserv` executable with the command:
 ```bash
 CGO_ENABLED=0 go build
 ```
-To avoid runtime error `/lib64/libc.so.6: version 'GLIBC_2.XX' not found (required by ./pg_featureserv)`.
+to avoid the runtime error `/lib64/libc.so.6: version 'GLIBC_2.XX' not found (required by ./pg_featureserv)`.
 
-Then, from `$GOPATH/src/github.com/CrunchyData/pg_featureserv/` directory, build the image with:
+* In the `$GOPATH/src/github.com/CrunchyData/pg_featureserv/` directory, build the Docker image with:
 ```bash
 docker build -f container/Dockerfile --build-arg VERSION=<VERSION> -t crunchydata/pg_featureserv:<VERSION> ./
 ```
-Replace version `<VERSION>` with the `pg_featureserv` version are building against.
+Replace version `<VERSION>` with the `pg_featureserv` version you are building against.
 
 ## Configuring the service
 
