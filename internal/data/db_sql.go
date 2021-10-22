@@ -69,6 +69,7 @@ proargs AS (
 	WHERE n.nspname = 'postgisftw'
 		AND array_length(p.proargnames, 1) = array_length(p.proargmodes, 1)
 		AND array_length(p.proargmodes, 1) = array_length(p.proallargtypes, 1)
+		AND has_schema_privilege(n.oid, 'usage')
 		AND has_function_privilege(Format('%s.%s(%s)', n.nspname, p.proname, oidvectortypes(proargtypes)), 'execute')
 ),
 proargarrays AS (
