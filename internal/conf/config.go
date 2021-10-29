@@ -31,6 +31,7 @@ func setDefaultConfig() {
 	viper.SetDefault("Server.TlsServerCertificateFile", "")
 	viper.SetDefault("Server.TlsServerPrivateKeyFile", "")
 	viper.SetDefault("Server.UrlBase", "")
+	viper.SetDefault("Server.BasePath", "")
 	viper.SetDefault("Server.CORSOrigins", "*")
 	viper.SetDefault("Server.Debug", false)
 	viper.SetDefault("Server.AssetsPath", "./assets")
@@ -64,6 +65,7 @@ type Server struct {
 	TlsServerCertificateFile string
 	TlsServerPrivateKeyFile  string
 	UrlBase                  string
+	BasePath				 string
 	CORSOrigins              string
 	Debug                    bool
 	AssetsPath               string

@@ -16,6 +16,10 @@ HttpPort = 9000
 # Note: do not add a trailing slash.
 #    UrlBase = "http://localhost:9000"
 
+# Optional path to add to the service base URL
+# If set, all routes will be prefixed with this path
+# BasePath = "/"
+
 # String to return for Access-Control-Allow-Origin header
 #    CORSOrigins = "*"
 

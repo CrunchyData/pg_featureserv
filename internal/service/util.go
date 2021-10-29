@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -211,6 +212,24 @@ func urlPathFormatQuery(urlBase string, path string, format string, query string
 		url = fmt.Sprintf("%v?%v", url, query)
 	}
 	return url
+}
+
+// formatBaseURL takes a hostname (baseHost) and a base path
+// and joins them.  Both are parsed as URLs (using net/url) and
+// then joined to ensure a properly formed URL.
+// net/url does not support parsing hostnames without a scheme
+// (e.g. example.com is invalid; http://example.com is valid).
+// serverURLHost ensures a scheme is added.
+func formatBaseURL(protocol string, baseHost string, basePath string) string {
+	urlHost, err := url.Parse(protocol + baseHost)
+	if err != nil {
+		log.Fatal(err)
+	}
+	urlPath, err := url.Parse(basePath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return strings.TrimRight(urlHost.ResolveReference(urlPath).String(), "/")
 }
 
 // restrict creates a map containing only entries in names

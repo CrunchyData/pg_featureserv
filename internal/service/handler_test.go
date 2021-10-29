@@ -77,7 +77,7 @@ var catalogMock *data.CatalogMock
 func TestMain(m *testing.M) {
 	catalogMock = data.CatMockInstance()
 	catalogInstance = catalogMock
-	router = initRouter()
+	router = initRouter("/")
 	conf.Configuration = testConfig
 	Initialize()
 

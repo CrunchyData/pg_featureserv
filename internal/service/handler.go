@@ -16,6 +16,7 @@ package service
 import (
 	"context"
 	"net/http"
+	"strings"
 
 	"github.com/CrunchyData/pg_featureserv/internal/api"
 	"github.com/CrunchyData/pg_featureserv/internal/conf"
@@ -29,8 +30,11 @@ const (
 	routeVarFeatureID = "fid"
 )
 
-func initRouter() *mux.Router {
-	router := mux.NewRouter().StrictSlash(true)
+func initRouter(basePath string) *mux.Router {
+	router := mux.NewRouter().
+	StrictSlash(true).
+	PathPrefix("/" + strings.TrimLeft(basePath, "/")).
+	Subrouter()
 
 	addRoute(router, "/", handleRoot)
 	addRoute(router, "/home{.fmt}", handleRoot)
