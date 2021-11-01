@@ -175,7 +175,7 @@ func serveURLBase(r *http.Request) string {
 		ps = fp[0]
 	}
 
-	return fmt.Sprintf("%v://%v/", ps, ph)
+	return fmt.Sprintf("%v://%v%v", ps, ph, conf.Configuration.Server.BasePath)
 }
 
 func getRequestVar(varname string, r *http.Request) string {
