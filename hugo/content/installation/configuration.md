@@ -45,6 +45,13 @@ HttpPort = 9000
 # Note: do not add a trailing slash.
 # UrlBase = "http://localhost:9000/"
 
+# Optional path to add to the service base URL
+# If set, all routes will be prefixed with this path
+# (e.g. "/pg_featureserv", "/services/pg_featureserv", etc.)
+# Note: No trailing slash is necessary, pg_featureserv automatically
+# adds a trailing slash for you.
+# BasePath = "/"
+
 # String to return for Access-Control-Allow-Origin header
 # CORSOrigins = "*"
 
@@ -124,6 +131,18 @@ UrlBase = https://my-server.org/features
 If `UrlBase` is not set, `pg_featureserv` dynamically detects the base URL.
 Also, if the HTTP headers `Forwarded` or `X-Forwarded-Proto` and `X-Forwarded-Host` are present, they are respected.
 Otherwise the base URL is determined by inspecting the incoming request.
+
+#### BasePath
+
+The BasePath allows an user to change the endpoint where pg_featureserv is served from.
+If `BasePath` is not set, all traffic is served from the root of the website `localhost:9000/`.
+
+##### Example
+```
+BasePath = "/services/pg_featureserv"
+```
+
+All traffic would then be served from `localhost:9000/services/pg_featurserv`.
 
 #### CORSOrigins
 
