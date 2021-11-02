@@ -93,7 +93,7 @@ func TestRoot(t *testing.T) {
 	var v api.RootInfo
 	json.Unmarshal(body, &v)
 
-	checkLink(t, v.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+"/"+api.RootPageName)
+	checkLink(t, v.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+"//"+api.RootPageName)
 	checkLink(t, v.Links[1], api.RelAlt, api.ContentTypeHTML, urlBase+"/"+api.RootPageName+".html")
 	checkLink(t, v.Links[2], api.RelServiceDesc, api.ContentTypeOpenAPI, urlBase+"/api")
 	checkLink(t, v.Links[3], api.RelConformance, api.ContentTypeJSON, urlBase+"/conformance")
@@ -105,28 +105,6 @@ func TestRoot(t *testing.T) {
 		fmt.Println(v.Title)
 		fmt.Println(v.Description)
 	*/
-}
-
-func TestRootEmptyBasePath(t *testing.T) {
-	basePath = ""
-	setup(basePath)
-	Initialize()
-
-	testCases := []string{
-        "/",
-		"/index.html",
-
-    }
-	for _, tc := range testCases {
-        t.Run(fmt.Sprintf("%s route works with empty base path", tc), func(t *testing.T) {
-            resp := doRequest(t, tc)
-			assert(t, resp.Code == 200, "Status must be 200")
-        })
-    }
-
-	basePath = "/pg_featureserv"
-	setup(basePath)
-	Initialize()
 }
 
 func TestCollectionsResponse(t *testing.T) {
