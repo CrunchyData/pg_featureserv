@@ -33,7 +33,7 @@ const (
 func initRouter(basePath string) *mux.Router {
 	router := mux.NewRouter().
 	StrictSlash(true).
-	PathPrefix("/" + strings.TrimLeft(basePath, "/")).
+	PathPrefix("/" + strings.TrimRight(strings.TrimLeft(basePath, "/"), "/")).
 	Subrouter()
 
 	addRoute(router, "/", handleRoot)

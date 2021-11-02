@@ -19,7 +19,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"path/filepath"
 	"reflect"
 	"runtime"
@@ -49,6 +48,7 @@ type FeatureCollection struct {
 }
 
 const urlBase = "http://test"
+var basePath string
 
 // testConfig is a config spec for using in running tests
 var testConfig conf.Config = conf.Config{
@@ -74,14 +74,66 @@ var testConfig conf.Config = conf.Config{
 
 var catalogMock *data.CatalogMock
 
-func TestMain(m *testing.M) {
+func setup()    {
+	basePath = ""
 	catalogMock = data.CatMockInstance()
 	catalogInstance = catalogMock
 	router = initRouter("/")
 	conf.Configuration = testConfig
 	Initialize()
+}
 
-	os.Exit(m.Run())
+func setup2() {
+	basePath = "/pg_featureserv"
+	fmt.Println(basePath)
+	catalogMock = data.CatMockInstance()
+	catalogInstance = catalogMock
+	router = initRouter(basePath)
+	conf.Configuration = conf.Config{
+		Server: conf.Server{
+			HttpHost:   "0.0.0.0",
+			HttpPort:   9000,
+			UrlBase:    urlBase,
+			BasePath:	basePath,
+			AssetsPath: "../../assets",
+			TransformFunctions: []string{
+				"ST_Centroid",
+				"ST_PointOnSurface",
+			},
+		},
+		Paging: conf.Paging{
+			LimitDefault: 10,
+			LimitMax:     1000,
+		},
+		Metadata: conf.Metadata{
+			Title:       "test",
+			Description: "test",
+		},
+	}
+	fmt.Println(basePath)
+	Initialize()
+}
+
+func TestMain(m *testing.M) {
+	var wrappers = []struct {
+        Setup    func()
+    }{
+        {
+            Setup:    setup,
+        },
+        {
+            Setup:    setup2,
+        },
+    }
+
+    for _, w := range wrappers {
+        w.Setup()
+        code := m.Run()
+
+        if code != 0 {
+            panic("code insn't null")
+        }
+    }
 }
 
 func TestRoot(t *testing.T) {
@@ -418,13 +470,14 @@ func doRequest(t *testing.T, url string) *httptest.ResponseRecorder {
 
 func doRequestStatus(t *testing.T, url string,
 	statusExpected int) *httptest.ResponseRecorder {
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest("GET", basePath+url, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	rr := httptest.NewRecorder()
 	router.ServeHTTP(rr, req)
+	fmt.Println(url)
 
 	// Check the status code
 	//fmt.Println("Status:", rr.Code)
