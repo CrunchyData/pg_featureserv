@@ -19,6 +19,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"path/filepath"
 	"reflect"
 	"runtime"
@@ -48,7 +49,8 @@ type FeatureCollection struct {
 }
 
 const urlBase = "http://test"
-var basePath string
+var basePath = "/pg_featureserv"
+
 
 // testConfig is a config spec for using in running tests
 var testConfig conf.Config = conf.Config{
@@ -56,6 +58,7 @@ var testConfig conf.Config = conf.Config{
 		HttpHost:   "0.0.0.0",
 		HttpPort:   9000,
 		UrlBase:    urlBase,
+		BasePath:	basePath,
 		AssetsPath: "../../assets",
 		TransformFunctions: []string{
 			"ST_Centroid",
@@ -74,20 +77,38 @@ var testConfig conf.Config = conf.Config{
 
 var catalogMock *data.CatalogMock
 
-func setup()    {
-	basePath = ""
+func TestMain(m *testing.M) {
 	catalogMock = data.CatMockInstance()
 	catalogInstance = catalogMock
-	router = initRouter("/")
+	router = initRouter(basePath)
 	conf.Configuration = testConfig
 	Initialize()
+	os.Exit(m.Run())
 }
 
-func setup2() {
-	basePath = "/pg_featureserv"
-	fmt.Println(basePath)
-	catalogMock = data.CatMockInstance()
-	catalogInstance = catalogMock
+func TestRoot(t *testing.T) {
+	resp := doRequest(t, "/")
+	body, _ := ioutil.ReadAll(resp.Body)
+
+	var v api.RootInfo
+	json.Unmarshal(body, &v)
+
+	checkLink(t, v.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+"/"+api.RootPageName)
+	checkLink(t, v.Links[1], api.RelAlt, api.ContentTypeHTML, urlBase+"/"+api.RootPageName+".html")
+	checkLink(t, v.Links[2], api.RelServiceDesc, api.ContentTypeOpenAPI, urlBase+"/api")
+	checkLink(t, v.Links[3], api.RelConformance, api.ContentTypeJSON, urlBase+"/conformance")
+	checkLink(t, v.Links[4], api.RelData, api.ContentTypeJSON, urlBase+"/collections")
+	checkLink(t, v.Links[5], api.RelFunctions, api.ContentTypeJSON, urlBase+"/functions")
+
+	/*
+		fmt.Println("Response ==>")
+		fmt.Println(v.Title)
+		fmt.Println(v.Description)
+	*/
+}
+
+func TestRootEmptyBasePath(t *testing.T) {
+	basePath = ""
 	router = initRouter(basePath)
 	conf.Configuration = conf.Config{
 		Server: conf.Server{
@@ -110,51 +131,19 @@ func setup2() {
 			Description: "test",
 		},
 	}
-	fmt.Println(basePath)
 	Initialize()
-}
 
-func TestMain(m *testing.M) {
-	var wrappers = []struct {
-        Setup    func()
-    }{
-        {
-            Setup:    setup,
-        },
-        {
-            Setup:    setup2,
-        },
+	testCases := []string{
+        "/",
+		"/index.html",
+
     }
-
-    for _, w := range wrappers {
-        w.Setup()
-        code := m.Run()
-
-        if code != 0 {
-            panic("code insn't null")
-        }
+	for _, tc := range testCases {
+        t.Run(fmt.Sprintf("%s route works with empty base path", tc), func(t *testing.T) {
+            resp := doRequest(t, tc)
+			assert(t, resp.Code == 200, "Status must be 200")
+        })
     }
-}
-
-func TestRoot(t *testing.T) {
-	resp := doRequest(t, "/")
-	body, _ := ioutil.ReadAll(resp.Body)
-
-	var v api.RootInfo
-	json.Unmarshal(body, &v)
-
-	checkLink(t, v.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+"/"+api.RootPageName)
-	checkLink(t, v.Links[1], api.RelAlt, api.ContentTypeHTML, urlBase+"/"+api.RootPageName+".html")
-	checkLink(t, v.Links[2], api.RelServiceDesc, api.ContentTypeOpenAPI, urlBase+"/api")
-	checkLink(t, v.Links[3], api.RelConformance, api.ContentTypeJSON, urlBase+"/conformance")
-	checkLink(t, v.Links[4], api.RelData, api.ContentTypeJSON, urlBase+"/collections")
-	checkLink(t, v.Links[5], api.RelFunctions, api.ContentTypeJSON, urlBase+"/functions")
-
-	/*
-		fmt.Println("Response ==>")
-		fmt.Println(v.Title)
-		fmt.Println(v.Description)
-	*/
 }
 
 func TestCollectionsResponse(t *testing.T) {
@@ -477,7 +466,6 @@ func doRequestStatus(t *testing.T, url string,
 
 	rr := httptest.NewRecorder()
 	router.ServeHTTP(rr, req)
-	fmt.Println(url)
 
 	// Check the status code
 	//fmt.Println("Status:", rr.Code)
