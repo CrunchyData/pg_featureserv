@@ -51,39 +51,39 @@ type FeatureCollection struct {
 const urlBase = "http://test"
 var basePath = "/pg_featureserv"
 
-
-// testConfig is a config spec for using in running tests
-var testConfig conf.Config = conf.Config{
-	Server: conf.Server{
-		HttpHost:   "0.0.0.0",
-		HttpPort:   9000,
-		UrlBase:    urlBase,
-		BasePath:	basePath,
-		AssetsPath: "../../assets",
-		TransformFunctions: []string{
-			"ST_Centroid",
-			"ST_PointOnSurface",
-		},
-	},
-	Paging: conf.Paging{
-		LimitDefault: 10,
-		LimitMax:     1000,
-	},
-	Metadata: conf.Metadata{
-		Title:       "test",
-		Description: "test",
-	},
-}
-
 var catalogMock *data.CatalogMock
 
 func TestMain(m *testing.M) {
 	catalogMock = data.CatMockInstance()
 	catalogInstance = catalogMock
-	router = initRouter(basePath)
-	conf.Configuration = testConfig
+	setup(basePath)
 	Initialize()
 	os.Exit(m.Run())
+}
+
+func setup(path string){
+	router = initRouter(path)
+	conf.Configuration = conf.Config{
+		Server: conf.Server{
+			HttpHost:   "0.0.0.0",
+			HttpPort:   9000,
+			UrlBase:    urlBase,
+			BasePath:	path,
+			AssetsPath: "../../assets",
+			TransformFunctions: []string{
+				"ST_Centroid",
+				"ST_PointOnSurface",
+			},
+		},
+		Paging: conf.Paging{
+			LimitDefault: 10,
+			LimitMax:     1000,
+		},
+		Metadata: conf.Metadata{
+			Title:       "test",
+			Description: "test",
+		},
+	}
 }
 
 func TestRoot(t *testing.T) {
@@ -109,28 +109,7 @@ func TestRoot(t *testing.T) {
 
 func TestRootEmptyBasePath(t *testing.T) {
 	basePath = ""
-	router = initRouter(basePath)
-	conf.Configuration = conf.Config{
-		Server: conf.Server{
-			HttpHost:   "0.0.0.0",
-			HttpPort:   9000,
-			UrlBase:    urlBase,
-			BasePath:	basePath,
-			AssetsPath: "../../assets",
-			TransformFunctions: []string{
-				"ST_Centroid",
-				"ST_PointOnSurface",
-			},
-		},
-		Paging: conf.Paging{
-			LimitDefault: 10,
-			LimitMax:     1000,
-		},
-		Metadata: conf.Metadata{
-			Title:       "test",
-			Description: "test",
-		},
-	}
+	setup(basePath)
 	Initialize()
 
 	testCases := []string{
@@ -144,6 +123,10 @@ func TestRootEmptyBasePath(t *testing.T) {
 			assert(t, resp.Code == 200, "Status must be 200")
         })
     }
+
+	basePath = "/pg_featureserv"
+	setup(basePath)
+	Initialize()
 }
 
 func TestCollectionsResponse(t *testing.T) {
