@@ -31,6 +31,8 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 	}
 	log.Debugf("API base path = %v", apiBase)
 
+	servername := u.Scheme + "://" + u.Host
+
 	paramCollectionID := openapi3.ParameterRef{
 		Value: &openapi3.Parameter{
 			Description:     "ID of collection.",
@@ -151,6 +153,11 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 				Name: "Apache 2.0",
 				URL:  "http://www.apache.org/licenses/LICENSE-2.0",
 			},
+		},
+		Servers: openapi3.Servers{
+		 &openapi3.Server{
+			 URL: servername,
+		 },
 		},
 		Paths: openapi3.Paths{
 			apiBase: &openapi3.PathItem{
