@@ -176,6 +176,9 @@ func newCatalogMock() CatalogMock {
 	return catMock
 }
 
+func (cat *CatalogMock) SetIncludeExclude(includeList []string, excludeList []string) {
+}
+
 func (cat *CatalogMock) Close() {
 	// this is a no-op
 }

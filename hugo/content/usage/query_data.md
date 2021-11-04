@@ -93,23 +93,23 @@ is set by the configuration parameter `LimitDefault`.
 The maximum number of features which can be requested in the `limit` parameter
 is set by the configuration parameters `LimitMax`.
 
-### Ordering
+### Sorting
 
-The result set can be ordered by any property it contains.
+The result set can be sorted by any property it contains.
 This allows performing "greatest N" or "smallest N" queries.
 
-* `orderBy=PROP` orders results by `PROP` in ascending order
+* `sortby=PROP` orders results by `PROP` in ascending order
 
-The sort order can be specified by appending `:A` (ascending)
-or `:D` (descending) to the ordering property name.
+The sort order can be specified by prefixing `+` (ascending)
+or `-` (descending) to the ordering property name.
 The default is ascending order.
 
-* `orderBy=PROP:A` orders results by `PROP` in ascending order
-* `orderBy=PROP:D` orders results by `PROP` in descending order
+* `sortby=+PROP` orders results by `PROP` in ascending order
+* `sortby=-PROP` orders results by `PROP` in descending order
 
 #### Example
 ```
-http://localhost:9000/collections/ne.countries/items?orderBy=name
+http://localhost:9000/collections/ne.countries/items?sortby=name
 ```
 
 

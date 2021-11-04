@@ -6,8 +6,16 @@
 ### New Features
 
 * Support for HTTPS
-* Provide the `groupBy` query parameter, and ability to aggregate query features
+* Provide the `groupby` query parameter, and ability to aggregate query features
+* Support OGC API `sortby` query parameter (`orderBy` is deprecated)
+* Support Postgres data types: JSON, array of text/int/float/numeric
 * Add support for partitioned tables and foreign tables
+* Add configuration to include/exclude published schemas and tables
+* Add configuration for web UI map view basemap URL template
+
+### Performance Improvements
+
+* Improve performance of page template loading using caching
 
 ### Bug Fixes
 
@@ -19,6 +27,11 @@
 * Fix landing page document to include links to resources `service-desc` and `conformance`
 * Fix links in JSON responses to not include JSON format (required for QGIS)
 * Fix function feature requests to respect the `offset` parameter (#65)
+* Fix Swagger request to work under HTTPS (#71)
+* Fix Collection description to be populated from table description (#70)
+* Fix output of NULL geometry values to be JSON null
+* Fix `offset` parameter to allow any non-negative value
+* Fix encoding of primary key column names in item requests (#80)
 
 ## Version 1.2
 *Released: 2020 Dec 1*

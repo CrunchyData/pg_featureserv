@@ -44,7 +44,7 @@ func parseRequestParams(r *http.Request) (api.RequestParam, error) {
 	param.Limit = limit
 
 	// --- offset parameter
-	offset, err := parseInt(paramValues, api.ParamOffset, 0, conf.Configuration.Paging.LimitMax, 0)
+	offset, err := parseInt(paramValues, api.ParamOffset, 0, -1, 0)
 	if err != nil {
 		return param, err
 	}
@@ -71,12 +71,19 @@ func parseRequestParams(r *http.Request) (api.RequestParam, error) {
 	}
 	param.GroupBy = groupBy
 
-	// --- orderBy parameter
+	// --- orderBy parameter (DEPRECATED)
 	orderBy, err := parseOrderBy(paramValues)
 	if err != nil {
 		return param, err
 	}
-	param.OrderBy = orderBy
+	param.SortBy = orderBy
+
+	// --- sortBy parameter
+	sortBy, err := parseSortBy(paramValues)
+	if err != nil {
+		return param, err
+	}
+	param.SortBy = sortBy
 
 	// --- precision parameter
 	precision, err := parseInt(paramValues, api.ParamPrecision, 0, 20, -1)
@@ -117,7 +124,7 @@ func parseInt(values api.NameValMap, key string, minVal int, maxVal int, default
 	if val < minVal {
 		val = minVal
 	}
-	if val > maxVal {
+	if maxVal >= 0 && val > maxVal {
 		val = maxVal
 	}
 	return val, nil
@@ -209,9 +216,33 @@ func parseGroupBy(values api.NameValMap) ([]string, error) {
 	return namesRaw, nil
 }
 
-// parseOrderBy determines an order by array
-func parseOrderBy(values api.NameValMap) ([]data.Ordering, error) {
-	var orderBy []data.Ordering
+// parseSortBy determines an Sorting array
+func parseSortBy(values api.NameValMap) ([]data.Sorting, error) {
+	var sorting []data.Sorting
+	val := values[api.ParamSortBy]
+	if len(val) < 1 {
+		return sorting, nil
+	}
+	valLow := strings.ToLower(val)
+	sortCols := strings.Split(valLow, ",")
+	sortCol := sortCols[0]
+	isDesc := false
+	name := sortCol
+	if strings.HasPrefix(name, "+") {
+		name = name[1:]
+		isDesc = false
+	}
+	if strings.HasPrefix(name, "-") {
+		name = name[1:]
+		isDesc = true
+	}
+	sorting = append(sorting, data.Sorting{Name: name, IsDesc: isDesc})
+	return sorting, nil
+}
+
+// parseOrderBy determines an order by array (DEPRECATED)
+func parseOrderBy(values api.NameValMap) ([]data.Sorting, error) {
+	var orderBy []data.Sorting
 	val := values[api.ParamOrderBy]
 	if len(val) < 1 {
 		return orderBy, nil
@@ -228,7 +259,7 @@ func parseOrderBy(values api.NameValMap) ([]data.Ordering, error) {
 			return nil, err
 		}
 	}
-	orderBy = append(orderBy, data.Ordering{Name: name, IsDesc: isDesc})
+	orderBy = append(orderBy, data.Sorting{Name: name, IsDesc: isDesc})
 	return orderBy, nil
 }
 
@@ -366,7 +397,7 @@ func createQueryParams(param *api.RequestParam, colNames []string) *data.QueryPa
 		Offset:        param.Offset,
 		Bbox:          param.Bbox,
 		GroupBy:       param.GroupBy,
-		OrderBy:       param.OrderBy,
+		SortBy:        param.SortBy,
 		Precision:     param.Precision,
 		TransformFuns: param.TransformFuns,
 	}

@@ -46,7 +46,7 @@ FROM pg_class c
 JOIN pg_namespace n ON (c.relnamespace = n.oid)
 JOIN pg_attribute a ON (a.attrelid = c.oid)
 JOIN pg_type t ON (a.atttypid = t.oid)
-LEFT JOIN pg_description d ON (c.oid = d.objoid)
+LEFT JOIN pg_description d ON (c.oid = d.objoid AND d.objsubid = 0)
 LEFT JOIN pg_index i ON (c.oid = i.indrelid AND i.indisprimary
 AND i.indnatts = 1)
 LEFT JOIN pg_attribute ia ON (ia.attrelid = i.indexrelid)
@@ -69,6 +69,7 @@ proargs AS (
 	WHERE n.nspname = 'postgisftw'
 		AND array_length(p.proargnames, 1) = array_length(p.proargmodes, 1)
 		AND array_length(p.proargmodes, 1) = array_length(p.proallargtypes, 1)
+		AND has_schema_privilege(n.oid, 'usage')
 		AND has_function_privilege(Format('%s.%s(%s)', n.nspname, p.proname, oidvectortypes(proargtypes)), 'execute')
 ),
 proargarrays AS (
@@ -124,7 +125,7 @@ func sqlFeatures(tbl *Table, param *QueryParam) (string, []interface{}) {
 	attrFilter, attrVals := sqlAttrFilter(param.Filter)
 	sqlWhere := sqlWhere(bboxFilter, attrFilter)
 	sqlGroupBy := sqlGroupBy(param.GroupBy)
-	sqlOrderBy := sqlOrderBy(param.OrderBy)
+	sqlOrderBy := sqlOrderBy(param.SortBy)
 	sqlLimitOffset := sqlLimitOffset(param.Limit, param.Offset)
 	sql := fmt.Sprintf(sqlFmtFeatures, geomCol, propCols, tbl.Schema, tbl.Table, sqlWhere, sqlGroupBy, sqlOrderBy, sqlLimitOffset)
 	return sql, attrVals
@@ -170,7 +171,7 @@ func sqlColExpr(name string, dbtype string) string {
 	return name
 }
 
-const sqlFmtFeature = "SELECT %v %v FROM \"%s\".\"%s\" WHERE %v = $1 LIMIT 1"
+const sqlFmtFeature = "SELECT %v %v FROM \"%s\".\"%s\" WHERE \"%v\" = $1 LIMIT 1"
 
 func sqlFeature(tbl *Table, param *QueryParam) string {
 	geomCol := sqlGeomCol(tbl.GeometryColumn, param)
@@ -248,7 +249,7 @@ func sqlPrecisionArg(precision int) string {
 
 const sqlFmtOrderBy = `ORDER BY "%v" %v`
 
-func sqlOrderBy(ordering []Ordering) string {
+func sqlOrderBy(ordering []Sorting) string {
 	if len(ordering) <= 0 {
 		return ""
 	}
@@ -305,7 +306,7 @@ func sqlGeomFunction(fn *Function, args map[string]string, propCols []string, pa
 	sqlPropCols := sqlColList(propCols, fn.Types, true)
 	bboxFilter := sqlBBoxGeoFilter(fn.GeometryColumn, param.Bbox)
 	sqlWhere := sqlWhere(bboxFilter, "")
-	sqlOrderBy := sqlOrderBy(param.OrderBy)
+	sqlOrderBy := sqlOrderBy(param.SortBy)
 	sqlLimitOffset := sqlLimitOffset(param.Limit, param.Offset)
 	sql := fmt.Sprintf(sqlFmtGeomFunction, sqlGeomCol, sqlPropCols, fn.Schema, fn.Name, sqlArgs, sqlWhere, sqlOrderBy, sqlLimitOffset)
 	return sql, argVals
@@ -316,7 +317,7 @@ const sqlFmtFunction = "SELECT %v FROM \"%s\".\"%s\"( %v ) %v %s;"
 func sqlFunction(fn *Function, args map[string]string, propCols []string, param *QueryParam) (string, []interface{}) {
 	sqlArgs, argVals := sqlFunctionArgs(fn, args)
 	sqlPropCols := sqlColList(propCols, fn.Types, false)
-	sqlOrderBy := sqlOrderBy(param.OrderBy)
+	sqlOrderBy := sqlOrderBy(param.SortBy)
 	sqlLimitOffset := sqlLimitOffset(param.Limit, param.Offset)
 	sql := fmt.Sprintf(sqlFmtFunction, sqlPropCols, fn.Schema, fn.Name, sqlArgs, sqlOrderBy, sqlLimitOffset)
 	return sql, argVals

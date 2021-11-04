@@ -1,6 +1,7 @@
 # `pg-featureserv` Functionality
 
-This is a list of current and planned functionality.  It also includes OGC API for Features core requirements (although some of them are not on the current development roadmap).
+This is a list of current and planned functionality.
+It includes [*OGC API - Features*](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html) core requirements (although some of them are not on the current development roadmap).
 
 ## API
 
@@ -37,17 +38,17 @@ This is a list of current and planned functionality.  It also includes OGC API f
 - [ ] `bbox-crs`
 - [ ] `datetime`
 - [x] `properties` list (to restrict attributes in response)
-- [ ] filtering by property value ( `name=value`, as per [spec sec. 7.15.5](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html#_parameters_for_filtering_on_feature_properties) )
+- [x] `sortby` to sort output by a property
+  - `sortby=name`, `sortby=+name`, `sortby=-name`
+- [x] filtering by property value ( `name=value`, as per [spec sec. 7.15.5](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html#_parameters_for_filtering_on_feature_properties) )
 
 ### Query parameters - Extension
-- [x] `orderBy` to order output by a property
-  - `orderBy=name`, `orderBy=name:A`, `orderBy=name:D`
 - [x] `precision` to set output precision of GeoJSON coordinates
   - `precision=n`
 - [x] `transform` to specify geometry transformations
   - `transform=fn,arg,arg|fn,arg`
 - [ ] convert transform function names to `ST_` equivalents
-
+- [x] `groupBy=colname` to group by column (used with a `transform` spatial aggregate function)
 - [ ] `f` parameter for formats?  (e.g. `f=json`, `f=html`)
 
 ### Query parameters - Functions
@@ -72,17 +73,28 @@ This is a list of current and planned functionality.  It also includes OGC API f
 - [x] map display of single feature
 - [x] attribute display of single feature
 - [x] function metadata
-- [x] map display for geometry functions (`items` page)
 - [ ] text display for non-geometry functions (`items` page)
-- [x] UI for `limit` parameter on `items` page
-- [x] UI for `offset` parameter on `items` page
-- [x] UI for `bbox` parameter on `items` page
-- [x] UI for setting function parameters on `items` page
+
+### Map UI
+- [x] map display for features (`items` page)
+- [x] map display for geometry functions (`items` page)
+- [x] map panel showing features attributes
+- [x] control for `limit` parameter
+- [x] control for `offset` parameter
+- [x] control for `bbox` parameter
+- [x] control for setting function parameter values
+- [x] configurable base map URL
 
 ## Database
 
 - [x] PostGIS 2.x `AsGeoJSON` geometry with attribute encoding
 - [ ] PostGIS 3.0 `ST_AsGeoJSON` record
+
+### Data Types
+- [x] common scalar types: text, int, float, numeric
+- [x] Arrays of text, int, float, numeric
+- [x] JSON
+- [x] Other types converted to text representation
 
 ### Tables / Views
 - [x] table column schema
@@ -91,6 +103,7 @@ This is a list of current and planned functionality.  It also includes OGC API f
 - [x] support materialized views
 - [x] read property descriptions from table/view column comments
 - [ ] read table estimated and actual extents lazily
+- [X] include/exclude published schemas and tables via configuration
 
 ### Functions
 - [x] support functions returning geometry

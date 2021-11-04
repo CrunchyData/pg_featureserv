@@ -32,21 +32,29 @@ import (
 
 // Constants
 const (
-	JSONTypeString  = "string"
-	JSONTypeNumber  = "number"
-	JSONTypeBoolean = "boolean"
+	JSONTypeString       = "string"
+	JSONTypeNumber       = "number"
+	JSONTypeBoolean      = "boolean"
+	JSONTypeJSON         = "json"
+	JSONTypeBooleanArray = "boolean[]"
+	JSONTypeStringArray  = "string[]"
+	JSONTypeNumberArray  = "number[]"
 
-	PGTypeBool     = "bool"
-	PGTypeNumeric  = "numeric"
-	PGTypeGeometry = "geometry"
+	PGTypeBool      = "bool"
+	PGTypeNumeric   = "numeric"
+	PGTypeJSON      = "json"
+	PGTypeGeometry  = "geometry"
+	PGTypeTextArray = "_text"
 )
 
 type catalogDB struct {
-	dbconn      *pgxpool.Pool
-	tables      []*Table
-	tableMap    map[string]*Table
-	functions   []*Function
-	functionMap map[string]*Function
+	dbconn        *pgxpool.Pool
+	tableIncludes map[string]string
+	tableExcludes map[string]string
+	tables        []*Table
+	tableMap      map[string]*Table
+	functions     []*Function
+	functionMap   map[string]*Function
 }
 
 var isStartup bool
@@ -120,6 +128,21 @@ func dbConfig() *pgxpool.Config {
 	dbconfig.ConnConfig.LogLevel = pgxLevel
 
 	return dbconfig
+}
+
+func (cat *catalogDB) SetIncludeExclude(includeList []string, excludeList []string) {
+	//-- include schemas / tables
+	cat.tableIncludes = make(map[string]string)
+	for _, name := range includeList {
+		nameLow := strings.ToLower(name)
+		cat.tableIncludes[nameLow] = nameLow
+	}
+	//-- excluded schemas / tables
+	cat.tableExcludes = make(map[string]string)
+	for _, name := range excludeList {
+		nameLow := strings.ToLower(name)
+		cat.tableExcludes[nameLow] = nameLow
+	}
 }
 
 func (cat *catalogDB) Close() {
@@ -222,7 +245,7 @@ func (cat *catalogDB) refreshTables(force bool) {
 }
 
 func (cat *catalogDB) loadTables() {
-	cat.tableMap = readTables(cat.dbconn)
+	cat.tableMap = cat.readTables(cat.dbconn)
 	cat.tables = tablesSorted(cat.tableMap)
 }
 
@@ -238,7 +261,7 @@ func tablesSorted(tableMap map[string]*Table) []*Table {
 	return lsort
 }
 
-func readTables(db *pgxpool.Pool) map[string]*Table {
+func (cat *catalogDB) readTables(db *pgxpool.Pool) map[string]*Table {
 	log.Debugf("Load table catalog:\n%v", sqlTables)
 	rows, err := db.Query(context.Background(), sqlTables)
 	if err != nil {
@@ -247,7 +270,9 @@ func readTables(db *pgxpool.Pool) map[string]*Table {
 	tables := make(map[string]*Table)
 	for rows.Next() {
 		tbl := scanTable(rows)
-		tables[tbl.ID] = tbl
+		if cat.isIncluded(tbl) {
+			tables[tbl.ID] = tbl
+		}
 	}
 	// Check for errors from iterating over rows.
 	if err := rows.Err(); err != nil {
@@ -255,6 +280,31 @@ func readTables(db *pgxpool.Pool) map[string]*Table {
 	}
 	rows.Close()
 	return tables
+}
+
+func (cat *catalogDB) isIncluded(tbl *Table) bool {
+	//--- if no includes defined, always include
+	isIncluded := true
+	if len(cat.tableIncludes) > 0 {
+		isIncluded = isMatchSchemaTable(tbl, cat.tableIncludes)
+	}
+	isExcluded := false
+	if len(cat.tableExcludes) > 0 {
+		isExcluded = isMatchSchemaTable(tbl, cat.tableExcludes)
+	}
+	return isIncluded && !isExcluded
+}
+
+func isMatchSchemaTable(tbl *Table, list map[string]string) bool {
+	schemaLow := strings.ToLower(tbl.Schema)
+	if _, ok := list[schemaLow]; ok {
+		return true
+	}
+	idLow := strings.ToLower(tbl.ID)
+	if _, ok := list[idLow]; ok {
+		return true
+	}
+	return false
 }
 
 func scanTable(rows pgx.Rows) *Table {
@@ -381,7 +431,13 @@ func scanFeature(rows pgx.Rows, idColIndex int, propNames []string) string {
 	}
 	//fmt.Println(vals)
 	//--- geom value is expected to be a GeoJSON string
-	geom = vals[0].(string)
+	//--- convert NULL to an empty string
+	if vals[0] != nil {
+		geom = vals[0].(string)
+	} else {
+		geom = ""
+	}
+
 	propOffset := 1
 	if idColIndex >= 0 {
 		id = fmt.Sprintf("%v", vals[idColIndex+propOffset])
@@ -402,17 +458,55 @@ func extractProperties(vals []interface{}, propOffset int, propNames []string) m
 	return props
 }
 
-// toJSONValue convert PG types to JSON values if needed
+// toJSONValue convert PG types to JSON values
 func toJSONValue(value interface{}) interface{} {
+	//fmt.Printf("toJSONValue: %v\n", reflect.TypeOf(value))
 	switch v := value.(type) {
 	case *pgtype.Numeric:
 		var num float64
 		// TODO: handle error
 		v.AssignTo(&num)
 		return num
+	case *pgtype.JSON:
+		var jsonval string
+		v.AssignTo(&jsonval)
+		return json.RawMessage(jsonval)
+	case *pgtype.TextArray:
+		var strarr []string
+		v.AssignTo(&strarr)
+		return strarr
+	case *pgtype.BoolArray:
+		var valarr []bool
+		v.AssignTo(&valarr)
+		return valarr
+	case *pgtype.Int2Array:
+		var numarr []int16
+		v.AssignTo(&numarr)
+		return numarr
+	case *pgtype.Int4Array:
+		var numarr []int32
+		v.AssignTo(&numarr)
+		return numarr
+	case *pgtype.Int8Array:
+		var numarr []int64
+		v.AssignTo(&numarr)
+		return numarr
+	case *pgtype.Float4Array:
+		var numarr []float64
+		v.AssignTo(&numarr)
+		return numarr
+	case *pgtype.Float8Array:
+		var numarr []float64
+		v.AssignTo(&numarr)
+		return numarr
+	case *pgtype.NumericArray:
+		var numarr []float64
+		v.AssignTo(&numarr)
+		return numarr
 		// TODO: handle other conversions?
 	}
 	// for now all other values are returned  as is
+	// this is only safe if the values are text!
 	return value
 }
 
@@ -425,21 +519,31 @@ func toJSONTypeFromPGArray(pgTypes []string) []string {
 }
 
 func toJSONTypeFromPG(pgType string) string {
-	if strings.HasPrefix(pgType, "int") {
+	//fmt.Printf("toJSONTypeFromPG: %v\n", pgType)
+	if strings.HasPrefix(pgType, "int") || strings.HasPrefix(pgType, "float") {
 		return JSONTypeNumber
 	}
-	if strings.HasPrefix(pgType, "float") {
-		return JSONTypeNumber
+	if strings.HasPrefix(pgType, "_int") || strings.HasPrefix(pgType, "_float") {
+		return JSONTypeNumberArray
+	}
+	if strings.HasPrefix(pgType, "_bool") {
+		return JSONTypeBooleanArray
 	}
 	switch pgType {
 	case PGTypeNumeric:
 		return JSONTypeNumber
 	case PGTypeBool:
 		return JSONTypeBoolean
+	case PGTypeJSON:
+		return JSONTypeJSON
+	case PGTypeTextArray:
+		return JSONTypeStringArray
 	// hack to allow displaying geometry type
 	case PGTypeGeometry:
 		return PGTypeGeometry
 	}
+	// default is string
+	// this forces conversion to text in SQL query
 	return JSONTypeString
 }
 
@@ -451,7 +555,12 @@ type featureData struct {
 }
 
 func makeFeatureJSON(id string, geom string, props map[string]interface{}) string {
-	geomRaw := json.RawMessage(geom)
+	//--- convert empty geom string to JSON null
+	var geomRaw json.RawMessage
+	if geom != "" {
+		geomRaw = json.RawMessage(geom)
+	}
+
 	featData := featureData{
 		Type:  "Feature",
 		ID:    id,

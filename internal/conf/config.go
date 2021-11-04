@@ -53,6 +53,7 @@ type Config struct {
 	Paging   Paging
 	Metadata Metadata
 	Database Database
+	Website  Website
 }
 
 // Server config
@@ -82,12 +83,18 @@ type Database struct {
 	DbConnection          string
 	DbPoolMaxConnLifeTime string
 	DbPoolMaxConns        int
+	TableIncludes         []string
+	TableExcludes         []string
 }
 
 // Metadata config
 type Metadata struct {
 	Title       string
 	Description string
+}
+
+type Website struct {
+	BasemapUrl string
 }
 
 // IsHTTPSEnabled tests whether HTTPS is enabled

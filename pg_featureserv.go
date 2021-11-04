@@ -83,6 +83,11 @@ func main() {
 	} else {
 		catalog = data.CatDBInstance()
 	}
+	//tableIncludes := []string{"bc.voting_area"}
+	includes := conf.Configuration.Database.TableIncludes
+	excludes := conf.Configuration.Database.TableExcludes
+	catalog.SetIncludeExclude(includes, excludes)
+
 	if flagTestModeOn || flagDevModeOn {
 		ui.HTMLDynamicLoad = true
 		log.Info("Running in development mode")

@@ -43,17 +43,22 @@ and geography types, which support text representations of
 [WKT or WKB](https://postgis.net/docs/manual-3.0/using_postgis_dbmanagement.html#OpenGISWKBWKT).
 Input parameter names are exposed as query parameters,
 so you should avoid using names which are existing API qeuery parameters.
+It is a nice idea to include `DEFAULT` values for parameters if possible,
+since this allows them to be omitted in requests and still provide results.
 
 A function must return a set of records containing one or more
 columns, of any Postgres type.
-A **spatial function** is one which returns a column of type `geometry` or `geography`.
-Output from spatial functions is returned as GeoJSON datasets, while output from non-spatial functions is returned as JSON datasets.
+A **spatial function** is one whose result includes a column of type `geometry` or `geography`.
+Output from spatial functions is returned as GeoJSON datasets.
+Output from non-spatial functions is returned as JSON datasets.
 
 Geometry values returned by a function can be in any coordinate system,
 but must have their SRID set to the appropriate value.
 If required, they are reprojected to geographic coordinates (SRID = 4326) in the output GeoJSON.
 If geometry is queried from an existing table, the SRID may already be set;
 otherwise the function should set it explicitly.
+
+The comments on a function provides the metadata description.
 
 The example below illustrates
 the basic structure of a spatial set-returning function.

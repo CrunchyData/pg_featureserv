@@ -8,11 +8,11 @@ weight: 100
 Following the OGC Features information model, the service API publishes
 PostGIS tables and views as **feature collections**.
 
-The available feature collections are listed.
+The service API allows listing available feature collections.
 Each feature collection can report metadata about its definition,
 and can be queried to return data sets of features.
-It is also possible to query individual features in tables which have
-defined primary keys.
+For tables which have a primary key defined
+it is possible to query individual features by id.
 
 ## Publish tables and views as feature collections
 
@@ -21,30 +21,43 @@ which are visible in the database.
 
 Spatial tables and views are those which:
 
-* include a geometry column;
-* declare a geometry type; and,
-* declare an SRID (spatial reference ID).
+* include a **geometry column**;
+* declare a **geometry type**; and,
+* declare an **SRID** (spatial reference ID).
 
-#### Example of a spatial table
+Non-spatial columns are published as feature properties.
+The following Postgres column data types are supported:
+
+* `text`
+* `integer`, `smallint`, `bigint`, `double precision`, `real`, `numeric`
+* `boolean`
+* `text[]`
+* `integer[]`, `smallint[]`, `bigint[]`, `double precision[]`, `real[]`, `numeric[]`
+* `boolean[]`
+* `json`
+* other data types may be supported, with output as strings
+
+
+#### *Example of a spatial table*
 
 Here is a simple example of defining a spatial table
-which contains polygon geometries using coordinate system SRID = 4326.
+which contains polygon geometries using coordinate system SRID = 4326,
+a primary key column,
+and two attribute columns `pid` and `address`.
 (See the PostGIS documentation for more information about
 [creating spatial tables](https://postgis.net/docs/manual-3.0/using_postgis_dbmanagement.html#Create_Spatial_Table)
 and using [spatial reference systems](https://postgis.net/docs/manual-3.0/using_postgis_dbmanagement.html#spatial_ref_sys).)
 
 ```sql
 CREATE TABLE mytable (
+    id integer primary key,
     geom Geometry(Polygon, 4326),
     pid text,
     address text
 );
 ```
 
-Tables and views are visible when they are available for access
-based on the database access permissions defined for the service database user (role).
-See the [Security](./security/) section for examples of setting role privileges.
-
+#### Spatial Views
 If a view directly uses the geometry column of an underlying table,
 the spatial column metadata is inherited for the view.
 But if a view column is defined as the result of a spatial function,
@@ -52,23 +65,26 @@ then the column must be explicitly cast to a geometry type providing the type an
 Depending on the spatial function used, it may also be necessary to
 explicitly set the SRID of the created geometry.
 
-#### Example of a view definition
+#### *Example of a spatial view definition*
 ```sql
 CREATE VIEW my_points AS
-  SELECT ST_SetSRID( ST_MakePoint( lon, lat ), 4326)::geometry(Point, 4326)
+  SELECT ST_SetSRID(
+           ST_MakePoint( lon, lat ), 4326)::geometry(Point, 4326) AS geom
   FROM my_geo_table AS t;
 ```
 
+#### Feature collection metadata
+
 The service uses the database catalog information to provide metadata about a feature collection backed by a table or view:
 
-* The feature collection ID is the schema-qualified name of the table or view.
-* The feature collection description is provided by the comment on the table or view.
-* The feature geometry is provided by the spatial column of the table or view.
-* The identifier for features is provided by the primary key column for a table (if any).
-* The property names and types are provided by the non-spatial columns of the table or view.
-* The description for properties is provided by the comments on table/view columns.
+* The **feature collection ID** is the schema-qualified name of the table or view.
+* The **feature collection description** is provided by the comment on the table or view.
+* The **feature geometry** is provided by the spatial column of the table or view.
+* The **identifier** for features is provided by the primary key column for a table (if any).
+* The **property names and types** are provided by the non-spatial columns of the table or view.
+* The **description for properties** is provided by the column comment.
 
-#### Example of comments on a table
+#### *Example of comments on a table*
 ```sql
 COMMENT ON TABLE mytable IS 'This is my spatial table';
 COMMENT ON COLUMN mytable.geom IS 'The geometry column contains polygons in SRS 4326';
@@ -76,11 +92,18 @@ COMMENT ON COLUMN mytable.pid IS 'The Parcel Identifier is the primary key';
 COMMENT ON COLUMN mytable.address IS 'The address of the Parcel';
 ```
 
+#### Access Control
+
+Tables and views are visible when they are available for access
+based on the database access permissions defined for the service database user (role).
+See the [Security](./security/) section for examples of setting role privileges.
+
+
 ## List feature collections
 
 The path `/collections` returns a JSON document containing a list of the feature collections published by the service.
 
-#### Example
+#### *Example*
 ```
 http://localhost:9000/collections
 ```
@@ -101,7 +124,7 @@ the metadata for a feature collection.
 `{coll-name}` is the schema-qualified name of the database table or view
 backing the feature collection.
 
-#### Example
+#### *Example*
 ```
 http://localhost:9000/collections/ne.admin_0_countries
 ```

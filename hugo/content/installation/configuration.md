@@ -84,6 +84,10 @@ LimitMax = 10000
 #Title = "pg-featureserv"
 # Description of this service
 #Description = "Crunchy Data Feature Server for PostGIS"
+
+[Website]
+# URL for the map view basemap
+BasemapUrl = "https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png"
 ```
 
 ### Configuration options
@@ -185,3 +189,8 @@ Appears in the HTML web pages, JSON responses, and the log.
 
 The description for the service.
 Appears in the HTML web pages and JSON responses.
+
+#### BasemapUrl
+
+The URL template for the basemap used in the web UI map views.
+Must be a URL template suitable for the OpenLayers OSM class.
