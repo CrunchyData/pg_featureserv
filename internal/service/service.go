@@ -49,13 +49,13 @@ func createServers() {
 	// Use HTTPS only if server certificate and private key files specified
 	isTLSEnabled = conf.Configuration.IsTLSEnabled()
 
-	log.Infof("Serving HTTP  at %s", bindAddress)
+	log.Infof("Serving HTTP  at %s", formatBaseURL("http://", bindAddress, confServ.BasePath))
 	if isTLSEnabled {
-		log.Infof("Serving HTTPS at %s", bindAddressTLS)
+		log.Infof("Serving HTTPS at %s", formatBaseURL("https://", bindAddressTLS, confServ.BasePath))
 	}
 	log.Infof("CORS Allowed Origins: %v\n", conf.Configuration.Server.CORSOrigins)
 
-	router = initRouter()
+	router = initRouter(confServ.BasePath)
 
 	// writeTimeout is slighlty longer than request timeout to allow writing error response
 	timeoutSecRequest := conf.Configuration.Server.WriteTimeoutSec
