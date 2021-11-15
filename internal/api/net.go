@@ -39,26 +39,6 @@ const (
 	FormatHTML = "html"
 )
 
-// ContentType gets the contentType for a data format
-func ContentType(format string) string {
-	switch format {
-	case FormatJSON:
-		return ContentTypeJSON
-	case FormatHTML:
-		return ContentTypeHTML
-	}
-	return ""
-}
-
-// PathFormat gets the data format for a path
-func PathFormat(url *url.URL) string {
-	path := url.EscapedPath()
-	if strings.HasSuffix(path, ".html") {
-		return FormatHTML
-	}
-	return FormatJSON
-}
-
 // RequestedFormat gets the format for a request from extension or headers
 func RequestedFormat(r *http.Request) string {
 	// first check explicit path
