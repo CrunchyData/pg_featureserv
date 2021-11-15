@@ -49,39 +49,41 @@ type FeatureCollection struct {
 }
 
 const urlBase = "http://test"
-
-// testConfig is a config spec for using in running tests
-var testConfig conf.Config = conf.Config{
-	Server: conf.Server{
-		HttpHost:   "0.0.0.0",
-		HttpPort:   9000,
-		UrlBase:    urlBase,
-		AssetsPath: "../../assets",
-		TransformFunctions: []string{
-			"ST_Centroid",
-			"ST_PointOnSurface",
-		},
-	},
-	Paging: conf.Paging{
-		LimitDefault: 10,
-		LimitMax:     1000,
-	},
-	Metadata: conf.Metadata{
-		Title:       "test",
-		Description: "test",
-	},
-}
+var basePath = "/pg_featureserv"
 
 var catalogMock *data.CatalogMock
 
 func TestMain(m *testing.M) {
 	catalogMock = data.CatMockInstance()
 	catalogInstance = catalogMock
-	router = initRouter()
-	conf.Configuration = testConfig
+	setup(basePath)
 	Initialize()
-
 	os.Exit(m.Run())
+}
+
+func setup(path string){
+	router = initRouter(path)
+	conf.Configuration = conf.Config{
+		Server: conf.Server{
+			HttpHost:   "0.0.0.0",
+			HttpPort:   9000,
+			UrlBase:    urlBase,
+			BasePath:	path,
+			AssetsPath: "../../assets",
+			TransformFunctions: []string{
+				"ST_Centroid",
+				"ST_PointOnSurface",
+			},
+		},
+		Paging: conf.Paging{
+			LimitDefault: 10,
+			LimitMax:     1000,
+		},
+		Metadata: conf.Metadata{
+			Title:       "test",
+			Description: "test",
+		},
+	}
 }
 
 func TestRoot(t *testing.T) {
@@ -91,7 +93,7 @@ func TestRoot(t *testing.T) {
 	var v api.RootInfo
 	json.Unmarshal(body, &v)
 
-	checkLink(t, v.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+"/"+api.RootPageName)
+	checkLink(t, v.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+"//"+api.RootPageName)
 	checkLink(t, v.Links[1], api.RelAlt, api.ContentTypeHTML, urlBase+"/"+api.RootPageName+".html")
 	checkLink(t, v.Links[2], api.RelServiceDesc, api.ContentTypeOpenAPI, urlBase+"/api")
 	checkLink(t, v.Links[3], api.RelConformance, api.ContentTypeJSON, urlBase+"/conformance")
@@ -418,7 +420,7 @@ func doRequest(t *testing.T, url string) *httptest.ResponseRecorder {
 
 func doRequestStatus(t *testing.T, url string,
 	statusExpected int) *httptest.ResponseRecorder {
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest("GET", basePath+url, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

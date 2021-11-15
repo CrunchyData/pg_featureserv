@@ -12,6 +12,7 @@
 * Add support for partitioned tables and foreign tables
 * Add configuration to include/exclude published schemas and tables
 * Add configuration for web UI map view basemap URL template
+* Add configuration to set base path (#88)
 
 ### Performance Improvements
 
