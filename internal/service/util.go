@@ -175,8 +175,8 @@ func serveURLBase(r *http.Request) string {
 		ps = fp[0]
 	}
 
-	path := strings.TrimRight(conf.Configuration.Server.BasePath, "/")
-	return fmt.Sprintf("%v://%v%v", ps, ph, path+"/")
+	path := conf.Configuration.Server.BasePath
+	return fmt.Sprintf("%v://%v%v/", ps, ph, path)
 }
 
 func getRequestVar(varname string, r *http.Request) string {

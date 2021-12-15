@@ -16,6 +16,7 @@ package conf
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -65,7 +66,7 @@ type Server struct {
 	TlsServerCertificateFile string
 	TlsServerPrivateKeyFile  string
 	UrlBase                  string
-	BasePath				 string
+	BasePath                 string
 	CORSOrigins              string
 	Debug                    bool
 	AssetsPath               string
@@ -146,6 +147,9 @@ func InitConfig(configFilename string) {
 		dbconnSrc = "environment variable " + AppConfig.EnvDBURL
 	}
 	log.Infof("Using database connection info from %v", dbconnSrc)
+
+	// sanitize the configuration
+	Configuration.Server.BasePath = strings.TrimRight(Configuration.Server.BasePath, "/")
 
 	//fmt.Printf("Viper: %v\n", viper.AllSettings())
 	//fmt.Printf("Config: %v\n", Configuration)
