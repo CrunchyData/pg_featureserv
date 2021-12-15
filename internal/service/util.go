@@ -175,7 +175,8 @@ func serveURLBase(r *http.Request) string {
 		ps = fp[0]
 	}
 
-	return fmt.Sprintf("%v://%v%v", ps, ph, strings.TrimRight(conf.Configuration.Server.BasePath, "/"))
+	path := strings.TrimRight(conf.Configuration.Server.BasePath, "/")
+	return fmt.Sprintf("%v://%v%v", ps, ph, path+"/")
 }
 
 func getRequestVar(varname string, r *http.Request) string {
@@ -258,6 +259,12 @@ func writeJSON(w http.ResponseWriter, contype string, content interface{}) *appE
 		log.Printf("JSON encoding error: %v", err.Error())
 		return appErrorInternal(err, api.ErrMsgEncoding)
 	}
+	//fmt.Println(string(encodedContent))
+	writeResponse(w, contype, encodedContent)
+	return nil
+}
+
+func writeText(w http.ResponseWriter, contype string, encodedContent []byte) *appError {
 	//fmt.Println(string(encodedContent))
 	writeResponse(w, contype, encodedContent)
 	return nil
