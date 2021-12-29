@@ -42,3 +42,17 @@ INSERT INTO pgfs_test.test_arr
             '{ 1, 2, 3 }',
             '{ 1.1, 2.2, 3.3 }',
             '{ "a", "bb", "ccc" }' );
+
+--=====================================================================
+-- Test functions
+
+-- Function which raises:    ERROR:  Shell is not a line
+CREATE OR REPLACE FUNCTION postgisftw.error_postgis()
+RETURNS TABLE(geom geometry)
+AS $$
+BEGIN
+	RETURN QUERY
+		SELECT ST_Polygon('POINT(0 0)', 3857) AS geom;
+END;
+$$
+LANGUAGE 'plpgsql' STABLE STRICT;
