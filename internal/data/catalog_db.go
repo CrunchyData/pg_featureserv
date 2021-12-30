@@ -394,13 +394,15 @@ func readFeaturesWithArgs(ctx context.Context, db *pgxpool.Pool, sql string, arg
 		return nil, err
 	}
 
-	data := scanFeatures(ctx, rows, idColIndex, propCols)
-	rows.Close()
+	data, err := scanFeatures(ctx, rows, idColIndex, propCols)
+	if err != nil {
+		return data, err
+	}
 	log.Debugf(fmtQueryStats, len(data), time.Since(start))
 	return data, nil
 }
 
-func scanFeatures(ctx context.Context, rows pgx.Rows, idColIndex int, propCols []string) []string {
+func scanFeatures(ctx context.Context, rows pgx.Rows, idColIndex int, propCols []string) ([]string, error) {
 	// init features array to empty (not nil)
 	var features []string = []string{}
 	for rows.Next() {
@@ -412,14 +414,15 @@ func scanFeatures(ctx context.Context, rows pgx.Rows, idColIndex int, propCols [
 	// because a long-running function might not produce any rows before timeout
 	if err := ctx.Err(); err != nil {
 		//log.Debugf("Context error scanning Features: %v", err)
-		return features
+		return features, err
 	}
 	// Check for errors from scanning rows.
 	if err := rows.Err(); err != nil {
 		log.Warnf("Error scanning rows for Features: %v", err)
 		// TODO: return nil here ?
+		return features, err
 	}
-	return features
+	return features, nil
 }
 
 func scanFeature(rows pgx.Rows, idColIndex int, propNames []string) string {

@@ -263,7 +263,7 @@ func scanData(ctx context.Context, rows pgx.Rows, propCols []string) []map[strin
 	}
 	// Check for errors from iterating over rows.
 	if err := rows.Err(); err != nil {
-		log.Warnf("Error reading Data rows: %v", err)
+		log.Warnf("Error scanning Data rows: %v", err)
 		// TODO: return nil here ?
 	}
 	return data
