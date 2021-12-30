@@ -29,6 +29,12 @@ const (
 	// ContentTypeHTML
 	ContentTypeHTML = "text/html"
 
+	// ContentTypeText
+	ContentTypeText = "text/plain"
+
+	// ContentTypeSVG
+	ContentTypeSVG = "image/svg+xml"
+
 	// ContentTypeHTML
 	ContentTypeOpenAPI = "application/vnd.oai.openapi+json;version=3.0"
 
@@ -37,6 +43,12 @@ const (
 
 	// FormatHTML code and extension for HTML
 	FormatHTML = "html"
+
+	// FormatText code and extension for Text
+	FormatText = "text"
+
+	// FormatText code and extension for Text
+	FormatSVG = "svg"
 )
 
 // RequestedFormat gets the format for a request from extension or headers
@@ -48,6 +60,12 @@ func RequestedFormat(r *http.Request) string {
 	}
 	if strings.HasSuffix(path, ".json") {
 		return FormatJSON
+	}
+	if strings.HasSuffix(path, ".txt") {
+		return FormatText
+	}
+	if strings.HasSuffix(path, ".svg") {
+		return FormatSVG
 	}
 	// Use Accept header if present
 	hdrAccept := r.Header.Get("Accept")

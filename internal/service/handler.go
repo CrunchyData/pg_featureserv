@@ -14,7 +14,9 @@ package service
 */
 
 import (
+	"bytes"
 	"context"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -32,9 +34,9 @@ const (
 
 func initRouter(basePath string) *mux.Router {
 	router := mux.NewRouter().
-	StrictSlash(true).
-	PathPrefix("/" + strings.TrimRight(strings.TrimLeft(basePath, "/"), "/")).
-	Subrouter()
+		StrictSlash(true).
+		PathPrefix("/" + strings.TrimRight(strings.TrimLeft(basePath, "/"), "/")).
+		Subrouter()
 
 	addRoute(router, "/", handleRoot)
 	addRoute(router, "/home{.fmt}", handleRoot)
@@ -594,7 +596,12 @@ func handleFunctionItems(w http.ResponseWriter, r *http.Request) *appError {
 		return writeFunItemsJSON(ctx, w, name, fnArgs, param)
 	case api.FormatHTML:
 		return writeFunItemsHTML(w, name, query, urlBase)
+	case api.FormatText:
+		return writeFunItemsText(ctx, w, api.ContentTypeText, name, fnArgs, param)
+	case api.FormatSVG:
+		return writeFunItemsText(ctx, w, api.ContentTypeSVG, name, fnArgs, param)
 	}
+
 	return nil
 }
 
@@ -650,4 +657,28 @@ func writeFunItemsJSON(ctx context.Context, w http.ResponseWriter, name string, 
 		return appErrorNotFoundFmt(err, api.ErrMsgNoDataRead, name)
 	}
 	return writeJSON(w, api.ContentTypeJSON, features)
+}
+
+func writeFunItemsText(ctx context.Context, w http.ResponseWriter, contentType string, name string, args map[string]string, param *data.QueryParam) *appError {
+	//--- query features data
+	features, err := catalogInstance.FunctionData(ctx, name, args, param)
+	if err != nil {
+		return appErrorInternalFmt(err, api.ErrMsgFunctionAccess, name)
+	}
+	if features == nil {
+		return appErrorNotFoundFmt(err, api.ErrMsgNoDataRead, name)
+	}
+	content := writeFeaturesToByte(features)
+	return writeText(w, contentType, content)
+}
+
+func writeFeaturesToByte(features []map[string]interface{}) []byte {
+	var b bytes.Buffer
+	for _, feat := range features {
+		for _, val := range feat {
+			s := fmt.Sprintf("%v", val)
+			b.WriteString(s)
+		}
+	}
+	return b.Bytes()
 }
