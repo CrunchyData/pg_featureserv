@@ -4,9 +4,7 @@
 
 # pg_featureserv
 
-[![Travis Build Status][travisbuild]](https://travis-ci.org/CrunchyData/pg_featureserv)
-
-[travisbuild]: https://api.travis-ci.org/CrunchyData/pg_featureserv.svg?branch=master "Travis CI"
+[![.github/workflows/ci.yml](https://github.com/CrunchyData/pg_featureserv/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/CrunchyData/pg_featureserv/actions/workflows/ci.yml)
 
 A lightweight RESTful geospatial feature server for [PostGIS](https://postgis.net/), written in [Go](https://golang.org/).
 It supports the [*OGC API - Features*](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html) REST API standard.
@@ -44,7 +42,7 @@ Builds of the latest code:
 
 * [Linux](https://postgisftw.s3.amazonaws.com/pg_featureserv_latest_linux.zip)
 * [Windows](https://postgisftw.s3.amazonaws.com/pg_featureserv_latest_windows.zip)
-* [OSX](https://postgisftw.s3.amazonaws.com/pg_featureserv_latest_osx.zip)
+* [MacOS](https://postgisftw.s3.amazonaws.com/pg_featureserv_latest_macos.zip)
 * [Docker](https://hub.docker.com/r/pramsey/pg_featureserv)
 
 

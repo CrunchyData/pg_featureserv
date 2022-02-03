@@ -1,5 +1,5 @@
 
-APPVERSION := CI
+APPVERSION := latest
 GOVERSION := 1.15
 PROGRAM := pg_featureserv
 CONTAINER := pramsey/$(PROGRAM)
