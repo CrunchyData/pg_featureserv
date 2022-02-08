@@ -52,6 +52,10 @@ connect as the same user that the service is using.
 
 To delve more deeply into the SQL that is being run on the database, you can turn on [statement logging](https://www.postgresql.org/docs/current/runtime-config-logging.html#GUC-LOG-STATEMENT) in PostgreSQL by editing the `postgresql.conf` file for your database and restarting.
 
+## Missing Tables 
+
+If tables are not being discovered as expected ensure that the tables have the correct metadata visible in the geometry views. In particular, note that recent versions of the [`AddGeometryColumn()`](https://postgis.net/docs/AddGeometryColumn.html) method do not update this metadata and will not be discovered by the pg_featureserv catalog. 
+
 ## Bug reporting
 
 If you find an issue with the feature server, it can be reported on the GitHub issue tracker:
