@@ -32,9 +32,11 @@ const (
 
 	TagFunctions = "functions"
 
+	ParamCrs        = "crs"
 	ParamLimit      = "limit"
 	ParamOffset     = "offset"
 	ParamBbox       = "bbox"
+	ParamBboxCrs    = "bbox-crs"
 	ParamGroupBy    = "groupby"
 	ParamOrderBy    = "orderby"
 	ParamPrecision  = "precision"
@@ -86,6 +88,7 @@ const (
 )
 
 var ParamReservedNames = []string{
+	ParamCrs,
 	ParamLimit,
 	ParamOffset,
 	ParamBbox,
@@ -228,9 +231,11 @@ type NameValMap map[string]string
 
 // RequestParam holds the parameters for a request
 type RequestParam struct {
+	Crs           int
 	Limit         int
 	Offset        int
 	Bbox          *data.Extent
+	BboxCrs       int
 	Properties    []string
 	GroupBy       []string
 	SortBy        []data.Sorting
