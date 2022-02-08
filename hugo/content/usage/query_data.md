@@ -39,9 +39,16 @@ If the source data has a non-geographic coordinate system,
 the bounding box is transformed to the source coordinate system
 to perform the query.
 
+A bounding box in a different coordinate system may be specified
+by adding the `bbox-crs=SRID` query parameter.
+
 #### Example
 ```
 http://localhost:9000/collections/ne.countries/items?bbox=10.4,43.3,26.4,47.7
+```
+
+```
+http://localhost:9000/collections/ne.countries/items?bbox-crs=3005&bbox=1000000,400000,1001000,401000
 ```
 
 ### Filter by properties
@@ -56,7 +63,7 @@ to be filtered.  The value of the parameter is the desired property value.
 http://localhost:9000/collections/ne.countries/items?continent=Europe
 ```
 
-### Specify respones properties
+### Specify responses properties
 
 The query parameter `properties=PROP1,PROP2,PROP3...`
 specifies the feature properties returned in the response.
@@ -68,6 +75,23 @@ no feature properties are returned.
 #### Example
 ```
 http://localhost:9000/collections/ne.countries/items?properties=name,abbrev,pop_est
+```
+
+### Specify response coordinate system
+
+The query parameter `crs=SRID`
+specifies the coordinate system to be used for the
+feature geometry in the response.
+The SRID must be a coordinate system which is defined in the PostGIS instance.
+By default data is returned in WGS84 (SRID=4326) geodetic coordinate system.
+
+Note: GeoJSON technically does not support coordinate systems other than 4326,
+but the OGC API standard allows non-geodetic data to be encoded in GeoJSON.
+However, this data may not be compatible with other systems.
+
+#### Example
+```
+http://localhost:9000/collections/bc.rivers/items?crs=3005
 ```
 
 ### Limiting and paging
@@ -126,13 +150,24 @@ The response is a GeoJSON feature containing the result.
 http://localhost:9000/collections/ne.countries/items/23
 ```
 
-### Restrict properties
+### Specify properties
 
 The query parameter `properties=PROP1,PROP2,PROP3...`
-restricts the properties which are returned
+specifies the feature properties which are returned
 in the response.
 
 #### Example
 ```
 http://localhost:9000/collections/ne.countries/items/23?properties=name,abbrev,pop_est
+```
+
+### Specify coordinate system
+
+The query parameter `crs=SRID`
+can be included to specify the coordinate system to be used for the
+feature geometry.
+
+#### Example
+```
+http://localhost:9000/collections/bc.rivers/items/23?crs=3005
 ```
