@@ -69,10 +69,12 @@ Produces a dataset of items from the collection (as GeoJSON)
 Path: `/collections/{cid}/items`
 
 ### Parameters
+* `crs=SRID` - specifies the CRS for the output feature geometry
 * `limit=N` - limits the number of features in the response.
 * `offset=N` - starts the response at an offset.
 * `sortby=[+|-]PROP` - sort the response items by a property (ascending (default) or descending).
-* `bbox=mix,miny,maxx,maxy` - filter features in response to ones intersecting a bounding box (in lon/lat).
+* `bbox=mix,miny,maxx,maxy` - filter features in response to ones intersecting a bounding box (in lon/lat or specified CRS).
+* `bbox-crs=SRID` - specify CRS for the `bbox` coordinates
 * `<propname>=val` - filter features for a property having a value.
   Multiple property filters are ANDed together.
 * `properties=PROP-LIST`- return only specific properties (comma-separated).
