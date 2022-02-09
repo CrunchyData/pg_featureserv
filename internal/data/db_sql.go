@@ -207,36 +207,22 @@ func sqlAttrFilter(filterConds []*FilterCond) (string, []interface{}) {
 	return sql, vals
 }
 
-const sqlFmtBBoxFilter = ` ST_Intersects("%v", ST_Transform( ST_MakeEnvelope(%v, %v, %v, %v, %v), %v)) `
-
-const sqlFmtBBoxGeoFilter = ` ST_Intersects("%v", ST_MakeEnvelope(%v, %v, %v, %v, 4326)) `
+const sqlFmtBBoxTransformFilter = ` ST_Intersects("%v", ST_Transform( ST_MakeEnvelope(%v, %v, %v, %v, %v), %v)) `
+const sqlFmtBBoxGeoFilter = ` ST_Intersects("%v", ST_MakeEnvelope(%v, %v, %v, %v, %v)) `
 
 func sqlBBoxFilter(geomCol string, srcSRID int, bbox *Extent, bboxCrs int) string {
 	if bbox == nil {
 		return ""
 	}
-	sql := ""
 	if srcSRID == bboxCrs {
-		sql = fmt.Sprintf(sqlFmtBBoxGeoFilter, geomCol,
-			bbox.Minx, bbox.Miny, bbox.Maxx, bbox.Maxy)
-	} else {
-		sql = fmt.Sprintf(sqlFmtBBoxFilter, geomCol,
-			bbox.Minx, bbox.Miny, bbox.Maxx, bbox.Maxy, bboxCrs,
-			srcSRID)
+		return fmt.Sprintf(sqlFmtBBoxGeoFilter, geomCol,
+			bbox.Minx, bbox.Miny, bbox.Maxx, bbox.Maxy, bboxCrs)
 	}
-	return sql
+	//-- transform to src CRS so spatial index is used
+	return fmt.Sprintf(sqlFmtBBoxTransformFilter, geomCol,
+		bbox.Minx, bbox.Miny, bbox.Maxx, bbox.Maxy, bboxCrs,
+		srcSRID)
 }
-
-/*
-func sqlBBoxGeoFilter(geomCol string, bbox *Extent) string {
-	if bbox == nil {
-		return ""
-	}
-	sql := fmt.Sprintf(sqlFmtBBoxGeoFilter, geomCol,
-		bbox.Minx, bbox.Miny, bbox.Maxx, bbox.Maxy)
-	return sql
-}
-*/
 
 const sqlFmtGeomCol = `ST_AsGeoJSON( ST_Transform( %v, %v) %v ) AS _geojson`
 
