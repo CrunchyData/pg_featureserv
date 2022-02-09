@@ -210,17 +210,17 @@ func sqlAttrFilter(filterConds []*FilterCond) (string, []interface{}) {
 const sqlFmtBBoxTransformFilter = ` ST_Intersects("%v", ST_Transform( ST_MakeEnvelope(%v, %v, %v, %v, %v), %v)) `
 const sqlFmtBBoxGeoFilter = ` ST_Intersects("%v", ST_MakeEnvelope(%v, %v, %v, %v, %v)) `
 
-func sqlBBoxFilter(geomCol string, srcSRID int, bbox *Extent, bboxCrs int) string {
+func sqlBBoxFilter(geomCol string, srcSRID int, bbox *Extent, bboxSRID int) string {
 	if bbox == nil {
 		return ""
 	}
-	if srcSRID == bboxCrs {
+	if srcSRID == bboxSRID {
 		return fmt.Sprintf(sqlFmtBBoxGeoFilter, geomCol,
-			bbox.Minx, bbox.Miny, bbox.Maxx, bbox.Maxy, bboxCrs)
+			bbox.Minx, bbox.Miny, bbox.Maxx, bbox.Maxy, bboxSRID)
 	}
-	//-- transform to src CRS so spatial index is used
+	//-- transform bbox to src CRS so spatial index is used
 	return fmt.Sprintf(sqlFmtBBoxTransformFilter, geomCol,
-		bbox.Minx, bbox.Miny, bbox.Maxx, bbox.Maxy, bboxCrs,
+		bbox.Minx, bbox.Miny, bbox.Maxx, bbox.Maxy, bboxSRID,
 		srcSRID)
 }
 
