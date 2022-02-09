@@ -46,7 +46,10 @@ If the source data has a non-geographic coordinate system
 the bounding box is transformed to the source coordinate system
 to perform the query.
 
-This parameter is only useful for spatial functions.
+A bounding box in a different coordinate system may be specified
+by adding the `bbox-crs=SRID` query parameter.
+
+This parameter is only useful for **spatial** functions.
 
 #### Example
 ```
@@ -65,6 +68,23 @@ no feature properties are returned.
 #### Example
 ```
 http://localhost:9000/functions/countries_name/items?properties=name
+```
+
+### Specify response coordinate system
+
+The query parameter `crs=SRID`
+specifies the coordinate system to be used for the
+feature geometry in the response.
+The SRID must be a coordinate system which is defined in the PostGIS instance.
+By default data is returned in WGS84 (SRID=4326) geodetic coordinate system.
+
+Note: GeoJSON technically does not support coordinate systems other than 4326,
+but the OGC API standard allows non-geodetic data to be encoded in GeoJSON.
+However, this data may not be compatible with other systems.
+
+#### Example
+```
+http://localhost:9000/functions/bc_rivers_by_name/items?name=Fraser&crs=3005
 ```
 
 ### Limiting and paging

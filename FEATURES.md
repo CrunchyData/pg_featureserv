@@ -33,11 +33,13 @@ It includes [*OGC API - Features*](http://docs.opengeospatial.org/is/17-069r3/17
 ### Query parameters - Standard
 - [x] `limit=n`
 - [x] `offset=n`
-- [x] `bbox` (4 numbers)
+- [x] `crs=srid`
+- [x] `bbox=x1,y1,x2,y2`
 - [ ] `bbox` (6 numbers)
-- [ ] `bbox-crs`
+- [x] `bbox-crs=srid`
 - [ ] `datetime`
-- [x] `properties` list (to restrict attributes in response)
+- [x] `properties` list
+  - restricts properties included in response
 - [x] `sortby` to sort output by a property
   - `sortby=name`, `sortby=+name`, `sortby=-name`
 - [x] filtering by property value ( `name=value`, as per [spec sec. 7.15.5](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html#_parameters_for_filtering_on_feature_properties) )

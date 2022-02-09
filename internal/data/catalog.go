@@ -19,6 +19,12 @@ import (
  limitations under the License.
 */
 
+const (
+	//errMsgCollectionNotFound = "Collection not found: %v"
+	//errMsgFeatureNotFound    = "Feature not found: %v"
+	SRID_4326 = 4326
+)
+
 // Catalog tbd
 type Catalog interface {
 	SetIncludeExclude(includeList []string, excludeList []string)
@@ -71,10 +77,12 @@ type FilterCond struct {
 
 // QueryParam holds the optional parameters for a data query
 type QueryParam struct {
-	Limit  int
-	Offset int
-	Bbox   *Extent
-	Filter []*FilterCond
+	Crs     int
+	Limit   int
+	Offset  int
+	Bbox    *Extent
+	BboxCrs int
+	Filter  []*FilterCond
 	// Columns is the list of columns to return
 	Columns       []string
 	GroupBy       []string
@@ -124,11 +132,6 @@ type Function struct {
 	GeometryColumn string
 	IDColumn       string
 }
-
-const (
-	errMsgCollectionNotFound = "Collection not found: %v"
-	errMsgFeatureNotFound    = "Feature not found: %v"
-)
 
 func (fun *Function) IsGeometryFunction() bool {
 	for _, typ := range fun.OutDbTypes {

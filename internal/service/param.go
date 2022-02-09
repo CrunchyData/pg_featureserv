@@ -30,11 +30,20 @@ func parseRequestParams(r *http.Request) (api.RequestParam, error) {
 	paramValues := extractSingleArgs(queryValues)
 
 	param := api.RequestParam{
+		Crs:       data.SRID_4326,
 		Limit:     conf.Configuration.Paging.LimitDefault,
 		Offset:    0,
 		Precision: -1,
+		BboxCrs:   data.SRID_4326,
 		Values:    paramValues,
 	}
+
+	// --- crs parameter
+	crs, err := parseInt(paramValues, api.ParamCrs, 0, 99999999, data.SRID_4326)
+	if err != nil {
+		return param, err
+	}
+	param.Crs = crs
 
 	// --- limit parameter
 	limit, err := parseLimit(paramValues)
@@ -56,6 +65,13 @@ func parseRequestParams(r *http.Request) (api.RequestParam, error) {
 		return param, err
 	}
 	param.Bbox = bbox
+
+	// --- bbox-crs parameter
+	bboxcrs, err := parseInt(paramValues, api.ParamBboxCrs, 0, 99999999, data.SRID_4326)
+	if err != nil {
+		return param, err
+	}
+	param.BboxCrs = bboxcrs
 
 	// --- properties parameter
 	props, err := parseProperties(paramValues)
@@ -393,9 +409,11 @@ func parseFilter(paramMap map[string]string, colNameMap map[string]string) []*da
 // createQueryParams applies any cross-parameter logic
 func createQueryParams(param *api.RequestParam, colNames []string) *data.QueryParam {
 	query := data.QueryParam{
+		Crs:           param.Crs,
 		Limit:         param.Limit,
 		Offset:        param.Offset,
 		Bbox:          param.Bbox,
+		BboxCrs:       param.BboxCrs,
 		GroupBy:       param.GroupBy,
 		SortBy:        param.SortBy,
 		Precision:     param.Precision,

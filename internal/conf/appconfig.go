@@ -13,7 +13,7 @@ package conf
  limitations under the License.
 */
 
-var setVersion string = "1.2"
+var setVersion string = "1.3"
 
 // AppConfiguration is the set of global application configuration constants.
 type AppConfiguration struct {

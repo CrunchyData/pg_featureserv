@@ -72,6 +72,22 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 			AllowEmptyValue: false,
 		},
 	}
+	paramBboxCrs := openapi3.ParameterRef{
+		Value: &openapi3.Parameter{
+			Name:        "bbox-crs",
+			Description: "SRID for coordinate reference system of bbox parameter.",
+			In:          "query",
+			Required:    false,
+			Schema: &openapi3.SchemaRef{
+				Value: &openapi3.Schema{
+					Type:    "integer",
+					Min:     openapi3.Float64Ptr(1),
+					Default: 4326,
+				},
+			},
+			AllowEmptyValue: false,
+		},
+	}
 	paramProperties := openapi3.ParameterRef{
 		Value: &openapi3.Parameter{
 			Name:        "properties",
@@ -109,6 +125,22 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 			AllowEmptyValue: false,
 		},
 	}
+	paramCrs := openapi3.ParameterRef{
+		Value: &openapi3.Parameter{
+			Name:        "crs",
+			Description: "SRID for coordinate reference system of output features.",
+			In:          "query",
+			Required:    false,
+			Schema: &openapi3.SchemaRef{
+				Value: &openapi3.Schema{
+					Type:    "integer",
+					Min:     openapi3.Float64Ptr(1),
+					Default: 4326,
+				},
+			},
+			AllowEmptyValue: false,
+		},
+	}
 	paramLimit := openapi3.ParameterRef{
 		Value: &openapi3.Parameter{
 			Name:        "limit",
@@ -118,7 +150,7 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 			Schema: &openapi3.SchemaRef{
 				Value: &openapi3.Schema{
 					Type:    "integer",
-					Min:     openapi3.Float64Ptr(1),
+					Min:     openapi3.Float64Ptr(0),
 					Max:     openapi3.Float64Ptr(float64(conf.Configuration.Paging.LimitMax)),
 					Default: conf.Configuration.Paging.LimitDefault,
 				},
@@ -180,7 +212,7 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 						"200": &openapi3.ResponseRef{
 							Ref: "",
 							Value: &openapi3.Response{
-								Content: openapi3.NewContentWithJSONSchema(&RootInfoSchema),
+								Content:     openapi3.NewContentWithJSONSchema(&RootInfoSchema),
 								Description: "Results for root of API",
 							},
 						},
@@ -210,7 +242,7 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 					Responses: openapi3.Responses{
 						"200": &openapi3.ResponseRef{
 							Value: &openapi3.Response{
-								Content: openapi3.NewContentWithJSONSchema(&ConformanceSchema),
+								Content:     openapi3.NewContentWithJSONSchema(&ConformanceSchema),
 								Description: "Results for conformance classes",
 							},
 						},
@@ -260,7 +292,9 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 						&paramCollectionID,
 						&paramLimit,
 						&paramOffset,
+						&paramCrs,
 						&paramBbox,
+						&paramBboxCrs,
 						&paramProperties,
 						&paramSortBy,
 						&paramTransform,
@@ -313,6 +347,7 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 						},
 						&paramProperties,
 						&paramTransform,
+						&paramCrs,
 					},
 					Responses: openapi3.Responses{
 						"200": &openapi3.ResponseRef{
@@ -363,7 +398,6 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 										Value: &FunctionInfoSchema,
 									}),
 								Description: "Results for details about the specified function",
-
 							},
 						},
 					},
@@ -378,7 +412,9 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 						&paramFunctionID,
 						&paramLimit,
 						&paramOffset,
+						&paramCrs,
 						&paramBbox,
+						&paramBboxCrs,
 						&paramProperties,
 						&paramSortBy,
 						&paramTransform,

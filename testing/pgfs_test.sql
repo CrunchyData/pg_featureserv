@@ -9,6 +9,29 @@ CREATE SCHEMA pgfs_test;
 
 --=====================================================================
 
+CREATE TABLE pgfs_test.test_crs
+(
+    id integer primary key,
+    geom geometry(polygon, 3005),
+    name text
+);
+
+-- DROP TABLE pgfs_test.test_crs;
+-- DELETE FROM pgfs_test.test_crs;
+
+INSERT INTO pgfs_test.test_crs
+SELECT ROW_NUMBER() OVER () AS id,
+        ST_MakeEnvelope(1000000.0 + 20000 * x, 400000.0 + 20000 * y,
+                        1000000.0 + 20000 * (x + 1), 400000.0 + 20000 * (y + 1),
+            3005) AS geom,
+        x || '_' || y AS name
+  FROM generate_series(0, 9) AS x(x)
+  CROSS JOIN generate_series(0, 9) AS y(y);
+
+ß
+
+--=====================================================================
+
 CREATE TABLE pgfs_test.test_json
 (
     id integer primary key,
