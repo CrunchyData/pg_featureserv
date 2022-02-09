@@ -189,6 +189,21 @@ such as `1d`, `2.5h`, or `30m`.
 
 The maximum number of database connections held in the connection pool.
 
+#### TableIncludes
+
+A list of schemas and tables to publish feature collections from.
+The default is to include all geometry tables.
+
+#### TableExcludes
+
+A list of schemas and tables not to publish.
+Overrides items specified in `TableIncludes`.
+
+#### FunctionIncludes
+
+A list of schemas to publish functions from.
+The default is to publish functions in `postgisftw`.
+
 #### LimitDefault
 
 The default number of features in a response,

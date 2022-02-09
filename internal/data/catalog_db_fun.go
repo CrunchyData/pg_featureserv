@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/CrunchyData/pg_featureserv/internal/conf"
 	"github.com/jackc/pgtype"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -26,6 +27,8 @@ import (
 
 // FunctionIDColumnName is the name for a function-supplied ID
 const FunctionIDColumnName = "id"
+
+const SchemaPostGISFTW = "postgisftw"
 
 func (cat *catalogDB) Functions() ([]*Function, error) {
 	cat.refreshFunctions(true)
@@ -50,12 +53,13 @@ func (cat *catalogDB) refreshFunctions(force bool) {
 }
 
 func (cat *catalogDB) loadFunctions() {
-	cat.functions, cat.functionMap = readFunctionDefs(cat.dbconn)
+	cat.functions, cat.functionMap = readFunctionDefs(cat.dbconn, conf.Configuration.Database.FunctionIncludes)
 }
 
-func readFunctionDefs(db *pgxpool.Pool) ([]*Function, map[string]*Function) {
-	log.Debugf("Load function catalog:\n%v", sqlFunctions)
-	rows, err := db.Query(context.Background(), sqlFunctions)
+func readFunctionDefs(db *pgxpool.Pool, funSchemas []string) ([]*Function, map[string]*Function) {
+	sql := sqlFunctions(funSchemas)
+	log.Debugf("Load function catalog:\n%v", sql)
+	rows, err := db.Query(context.Background(), sql)
 	if err != nil {
 		log.Fatal(err)
 	}

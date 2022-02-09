@@ -152,3 +152,12 @@ func (fun *TransformFunction) apply(expr string) string {
 	args := strings.Join(fun.Arg, ",")
 	return fmt.Sprintf("%v( %v, %v )", fun.Name, expr, args)
 }
+
+// Creates a fully qualified function id.
+// adds default postgisftw schema if name arg has no schema
+func FunctionQualifiedId(name string) string {
+	if strings.Contains(name, ".") {
+		return name
+	}
+	return SchemaPostGISFTW + "." + name
+}

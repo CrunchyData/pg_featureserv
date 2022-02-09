@@ -65,6 +65,9 @@ WriteTimeoutSec = 30
 # Do not publish these schemas and tables
 # TableExcludes = [ "priv_schema", "public.my_tbl" ]
 
+# Publish functions from these schemas (default is publish postgisftw)
+# FunctionIncludes = [ "postgisftw", "schema2" ]
+
 [Paging]
 # The default number of features in a response
 LimitDefault = 20

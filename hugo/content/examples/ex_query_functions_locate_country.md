@@ -5,11 +5,12 @@ draft: false
 weight: 220
 ---
 
-Non-spatial functions (i.e. functions that don't return spatial data) can also be accessed via `pg_featureserv`, as long as they are published in the `postgisftw` schema.
+Non-spatial functions (i.e. functions that don't return spatial data) can also be accessed via `pg_featureserv`, as long as they are published in a configured schema
+(by default, all functions in the `postgisftw` schema are published).
 
 The following function example can be used with the `ne.countries` collection created in the [Quick Start](/quickstart/) section. It shows a function that accepts longitude and latitude values, and returns the corresponding country (if any). Unlike the other function examples in this section, it does not return a table with a geometry type column.
 
-Any kind of function in the `postgisftw` schema is published, which allows you even more flexible access to data. You can create functions that return statistics, summary records, populate dropdown lists or autocomplete suggestions, and more.
+Any kind of function can be published, which allows you very flexible access to data. You can create functions that return statistics, summary records, populate dropdown lists or autocomplete suggestions, and more.
 
 ## Create a non-spatial function that locates the country for a given coordinate pair
 
@@ -38,13 +39,13 @@ Notes:
 
 * The function generates a [Point](https://postgis.net/docs/ST_MakePoint.html) based on the longitude and latitude values provided in the parameters.
 * The `ne.countries` table is filtered based on whether the point [intersects](https://postgis.net/docs/ST_Intersects.html) a country polygon.
-* It's possible that a point lies exactly on the boundary between two countries. Both country records will be included in the query result set, but `LIMIT 1` restricts the result to a single record. 
+* It's possible that a point lies exactly on the boundary between two countries. Both country records will be included in the query result set, but `LIMIT 1` restricts the result to a single record.
 
 ## Example of API query
 
 The coordinate pair (47,8) can be passed into the function:
 
-`http://localhost:9000/functions/country_by_loc/items.json?lat=47&lon=8`
+`http://localhost:9000/functions/postgisftw.country_by_loc/items.json?lat=47&lon=8`
 
 ## Sample JSON response
 

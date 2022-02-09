@@ -457,7 +457,7 @@ func handleFunctions(w http.ResponseWriter, r *http.Request) *appError {
 		case api.FormatHTML:
 			addFunctionURLs(fn, urlBase, isGeomFun)
 		default:
-			fn.Links = linksFunction(fn.Name, urlBase, true, isGeomFun)
+			fn.Links = linksFunction(fn.Function.ID, urlBase, true, isGeomFun)
 		}
 	}
 
@@ -532,7 +532,7 @@ func handleFunction(w http.ResponseWriter, r *http.Request) *appError {
 	format := api.RequestedFormat(r)
 	urlBase := serveURLBase(r)
 
-	name := getRequestVar(routeVarID, r)
+	name := data.FunctionQualifiedId(getRequestVar(routeVarID, r))
 
 	fn, err := catalogInstance.FunctionByName(name)
 	if fn == nil && err == nil {
@@ -572,7 +572,7 @@ func handleFunctionItems(w http.ResponseWriter, r *http.Request) *appError {
 	urlBase := serveURLBase(r)
 
 	//--- extract request parameters
-	name := getRequestVar(routeVarID, r)
+	name := data.FunctionQualifiedId(getRequestVar(routeVarID, r))
 	reqParam, err := parseRequestParams(r)
 	if err != nil {
 		return appErrorMsg(err, err.Error(), http.StatusBadRequest)
@@ -601,7 +601,6 @@ func handleFunctionItems(w http.ResponseWriter, r *http.Request) *appError {
 	case api.FormatSVG:
 		return writeFunItemsText(ctx, w, api.ContentTypeSVG, name, fnArgs, param)
 	}
-
 	return nil
 }
 

@@ -34,7 +34,9 @@ or the equivalent (and more standard) `TABLE`
 (see the Postgres manual section on [set-returning functions](https://www.postgresql.org/docs/current/xfunc-sql.html#XFUNC-SQL-FUNCTIONS-RETURNING-SET).)
 
 Because there are usually many functions in a Postgres database,
-the service only publishes functions defined in the `postgisftw` schema.
+the service only publishes functions defined in the schemas
+specified in the `FunctionIncludes` configuration setting.
+By default the functions in the `postgisftw` schema are published.
 
 A function specifies zero or more input parameters.
 An input parameter can be of any Postgres type
@@ -106,7 +108,7 @@ The function can be called via the API by providing a value for the `name_prefix
 (which could be omitted, due to the presence of a default value):
 
 ```
-http://localhost:9000/functions/countries_name/items?name_prefix=T
+http://localhost:9000/functions/postgisftw.countries_name/items?name_prefix=T
 ```
 
 The response is a GeoJSON document containing the 13 countries starting with the letter 'T'.
@@ -142,7 +144,7 @@ are published from only one schema.
 
 #### Example
 ```
-http://localhost:9000/functions/geonames_geom
+http://localhost:9000/functions/postgisftw.geonames_geom
 ```
 
 The response is a JSON document containing metadata about the function, including:
