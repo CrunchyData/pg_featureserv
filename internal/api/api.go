@@ -92,6 +92,7 @@ var ParamReservedNames = []string{
 	ParamLimit,
 	ParamOffset,
 	ParamBbox,
+	ParamBboxCrs,
 	ParamGroupBy,
 	ParamOrderBy,
 	ParamPrecision,
