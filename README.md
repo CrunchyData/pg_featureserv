@@ -7,11 +7,11 @@
 [![.github/workflows/ci.yml](https://github.com/CrunchyData/pg_featureserv/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/CrunchyData/pg_featureserv/actions/workflows/ci.yml)
 
 A lightweight RESTful geospatial feature server for [PostGIS](https://postgis.net/), written in [Go](https://golang.org/).
-It supports the [*OGC API - Features*](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html) REST API standard.
+It supports the [*OGC API - Features*](https://ogcapi.ogc.org/features/) REST API standard.
 
 ## Features
 
-* Implements the [*OGC API - Features*](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html) standard.
+* Implements the [*OGC API - Features*](https://ogcapi.ogc.org/features/) standard.
   * Supports standard request parameters `limit`, `bbox`, property filtering, `sortby`, `crs`, `bbox-crs`
   * Extended parameters include `offset`, `properties`, `transform`, `precision`, `groupby`
 * Data responses are formatted in JSON and GeoJSON
