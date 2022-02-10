@@ -14,6 +14,7 @@
 * Add configuration for web UI map view basemap URL template
 * Add configuration to set base path (#88)
 * Add standard query parameters `crs` and `bbox-crs` (#98)
+* Allow configuring published function schemas (#99)
 
 ### Performance Improvements
 

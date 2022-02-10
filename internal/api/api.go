@@ -559,7 +559,7 @@ func NewFunctionsInfo(fns []*data.Function) *FunctionsInfo {
 
 func NewFunctionSummary(fn *data.Function) *FunctionSummary {
 	info := FunctionSummary{
-		Name:        fn.Name,
+		Name:        fn.ID,
 		Description: fn.Description,
 		Function:    fn,
 	}
@@ -568,7 +568,7 @@ func NewFunctionSummary(fn *data.Function) *FunctionSummary {
 
 func NewFunctionInfo(fn *data.Function) *FunctionInfo {
 	info := FunctionInfo{
-		Name:        fn.Name,
+		Name:        fn.ID,
 		Description: fn.Description,
 		Function:    fn,
 	}

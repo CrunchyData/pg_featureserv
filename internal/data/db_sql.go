@@ -57,7 +57,7 @@ AND has_table_privilege(c.oid, 'select')
 AND postgis_typmod_srid(a.atttypmod) > 0
 ORDER BY id
 `
-const sqlFunctions = `WITH
+const sqlFunctionsTemplate = `WITH
 proargs AS (
 	SELECT p.oid,
 		generate_subscripts(p.proallargtypes, 1) AS argorder,
@@ -66,7 +66,7 @@ proargs AS (
 		unnest(p.proargnames) AS argname
 	FROM pg_proc p
 	JOIN pg_namespace n ON (p.pronamespace = n.oid)
-	WHERE n.nspname = 'postgisftw'
+	WHERE n.nspname IN (#SCHEMAS#)
 		AND array_length(p.proargnames, 1) = array_length(p.proargmodes, 1)
 		AND array_length(p.proargmodes, 1) = array_length(p.proallargtypes, 1)
 		AND has_schema_privilege(n.oid, 'usage')
@@ -83,7 +83,7 @@ proargarrays AS (
 	GROUP BY 1
 )
 SELECT
-	p.proname AS id,
+	n.nspname || '.' || p.proname AS id,
 	n.nspname AS schema,
 	p.proname AS function,
 	coalesce(d.description, '') AS description,
@@ -98,6 +98,16 @@ JOIN pg_namespace n ON (p.pronamespace = n.oid)
 JOIN proargarrays aa ON (p.oid = aa.oid)
 LEFT JOIN pg_description d ON (p.oid = d.objoid)
 ORDER BY id`
+
+func sqlFunctions(funSchemas []string) string {
+	inSchemas := quotedList(funSchemas)
+	return strings.Replace(sqlFunctionsTemplate, "#SCHEMAS#", inSchemas, 1)
+}
+
+func quotedList(names []string) string {
+	itemsJoin := strings.Join(names, "','")
+	return "'" + itemsJoin + "'"
+}
 
 //const sqlFmtExtentEst = `WITH ext AS (SELECT ST_Transform(ST_SetSRID(ST_EstimatedExtent('%s', '%s', '%s'), %d), 4326) AS geom)
 //      SELECT ST_XMin(ext.geom) AS xmin, ST_YMin(ext.geom) AS ymin, ST_XMax(ext.geom) AS xmax, ST_YMax(ext.geom) AS ymax FROM ext;`

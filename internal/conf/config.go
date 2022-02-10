@@ -44,6 +44,7 @@ func setDefaultConfig() {
 
 	viper.SetDefault("Database.DbPoolMaxConnLifeTime", "1h")
 	viper.SetDefault("Database.DbPoolMaxConns", 4)
+	viper.SetDefault("Database.FunctionIncludes", []string{"postgisftw"})
 
 	viper.SetDefault("Metadata.Title", "pg-featureserv")
 	viper.SetDefault("Metadata.Description", "Crunchy Data Feature Server for PostGIS")
@@ -88,6 +89,7 @@ type Database struct {
 	DbPoolMaxConns        int
 	TableIncludes         []string
 	TableExcludes         []string
+	FunctionIncludes      []string
 }
 
 // Metadata config
