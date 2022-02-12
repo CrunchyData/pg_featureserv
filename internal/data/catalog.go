@@ -70,19 +70,20 @@ type Sorting struct {
 	IsDesc bool // false = ASC (default), true = DESC
 }
 
-type FilterCond struct {
+type PropertyFilter struct {
 	Name  string
 	Value string
 }
 
 // QueryParam holds the optional parameters for a data query
 type QueryParam struct {
-	Crs     int
-	Limit   int
-	Offset  int
-	Bbox    *Extent
-	BboxCrs int
-	Filter  []*FilterCond
+	Crs       int
+	Limit     int
+	Offset    int
+	Bbox      *Extent
+	BboxCrs   int
+	CqlFilter string
+	Filter    []*PropertyFilter
 	// Columns is the list of columns to return
 	Columns       []string
 	GroupBy       []string

@@ -341,7 +341,7 @@ func (fm *featureMock) getProperty(name string) (interface{}, error) {
 	return nil, fmt.Errorf("Unknown property: %v", name)
 }
 
-func doFilter(features []*featureMock, filter []*FilterCond) []*featureMock {
+func doFilter(features []*featureMock, filter []*PropertyFilter) []*featureMock {
 	var result []*featureMock
 	for _, feat := range features {
 		if isFilterMatches(feat, filter) {
@@ -351,7 +351,7 @@ func doFilter(features []*featureMock, filter []*FilterCond) []*featureMock {
 	return result
 }
 
-func isFilterMatches(feature *featureMock, filter []*FilterCond) bool {
+func isFilterMatches(feature *featureMock, filter []*PropertyFilter) bool {
 	for _, cond := range filter {
 		val, _ := feature.getProperty(cond.Name)
 		valStr := fmt.Sprintf("%v", val)

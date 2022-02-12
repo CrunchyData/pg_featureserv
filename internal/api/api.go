@@ -37,6 +37,7 @@ const (
 	ParamOffset     = "offset"
 	ParamBbox       = "bbox"
 	ParamBboxCrs    = "bbox-crs"
+	ParamFilter     = "filter"
 	ParamGroupBy    = "groupby"
 	ParamOrderBy    = "orderby"
 	ParamPrecision  = "precision"
@@ -93,6 +94,7 @@ var ParamReservedNames = []string{
 	ParamOffset,
 	ParamBbox,
 	ParamBboxCrs,
+	ParamFilter,
 	ParamGroupBy,
 	ParamOrderBy,
 	ParamPrecision,
@@ -238,6 +240,7 @@ type RequestParam struct {
 	Bbox          *data.Extent
 	BboxCrs       int
 	Properties    []string
+	Filter        string
 	GroupBy       []string
 	SortBy        []data.Sorting
 	Precision     int
