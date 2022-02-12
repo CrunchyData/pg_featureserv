@@ -193,6 +193,9 @@ func sqlFeature(tbl *Table, param *QueryParam) string {
 }
 
 func sqlCqlFilter(cqlStr string) string {
+	if len(cqlStr) == 0 {
+		return ""
+	}
 	sql := "(" + cql.TranspileToSQL(cqlStr) + ")"
 	return sql
 }
