@@ -1,7 +1,10 @@
 /*
+# CQL2 Antlr grammar, with small modifications.
+# - Additions: ILIKE
+
 # Build: in this dir: antlr -Dlanguage=Go -package cql CQL.g4 CqlLexer.g4
 #
-# See:
+# See examples:
 # https://portal.ogc.org/files/96288#cql-bnf
 # https://github.com/interactive-instruments/xtraplatform-spatial/tree/master/xtraplatform-cql/src/main/antlr/de/ii/xtraplatform/cql/infra
 */
