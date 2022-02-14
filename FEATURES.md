@@ -43,6 +43,7 @@ It includes [*OGC API - Features*](http://docs.opengeospatial.org/is/17-069r3/17
 - [x] `sortby` to sort output by a property
   - `sortby=name`, `sortby=+name`, `sortby=-name`
 - [x] filtering by property value ( `name=value`, as per [spec sec. 7.15.5](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html#_parameters_for_filtering_on_feature_properties) )
+- [x] `filter` with CQL expressions (see below)
 
 ### Query parameters - Extension
 - [x] `precision` to set output precision of GeoJSON coordinates
@@ -53,7 +54,11 @@ It includes [*OGC API - Features*](http://docs.opengeospatial.org/is/17-069r3/17
 - [x] `groupBy=colname` to group by column (used with a `transform` spatial aggregate function)
 - [ ] `f` parameter for formats?  (e.g. `f=json`, `f=html`)
 
-### Query parameters - CQL
+### Query parameters - Functions
+- [x] function arguments
+  - `name=value`
+
+### CQL expressions
 - [x] property names
 - [x] character literals
 - [x] numeric literals
@@ -63,16 +68,12 @@ It includes [*OGC API - Features*](http://docs.opengeospatial.org/is/17-069r3/17
 - [x] `property (NOT) BETWEEN a AND B`
 - [x] `property (NOT) IN ( value-list )`
 - [x] `propery (NOT) LIKE | ILIKE pattern`
+  - `pattern` can use `%` wildcards
 - [x] `property (NOT) IS NULL`
 - [x] boolean combinations (`AND`,`OR`,`NOT`)
 - [ ] spatial predicates
 - [ ] temporal predicates
 - [ ] functions
-
-
-### Query parameters - Functions
-- [x] function arguments
-  - `name=value`
 
 ### Output formats
 - [x] GeoJSON
