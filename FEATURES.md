@@ -53,6 +53,23 @@ It includes [*OGC API - Features*](http://docs.opengeospatial.org/is/17-069r3/17
 - [x] `groupBy=colname` to group by column (used with a `transform` spatial aggregate function)
 - [ ] `f` parameter for formats?  (e.g. `f=json`, `f=html`)
 
+### Query parameters - CQL
+- [x] property names
+- [x] character literals
+- [x] numeric literals
+- [ ] spatial literals
+- [ ] temporal literals
+- [x] binary comparisons (<,<=,>,>=,=,<>)
+- [x] propery (NOT) BETWEEN a AND B
+- [x] property (NOT) IN ( value-list )
+- [x] propery (NOT) LIKE | ILIKE pattern
+- [x] propery (NOT) IS NULL
+- [x] boolean combinations (AND,OR,NOT)
+- [ ] spatial predicates
+- [ ] temporal predicates
+- [ ] functions
+
+
 ### Query parameters - Functions
 - [x] function arguments
   - `name=value`
