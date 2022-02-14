@@ -59,12 +59,12 @@ It includes [*OGC API - Features*](http://docs.opengeospatial.org/is/17-069r3/17
 - [x] numeric literals
 - [ ] spatial literals
 - [ ] temporal literals
-- [x] binary comparisons (<,<=,>,>=,=,<>)
-- [x] propery (NOT) BETWEEN a AND B
-- [x] property (NOT) IN ( value-list )
-- [x] propery (NOT) LIKE | ILIKE pattern
-- [x] propery (NOT) IS NULL
-- [x] boolean combinations (AND,OR,NOT)
+- [x] binary comparisons (`<`,`<=`,`>`,`>=`,`=`,`<>`)
+- [x] `property (NOT) BETWEEN a AND B`
+- [x] `property (NOT) IN ( value-list )`
+- [x] `propery (NOT) LIKE | ILIKE pattern`
+- [x] `property (NOT) IS NULL`
+- [x] boolean combinations (`AND`,`OR`,`NOT`)
 - [ ] spatial predicates
 - [ ] temporal predicates
 - [ ] functions
