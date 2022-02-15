@@ -321,21 +321,24 @@ func sqlGeomFunction(fn *Function, args map[string]string, propCols []string, pa
 	sqlGeomCol := sqlGeomCol(fn.GeometryColumn, param)
 	sqlPropCols := sqlColList(propCols, fn.Types, true)
 	bboxFilter := sqlBBoxFilter(fn.GeometryColumn, SRID_4326, param.Bbox, param.BboxCrs)
-	sqlWhere := sqlWhere(bboxFilter, "", "")
+	cqlFilter := sqlCqlFilter(param.FilterSql)
+	sqlWhere := sqlWhere(bboxFilter, cqlFilter, "")
 	sqlOrderBy := sqlOrderBy(param.SortBy)
 	sqlLimitOffset := sqlLimitOffset(param.Limit, param.Offset)
 	sql := fmt.Sprintf(sqlFmtGeomFunction, sqlGeomCol, sqlPropCols, fn.Schema, fn.Name, sqlArgs, sqlWhere, sqlOrderBy, sqlLimitOffset)
 	return sql, argVals
 }
 
-const sqlFmtFunction = "SELECT %v FROM \"%s\".\"%s\"( %v ) %v %s;"
+const sqlFmtFunction = "SELECT %v FROM \"%s\".\"%s\"( %v ) %v %v %s;"
 
 func sqlFunction(fn *Function, args map[string]string, propCols []string, param *QueryParam) (string, []interface{}) {
 	sqlArgs, argVals := sqlFunctionArgs(fn, args)
 	sqlPropCols := sqlColList(propCols, fn.Types, false)
+	cqlFilter := sqlCqlFilter(param.FilterSql)
+	sqlWhere := sqlWhere(cqlFilter, "", "")
 	sqlOrderBy := sqlOrderBy(param.SortBy)
 	sqlLimitOffset := sqlLimitOffset(param.Limit, param.Offset)
-	sql := fmt.Sprintf(sqlFmtFunction, sqlPropCols, fn.Schema, fn.Name, sqlArgs, sqlOrderBy, sqlLimitOffset)
+	sql := fmt.Sprintf(sqlFmtFunction, sqlPropCols, fn.Schema, fn.Name, sqlArgs, sqlWhere, sqlOrderBy, sqlLimitOffset)
 	return sql, argVals
 }
 

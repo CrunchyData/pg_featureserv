@@ -71,6 +71,7 @@ name IN ('Chile', 'Kenya', 'Denmark')
 ## LIKE predicate
 The `LIKE` predicate tests if a text value matches a pattern.
 The character `%` is a wildcard.
+(Note that this may need to be URL-encoded as `%25`.)
 `ILIKE` can be used for case-independent matching.
 
 ```
@@ -80,7 +81,7 @@ property [NOT] LIKE | ILIKE pattern
 ### Example
 ```
 name LIKE 'Ch%'
-continent ILIKE '% america'
+continent ILIKE '%america'
 ```
 
 ## IS NULL predicate

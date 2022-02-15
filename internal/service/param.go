@@ -445,10 +445,12 @@ func createQueryParams(param *api.RequestParam, colNames []string) (*data.QueryP
 		}
 	}
 	query.Columns = normalizePropNames(cols, colNames)
+	//-- convert filter CQL
 	sql, err := cql.TranspileToSQL(param.Filter)
 	if err != nil {
 		return &query, err
 	}
 	query.FilterSql = sql
+
 	return &query, nil
 }
