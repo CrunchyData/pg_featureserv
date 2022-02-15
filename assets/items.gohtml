@@ -9,7 +9,7 @@
 <div class='mw-query-params map-widget'>
 <table>
 <tr>
-<td><button id='zoom-layer' class='btn-zoom' title='Zoom to features'></button></td>
+<td></td>
 <td style='text-align: right;'>
 <button onclick='doQuery();' title='Click to requery with the parameters'>Requery</button></td>
 </tr>
@@ -42,8 +42,16 @@
 </div>
 
 <div class='mw-title map-widget'>
-<div>{{ .context.Title }}</div>
-<div style='font-size: 10px; font-weight: normal; font-style: italic; margin-top: 2px;'>Feature count: <span id='feature-count'>-</span></div>
+    <table>
+    <tr>
+    <td style="vertical-align:top"><button id='zoom-layer' class='btn-zoom' title='Zoom to features'></button></td>
+    <td>
+        <div>{{ .context.Title }}</div>
+        <div style='font-size: 10px; font-weight: normal; font-style: italic; margin-top: 2px;'>Feature count: <span id='feature-count'>-</span></div>
+
+        </td>
+    </tr>
+    </table>
 </div>
 
 <div id="map" class="map"></div>
