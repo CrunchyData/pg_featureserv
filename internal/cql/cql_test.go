@@ -60,6 +60,7 @@ func TestErrors(t *testing.T) {
 	checkCQLError(t, "x y")
 	checkCQLError(t, "x == y")
 	checkCQLError(t, "x > 10y")
+	checkCQLError(t, "NOT x IS > 3")
 }
 
 func checkCQL(t *testing.T, cqlStr string, sql string) {
@@ -82,6 +83,7 @@ func equals(tb testing.TB, exp, act interface{}, msg string) {
 	}
 }
 
+// isError fails the test if err is nil
 func isError(tb testing.TB, err error, msg string) {
 	if err == nil {
 		_, file, line, _ := runtime.Caller(1)
