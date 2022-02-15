@@ -16,14 +16,19 @@ it is possible to query individual features by id.
 
 ## Publish tables and views as feature collections
 
-`pg_featureserv` publishes all spatial tables and views (including materialized views)
+`pg_featureserv` publishes all **spatial** tables and views (including materialized views)
 which are visible in the database.
 
-Spatial tables and views are those which:
+Visible spatial tables and views are those which:
 
 * include a **geometry column**;
-* declare a **geometry type**; and,
-* declare an **SRID** (spatial reference ID).
+* declare a **geometry type**;
+* declare an **SRID** (spatial reference ID);
+* and the service database connection has `SELECT` privileges for
+  (see the and [Security](/usage/security/) section for more detail).
+
+If the table or view has a **primary key column** it will
+be used as the id for features in the collection.
 
 Non-spatial columns are published as feature properties.
 The following Postgres column data types are supported:
@@ -35,12 +40,11 @@ The following Postgres column data types are supported:
 * `integer[]`, `smallint[]`, `bigint[]`, `double precision[]`, `real[]`, `numeric[]`
 * `boolean[]`
 * `json`
-* other data types may be supported, with output as strings
-
+* other data types *may* be supported, with output as strings
 
 #### *Example of a spatial table*
 
-Here is a simple example of defining a spatial table
+Here is an example of defining a spatial table
 which contains polygon geometries using coordinate system SRID = 4326,
 a primary key column,
 and two attribute columns `pid` and `address`.
