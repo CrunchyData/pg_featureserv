@@ -98,7 +98,7 @@ name IS NULL
 ## Boolean combinations
 Comparisons and predicates can be combined with the
 boolean operators `AND`, `OR` and `NOT`.
-Operators are evaluated in the order 'NOT', 'AND', 'OR'.
+Operators are evaluated in the order NOT, AND, OR.
 Evaluation order can be controlled by enclosing
 subexpressions in parentheses.
 
