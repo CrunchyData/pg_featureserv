@@ -28,7 +28,6 @@ SELECT ROW_NUMBER() OVER () AS id,
   FROM generate_series(0, 9) AS x(x)
   CROSS JOIN generate_series(0, 9) AS y(y);
 
-ß
 
 --=====================================================================
 
