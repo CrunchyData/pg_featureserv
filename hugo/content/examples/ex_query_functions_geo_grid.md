@@ -1,15 +1,15 @@
 ---
-title: "Example: Generate a Geographic Grid"
+title: "Example: Function to generate a Geographic Grid"
 date:
 draft: false
 weight: 220
 ---
 
-This example shows how to generate geometry data from a function, controlled by some input parameters. 
+This example shows how to generate geometry data from a function, controlled by some input parameters.
 
 This particular function does not query an existing table in the database; rather, it uses PostGIS functions to generate spatial data. Grids generated in this way could be used for data visualization, analysis, or clustering.
 
-## Create a spatial function that generates a grid over a desired area 
+## Create a spatial function that generates a grid over a desired area
 
 ```sql
 CREATE OR REPLACE FUNCTION postgisftw.geo_grid(

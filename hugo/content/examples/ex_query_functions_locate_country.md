@@ -1,5 +1,5 @@
 ---
-title: "Example: Retrieve Country Name for Coordinate Pair"
+title: "Example: Function to get Country Name at Coordinate"
 date:
 draft: false
 weight: 220
@@ -12,7 +12,7 @@ The following function example can be used with the `ne.countries` collection cr
 
 Any kind of function can be published, which allows you very flexible access to data. You can create functions that return statistics, summary records, populate dropdown lists or autocomplete suggestions, and more.
 
-## Create a non-spatial function that locates the country for a given coordinate pair
+## Create a non-spatial function that locates the country at a coordinate
 
 ```sql
 CREATE OR REPLACE FUNCTION postgisftw.country_by_loc(
@@ -43,7 +43,7 @@ Notes:
 
 ## Example of API query
 
-The coordinate pair (47,8) can be passed into the function:
+The geodetic coordinate (47,8) is passed into the function:
 
 `http://localhost:9000/functions/postgisftw.country_by_loc/items.json?lat=47&lon=8`
 

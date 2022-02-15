@@ -94,6 +94,8 @@ Note: GeoJSON technically does not support coordinate systems other than 4326,
 but the OGC API standard allows non-geodetic data to be encoded in GeoJSON.
 However, this data may not be compatible with other systems.
 
+This parameter is only useful for **spatial** functions.
+
 #### Example
 ```
 http://localhost:9000/functions/bc_rivers_by_name/items?name=Fraser&crs=3005

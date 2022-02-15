@@ -1,13 +1,15 @@
 ---
-title: "Example: Query Countries by Name"
+title: "Example: Function to query Countries by Name"
 date:
 draft: false
 weight: 210
 ---
 
-This is the same spatial function example shown in the [Usage](/usage/functions/) section, but we'll include a sample GeoJSON response, as well as the web UI preview. 
+This is the same spatial function example shown in the [Usage](/usage/functions/) section.  Here we'll show a sample GeoJSON response and the web UI preview.
 
-## Create a spatial function that returns a filtered set of countries 
+Note: this functionality can now be obtained more easily by using the `filter` query parameter with a `LIKE` CQl expression.
+
+## Create a spatial function that returns a filtered set of countries
 
 ```sql
 CREATE OR REPLACE FUNCTION postgisftw.countries_name(
