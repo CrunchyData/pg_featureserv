@@ -96,11 +96,12 @@ name IS NULL
 
 ## Boolean combinations
 Comparisons and predicates can be combined with the
-boolean operators `AMD`, `OR` and `NOT`.
-Expressions can be surrounded with parentheses
-to control evaluation order.
+boolean operators `AND`, `OR` and `NOT`.
+Operators are evaluated in the order 'NOT', 'AND', 'OR'.
+Evaluation order can be controlled by enclosing
+subexpressions in parentheses.
 
 ### Example
 ```
-(continent = 'Europe' AND pop_est < 1000000) OR name = 'Australia'
+(continent = 'Europe' OR continent = 'Afica') AND pop_est < 1000000
 ```
