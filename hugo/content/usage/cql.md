@@ -5,7 +5,7 @@ draft: false
 weight: 175
 ---
 
-The features returned by queries can be filtered using
+The features returned by `items` queries can be filtered using
 the `filter` query parameter with an expression written using
 the Common Query Language (CQL).
 CQL expressions return a value of `true` or `false`.
