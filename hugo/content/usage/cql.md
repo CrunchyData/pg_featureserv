@@ -13,7 +13,7 @@ Only features which evaluate to `true` are returned.
 In `pg_featureserv` the filter expression is evaluated by the database,
 so it can take advantage of indexes to make filter evaluation very efficient.
 
-This section describes the CQL query language supported by `pg_featureserv`.
+This section describes the CQL query language subset supported by `pg_featureserv`.
 
 ## Property and Literal Values
 
