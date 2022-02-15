@@ -122,13 +122,13 @@ func appErrorInternal(err error, msg string) *appError {
 	return &appError{err, msg, http.StatusInternalServerError}
 }
 
+func appErrorBadRequest(err error, msg string) *appError {
+	return &appError{err, msg, http.StatusBadRequest}
+}
+
 func appErrorInternalFmt(err error, format string, v ...interface{}) *appError {
 	msg := fmt.Sprintf(format, v...)
 	return &appError{err, msg, http.StatusInternalServerError}
-}
-
-func appErrorNoFound(err error, msg string) *appError {
-	return &appError{err, msg, http.StatusNotFound}
 }
 
 func appErrorNotFoundFmt(err error, format string, v string) *appError {

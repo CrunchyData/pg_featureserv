@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/CrunchyData/pg_featureserv/internal/cql"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -134,7 +133,7 @@ func sqlFeatures(tbl *Table, param *QueryParam) (string, []interface{}) {
 	propCols := sqlColList(param.Columns, tbl.DbTypes, true)
 	bboxFilter := sqlBBoxFilter(tbl.GeometryColumn, tbl.Srid, param.Bbox, param.BboxCrs)
 	attrFilter, attrVals := sqlAttrFilter(param.Filter)
-	cqlFilter := sqlCqlFilter(param.CqlFilter)
+	cqlFilter := sqlCqlFilter(param.FilterSql)
 	sqlWhere := sqlWhere(bboxFilter, attrFilter, cqlFilter)
 	sqlGroupBy := sqlGroupBy(param.GroupBy)
 	sqlOrderBy := sqlOrderBy(param.SortBy)
@@ -192,12 +191,12 @@ func sqlFeature(tbl *Table, param *QueryParam) string {
 	return sql
 }
 
-func sqlCqlFilter(cqlStr string) string {
-	if len(cqlStr) == 0 {
+func sqlCqlFilter(sql string) string {
+	//log.Debug("SQL = " + sql)
+	if len(sql) == 0 {
 		return ""
 	}
-	sql := "(" + cql.TranspileToSQL(cqlStr) + ")"
-	return sql
+	return "(" + sql + ")"
 }
 
 func sqlWhere(cond1 string, cond2 string, cond3 string) string {

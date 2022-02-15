@@ -22,6 +22,7 @@ import (
 
 	"github.com/CrunchyData/pg_featureserv/internal/api"
 	"github.com/CrunchyData/pg_featureserv/internal/conf"
+	"github.com/CrunchyData/pg_featureserv/internal/cql"
 	"github.com/CrunchyData/pg_featureserv/internal/data"
 )
 
@@ -415,14 +416,13 @@ func parseFilter(paramMap map[string]string, colNameMap map[string]string) []*da
 }
 
 // createQueryParams applies any cross-parameter logic
-func createQueryParams(param *api.RequestParam, colNames []string) *data.QueryParam {
+func createQueryParams(param *api.RequestParam, colNames []string) (*data.QueryParam, error) {
 	query := data.QueryParam{
 		Crs:           param.Crs,
 		Limit:         param.Limit,
 		Offset:        param.Offset,
 		Bbox:          param.Bbox,
 		BboxCrs:       param.BboxCrs,
-		CqlFilter:     param.Filter,
 		GroupBy:       param.GroupBy,
 		SortBy:        param.SortBy,
 		Precision:     param.Precision,
@@ -445,6 +445,10 @@ func createQueryParams(param *api.RequestParam, colNames []string) *data.QueryPa
 		}
 	}
 	query.Columns = normalizePropNames(cols, colNames)
-
-	return &query
+	sql, err := cql.TranspileToSQL(param.Filter)
+	if err != nil {
+		return &query, err
+	}
+	query.FilterSql = sql
+	return &query, nil
 }

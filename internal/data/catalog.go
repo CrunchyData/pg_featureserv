@@ -82,7 +82,7 @@ type QueryParam struct {
 	Offset    int
 	Bbox      *Extent
 	BboxCrs   int
-	CqlFilter string
+	FilterSql string
 	Filter    []*PropertyFilter
 	// Columns is the list of columns to return
 	Columns       []string

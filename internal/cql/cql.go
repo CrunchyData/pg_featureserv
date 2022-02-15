@@ -1,11 +1,99 @@
 package cql
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr"
 	log "github.com/sirupsen/logrus"
 )
+
+func TranspileToSQL(cqlStr string) (string, error) {
+	if len(cqlStr) < 1 {
+		return "", nil
+	}
+	// Setup the input
+	is := antlr.NewInputStream(cqlStr)
+
+	parseErrors := &CqlErrorListener{}
+
+	// Create the Lexer
+	lexer := NewCqlLexer(is)
+	lexer.RemoveErrorListeners()
+	lexer.AddErrorListener(parseErrors)
+
+	//-- create parser
+	stream := antlr.NewCommonTokenStream(lexer, antlr.TokenDefaultChannel)
+	parser := NewCQL(stream)
+	parser.RemoveErrorListeners()
+	parser.AddErrorListener(parseErrors)
+
+	tree := parser.CqlFilter()
+	// Finally parse the expression
+	listener := NewCqlListener()
+	antlr.ParseTreeWalkerDefault.Walk(listener, tree)
+
+	if parseErrors.errorCount > 0 {
+		log.Debug("CQL parser error = " + parseErrors.msg)
+		msg := syntaxErrorMsg(cqlStr, parseErrors.col)
+		err := fmt.Errorf("CQL syntax error: %s", msg)
+		return "", err
+	}
+	return listener.GetSQL(), nil
+}
+
+func syntaxErrorMsg(input string, col int) string {
+	start := 0
+	dots1 := ""
+	if col > 30 {
+		start = col - 20
+		dots1 = "..."
+	}
+
+	end := len(input)
+	dots2 := ""
+	if col < end-30 {
+		end = col + 20
+		dots2 = "..."
+	}
+
+	//-- extract parts and insert error flag
+	before := input[start : col-1]
+	after := input[col:end]
+	msg := "\"" + dots1 + before + " !!>> " + after + dots2 + "\""
+	return msg
+}
+
+type CqlErrorListener struct {
+	*antlr.DefaultErrorListener
+	errorCount int
+	line       int
+	col        int
+	msg        string
+}
+
+func (l *CqlErrorListener) SyntaxError(recognizer antlr.Recognizer, offendingSymbol interface{}, line, column int, msg string, e antlr.RecognitionException) {
+	//-- only report first error (but entire input is scanned by parser)
+	if l.errorCount >= 1 {
+		return
+	}
+	l.errorCount += 1
+	l.line = line
+	l.col = column
+	l.msg = msg
+}
+
+func (l *CqlErrorListener) ReportAmbiguity(recognizer antlr.Parser, dfa *antlr.DFA, startIndex, stopIndex int, exact bool, ambigAlts *antlr.BitSet, configs antlr.ATNConfigSet) {
+	l.errorCount += 1
+}
+func (l *CqlErrorListener) ReportAttemptingFullContext(recognizer antlr.Parser, dfa *antlr.DFA, startIndex, stopIndex int, conflictingAlts *antlr.BitSet, configs antlr.ATNConfigSet) {
+	l.errorCount += 1
+}
+func (l *CqlErrorListener) ReportContextSensitivity(recognizer antlr.Parser, dfa *antlr.DFA, startIndex, stopIndex, prediction int, configs antlr.ATNConfigSet) {
+	l.errorCount += 1
+}
+
+//----------------------------------
 
 type cqlListener struct {
 	*BaseCQLListener
@@ -21,27 +109,38 @@ func NewCqlListener() *cqlListener {
 	this.result = make(map[*antlr.BaseRuleContext]string)
 	return this
 }
-
-func TranspileToSQL(cqlStr string) string {
-	if len(cqlStr) < 1 {
-		return ""
-	}
-	// Setup the input
-	is := antlr.NewInputStream(cqlStr)
-
-	// Create the Lexer
-	lexer := NewCqlLexer(is)
-	stream := antlr.NewCommonTokenStream(lexer, antlr.TokenDefaultChannel)
-	parser := NewCQL(stream)
-	tree := parser.CqlFilter()
-	// Finally parse the expression (by walking the tree)
-	listener := NewCqlListener()
-	antlr.ParseTreeWalkerDefault.Walk(listener, tree)
-	return listener.GetSQL()
-}
-
 func (l *cqlListener) GetSQL() string {
 	return l.sql
+}
+
+// helper function to avoid nil pointer problems
+func (l *cqlListener) sqlFrag(ctx antlr.ParserRuleContext) string {
+	if ctx == nil {
+		return ""
+	}
+	frag := l.result[ctx.GetBaseRuleContext()]
+	//log.Debug("sqlFrag for " + ctx.GetText() + " -> " + frag)
+	return frag
+}
+
+func (l *cqlListener) saveFrag(ctx antlr.ParserRuleContext, sql string) {
+	l.result[ctx.GetBaseRuleContext()] = sql
+}
+
+// helper function to avoid nil pointer problems
+func getText(ctx antlr.ParserRuleContext) string {
+	if ctx == nil {
+		return ""
+	}
+	return ctx.GetText()
+}
+
+// helper function to avoid nil pointer problems
+func getNodeText(node antlr.TerminalNode) string {
+	if node == nil {
+		return ""
+	}
+	return node.GetText()
 }
 
 /*
@@ -51,88 +150,86 @@ func (l *cqlListener) EnterEveryRule(ctx antlr.ParserRuleContext) {
 */
 
 func (l *cqlListener) ExitCqlFilter(ctx *CqlFilterContext) {
-	exctx := ctx.BooleanValueExpression()
-	l.sql = l.result[exctx.GetBaseRuleContext()]
+	l.sql = l.sqlFrag(ctx.BooleanValueExpression())
 }
 
 func (l *cqlListener) ExitBooleanValueExpression(ctx *BooleanValueExpressionContext) {
-	sql := l.result[ctx.BooleanTerm().GetBaseRuleContext()]
+	sql := l.sqlFrag(ctx.BooleanTerm())
 	if ctx.OR() != nil {
-		expr := l.result[ctx.BooleanValueExpression().GetBaseRuleContext()]
+		expr := l.sqlFrag(ctx.BooleanValueExpression())
 		sql = expr + " OR " + sql
 	}
-	l.result[ctx.GetBaseRuleContext()] = sql
+	l.saveFrag(ctx, sql)
 }
 
 func (l *cqlListener) ExitBooleanTerm(ctx *BooleanTermContext) {
-	sql := l.result[ctx.BooleanFactor().GetBaseRuleContext()]
+	sql := l.sqlFrag(ctx.BooleanFactor())
 	if ctx.AND() != nil {
-		expr := l.result[ctx.BooleanTerm().GetBaseRuleContext()]
+		expr := l.sqlFrag(ctx.BooleanTerm())
 		sql = expr + " AND " + sql
 	}
-	l.result[ctx.GetBaseRuleContext()] = sql
+	l.saveFrag(ctx, sql)
 }
 
 func (l *cqlListener) ExitBooleanFactor(ctx *BooleanFactorContext) {
-	sql := l.result[ctx.BooleanPrimary().GetBaseRuleContext()]
+	sql := l.sqlFrag(ctx.BooleanPrimary())
 	if ctx.NOT() != nil {
 		sql = " NOT " + sql
 	}
-	l.result[ctx.GetBaseRuleContext()] = sql
+	l.saveFrag(ctx, sql)
 }
 
 func (l *cqlListener) ExitBooleanPrimary(ctx *BooleanPrimaryContext) {
 	var sql string
 	if ctx.LEFTPAREN() == nil {
-		sql = l.result[ctx.Predicate().GetBaseRuleContext()]
+		sql = l.sqlFrag(ctx.Predicate())
 	} else {
-		sql = "(" + l.result[ctx.BooleanValueExpression().GetBaseRuleContext()] + ")"
+		sql = "(" + l.sqlFrag(ctx.BooleanValueExpression()) + ")"
 	}
-	l.result[ctx.GetBaseRuleContext()] = sql
+	l.saveFrag(ctx, sql)
 }
 
 func (l *cqlListener) ExitPredicate(ctx *PredicateContext) {
 	var sql string
 	if ctx.BinaryComparisonPredicate() != nil {
-		sql = l.result[ctx.BinaryComparisonPredicate().GetBaseRuleContext()]
+		sql = l.sqlFrag(ctx.BinaryComparisonPredicate())
 	} else if ctx.LikePredicate() != nil {
-		sql = l.result[ctx.LikePredicate().GetBaseRuleContext()]
+		sql = l.sqlFrag(ctx.LikePredicate())
 	} else if ctx.BetweenPredicate() != nil {
-		sql = l.result[ctx.BetweenPredicate().GetBaseRuleContext()]
+		sql = l.sqlFrag(ctx.BetweenPredicate())
 	} else if ctx.IsNullPredicate() != nil {
-		sql = l.result[ctx.IsNullPredicate().GetBaseRuleContext()]
+		sql = l.sqlFrag(ctx.IsNullPredicate())
 	} else if ctx.InPredicate() != nil {
-		sql = l.result[ctx.InPredicate().GetBaseRuleContext()]
+		sql = l.sqlFrag(ctx.InPredicate())
 	}
-	l.result[ctx.GetBaseRuleContext()] = sql
+	l.saveFrag(ctx, sql)
 }
 
 func (l *cqlListener) ExitBinaryComparisonPredicate(ctx *BinaryComparisonPredicateContext) {
-	expr1 := l.result[ctx.ScalarExpression(0).GetBaseRuleContext()]
-	expr2 := l.result[ctx.ScalarExpression(1).GetBaseRuleContext()]
-	op := ctx.ComparisonOperator().GetText()
+	expr1 := l.sqlFrag(ctx.ScalarExpression(0))
+	expr2 := l.sqlFrag(ctx.ScalarExpression(1))
+	op := getNodeText(ctx.ComparisonOperator())
 	sql := expr1 + " " + op + " " + expr2
-	log.Debug(sql)
-	l.result[ctx.GetBaseRuleContext()] = sql
+	l.saveFrag(ctx, sql)
 }
 
 func (l *cqlListener) ExitScalarExpression(ctx *ScalarExpressionContext) {
 	var sql string
 	if ctx.PropertyName() != nil {
-		sql = quotedName(ctx.PropertyName().GetText())
+		sql = quotedName(getText(ctx.PropertyName()))
 	} else if ctx.CharacterLiteral() != nil {
-		sql = quotedText(ctx.CharacterLiteral().GetText())
+		sql = quotedText(getText(ctx.CharacterLiteral()))
 	} else if ctx.NumericLiteral() != nil {
-		sql = ctx.NumericLiteral().GetText()
+		sql = getText(ctx.NumericLiteral())
 	} else if ctx.BooleanLiteral() != nil {
-		sql = ctx.BooleanLiteral().GetText()
+		sql = getText(ctx.BooleanLiteral())
 	}
-	l.result[ctx.GetBaseRuleContext()] = sql
+	l.saveFrag(ctx, sql)
 }
 
 func (l *cqlListener) ExitLikePredicate(ctx *LikePredicateContext) {
 	var sb strings.Builder
-	sb.WriteString(quotedName(ctx.PropertyName().GetText()))
+	sb.WriteString(quotedName(getText(ctx.PropertyName())))
 	if ctx.NOT() != nil {
 		sb.WriteString(" NOT")
 	}
@@ -141,37 +238,35 @@ func (l *cqlListener) ExitLikePredicate(ctx *LikePredicateContext) {
 		op = " ILIKE "
 	}
 	sb.WriteString(op)
-	str := ctx.CharacterLiteral()
-	sb.WriteString(quotedText(str.GetText()))
-
-	l.result[ctx.GetBaseRuleContext()] = sb.String()
+	sb.WriteString(quotedText(getText(ctx.CharacterLiteral())))
+	l.saveFrag(ctx, sb.String())
 }
 
 func (l *cqlListener) ExitBetweenPredicate(ctx *BetweenPredicateContext) {
-	prop := quotedName(ctx.PropertyName().GetText())
+	prop := quotedName(getText(ctx.PropertyName()))
 	not := ""
 	if ctx.NOT() != nil {
 		not = " NOT"
 	}
-	expr1 := l.result[ctx.ScalarExpression(0).GetBaseRuleContext()]
-	expr2 := l.result[ctx.ScalarExpression(1).GetBaseRuleContext()]
+	expr1 := l.sqlFrag(ctx.ScalarExpression(0))
+	expr2 := l.sqlFrag(ctx.ScalarExpression(1))
 	sql := " " + prop + not + " BETWEEN " + expr1 + " AND " + expr2
-	l.result[ctx.GetBaseRuleContext()] = sql
+	l.saveFrag(ctx, sql)
 }
 
 func (l *cqlListener) ExitIsNullPredicate(ctx *IsNullPredicateContext) {
-	prop := quotedName(ctx.PropertyName().GetText())
+	prop := quotedName(getText(ctx.PropertyName()))
 	not := ""
 	if ctx.NOT() != nil {
 		not = " NOT"
 	}
 	sql := " " + prop + " IS" + not + " NULL"
-	l.result[ctx.GetBaseRuleContext()] = sql
+	l.saveFrag(ctx, sql)
 }
 
 func (l *cqlListener) ExitInPredicate(ctx *InPredicateContext) {
 	var sb strings.Builder
-	sb.WriteString(quotedName(ctx.PropertyName().GetText()))
+	sb.WriteString(quotedName(getText(ctx.PropertyName())))
 	if ctx.NOT() != nil {
 		sb.WriteString(" NOT")
 	}
@@ -179,7 +274,7 @@ func (l *cqlListener) ExitInPredicate(ctx *InPredicateContext) {
 	inPredValueList(ctx, &sb)
 	sb.WriteString(") ")
 	sql := sb.String()
-	l.result[ctx.GetBaseRuleContext()] = sql
+	l.saveFrag(ctx, sql)
 }
 
 func inPredValueList(ctx *InPredicateContext, sb *strings.Builder) {

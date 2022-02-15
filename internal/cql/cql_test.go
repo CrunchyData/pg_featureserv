@@ -56,10 +56,21 @@ func TestBooleanExpression(t *testing.T) {
 	checkCQL(t, "NOT x IS NOT NULL", "NOT  \"x\" IS NOT NULL")
 }
 
+func TestErrors(t *testing.T) {
+	checkCQLError(t, "x y")
+	checkCQLError(t, "x == y")
+	checkCQLError(t, "x > 10y")
+}
+
 func checkCQL(t *testing.T, cqlStr string, sql string) {
-	actual := TranspileToSQL(cqlStr)
+	actual, _ := TranspileToSQL(cqlStr)
 	actual = strings.TrimSpace(actual)
 	equals(t, sql, actual, "")
+}
+
+func checkCQLError(t *testing.T, cqlStr string) {
+	_, err := TranspileToSQL(cqlStr)
+	isError(t, err, "")
 }
 
 // equals fails the test if exp is not equal to act.
@@ -67,6 +78,14 @@ func equals(tb testing.TB, exp, act interface{}, msg string) {
 	if !reflect.DeepEqual(exp, act) {
 		_, file, line, _ := runtime.Caller(1)
 		fmt.Printf("%s:%d: %s - expected: %#v; got: %#v\n", filepath.Base(file), line, msg, exp, act)
+		tb.FailNow()
+	}
+}
+
+func isError(tb testing.TB, err error, msg string) {
+	if err == nil {
+		_, file, line, _ := runtime.Caller(1)
+		fmt.Printf("%s:%d: %s - expected error\n", filepath.Base(file), line, msg)
 		tb.FailNow()
 	}
 }
