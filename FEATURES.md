@@ -44,6 +44,8 @@ It includes [*OGC API - Features*](http://docs.opengeospatial.org/is/17-069r3/17
   - `sortby=name`, `sortby=+name`, `sortby=-name`
 - [x] filtering by property value ( `name=value`, as per [spec sec. 7.15.5](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html#_parameters_for_filtering_on_feature_properties) )
 - [x] `filter` with CQL expressions (see below)
+- [ ] `filter-lang`
+- [ ] `filter-crs`
 
 ### Query parameters - Extension
 - [x] `precision` to set output precision of GeoJSON coordinates
