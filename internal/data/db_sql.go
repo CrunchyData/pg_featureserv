@@ -133,7 +133,8 @@ func sqlFeatures(tbl *Table, param *QueryParam) (string, []interface{}) {
 	propCols := sqlColList(param.Columns, tbl.DbTypes, true)
 	bboxFilter := sqlBBoxFilter(tbl.GeometryColumn, tbl.Srid, param.Bbox, param.BboxCrs)
 	attrFilter, attrVals := sqlAttrFilter(param.Filter)
-	sqlWhere := sqlWhere(bboxFilter, attrFilter)
+	cqlFilter := sqlCqlFilter(param.FilterSql)
+	sqlWhere := sqlWhere(bboxFilter, attrFilter, cqlFilter)
 	sqlGroupBy := sqlGroupBy(param.GroupBy)
 	sqlOrderBy := sqlOrderBy(param.SortBy)
 	sqlLimitOffset := sqlLimitOffset(param.Limit, param.Offset)
@@ -190,13 +191,24 @@ func sqlFeature(tbl *Table, param *QueryParam) string {
 	return sql
 }
 
-func sqlWhere(cond1 string, cond2 string) string {
+func sqlCqlFilter(sql string) string {
+	//log.Debug("SQL = " + sql)
+	if len(sql) == 0 {
+		return ""
+	}
+	return "(" + sql + ")"
+}
+
+func sqlWhere(cond1 string, cond2 string, cond3 string) string {
 	var condList []string
 	if len(cond1) > 0 {
 		condList = append(condList, cond1)
 	}
 	if len(cond2) > 0 {
 		condList = append(condList, cond2)
+	}
+	if len(cond3) > 0 {
+		condList = append(condList, cond3)
 	}
 	where := strings.Join(condList, " AND ")
 	if len(where) > 0 {
@@ -205,7 +217,7 @@ func sqlWhere(cond1 string, cond2 string) string {
 	return where
 }
 
-func sqlAttrFilter(filterConds []*FilterCond) (string, []interface{}) {
+func sqlAttrFilter(filterConds []*PropertyFilter) (string, []interface{}) {
 	var vals []interface{}
 	var exprItems []string
 	for i, cond := range filterConds {
@@ -309,21 +321,24 @@ func sqlGeomFunction(fn *Function, args map[string]string, propCols []string, pa
 	sqlGeomCol := sqlGeomCol(fn.GeometryColumn, param)
 	sqlPropCols := sqlColList(propCols, fn.Types, true)
 	bboxFilter := sqlBBoxFilter(fn.GeometryColumn, SRID_4326, param.Bbox, param.BboxCrs)
-	sqlWhere := sqlWhere(bboxFilter, "")
+	cqlFilter := sqlCqlFilter(param.FilterSql)
+	sqlWhere := sqlWhere(bboxFilter, cqlFilter, "")
 	sqlOrderBy := sqlOrderBy(param.SortBy)
 	sqlLimitOffset := sqlLimitOffset(param.Limit, param.Offset)
 	sql := fmt.Sprintf(sqlFmtGeomFunction, sqlGeomCol, sqlPropCols, fn.Schema, fn.Name, sqlArgs, sqlWhere, sqlOrderBy, sqlLimitOffset)
 	return sql, argVals
 }
 
-const sqlFmtFunction = "SELECT %v FROM \"%s\".\"%s\"( %v ) %v %s;"
+const sqlFmtFunction = "SELECT %v FROM \"%s\".\"%s\"( %v ) %v %v %s;"
 
 func sqlFunction(fn *Function, args map[string]string, propCols []string, param *QueryParam) (string, []interface{}) {
 	sqlArgs, argVals := sqlFunctionArgs(fn, args)
 	sqlPropCols := sqlColList(propCols, fn.Types, false)
+	cqlFilter := sqlCqlFilter(param.FilterSql)
+	sqlWhere := sqlWhere(cqlFilter, "", "")
 	sqlOrderBy := sqlOrderBy(param.SortBy)
 	sqlLimitOffset := sqlLimitOffset(param.Limit, param.Offset)
-	sql := fmt.Sprintf(sqlFmtFunction, sqlPropCols, fn.Schema, fn.Name, sqlArgs, sqlOrderBy, sqlLimitOffset)
+	sql := fmt.Sprintf(sqlFmtFunction, sqlPropCols, fn.Schema, fn.Name, sqlArgs, sqlWhere, sqlOrderBy, sqlLimitOffset)
 	return sql, argVals
 }
 

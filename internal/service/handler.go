@@ -273,7 +273,10 @@ func handleCollectionItems(w http.ResponseWriter, r *http.Request) *appError {
 	if tbl == nil {
 		return appErrorNotFoundFmt(err1, api.ErrMsgCollectionNotFound, name)
 	}
-	param := createQueryParams(&reqParam, tbl.Columns)
+	param, err := createQueryParams(&reqParam, tbl.Columns)
+	if err != nil {
+		return appErrorBadRequest(err, err.Error())
+	}
 	param.Filter = parseFilter(reqParam.Values, tbl.DbTypes)
 
 	ctx := r.Context()
@@ -353,7 +356,7 @@ func handleItem(w http.ResponseWriter, r *http.Request) *appError {
 	if tbl == nil {
 		return appErrorNotFoundFmt(err1, api.ErrMsgCollectionNotFound, name)
 	}
-	param := createQueryParams(&reqParam, tbl.Columns)
+	param, err := createQueryParams(&reqParam, tbl.Columns)
 
 	ctx := r.Context()
 	switch format {
@@ -583,7 +586,10 @@ func handleFunctionItems(w http.ResponseWriter, r *http.Request) *appError {
 	if fn == nil && err == nil {
 		return appErrorNotFoundFmt(err, api.ErrMsgFunctionNotFound, name)
 	}
-	param := createQueryParams(&reqParam, fn.OutNames)
+	param, err := createQueryParams(&reqParam, fn.OutNames)
+	if err != nil {
+		return appErrorBadRequest(err, err.Error())
+	}
 	fnArgs := restrict(reqParam.Values, fn.InNames)
 	//log.Debugf("Function request args: %v ", fnArgs)
 

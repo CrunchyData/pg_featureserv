@@ -22,6 +22,7 @@ import (
 
 	"github.com/CrunchyData/pg_featureserv/internal/api"
 	"github.com/CrunchyData/pg_featureserv/internal/conf"
+	"github.com/CrunchyData/pg_featureserv/internal/cql"
 	"github.com/CrunchyData/pg_featureserv/internal/data"
 )
 
@@ -35,6 +36,7 @@ func parseRequestParams(r *http.Request) (api.RequestParam, error) {
 		Offset:    0,
 		Precision: -1,
 		BboxCrs:   data.SRID_4326,
+		Filter:    "",
 		Values:    paramValues,
 	}
 
@@ -72,6 +74,9 @@ func parseRequestParams(r *http.Request) (api.RequestParam, error) {
 		return param, err
 	}
 	param.BboxCrs = bboxcrs
+
+	// --- filter parameter
+	param.Filter = parseString(paramValues, api.ParamFilter)
 
 	// --- properties parameter
 	props, err := parseProperties(paramValues)
@@ -125,6 +130,10 @@ func extractSingleArgs(queryArgs url.Values) api.NameValMap {
 		vals[key] = queryval
 	}
 	return vals
+}
+
+func parseString(values api.NameValMap, key string) string {
+	return strings.TrimSpace(values[key])
 }
 
 func parseInt(values api.NameValMap, key string, minVal int, maxVal int, defaultVal int) (int, error) {
@@ -390,15 +399,15 @@ func parseTransformFun(def string) data.TransformFunction {
 }
 
 // parseFilter creates a filter list from applicable query parameters
-func parseFilter(paramMap map[string]string, colNameMap map[string]string) []*data.FilterCond {
-	var conds []*data.FilterCond
+func parseFilter(paramMap map[string]string, colNameMap map[string]string) []*data.PropertyFilter {
+	var conds []*data.PropertyFilter
 	for name, val := range paramMap {
 		//log.Debugf("testing request param %v", name)
 		if api.IsParameterReservedName(name) {
 			continue
 		}
 		if _, ok := colNameMap[name]; ok {
-			cond := &data.FilterCond{Name: name, Value: val}
+			cond := &data.PropertyFilter{Name: name, Value: val}
 			conds = append(conds, cond)
 			//log.Debugf("Adding filter %v = %v ", name, val)
 		}
@@ -407,7 +416,7 @@ func parseFilter(paramMap map[string]string, colNameMap map[string]string) []*da
 }
 
 // createQueryParams applies any cross-parameter logic
-func createQueryParams(param *api.RequestParam, colNames []string) *data.QueryParam {
+func createQueryParams(param *api.RequestParam, colNames []string) (*data.QueryParam, error) {
 	query := data.QueryParam{
 		Crs:           param.Crs,
 		Limit:         param.Limit,
@@ -436,6 +445,12 @@ func createQueryParams(param *api.RequestParam, colNames []string) *data.QueryPa
 		}
 	}
 	query.Columns = normalizePropNames(cols, colNames)
+	//-- convert filter CQL
+	sql, err := cql.TranspileToSQL(param.Filter)
+	if err != nil {
+		return &query, err
+	}
+	query.FilterSql = sql
 
-	return &query
+	return &query, nil
 }

@@ -3,7 +3,7 @@ module github.com/CrunchyData/pg_featureserv
 go 1.13
 
 require (
-	github.com/BurntSushi/toml v0.3.1
+	github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20220209173558-ad29539cd2e9
 	github.com/getkin/kin-openapi v0.2.0
 	github.com/gorilla/handlers v1.4.2
 	github.com/gorilla/mux v1.7.3

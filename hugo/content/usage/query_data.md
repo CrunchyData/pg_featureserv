@@ -63,7 +63,19 @@ to be filtered.  The value of the parameter is the desired property value.
 http://localhost:9000/collections/ne.countries/items?continent=Europe
 ```
 
-### Specify responses properties
+### Filter by CQL expression
+
+The response feature set can be filtered to include
+only features which satisfy a logical expression written in
+the Common Query Languae (CQL).
+See the [CQL section](/query_data/cql/) for more details.
+
+#### Example
+```
+http://localhost:9000/collections/ne.countries/items?filter=continent='Europe' AND pop_est<2000000
+```
+
+### Specify response properties
 
 The query parameter `properties=PROP1,PROP2,PROP3...`
 specifies the feature properties returned in the response.

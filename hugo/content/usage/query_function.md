@@ -56,6 +56,18 @@ This parameter is only useful for **spatial** functions.
 http://localhost:9000/functions/countries_name/items?bbox=10.4,43.3,26.4,47.7
 ```
 
+### Filter by CQL expression
+
+The response feature set can be filtered to include
+only features which satisfy a logical expression written in
+the Common Query Languae (CQL).
+See the [CQL section](/query_data/cql/) for more details.
+
+#### Example
+```
+http://localhost:9000/functions/countries_name/items?name_prefix=C&filter=continent='Europe' AND pop_est<2000000
+```
+
 ### Specify response properties
 
 The query parameter `properties=PROP1,PROP2,PROP3...`
