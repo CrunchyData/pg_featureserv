@@ -61,15 +61,14 @@ http://localhost:9000/collections/ne.countries/items.html
 
 ## Query with a CQL filter
 
-The features returned can be restricted using the `filter` parameter
-with a CQL expression.
-For instance, the countries in the Americas can be returned using the filter `continent LIKE '%America'`.  Note that the `%` wildcard character has
-been URL-encoded as `%25`.
+A more powerful way to control the features returned is to use a `filter` parameter with a CQL expression.
+For instance, the most populated countries in Europe can be returned using the filter `continent = 'Europe' AND pop_est > 40000000`.
 
 ```
 http://localhost:9000/collections/ne.countries/items.html
-?filter=continent LIKE '%25America'&properties=gid,name,continent&limit=100
+?filter=continent = 'Europe' AND pop_est > 40000000&properties=gid,name,continent,pop_est&limit=100
 ```
+![Map view of query with CQL filter](/ex-query-data-countries-cql-filter.png)
 
 ## Query a Feature by ID
 
