@@ -88,6 +88,16 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 			AllowEmptyValue: false,
 		},
 	}
+	paramFilter := openapi3.ParameterRef{
+		Value: &openapi3.Parameter{
+			Name:            "filter",
+			Description:     "CQL filter to apply.",
+			In:              "query",
+			Required:        false,
+			Schema:          &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+			AllowEmptyValue: false,
+		},
+	}
 	paramProperties := openapi3.ParameterRef{
 		Value: &openapi3.Parameter{
 			Name:        "properties",
@@ -197,9 +207,9 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 			},
 		},
 		Servers: openapi3.Servers{
-		 &openapi3.Server{
-			 URL: servername,
-		 },
+			&openapi3.Server{
+				URL: servername,
+			},
 		},
 		Paths: openapi3.Paths{
 			apiBase: &openapi3.PathItem{
@@ -290,14 +300,15 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 					OperationID: "getCollectionFeatures",
 					Parameters: openapi3.Parameters{
 						&paramCollectionID,
-						&paramLimit,
-						&paramOffset,
-						&paramCrs,
 						&paramBbox,
 						&paramBboxCrs,
+						&paramFilter,
+						&paramTransform,
 						&paramProperties,
 						&paramSortBy,
-						&paramTransform,
+						&paramCrs,
+						&paramLimit,
+						&paramOffset,
 						/* TODO
 						&openapi3.ParameterRef{
 							Value: &openapi3.Parameter{
@@ -410,14 +421,15 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 					OperationID: "getFunctionFeatures",
 					Parameters: openapi3.Parameters{
 						&paramFunctionID,
-						&paramLimit,
-						&paramOffset,
-						&paramCrs,
 						&paramBbox,
 						&paramBboxCrs,
+						&paramFilter,
+						&paramTransform,
 						&paramProperties,
 						&paramSortBy,
-						&paramTransform,
+						&paramCrs,
+						&paramLimit,
+						&paramOffset,
 
 						/* TODO
 						&openapi3.ParameterRef{
