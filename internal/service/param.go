@@ -252,13 +252,12 @@ func parseSortBy(values api.NameValMap) ([]data.Sorting, error) {
 	sortCols := strings.Split(valLow, ",")
 	sortCol := sortCols[0]
 	isDesc := false
-	name := sortCol
+	name := strings.TrimSpace(sortCol)
 	if strings.HasPrefix(name, "+") {
-		name = name[1:]
+		name = strings.TrimSpace(name[1:])
 		isDesc = false
-	}
-	if strings.HasPrefix(name, "-") {
-		name = name[1:]
+	} else if strings.HasPrefix(name, "-") {
+		name = strings.TrimSpace(name[1:])
 		isDesc = true
 	}
 	sorting = append(sorting, data.Sorting{Name: name, IsDesc: isDesc})

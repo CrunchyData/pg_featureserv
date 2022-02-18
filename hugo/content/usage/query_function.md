@@ -134,6 +134,8 @@ The default is ascending order.
 * `sortby=+PROP` orders results by `PROP` in ascending order
 * `sortby=-PROP` orders results by `PROP` in descending order
 
+**NOTE:** if used, `+` needs to be URL-encoded as `%2B`.
+
 #### Example
 ```
 http://localhost:9000/functions/countries_name/items?sortby=name
