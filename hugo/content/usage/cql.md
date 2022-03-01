@@ -115,7 +115,7 @@ and **spatial predicates**.
 ### Geometry Literals
 
 Geometry literals use Well-Known Text (WKT) to describe
-values for points, lines, polygons, and collections:
+values for points, lines, polygons (with holes), and collections:
 
 ```
 POINT (1 2)

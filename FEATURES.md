@@ -64,9 +64,11 @@ It includes [*OGC API - Features*](http://docs.opengeospatial.org/is/17-069r3/17
 - [x] property names
 - [x] character literals
 - [x] numeric literals
-- [x] spatial literals
+- [x] geometry literals
+  - `POINT`,`LINESTRING`,`POLYGON`,`MULTIPOINT`,`MULTILINESTRING`,`MULTIPOLYGON`,`GEOMETRYCOLLECTION`,`ENVELOPE`
 - [ ] temporal literals
-- [x] binary comparisons (`<`,`<=`,`>`,`>=`,`=`,`<>`)
+- [x] binary comparisons
+  - `<`,`<=`,`>`,`>=`,`=`,`<>`
 - [x] `property [NOT] BETWEEN a AND B`
 - [x] `property [NOT] IN ( value-list )`
 - [x] `property [NOT] (LIKE | ILIKE) pattern`
@@ -74,6 +76,9 @@ It includes [*OGC API - Features*](http://docs.opengeospatial.org/is/17-069r3/17
 - [x] `property [NOT] IS NULL`
 - [x] boolean combinations (`AND`,`OR`,`NOT`)
 - [x] spatial predicates
+  - `INTERSECTS`,`DISJOINT`,`CONTAINS`,`WITHIN`,`EQUALS`,`CROSSES`,`OVERLAPS`,`TOUCHES`
+- [x] distance predicate
+  - `DWITHIN`
 - [ ] temporal predicates
 - [ ] functions
 
