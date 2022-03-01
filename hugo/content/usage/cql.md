@@ -174,7 +174,7 @@ and a geometry literal value.
 
 #### Examples
 ```
-INTERSECTS(geom, ENVELOPE(-100 49, -90, 50) )
+INTERSECTS(geom, ENVELOPE(-100, 49, -90, 50) )
 
 CONTAINS(geom, POINT(-100 49) )
 ```
