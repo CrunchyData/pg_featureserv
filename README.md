@@ -12,9 +12,9 @@ It supports the [*OGC API - Features*](https://ogcapi.ogc.org/features/) REST AP
 ## Features
 
 * Implements the [*OGC API - Features*](https://ogcapi.ogc.org/features/) standard.
-  * Supports standard request parameters `limit`, `bbox`, property filtering, `sortby`, `crs`, `bbox-crs`
-  * Provides [CQL filtering](https://portal.ogc.org/files/96288), including spatial support, via parameters `filter` and `filter-crs`
-  * Extended parameters include `offset`, `properties`, `transform`, `precision`, `groupby`
+  * Standard query parameters: `limit`, `bbox`, `bbox-crs`, property filtering, `sortby`, `crs`
+  * Query parameters `filter` and `filter-crs` allow [CQL filtering](https://portal.ogc.org/files/96288), with spatial support 
+  * Extended query parameters: `offset`, `properties`, `transform`, `precision`, `groupby`
 * Data responses are formatted in JSON and GeoJSON
 * Provides a simple HTML user interface, with web maps to view spatial data
 * Uses the power of PostgreSQL to reduce the amount of code
