@@ -117,12 +117,12 @@ subexpressions in parentheses.
 (continent = 'Europe' OR continent = 'Africa') AND pop_est < 1000000
 ```
 
-## Spatial filters
+# Spatial filters
 
 CQL supports spatial filtering by providing **geometry literals**
 and **spatial predicates**.
 
-### Geometry Literals
+## Geometry Literals
 
 Geometry literals use [Well-Known Text](https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry)
 (WKT) to describe
@@ -149,7 +149,7 @@ ENVELOPE (1, 2, 3, 4)
 By default the coordinate system of geometry literal values is assumed to be geodetic (SRID = 4326).
 The `filter-crs=SRID` query parameter can be used to specify that the geometry literals in a filter expression are in a different coordinate system.
 
-### Spatial predicates
+## Spatial predicates
 
 Spatial predicates allow filtering features via spatial conditions
 on the feature geometry.
