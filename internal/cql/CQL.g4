@@ -34,7 +34,8 @@ predicate : binaryComparisonPredicate
             | betweenPredicate
             | isNullPredicate
             | inPredicate
-//            | spatialPredicate
+            | spatialPredicate
+            | distancePredicate
 //            | temporalPredicate
 //            | arrayPredicate
 //            | existencePredicate
@@ -86,6 +87,8 @@ booleanLiteral: BooleanLiteral;
 
 spatialPredicate :  SpatialOperator LEFTPAREN geomExpression COMMA geomExpression RIGHTPAREN;
 
+distancePredicate :  DistanceOperator LEFTPAREN geomExpression COMMA geomExpression COMMA NumericLiteral RIGHTPAREN;
+
 /*
 # A geometric expression is a property name of a geometry-valued property,
 # a geometric literal (expressed as WKT) or a function that returns a
@@ -98,9 +101,6 @@ geomExpression : propertyName
 /*
 #=============================================================================#
 # Definition of GEOMETRIC literals
-#
-# NOTE: This is basically BNF that define WKT encoding; it would be nice
-#       to instead reference some normative BNF for WKT.
 #=============================================================================#
 */
 
@@ -113,46 +113,29 @@ geomLiteral: point
              | geometryCollection
              | envelope;
 
-point : POINT LEFTPAREN coordinate RIGHTPAREN;
+point : POINT pointList;
 
-linestring : LINESTRING linestringDef;
+pointList : LEFTPAREN coordinate RIGHTPAREN;
 
-linestringDef: LEFTPAREN coordinate (COMMA coordinate)* RIGHTPAREN;
+linestring : LINESTRING coordList;
+
+coordList: LEFTPAREN coordinate (COMMA coordinate)* RIGHTPAREN;
 
 polygon : POLYGON polygonDef;
 
-polygonDef : LEFTPAREN linestringDef (COMMA linestringDef)* RIGHTPAREN;
+polygonDef : LEFTPAREN coordList (COMMA coordList)* RIGHTPAREN;
 
-multiPoint : MULTIPOINT LEFTPAREN coordinate (COMMA coordinate)* RIGHTPAREN;
+multiPoint : MULTIPOINT LEFTPAREN pointList (COMMA pointList)* RIGHTPAREN;
 
-multiLinestring : MULTILINESTRING LEFTPAREN linestringDef (COMMA linestringDef)* RIGHTPAREN;
+multiLinestring : MULTILINESTRING LEFTPAREN coordList (COMMA coordList)* RIGHTPAREN;
 
 multiPolygon : MULTIPOLYGON LEFTPAREN polygonDef (COMMA polygonDef)* RIGHTPAREN;
 
 geometryCollection : GEOMETRYCOLLECTION LEFTPAREN geomLiteral (COMMA geomLiteral)* RIGHTPAREN;
 
-envelope: ENVELOPE LEFTPAREN westBoundLon COMMA southBoundLat COMMA (minElev COMMA)? eastBoundLon  COMMA northBoundLat (COMMA maxElev)? RIGHTPAREN;
+envelope: ENVELOPE LEFTPAREN NumericLiteral COMMA NumericLiteral COMMA NumericLiteral  COMMA NumericLiteral RIGHTPAREN;
 
-coordinate : xCoord yCoord (zCoord)?;
-
-xCoord : NumericLiteral;
-
-yCoord : NumericLiteral;
-
-zCoord : NumericLiteral;
-
-westBoundLon : NumericLiteral;
-
-eastBoundLon : NumericLiteral;
-
-northBoundLat : NumericLiteral;
-
-southBoundLat : NumericLiteral;
-
-minElev : NumericLiteral;
-
-maxElev : NumericLiteral;
-
+coordinate : NumericLiteral NumericLiteral;
 
 /*
 #=============================================================================#
@@ -160,7 +143,6 @@ maxElev : NumericLiteral;
 # specified temporal operator.
 #=============================================================================#
 */
-//CHANGE: allow intervals with /
 temporalPredicate : temporalExpression (TemporalOperator | ComparisonOperator) temporalExpression;
 
 temporalExpression : propertyName
@@ -174,8 +156,6 @@ temporalLiteral: TemporalLiteral;
 # The IN predicate
 #=============================================================================#
 */
-//CHANGE: optional PropertyName for id filters
-//CHANGE: added missing comma
 /*
 inPredicate : (propertyName | function)? (NOT)? IN LEFTPAREN ( characterLiteral |
                                             numericLiteral |

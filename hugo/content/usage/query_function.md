@@ -68,7 +68,19 @@ See the [CQL section](/query_data/cql/) for more details.
 http://localhost:9000/functions/countries_name/items?name_prefix=C&filter=continent='Europe' AND pop_est<2000000
 ```
 
-### Specify response properties
+### Filter geometry coordinate system
+
+By default the coordinate system of geometry literals in the filter expressionis
+is assumed to be 4326 (geodetic).
+A different coordinate system
+can be specified by using the query parameter `filter-crs=SRID`.
+
+#### Example
+```
+http://localhost:9000/functions/countries_name/items.json?filter=DWITHIN(geom,POINT(1209000+477000),1000)&filter-crs=3005
+```
+
+### Response properties
 
 The query parameter `properties=PROP1,PROP2,PROP3...`
 specifies the properties returned in the response.
@@ -82,7 +94,7 @@ no feature properties are returned.
 http://localhost:9000/functions/countries_name/items?properties=name
 ```
 
-### Specify response coordinate system
+### Response coordinate system
 
 The query parameter `crs=SRID`
 specifies the coordinate system to be used for the
@@ -90,9 +102,11 @@ feature geometry in the response.
 The SRID must be a coordinate system which is defined in the PostGIS instance.
 By default data is returned in WGS84 (SRID=4326) geodetic coordinate system.
 
-Note: GeoJSON technically does not support coordinate systems other than 4326,
+{{% note %}}
+GeoJSON technically does not support coordinate systems other than 4326,
 but the OGC API standard allows non-geodetic data to be encoded in GeoJSON.
 However, this data may not be compatible with other systems.
+{{% /note %}}
 
 This parameter is only useful for **spatial** functions.
 

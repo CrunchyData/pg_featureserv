@@ -2,8 +2,9 @@
 
 ## References
 
-1. [OGC API for Features version 1.0](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html)
-1. [OpenAPI Specifcation version 3.0.2](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md)
+* [OGC API for Features version 1.0](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html)
+* [OGC API - Features - Part 3: Filtering and the Common Query Language (CQL)](https://portal.ogc.org/files/96288)
+* [OpenAPI Specifcation version 3.0.2](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md)
 
 ## Notes
 
@@ -69,25 +70,27 @@ Produces a dataset of items from the collection (as GeoJSON)
 Path: `/collections/{cid}/items`
 
 ### Parameters
-* `crs=SRID` - specifies the CRS for the output feature geometry
-* `limit=N` - limits the number of features in the response.
-* `offset=N` - starts the response at an offset.
-* `sortby=[+|-]PROP` - sort the response items by a property (ascending (default) or descending).
 * `bbox=mix,miny,maxx,maxy` - filter features in response to ones intersecting a bounding box (in lon/lat or specified CRS).
 * `bbox-crs=SRID` - specify CRS for the `bbox` coordinates
 * `<propname>=val` - filter features for a property having a value.
   Multiple property filters are ANDed together.
-* `properties=PROP-LIST`- return only specific properties (comma-separated).
-  If PROP-LIST is empty, no properties are returned.
-  If not present, all properties are returned.
-* `precision=N` - set precision of GeoJSON ordinates to use N decimal places
+* `filter=cql-expr` - filters features via a CQL expression
+* `filter-crs=SRID` - specifies the CRS for geometry values in the CQL filter
 * `transform=fun1[,args][|fun2,args...]` - transform the feature geometry by a geometry function pipeline.
 * `groupby=PROP-NAME` - group results on a property.
 Usually used with an aggregate `transform` function.
+* `properties=PROP-LIST`- return only specific properties (comma-separated).
+  If PROP-LIST is empty, no properties are returned.
+  If not present, all properties are returned.
+* `crs=SRID` - specifies the CRS for the output feature geometry
+* `precision=N` - set precision of GeoJSON ordinates to use N decimal places
+* `sortby=[+|-]PROP` - sort the response items by a property (ascending (default) or descending).
+* `limit=N` - limits the number of features in the response.
+* `offset=N` - starts the response at an offset.
 
 ### Response
 
-GeoJSON document containg the features produced by the request.
+GeoJSON document containing the features resulting from the request query.
 
 #### Links
 * self - `/collections/{cid}/items.json` - This document as JSON

@@ -116,6 +116,12 @@ func (s *BaseCQLListener) EnterSpatialPredicate(ctx *SpatialPredicateContext) {}
 // ExitSpatialPredicate is called when production spatialPredicate is exited.
 func (s *BaseCQLListener) ExitSpatialPredicate(ctx *SpatialPredicateContext) {}
 
+// EnterDistancePredicate is called when production distancePredicate is entered.
+func (s *BaseCQLListener) EnterDistancePredicate(ctx *DistancePredicateContext) {}
+
+// ExitDistancePredicate is called when production distancePredicate is exited.
+func (s *BaseCQLListener) ExitDistancePredicate(ctx *DistancePredicateContext) {}
+
 // EnterGeomExpression is called when production geomExpression is entered.
 func (s *BaseCQLListener) EnterGeomExpression(ctx *GeomExpressionContext) {}
 
@@ -134,17 +140,23 @@ func (s *BaseCQLListener) EnterPoint(ctx *PointContext) {}
 // ExitPoint is called when production point is exited.
 func (s *BaseCQLListener) ExitPoint(ctx *PointContext) {}
 
+// EnterPointList is called when production pointList is entered.
+func (s *BaseCQLListener) EnterPointList(ctx *PointListContext) {}
+
+// ExitPointList is called when production pointList is exited.
+func (s *BaseCQLListener) ExitPointList(ctx *PointListContext) {}
+
 // EnterLinestring is called when production linestring is entered.
 func (s *BaseCQLListener) EnterLinestring(ctx *LinestringContext) {}
 
 // ExitLinestring is called when production linestring is exited.
 func (s *BaseCQLListener) ExitLinestring(ctx *LinestringContext) {}
 
-// EnterLinestringDef is called when production linestringDef is entered.
-func (s *BaseCQLListener) EnterLinestringDef(ctx *LinestringDefContext) {}
+// EnterCoordList is called when production coordList is entered.
+func (s *BaseCQLListener) EnterCoordList(ctx *CoordListContext) {}
 
-// ExitLinestringDef is called when production linestringDef is exited.
-func (s *BaseCQLListener) ExitLinestringDef(ctx *LinestringDefContext) {}
+// ExitCoordList is called when production coordList is exited.
+func (s *BaseCQLListener) ExitCoordList(ctx *CoordListContext) {}
 
 // EnterPolygon is called when production polygon is entered.
 func (s *BaseCQLListener) EnterPolygon(ctx *PolygonContext) {}
@@ -193,60 +205,6 @@ func (s *BaseCQLListener) EnterCoordinate(ctx *CoordinateContext) {}
 
 // ExitCoordinate is called when production coordinate is exited.
 func (s *BaseCQLListener) ExitCoordinate(ctx *CoordinateContext) {}
-
-// EnterXCoord is called when production xCoord is entered.
-func (s *BaseCQLListener) EnterXCoord(ctx *XCoordContext) {}
-
-// ExitXCoord is called when production xCoord is exited.
-func (s *BaseCQLListener) ExitXCoord(ctx *XCoordContext) {}
-
-// EnterYCoord is called when production yCoord is entered.
-func (s *BaseCQLListener) EnterYCoord(ctx *YCoordContext) {}
-
-// ExitYCoord is called when production yCoord is exited.
-func (s *BaseCQLListener) ExitYCoord(ctx *YCoordContext) {}
-
-// EnterZCoord is called when production zCoord is entered.
-func (s *BaseCQLListener) EnterZCoord(ctx *ZCoordContext) {}
-
-// ExitZCoord is called when production zCoord is exited.
-func (s *BaseCQLListener) ExitZCoord(ctx *ZCoordContext) {}
-
-// EnterWestBoundLon is called when production westBoundLon is entered.
-func (s *BaseCQLListener) EnterWestBoundLon(ctx *WestBoundLonContext) {}
-
-// ExitWestBoundLon is called when production westBoundLon is exited.
-func (s *BaseCQLListener) ExitWestBoundLon(ctx *WestBoundLonContext) {}
-
-// EnterEastBoundLon is called when production eastBoundLon is entered.
-func (s *BaseCQLListener) EnterEastBoundLon(ctx *EastBoundLonContext) {}
-
-// ExitEastBoundLon is called when production eastBoundLon is exited.
-func (s *BaseCQLListener) ExitEastBoundLon(ctx *EastBoundLonContext) {}
-
-// EnterNorthBoundLat is called when production northBoundLat is entered.
-func (s *BaseCQLListener) EnterNorthBoundLat(ctx *NorthBoundLatContext) {}
-
-// ExitNorthBoundLat is called when production northBoundLat is exited.
-func (s *BaseCQLListener) ExitNorthBoundLat(ctx *NorthBoundLatContext) {}
-
-// EnterSouthBoundLat is called when production southBoundLat is entered.
-func (s *BaseCQLListener) EnterSouthBoundLat(ctx *SouthBoundLatContext) {}
-
-// ExitSouthBoundLat is called when production southBoundLat is exited.
-func (s *BaseCQLListener) ExitSouthBoundLat(ctx *SouthBoundLatContext) {}
-
-// EnterMinElev is called when production minElev is entered.
-func (s *BaseCQLListener) EnterMinElev(ctx *MinElevContext) {}
-
-// ExitMinElev is called when production minElev is exited.
-func (s *BaseCQLListener) ExitMinElev(ctx *MinElevContext) {}
-
-// EnterMaxElev is called when production maxElev is entered.
-func (s *BaseCQLListener) EnterMaxElev(ctx *MaxElevContext) {}
-
-// ExitMaxElev is called when production maxElev is exited.
-func (s *BaseCQLListener) ExitMaxElev(ctx *MaxElevContext) {}
 
 // EnterTemporalPredicate is called when production temporalPredicate is entered.
 func (s *BaseCQLListener) EnterTemporalPredicate(ctx *TemporalPredicateContext) {}

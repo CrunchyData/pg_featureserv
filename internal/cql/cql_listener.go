@@ -55,6 +55,9 @@ type CQLListener interface {
 	// EnterSpatialPredicate is called when entering the spatialPredicate production.
 	EnterSpatialPredicate(c *SpatialPredicateContext)
 
+	// EnterDistancePredicate is called when entering the distancePredicate production.
+	EnterDistancePredicate(c *DistancePredicateContext)
+
 	// EnterGeomExpression is called when entering the geomExpression production.
 	EnterGeomExpression(c *GeomExpressionContext)
 
@@ -64,11 +67,14 @@ type CQLListener interface {
 	// EnterPoint is called when entering the point production.
 	EnterPoint(c *PointContext)
 
+	// EnterPointList is called when entering the pointList production.
+	EnterPointList(c *PointListContext)
+
 	// EnterLinestring is called when entering the linestring production.
 	EnterLinestring(c *LinestringContext)
 
-	// EnterLinestringDef is called when entering the linestringDef production.
-	EnterLinestringDef(c *LinestringDefContext)
+	// EnterCoordList is called when entering the coordList production.
+	EnterCoordList(c *CoordListContext)
 
 	// EnterPolygon is called when entering the polygon production.
 	EnterPolygon(c *PolygonContext)
@@ -93,33 +99,6 @@ type CQLListener interface {
 
 	// EnterCoordinate is called when entering the coordinate production.
 	EnterCoordinate(c *CoordinateContext)
-
-	// EnterXCoord is called when entering the xCoord production.
-	EnterXCoord(c *XCoordContext)
-
-	// EnterYCoord is called when entering the yCoord production.
-	EnterYCoord(c *YCoordContext)
-
-	// EnterZCoord is called when entering the zCoord production.
-	EnterZCoord(c *ZCoordContext)
-
-	// EnterWestBoundLon is called when entering the westBoundLon production.
-	EnterWestBoundLon(c *WestBoundLonContext)
-
-	// EnterEastBoundLon is called when entering the eastBoundLon production.
-	EnterEastBoundLon(c *EastBoundLonContext)
-
-	// EnterNorthBoundLat is called when entering the northBoundLat production.
-	EnterNorthBoundLat(c *NorthBoundLatContext)
-
-	// EnterSouthBoundLat is called when entering the southBoundLat production.
-	EnterSouthBoundLat(c *SouthBoundLatContext)
-
-	// EnterMinElev is called when entering the minElev production.
-	EnterMinElev(c *MinElevContext)
-
-	// EnterMaxElev is called when entering the maxElev production.
-	EnterMaxElev(c *MaxElevContext)
 
 	// EnterTemporalPredicate is called when entering the temporalPredicate production.
 	EnterTemporalPredicate(c *TemporalPredicateContext)
@@ -181,6 +160,9 @@ type CQLListener interface {
 	// ExitSpatialPredicate is called when exiting the spatialPredicate production.
 	ExitSpatialPredicate(c *SpatialPredicateContext)
 
+	// ExitDistancePredicate is called when exiting the distancePredicate production.
+	ExitDistancePredicate(c *DistancePredicateContext)
+
 	// ExitGeomExpression is called when exiting the geomExpression production.
 	ExitGeomExpression(c *GeomExpressionContext)
 
@@ -190,11 +172,14 @@ type CQLListener interface {
 	// ExitPoint is called when exiting the point production.
 	ExitPoint(c *PointContext)
 
+	// ExitPointList is called when exiting the pointList production.
+	ExitPointList(c *PointListContext)
+
 	// ExitLinestring is called when exiting the linestring production.
 	ExitLinestring(c *LinestringContext)
 
-	// ExitLinestringDef is called when exiting the linestringDef production.
-	ExitLinestringDef(c *LinestringDefContext)
+	// ExitCoordList is called when exiting the coordList production.
+	ExitCoordList(c *CoordListContext)
 
 	// ExitPolygon is called when exiting the polygon production.
 	ExitPolygon(c *PolygonContext)
@@ -219,33 +204,6 @@ type CQLListener interface {
 
 	// ExitCoordinate is called when exiting the coordinate production.
 	ExitCoordinate(c *CoordinateContext)
-
-	// ExitXCoord is called when exiting the xCoord production.
-	ExitXCoord(c *XCoordContext)
-
-	// ExitYCoord is called when exiting the yCoord production.
-	ExitYCoord(c *YCoordContext)
-
-	// ExitZCoord is called when exiting the zCoord production.
-	ExitZCoord(c *ZCoordContext)
-
-	// ExitWestBoundLon is called when exiting the westBoundLon production.
-	ExitWestBoundLon(c *WestBoundLonContext)
-
-	// ExitEastBoundLon is called when exiting the eastBoundLon production.
-	ExitEastBoundLon(c *EastBoundLonContext)
-
-	// ExitNorthBoundLat is called when exiting the northBoundLat production.
-	ExitNorthBoundLat(c *NorthBoundLatContext)
-
-	// ExitSouthBoundLat is called when exiting the southBoundLat production.
-	ExitSouthBoundLat(c *SouthBoundLatContext)
-
-	// ExitMinElev is called when exiting the minElev production.
-	ExitMinElev(c *MinElevContext)
-
-	// ExitMaxElev is called when exiting the maxElev production.
-	ExitMaxElev(c *MaxElevContext)
 
 	// ExitTemporalPredicate is called when exiting the temporalPredicate production.
 	ExitTemporalPredicate(c *TemporalPredicateContext)

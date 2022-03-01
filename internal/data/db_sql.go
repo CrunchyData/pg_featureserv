@@ -320,6 +320,7 @@ func sqlGeomFunction(fn *Function, args map[string]string, propCols []string, pa
 	sqlArgs, argVals := sqlFunctionArgs(fn, args)
 	sqlGeomCol := sqlGeomCol(fn.GeometryColumn, param)
 	sqlPropCols := sqlColList(propCols, fn.Types, true)
+	//-- SRS of function output is unknown, so have to assume 4326
 	bboxFilter := sqlBBoxFilter(fn.GeometryColumn, SRID_4326, param.Bbox, param.BboxCrs)
 	cqlFilter := sqlCqlFilter(param.FilterSql)
 	sqlWhere := sqlWhere(bboxFilter, cqlFilter, "")

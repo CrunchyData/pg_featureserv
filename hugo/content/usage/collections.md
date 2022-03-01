@@ -25,7 +25,7 @@ Visible spatial tables and views are those which:
 * declare a **geometry type**;
 * declare an **SRID** (spatial reference ID);
 * and the service database connection has `SELECT` privileges for
-  (see the and [Security](/usage/security/) section for more detail).
+  (see the [Security](/usage/security/) section for more detail).
 
 If the table or view has a **primary key column** it will
 be used as the id for features in the collection.

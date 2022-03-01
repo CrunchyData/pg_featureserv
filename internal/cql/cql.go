@@ -8,7 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func TranspileToSQL(cqlStr string) (string, error) {
+func TranspileToSQL(cqlStr string, filterSRID int, sourceSRID int) (string, error) {
 	if len(cqlStr) < 1 {
 		return "", nil
 	}
@@ -29,8 +29,8 @@ func TranspileToSQL(cqlStr string) (string, error) {
 	parser.AddErrorListener(parseErrors)
 
 	tree := parser.CqlFilter()
-	// Finally parse the expression
-	listener := NewCqlListener()
+	//-- parse the CQL expression
+	listener := NewCqlListener(filterSRID, sourceSRID)
 	antlr.ParseTreeWalkerDefault.Walk(listener, tree)
 
 	if parseErrors.errorCount > 0 {
@@ -97,34 +97,56 @@ func (l *CqlErrorListener) ReportContextSensitivity(recognizer antlr.Parser, dfa
 
 type cqlListener struct {
 	*BaseCQLListener
-
-	// SQL strings for nodes
-	result map[*antlr.BaseRuleContext]string
+	// SRID for filter CRS
+	filterSRID int
+	// SRID for source CRS
+	sourceSRID int
+	// SQL fragments for parse tree nodes
+	sqlFrags map[*antlr.BaseRuleContext]string
 	// result SQL
 	sql string
 }
 
-func NewCqlListener() *cqlListener {
+func NewCqlListener(filterSRID int, sourceSRID int) *cqlListener {
 	this := new(cqlListener)
-	this.result = make(map[*antlr.BaseRuleContext]string)
+	this.filterSRID = filterSRID
+	this.sourceSRID = sourceSRID
+	this.sqlFrags = make(map[*antlr.BaseRuleContext]string)
 	return this
 }
 func (l *cqlListener) GetSQL() string {
 	return l.sql
 }
 
+// saveSql stores the SQL fragment for a parse tree node in the map
+func (l *cqlListener) saveSql(ctx antlr.ParserRuleContext, sql string) {
+	l.sqlFrags[ctx.GetBaseRuleContext()] = sql
+}
+
 // helper function to avoid nil pointer problems
-func (l *cqlListener) sqlFrag(ctx antlr.ParserRuleContext) string {
+func (l *cqlListener) sqlFor(ctx antlr.ParserRuleContext) string {
 	if ctx == nil {
 		return ""
 	}
-	frag := l.result[ctx.GetBaseRuleContext()]
+	frag := l.sqlFrags[ctx.GetBaseRuleContext()]
 	//log.Debug("sqlFrag for " + ctx.GetText() + " -> " + frag)
 	return frag
 }
 
-func (l *cqlListener) saveFrag(ctx antlr.ParserRuleContext, sql string) {
-	l.result[ctx.GetBaseRuleContext()] = sql
+func (l *cqlListener) sqlGeometryLiteral(wkt string) string {
+	sql := fmt.Sprintf("'SRID=%d;%s'::geometry", l.filterSRID, wkt)
+	return sql
+}
+
+func (l *cqlListener) sqlEnvelopeLiteral(xmin string, ymin string, xmax string, ymax string) string {
+	return fmt.Sprintf("ST_MakeEnvelope(%s,%s,%s,%s,%d)", xmin, ymin, xmax, ymax, l.filterSRID)
+}
+
+func (l *cqlListener) sqlTransformCrs(sql string) string {
+	if l.sourceSRID == l.filterSRID {
+		return sql
+	}
+	return fmt.Sprintf("ST_Transform(%s,%d)", sql, l.sourceSRID)
 }
 
 // helper function to avoid nil pointer problems
@@ -150,67 +172,71 @@ func (l *cqlListener) EnterEveryRule(ctx antlr.ParserRuleContext) {
 */
 
 func (l *cqlListener) ExitCqlFilter(ctx *CqlFilterContext) {
-	l.sql = l.sqlFrag(ctx.BooleanValueExpression())
+	l.sql = l.sqlFor(ctx.BooleanValueExpression())
 }
 
 func (l *cqlListener) ExitBooleanValueExpression(ctx *BooleanValueExpressionContext) {
-	sql := l.sqlFrag(ctx.BooleanTerm())
+	sql := l.sqlFor(ctx.BooleanTerm())
 	if ctx.OR() != nil {
-		expr := l.sqlFrag(ctx.BooleanValueExpression())
+		expr := l.sqlFor(ctx.BooleanValueExpression())
 		sql = expr + " OR " + sql
 	}
-	l.saveFrag(ctx, sql)
+	l.saveSql(ctx, sql)
 }
 
 func (l *cqlListener) ExitBooleanTerm(ctx *BooleanTermContext) {
-	sql := l.sqlFrag(ctx.BooleanFactor())
+	sql := l.sqlFor(ctx.BooleanFactor())
 	if ctx.AND() != nil {
-		expr := l.sqlFrag(ctx.BooleanTerm())
+		expr := l.sqlFor(ctx.BooleanTerm())
 		sql = expr + " AND " + sql
 	}
-	l.saveFrag(ctx, sql)
+	l.saveSql(ctx, sql)
 }
 
 func (l *cqlListener) ExitBooleanFactor(ctx *BooleanFactorContext) {
-	sql := l.sqlFrag(ctx.BooleanPrimary())
+	sql := l.sqlFor(ctx.BooleanPrimary())
 	if ctx.NOT() != nil {
 		sql = " NOT " + sql
 	}
-	l.saveFrag(ctx, sql)
+	l.saveSql(ctx, sql)
 }
 
 func (l *cqlListener) ExitBooleanPrimary(ctx *BooleanPrimaryContext) {
 	var sql string
 	if ctx.LEFTPAREN() == nil {
-		sql = l.sqlFrag(ctx.Predicate())
+		sql = l.sqlFor(ctx.Predicate())
 	} else {
-		sql = "(" + l.sqlFrag(ctx.BooleanValueExpression()) + ")"
+		sql = "(" + l.sqlFor(ctx.BooleanValueExpression()) + ")"
 	}
-	l.saveFrag(ctx, sql)
+	l.saveSql(ctx, sql)
 }
 
 func (l *cqlListener) ExitPredicate(ctx *PredicateContext) {
 	var sql string
 	if ctx.BinaryComparisonPredicate() != nil {
-		sql = l.sqlFrag(ctx.BinaryComparisonPredicate())
+		sql = l.sqlFor(ctx.BinaryComparisonPredicate())
 	} else if ctx.LikePredicate() != nil {
-		sql = l.sqlFrag(ctx.LikePredicate())
+		sql = l.sqlFor(ctx.LikePredicate())
 	} else if ctx.BetweenPredicate() != nil {
-		sql = l.sqlFrag(ctx.BetweenPredicate())
+		sql = l.sqlFor(ctx.BetweenPredicate())
 	} else if ctx.IsNullPredicate() != nil {
-		sql = l.sqlFrag(ctx.IsNullPredicate())
+		sql = l.sqlFor(ctx.IsNullPredicate())
 	} else if ctx.InPredicate() != nil {
-		sql = l.sqlFrag(ctx.InPredicate())
+		sql = l.sqlFor(ctx.InPredicate())
+	} else if ctx.SpatialPredicate() != nil {
+		sql = l.sqlFor(ctx.SpatialPredicate())
+	} else if ctx.DistancePredicate() != nil {
+		sql = l.sqlFor(ctx.DistancePredicate())
 	}
-	l.saveFrag(ctx, sql)
+	l.saveSql(ctx, sql)
 }
 
 func (l *cqlListener) ExitBinaryComparisonPredicate(ctx *BinaryComparisonPredicateContext) {
-	expr1 := l.sqlFrag(ctx.ScalarExpression(0))
-	expr2 := l.sqlFrag(ctx.ScalarExpression(1))
+	expr1 := l.sqlFor(ctx.ScalarExpression(0))
+	expr2 := l.sqlFor(ctx.ScalarExpression(1))
 	op := getNodeText(ctx.ComparisonOperator())
 	sql := expr1 + " " + op + " " + expr2
-	l.saveFrag(ctx, sql)
+	l.saveSql(ctx, sql)
 }
 
 func (l *cqlListener) ExitScalarExpression(ctx *ScalarExpressionContext) {
@@ -224,7 +250,7 @@ func (l *cqlListener) ExitScalarExpression(ctx *ScalarExpressionContext) {
 	} else if ctx.BooleanLiteral() != nil {
 		sql = getText(ctx.BooleanLiteral())
 	}
-	l.saveFrag(ctx, sql)
+	l.saveSql(ctx, sql)
 }
 
 func (l *cqlListener) ExitLikePredicate(ctx *LikePredicateContext) {
@@ -239,7 +265,7 @@ func (l *cqlListener) ExitLikePredicate(ctx *LikePredicateContext) {
 	}
 	sb.WriteString(op)
 	sb.WriteString(quotedText(getText(ctx.CharacterLiteral())))
-	l.saveFrag(ctx, sb.String())
+	l.saveSql(ctx, sb.String())
 }
 
 func (l *cqlListener) ExitBetweenPredicate(ctx *BetweenPredicateContext) {
@@ -248,10 +274,10 @@ func (l *cqlListener) ExitBetweenPredicate(ctx *BetweenPredicateContext) {
 	if ctx.NOT() != nil {
 		not = " NOT"
 	}
-	expr1 := l.sqlFrag(ctx.ScalarExpression(0))
-	expr2 := l.sqlFrag(ctx.ScalarExpression(1))
+	expr1 := l.sqlFor(ctx.ScalarExpression(0))
+	expr2 := l.sqlFor(ctx.ScalarExpression(1))
 	sql := " " + prop + not + " BETWEEN " + expr1 + " AND " + expr2
-	l.saveFrag(ctx, sql)
+	l.saveSql(ctx, sql)
 }
 
 func (l *cqlListener) ExitIsNullPredicate(ctx *IsNullPredicateContext) {
@@ -261,7 +287,7 @@ func (l *cqlListener) ExitIsNullPredicate(ctx *IsNullPredicateContext) {
 		not = " NOT"
 	}
 	sql := " " + prop + " IS" + not + " NULL"
-	l.saveFrag(ctx, sql)
+	l.saveSql(ctx, sql)
 }
 
 func (l *cqlListener) ExitInPredicate(ctx *InPredicateContext) {
@@ -274,7 +300,7 @@ func (l *cqlListener) ExitInPredicate(ctx *InPredicateContext) {
 	inPredValueList(ctx, &sb)
 	sb.WriteString(") ")
 	sql := sb.String()
-	l.saveFrag(ctx, sql)
+	l.saveSql(ctx, sql)
 }
 
 func inPredValueList(ctx *InPredicateContext, sb *strings.Builder) {
@@ -301,8 +327,107 @@ func inPredValueList(ctx *InPredicateContext, sb *strings.Builder) {
 	}
 }
 
-func toBool(boolText string) bool {
-	return strings.ToLower(boolText) == "true"
+func (l *cqlListener) ExitSpatialPredicate(ctx *SpatialPredicateContext) {
+	var sb strings.Builder
+	sb.WriteString(toPostGISFunction(ctx.SpatialOperator().GetText()))
+	sb.WriteString("(")
+	sb.WriteString(l.sqlFor(ctx.GeomExpression(0)))
+	sb.WriteString(",")
+	sb.WriteString(l.sqlFor(ctx.GeomExpression(1)))
+	sb.WriteString(")")
+	l.saveSql(ctx, sb.String())
+}
+
+func (l *cqlListener) ExitDistancePredicate(ctx *DistancePredicateContext) {
+	var sb strings.Builder
+	sb.WriteString(toPostGISFunction(ctx.DistanceOperator().GetText()))
+	sb.WriteString("(")
+	sb.WriteString(l.sqlFor(ctx.GeomExpression(0)))
+	sb.WriteString(",")
+	sb.WriteString(l.sqlFor(ctx.GeomExpression(1)))
+	sb.WriteString(",")
+	sb.WriteString(ctx.NumericLiteral().GetText())
+	sb.WriteString(")")
+	l.saveSql(ctx, sb.String())
+}
+
+func (l *cqlListener) ExitGeomExpression(ctx *GeomExpressionContext) {
+	var sb strings.Builder
+	if ctx.PropertyName() != nil {
+		sb.WriteString(quotedName(getText(ctx.PropertyName())))
+	} else {
+		sb.WriteString(l.sqlFor(ctx.GeomLiteral()))
+	}
+	l.saveSql(ctx, sb.String())
+}
+
+func (l *cqlListener) ExitGeomLiteral(ctx *GeomLiteralContext) {
+	envCtx, ok := ctx.GetChild(0).(*EnvelopeContext)
+	var sql string
+	if ok {
+		nums := envCtx.AllNumericLiteral()
+		b1 := nums[0].GetText()
+		b2 := nums[1].GetText()
+		b3 := nums[2].GetText()
+		b4 := nums[3].GetText()
+		sql = l.sqlEnvelopeLiteral(b1, b2, b3, b4)
+	} else {
+		wkt := getGeomText(ctx)
+		sql = l.sqlGeometryLiteral(wkt)
+	}
+	sql = l.sqlTransformCrs(sql)
+	l.saveSql(ctx, sql)
+}
+
+func getGeomText(ctx *GeomLiteralContext) string {
+	trees := ctx.GetChildren()
+	var sb strings.Builder
+	extractGeomText(trees, &sb)
+	return sb.String()
+}
+
+func extractGeomText(trees []antlr.Tree, sb *strings.Builder) {
+	isPrevNumeric := false
+	for _, t := range trees {
+		tn, ok := t.(antlr.TerminalNode)
+		if ok {
+			//-- add a blank between consecutive numbers to separate them
+			if tn.GetSymbol().GetTokenType() == CQLNumericLiteral {
+				if isPrevNumeric {
+					sb.WriteString(" ")
+				}
+				isPrevNumeric = true
+			} else {
+				isPrevNumeric = false
+			}
+			sb.WriteString(strings.ToUpper(tn.GetText()))
+		} else {
+			ch := t.GetChildren()
+			extractGeomText(ch, sb)
+		}
+	}
+}
+
+var pgFunctionForCql = map[string]string{
+	"crosses":    "ST_Crosses",
+	"contains":   "ST_Contains",
+	"disjoint":   "ST_Disjoint",
+	"equals":     "ST_Equals",
+	"intersects": "ST_Intersects",
+	"overlaps":   "ST_Overlaps",
+	"touches":    "ST_Touches",
+	"within":     "ST_Within",
+
+	"dwithin": "ST_DWithin",
+}
+
+func toPostGISFunction(cqlFunName string) string {
+	cqlNameLow := strings.ToLower(cqlFunName)
+	if fun, ok := pgFunctionForCql[cqlNameLow]; ok {
+		return fun
+	}
+	//-- this will trigger a SQL error
+	return "UNKNOWN_" + cqlFunName
 }
 
 func quotedName(name string) string {
@@ -315,5 +440,6 @@ func quotedName(name string) string {
 
 func quotedText(s string) string {
 	//TODO: make this better (escape quotes, etc)
+	//TODO: is SQL injection a risk here?
 	return s
 }
