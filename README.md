@@ -13,13 +13,16 @@ It supports the [*OGC API - Features*](https://ogcapi.ogc.org/features/) REST AP
 
 * Implements the [*OGC API - Features*](https://ogcapi.ogc.org/features/) standard.
   * Supports standard request parameters `limit`, `bbox`, property filtering, `sortby`, `crs`, `bbox-crs`
+  * Provides [CQL filtering](https://portal.ogc.org/files/96288), including spatial support, via parameters `filter` and `filter-crs`
   * Extended parameters include `offset`, `properties`, `transform`, `precision`, `groupby`
 * Data responses are formatted in JSON and GeoJSON
 * Provides a simple HTML user interface, with web maps to view spatial data
 * Uses the power of PostgreSQL to reduce the amount of code
   and to make data definition easy and familiar.
   * Feature collections are defined by database objects (tables and views)
+  * Filters are executed in the database, and use indexes where defined
 * Uses PostGIS to provide geospatial functionality:
+  * Spatial filtering  
   * Transforming geometry data into the output coordinate system
   * Marshalling feature data into GeoJSON
 * Full-featured HTTP support
