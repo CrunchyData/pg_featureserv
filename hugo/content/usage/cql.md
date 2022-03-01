@@ -114,7 +114,7 @@ subexpressions in parentheses.
 
 ## Spatial filters
 
-CQL supports spatial filters by providing **geometry literals**
+CQL supports spatial filtering by providing **geometry literals**
 and **spatial predicates**.
 
 ### Geometry Literals
