@@ -75,9 +75,11 @@ See the [CQL section](/query_data/cql/) for more details.
 http://localhost:9000/collections/ne.countries/items?filter=continent='Europe' AND pop_est<2000000
 ```
 
-### Specify filter coordinate system
+### Filter geometry coordinate system
 
-The coordinate system used by geometry literals in the filter expression
+By default the coordinate system of geometry literals in the filter expressionis
+is assumed to be 4326 (geodetic).
+A different coordinate system
 can be specified by using the query parameter `filter-crs=SRID`.
 
 #### Example
@@ -85,7 +87,7 @@ can be specified by using the query parameter `filter-crs=SRID`.
 http://localhost:9000/collections/ebc.voting_area/items.json?filter=DWITHIN(geom,POINT(1209000+477000),1000)&filter-crs=3005
 ```
 
-### Specify response properties
+### Response properties
 
 The query parameter `properties=PROP1,PROP2,PROP3...`
 specifies the feature properties returned in the response.
@@ -99,7 +101,7 @@ no feature properties are returned.
 http://localhost:9000/collections/ne.countries/items?properties=name,abbrev,pop_est
 ```
 
-### Specify response coordinate system
+### Response coordinate system
 
 The query parameter `crs=SRID`
 specifies the coordinate system to be used for the
@@ -174,7 +176,7 @@ The response is a GeoJSON feature containing the result.
 http://localhost:9000/collections/ne.countries/items/23
 ```
 
-### Specify properties
+### Specify response properties
 
 The query parameter `properties=PROP1,PROP2,PROP3...`
 specifies the feature properties which are returned
@@ -185,11 +187,11 @@ in the response.
 http://localhost:9000/collections/ne.countries/items/23?properties=name,abbrev,pop_est
 ```
 
-### Specify coordinate system
+### Specify responses coordinate system
 
 The query parameter `crs=SRID`
 can be included to specify the coordinate system to be used for the
-feature geometry.
+feature geometry in the response.
 
 #### Example
 ```

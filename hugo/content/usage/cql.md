@@ -142,7 +142,7 @@ ENVELOPE (1, 2, 3, 4)
 ```
 
 By default the coordinate system of geometry literal values is assumed to be geodetic (SRID = 4326).
-The `filter-crs=SRID` query parameter can be used to specify that filter geometry literals are in a different coordinate system.
+The `filter-crs=SRID` query parameter can be used to specify that the geometry literals in a filter expression are in a different coordinate system.
 
 ### Spatial predicates
 
