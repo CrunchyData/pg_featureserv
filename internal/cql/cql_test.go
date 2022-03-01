@@ -97,11 +97,15 @@ func TestBooleanExpression(t *testing.T) {
 	checkCQL(t, "NOT x IS NOT NULL", "NOT  \"x\" IS NOT NULL")
 }
 
-func TestErrors(t *testing.T) {
+func TestSyntaxErrors(t *testing.T) {
 	checkCQLError(t, "x y")
 	checkCQLError(t, "x == y")
 	checkCQLError(t, "x > 10y")
 	checkCQLError(t, "NOT x IS > 3")
+	// extra paren
+	checkCQLError(t, "equals(geom, ENVELOPE(1,2,3,4)))")
+	// comma between ordinates
+	checkCQLError(t, "equals(geom, POINT(0,0))")
 }
 
 func checkCQL(t *testing.T, cqlStr string, sql string) {
