@@ -78,6 +78,13 @@ func parseRequestParams(r *http.Request) (api.RequestParam, error) {
 	// --- filter parameter
 	param.Filter = parseString(paramValues, api.ParamFilter)
 
+	// --- filter-crs parameter
+	filterCrs, err := parseInt(paramValues, api.ParamFilterCrs, 0, 99999999, data.SRID_4326)
+	if err != nil {
+		return param, err
+	}
+	param.FilterCrs = filterCrs
+
 	// --- properties parameter
 	props, err := parseProperties(paramValues)
 	if err != nil {
@@ -415,7 +422,7 @@ func parseFilter(paramMap map[string]string, colNameMap map[string]string) []*da
 }
 
 // createQueryParams applies any cross-parameter logic
-func createQueryParams(param *api.RequestParam, colNames []string) (*data.QueryParam, error) {
+func createQueryParams(param *api.RequestParam, colNames []string, sourceSRID int) (*data.QueryParam, error) {
 	query := data.QueryParam{
 		Crs:           param.Crs,
 		Limit:         param.Limit,
@@ -445,7 +452,7 @@ func createQueryParams(param *api.RequestParam, colNames []string) (*data.QueryP
 	}
 	query.Columns = normalizePropNames(cols, colNames)
 	//-- convert filter CQL
-	sql, err := cql.TranspileToSQL(param.Filter)
+	sql, err := cql.TranspileToSQL(param.Filter, param.FilterCrs, sourceSRID)
 	if err != nil {
 		return &query, err
 	}

@@ -38,6 +38,7 @@ const (
 	ParamBbox       = "bbox"
 	ParamBboxCrs    = "bbox-crs"
 	ParamFilter     = "filter"
+	ParamFilterCrs  = "filter-crs"
 	ParamGroupBy    = "groupby"
 	ParamOrderBy    = "orderby"
 	ParamPrecision  = "precision"
@@ -241,6 +242,7 @@ type RequestParam struct {
 	BboxCrs       int
 	Properties    []string
 	Filter        string
+	FilterCrs     int
 	GroupBy       []string
 	SortBy        []data.Sorting
 	Precision     int

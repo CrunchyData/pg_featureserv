@@ -112,15 +112,15 @@ NOCASE : N O C A S E;
 #=============================================================================#
 */
 
-/*
-# NOTE: The buffer operators (DWITHIN and BEYOND) are not included because
-#       these are outside the scope of a "simple" core for CQL.  These
-#       can be added as extensions.
-#
-*/
 SpatialOperator : E Q U A L S | D I S J O I N T | T O U C H E S | W I T H I N | O V E R L A P S
                 | C R O S S E S | I N T E R S E C T S | C O N T A I N S;
 
+/*
+# NOTE: The distance operator BEYOND is not currently included.
+#       It is equivalent to NOT DWITHIN.
+#
+*/
+DistanceOperator : D W I T H I N;
 /*
 #=============================================================================#
 # Definition of TEMPORAL operators
@@ -133,13 +133,6 @@ SpatialOperator : E Q U A L S | D I S J O I N T | T O U C H E S | W I T H I N | 
 TemporalOperator : A F T E R | B E F O R E | B E G I N S | B E G U N B Y | T C O N T A I N S | D U R I N G
                  | E N D E D B Y | E N D S | T E Q U A L S | M E E T S | M E T B Y | T O V E R L A P S
                  | O V E R L A P P E D B Y | A N Y I N T E R A C T S;
-
-/*
-TemporalOperator : 'AFTER' | 'BEFORE' | 'BEGINS' | 'BEGUNBY' | 'TCONTAINS'
-                 | 'DURING' | 'ENDEDBY' | 'ENDS' | 'TEQUALS' | 'MEETS'
-                 | 'METBY' | 'TOVERLAPS' | 'OVERLAPPEDBY' | 'ANYINTERACTS'
-                 | 'TINTERSECTS';
-*/
 
 /*
 #=============================================================================#
@@ -208,24 +201,9 @@ IdentifierPart : ALPHA | DIGIT | UNDERSCORE | DOLLAR;
 
 //QuoteQuote : QUOTE QUOTE;
 
-/*
-# NOTE: This production is supposed to be any alphabetic character from
-#       the character set.
-#
-#       I use the A-Z, a-z range here as placeholders because:
-#       (a) I have no idea how to indicate that alpha can be
-#           any alphabetic UTF-8 character
-#       (b) the validators I am using can only handle ASCII chars
-#
-*/
 ALPHA : [A-Za-z];
 
 DIGIT : [0-9];
-
-/*SpecialCharacter : PERCENT | AMPERSAND | LEFTPAREN | RIGHTPAREN | ASTERISK
-                 | PLUS | COMMA | MINUS | PERIOD | SOLIDUS | COLON
-                 | SEMICOLON | LT | GT | EQ | QUESTIONMARK | UNDERSCORE
-                 | VERTICALBAR | DOUBLEQUOTE ;*/
 
 OCTOTHORP : '#';
 DOLLAR : '$';
@@ -257,8 +235,6 @@ HEXIT : DIGIT | A | B | C | D | E | F;
 #=============================================================================#
 */
 
-
-
 UnsignedNumericLiteral : ExactNumericLiteral | ApproximateNumericLiteral;
 
 SignedNumericLiteral : (Sign)? ExactNumericLiteral | ApproximateNumericLiteral;
@@ -281,9 +257,6 @@ Sign : PLUS | MINUS;
 /*
 #=============================================================================#
 # Definition of TEMPORAL literals
-#
-# NOTE: Is the fact the time zones are supported too complicated for a
-#       simple CQL?  Perhaps the "core" of CQL should just support UTC.
 #=============================================================================#
 */
 

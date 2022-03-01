@@ -98,6 +98,22 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 			AllowEmptyValue: false,
 		},
 	}
+	paramFilterCrs := openapi3.ParameterRef{
+		Value: &openapi3.Parameter{
+			Name:        "filter-crs",
+			Description: "SRID for filter geometry literals.",
+			In:          "query",
+			Required:    false,
+			Schema: &openapi3.SchemaRef{
+				Value: &openapi3.Schema{
+					Type:    "integer",
+					Min:     openapi3.Float64Ptr(1),
+					Default: 4326,
+				},
+			},
+			AllowEmptyValue: false,
+		},
+	}
 	paramProperties := openapi3.ParameterRef{
 		Value: &openapi3.Parameter{
 			Name:        "properties",
@@ -303,6 +319,7 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 						&paramBbox,
 						&paramBboxCrs,
 						&paramFilter,
+						&paramFilterCrs,
 						&paramTransform,
 						&paramProperties,
 						&paramSortBy,
@@ -424,6 +441,7 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 						&paramBbox,
 						&paramBboxCrs,
 						&paramFilter,
+						&paramFilterCrs,
 						&paramTransform,
 						&paramProperties,
 						&paramSortBy,

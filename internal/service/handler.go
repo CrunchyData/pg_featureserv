@@ -273,7 +273,7 @@ func handleCollectionItems(w http.ResponseWriter, r *http.Request) *appError {
 	if tbl == nil {
 		return appErrorNotFoundFmt(err1, api.ErrMsgCollectionNotFound, name)
 	}
-	param, err := createQueryParams(&reqParam, tbl.Columns)
+	param, err := createQueryParams(&reqParam, tbl.Columns, tbl.Srid)
 	if err != nil {
 		return appErrorBadRequest(err, err.Error())
 	}
@@ -356,7 +356,7 @@ func handleItem(w http.ResponseWriter, r *http.Request) *appError {
 	if tbl == nil {
 		return appErrorNotFoundFmt(err1, api.ErrMsgCollectionNotFound, name)
 	}
-	param, err := createQueryParams(&reqParam, tbl.Columns)
+	param, err := createQueryParams(&reqParam, tbl.Columns, tbl.Srid)
 
 	ctx := r.Context()
 	switch format {
@@ -586,7 +586,7 @@ func handleFunctionItems(w http.ResponseWriter, r *http.Request) *appError {
 	if fn == nil && err == nil {
 		return appErrorNotFoundFmt(err, api.ErrMsgFunctionNotFound, name)
 	}
-	param, err := createQueryParams(&reqParam, fn.OutNames)
+	param, err := createQueryParams(&reqParam, fn.OutNames, data.SRID_4326)
 	if err != nil {
 		return appErrorBadRequest(err, err.Error())
 	}

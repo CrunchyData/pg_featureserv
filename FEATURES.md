@@ -44,8 +44,8 @@ It includes [*OGC API - Features*](http://docs.opengeospatial.org/is/17-069r3/17
   - `sortby=name`, `sortby=+name`, `sortby=-name`
 - [x] filtering by property value ( `name=value`, as per [spec sec. 7.15.5](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html#_parameters_for_filtering_on_feature_properties) )
 - [x] `filter` with CQL expressions (see below)
-- [ ] `filter-lang`
-- [ ] `filter-crs`
+- [ ] `filter-lang` (only CQL-Text is supported)
+- [ ] `filter-crs=srid`
 
 ### Query parameters - Extension
 - [x] `precision` to set output precision of GeoJSON coordinates
@@ -64,7 +64,7 @@ It includes [*OGC API - Features*](http://docs.opengeospatial.org/is/17-069r3/17
 - [x] property names
 - [x] character literals
 - [x] numeric literals
-- [ ] spatial literals
+- [x] spatial literals
 - [ ] temporal literals
 - [x] binary comparisons (`<`,`<=`,`>`,`>=`,`=`,`<>`)
 - [x] `property [NOT] BETWEEN a AND B`
@@ -73,7 +73,7 @@ It includes [*OGC API - Features*](http://docs.opengeospatial.org/is/17-069r3/17
   - `pattern` can include `%` wildcards
 - [x] `property [NOT] IS NULL`
 - [x] boolean combinations (`AND`,`OR`,`NOT`)
-- [ ] spatial predicates
+- [x] spatial predicates
 - [ ] temporal predicates
 - [ ] functions
 

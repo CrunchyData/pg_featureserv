@@ -15,154 +15,141 @@ var _ = reflect.Copy
 var _ = strconv.Itoa
 
 var parserATN = []uint16{
-	3, 24715, 42794, 33075, 47597, 16764, 15335, 30598, 22884, 3, 92, 353,
+	3, 24715, 42794, 33075, 47597, 16764, 15335, 30598, 22884, 3, 93, 319,
 	4, 2, 9, 2, 4, 3, 9, 3, 4, 4, 9, 4, 4, 5, 9, 5, 4, 6, 9, 6, 4, 7, 9, 7,
 	4, 8, 9, 8, 4, 9, 9, 9, 4, 10, 9, 10, 4, 11, 9, 11, 4, 12, 9, 12, 4, 13,
 	9, 13, 4, 14, 9, 14, 4, 15, 9, 15, 4, 16, 9, 16, 4, 17, 9, 17, 4, 18, 9,
 	18, 4, 19, 9, 19, 4, 20, 9, 20, 4, 21, 9, 21, 4, 22, 9, 22, 4, 23, 9, 23,
 	4, 24, 9, 24, 4, 25, 9, 25, 4, 26, 9, 26, 4, 27, 9, 27, 4, 28, 9, 28, 4,
 	29, 9, 29, 4, 30, 9, 30, 4, 31, 9, 31, 4, 32, 9, 32, 4, 33, 9, 33, 4, 34,
-	9, 34, 4, 35, 9, 35, 4, 36, 9, 36, 4, 37, 9, 37, 4, 38, 9, 38, 4, 39, 9,
-	39, 4, 40, 9, 40, 4, 41, 9, 41, 4, 42, 9, 42, 4, 43, 9, 43, 3, 2, 3, 2,
-	3, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 7, 3, 96, 10, 3, 12, 3, 14, 3,
-	99, 11, 3, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 7, 4, 107, 10, 4, 12, 4,
-	14, 4, 110, 11, 4, 3, 5, 5, 5, 113, 10, 5, 3, 5, 3, 5, 3, 6, 3, 6, 3, 6,
-	3, 6, 3, 6, 5, 6, 122, 10, 6, 3, 7, 3, 7, 3, 7, 3, 7, 3, 7, 5, 7, 129,
-	10, 7, 3, 8, 3, 8, 3, 8, 3, 8, 3, 9, 3, 9, 5, 9, 137, 10, 9, 3, 9, 3, 9,
-	3, 9, 3, 10, 3, 10, 5, 10, 144, 10, 10, 3, 10, 3, 10, 3, 10, 3, 10, 3,
-	10, 3, 11, 3, 11, 3, 11, 5, 11, 154, 10, 11, 3, 11, 3, 11, 3, 12, 3, 12,
-	3, 12, 3, 12, 5, 12, 162, 10, 12, 3, 13, 3, 13, 3, 14, 3, 14, 3, 15, 3,
-	15, 3, 16, 3, 16, 3, 17, 3, 17, 3, 17, 3, 17, 3, 17, 3, 17, 3, 17, 3, 18,
-	3, 18, 5, 18, 181, 10, 18, 3, 19, 3, 19, 3, 19, 3, 19, 3, 19, 3, 19, 3,
-	19, 3, 19, 5, 19, 191, 10, 19, 3, 20, 3, 20, 3, 20, 3, 20, 3, 20, 3, 21,
-	3, 21, 3, 21, 3, 22, 3, 22, 3, 22, 3, 22, 7, 22, 205, 10, 22, 12, 22, 14,
-	22, 208, 11, 22, 3, 22, 3, 22, 3, 23, 3, 23, 3, 23, 3, 24, 3, 24, 3, 24,
-	3, 24, 7, 24, 219, 10, 24, 12, 24, 14, 24, 222, 11, 24, 3, 24, 3, 24, 3,
-	25, 3, 25, 3, 25, 3, 25, 3, 25, 7, 25, 231, 10, 25, 12, 25, 14, 25, 234,
-	11, 25, 3, 25, 3, 25, 3, 26, 3, 26, 3, 26, 3, 26, 3, 26, 7, 26, 243, 10,
-	26, 12, 26, 14, 26, 246, 11, 26, 3, 26, 3, 26, 3, 27, 3, 27, 3, 27, 3,
-	27, 3, 27, 7, 27, 255, 10, 27, 12, 27, 14, 27, 258, 11, 27, 3, 27, 3, 27,
-	3, 28, 3, 28, 3, 28, 3, 28, 3, 28, 7, 28, 267, 10, 28, 12, 28, 14, 28,
-	270, 11, 28, 3, 28, 3, 28, 3, 29, 3, 29, 3, 29, 3, 29, 3, 29, 3, 29, 3,
-	29, 3, 29, 3, 29, 5, 29, 283, 10, 29, 3, 29, 3, 29, 3, 29, 3, 29, 3, 29,
-	5, 29, 290, 10, 29, 3, 29, 3, 29, 3, 30, 3, 30, 3, 30, 5, 30, 297, 10,
-	30, 3, 31, 3, 31, 3, 32, 3, 32, 3, 33, 3, 33, 3, 34, 3, 34, 3, 35, 3, 35,
-	3, 36, 3, 36, 3, 37, 3, 37, 3, 38, 3, 38, 3, 39, 3, 39, 3, 40, 3, 40, 3,
-	40, 3, 40, 3, 41, 3, 41, 5, 41, 323, 10, 41, 3, 42, 3, 42, 3, 43, 3, 43,
-	5, 43, 329, 10, 43, 3, 43, 3, 43, 3, 43, 3, 43, 3, 43, 7, 43, 336, 10,
-	43, 12, 43, 14, 43, 339, 11, 43, 3, 43, 3, 43, 3, 43, 7, 43, 344, 10, 43,
-	12, 43, 14, 43, 347, 11, 43, 5, 43, 349, 10, 43, 3, 43, 3, 43, 3, 43, 2,
-	4, 4, 6, 44, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32,
-	34, 36, 38, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 64, 66, 68,
-	70, 72, 74, 76, 78, 80, 82, 84, 2, 4, 3, 2, 14, 15, 4, 2, 3, 3, 24, 24,
-	2, 346, 2, 86, 3, 2, 2, 2, 4, 89, 3, 2, 2, 2, 6, 100, 3, 2, 2, 2, 8, 112,
-	3, 2, 2, 2, 10, 121, 3, 2, 2, 2, 12, 128, 3, 2, 2, 2, 14, 130, 3, 2, 2,
-	2, 16, 134, 3, 2, 2, 2, 18, 141, 3, 2, 2, 2, 20, 150, 3, 2, 2, 2, 22, 161,
-	3, 2, 2, 2, 24, 163, 3, 2, 2, 2, 26, 165, 3, 2, 2, 2, 28, 167, 3, 2, 2,
-	2, 30, 169, 3, 2, 2, 2, 32, 171, 3, 2, 2, 2, 34, 180, 3, 2, 2, 2, 36, 190,
-	3, 2, 2, 2, 38, 192, 3, 2, 2, 2, 40, 197, 3, 2, 2, 2, 42, 200, 3, 2, 2,
-	2, 44, 211, 3, 2, 2, 2, 46, 214, 3, 2, 2, 2, 48, 225, 3, 2, 2, 2, 50, 237,
-	3, 2, 2, 2, 52, 249, 3, 2, 2, 2, 54, 261, 3, 2, 2, 2, 56, 273, 3, 2, 2,
-	2, 58, 293, 3, 2, 2, 2, 60, 298, 3, 2, 2, 2, 62, 300, 3, 2, 2, 2, 64, 302,
-	3, 2, 2, 2, 66, 304, 3, 2, 2, 2, 68, 306, 3, 2, 2, 2, 70, 308, 3, 2, 2,
-	2, 72, 310, 3, 2, 2, 2, 74, 312, 3, 2, 2, 2, 76, 314, 3, 2, 2, 2, 78, 316,
-	3, 2, 2, 2, 80, 322, 3, 2, 2, 2, 82, 324, 3, 2, 2, 2, 84, 326, 3, 2, 2,
-	2, 86, 87, 5, 4, 3, 2, 87, 88, 7, 2, 2, 3, 88, 3, 3, 2, 2, 2, 89, 90, 8,
-	3, 1, 2, 90, 91, 5, 6, 4, 2, 91, 97, 3, 2, 2, 2, 92, 93, 12, 3, 2, 2, 93,
-	94, 7, 12, 2, 2, 94, 96, 5, 6, 4, 2, 95, 92, 3, 2, 2, 2, 96, 99, 3, 2,
-	2, 2, 97, 95, 3, 2, 2, 2, 97, 98, 3, 2, 2, 2, 98, 5, 3, 2, 2, 2, 99, 97,
-	3, 2, 2, 2, 100, 101, 8, 4, 1, 2, 101, 102, 5, 8, 5, 2, 102, 108, 3, 2,
-	2, 2, 103, 104, 12, 3, 2, 2, 104, 105, 7, 11, 2, 2, 105, 107, 5, 8, 5,
-	2, 106, 103, 3, 2, 2, 2, 107, 110, 3, 2, 2, 2, 108, 106, 3, 2, 2, 2, 108,
-	109, 3, 2, 2, 2, 109, 7, 3, 2, 2, 2, 110, 108, 3, 2, 2, 2, 111, 113, 7,
-	13, 2, 2, 112, 111, 3, 2, 2, 2, 112, 113, 3, 2, 2, 2, 113, 114, 3, 2, 2,
-	2, 114, 115, 5, 10, 6, 2, 115, 9, 3, 2, 2, 2, 116, 122, 5, 12, 7, 2, 117,
-	118, 7, 51, 2, 2, 118, 119, 5, 4, 3, 2, 119, 120, 7, 52, 2, 2, 120, 122,
-	3, 2, 2, 2, 121, 116, 3, 2, 2, 2, 121, 117, 3, 2, 2, 2, 122, 11, 3, 2,
-	2, 2, 123, 129, 5, 14, 8, 2, 124, 129, 5, 16, 9, 2, 125, 129, 5, 18, 10,
-	2, 126, 129, 5, 20, 11, 2, 127, 129, 5, 84, 43, 2, 128, 123, 3, 2, 2, 2,
-	128, 124, 3, 2, 2, 2, 128, 125, 3, 2, 2, 2, 128, 126, 3, 2, 2, 2, 128,
-	127, 3, 2, 2, 2, 129, 13, 3, 2, 2, 2, 130, 131, 5, 22, 12, 2, 131, 132,
-	7, 3, 2, 2, 132, 133, 5, 22, 12, 2, 133, 15, 3, 2, 2, 2, 134, 136, 5, 24,
-	13, 2, 135, 137, 7, 13, 2, 2, 136, 135, 3, 2, 2, 2, 136, 137, 3, 2, 2,
-	2, 137, 138, 3, 2, 2, 2, 138, 139, 9, 2, 2, 2, 139, 140, 5, 26, 14, 2,
-	140, 17, 3, 2, 2, 2, 141, 143, 5, 24, 13, 2, 142, 144, 7, 13, 2, 2, 143,
-	142, 3, 2, 2, 2, 143, 144, 3, 2, 2, 2, 144, 145, 3, 2, 2, 2, 145, 146,
-	7, 16, 2, 2, 146, 147, 5, 22, 12, 2, 147, 148, 7, 11, 2, 2, 148, 149, 5,
-	22, 12, 2, 149, 19, 3, 2, 2, 2, 150, 151, 5, 24, 13, 2, 151, 153, 7, 17,
-	2, 2, 152, 154, 7, 13, 2, 2, 153, 152, 3, 2, 2, 2, 153, 154, 3, 2, 2, 2,
-	154, 155, 3, 2, 2, 2, 155, 156, 7, 18, 2, 2, 156, 21, 3, 2, 2, 2, 157,
-	162, 5, 24, 13, 2, 158, 162, 5, 26, 14, 2, 159, 162, 5, 28, 15, 2, 160,
-	162, 5, 30, 16, 2, 161, 157, 3, 2, 2, 2, 161, 158, 3, 2, 2, 2, 161, 159,
-	3, 2, 2, 2, 161, 160, 3, 2, 2, 2, 162, 23, 3, 2, 2, 2, 163, 164, 7, 39,
-	2, 2, 164, 25, 3, 2, 2, 2, 165, 166, 7, 91, 2, 2, 166, 27, 3, 2, 2, 2,
-	167, 168, 7, 38, 2, 2, 168, 29, 3, 2, 2, 2, 169, 170, 7, 10, 2, 2, 170,
-	31, 3, 2, 2, 2, 171, 172, 7, 23, 2, 2, 172, 173, 7, 51, 2, 2, 173, 174,
-	5, 34, 18, 2, 174, 175, 7, 57, 2, 2, 175, 176, 5, 34, 18, 2, 176, 177,
-	7, 52, 2, 2, 177, 33, 3, 2, 2, 2, 178, 181, 5, 24, 13, 2, 179, 181, 5,
-	36, 19, 2, 180, 178, 3, 2, 2, 2, 180, 179, 3, 2, 2, 2, 181, 35, 3, 2, 2,
-	2, 182, 191, 5, 38, 20, 2, 183, 191, 5, 40, 21, 2, 184, 191, 5, 44, 23,
-	2, 185, 191, 5, 48, 25, 2, 186, 191, 5, 50, 26, 2, 187, 191, 5, 52, 27,
-	2, 188, 191, 5, 54, 28, 2, 189, 191, 5, 56, 29, 2, 190, 182, 3, 2, 2, 2,
-	190, 183, 3, 2, 2, 2, 190, 184, 3, 2, 2, 2, 190, 185, 3, 2, 2, 2, 190,
-	186, 3, 2, 2, 2, 190, 187, 3, 2, 2, 2, 190, 188, 3, 2, 2, 2, 190, 189,
-	3, 2, 2, 2, 191, 37, 3, 2, 2, 2, 192, 193, 7, 30, 2, 2, 193, 194, 7, 51,
-	2, 2, 194, 195, 5, 58, 30, 2, 195, 196, 7, 52, 2, 2, 196, 39, 3, 2, 2,
-	2, 197, 198, 7, 31, 2, 2, 198, 199, 5, 42, 22, 2, 199, 41, 3, 2, 2, 2,
-	200, 201, 7, 51, 2, 2, 201, 206, 5, 58, 30, 2, 202, 203, 7, 57, 2, 2, 203,
-	205, 5, 58, 30, 2, 204, 202, 3, 2, 2, 2, 205, 208, 3, 2, 2, 2, 206, 204,
-	3, 2, 2, 2, 206, 207, 3, 2, 2, 2, 207, 209, 3, 2, 2, 2, 208, 206, 3, 2,
-	2, 2, 209, 210, 7, 52, 2, 2, 210, 43, 3, 2, 2, 2, 211, 212, 7, 32, 2, 2,
-	212, 213, 5, 46, 24, 2, 213, 45, 3, 2, 2, 2, 214, 215, 7, 51, 2, 2, 215,
-	220, 5, 42, 22, 2, 216, 217, 7, 57, 2, 2, 217, 219, 5, 42, 22, 2, 218,
-	216, 3, 2, 2, 2, 219, 222, 3, 2, 2, 2, 220, 218, 3, 2, 2, 2, 220, 221,
-	3, 2, 2, 2, 221, 223, 3, 2, 2, 2, 222, 220, 3, 2, 2, 2, 223, 224, 7, 52,
-	2, 2, 224, 47, 3, 2, 2, 2, 225, 226, 7, 33, 2, 2, 226, 227, 7, 51, 2, 2,
-	227, 232, 5, 58, 30, 2, 228, 229, 7, 57, 2, 2, 229, 231, 5, 58, 30, 2,
-	230, 228, 3, 2, 2, 2, 231, 234, 3, 2, 2, 2, 232, 230, 3, 2, 2, 2, 232,
-	233, 3, 2, 2, 2, 233, 235, 3, 2, 2, 2, 234, 232, 3, 2, 2, 2, 235, 236,
-	7, 52, 2, 2, 236, 49, 3, 2, 2, 2, 237, 238, 7, 34, 2, 2, 238, 239, 7, 51,
-	2, 2, 239, 244, 5, 42, 22, 2, 240, 241, 7, 57, 2, 2, 241, 243, 5, 42, 22,
-	2, 242, 240, 3, 2, 2, 2, 243, 246, 3, 2, 2, 2, 244, 242, 3, 2, 2, 2, 244,
-	245, 3, 2, 2, 2, 245, 247, 3, 2, 2, 2, 246, 244, 3, 2, 2, 2, 247, 248,
-	7, 52, 2, 2, 248, 51, 3, 2, 2, 2, 249, 250, 7, 35, 2, 2, 250, 251, 7, 51,
-	2, 2, 251, 256, 5, 46, 24, 2, 252, 253, 7, 57, 2, 2, 253, 255, 5, 46, 24,
-	2, 254, 252, 3, 2, 2, 2, 255, 258, 3, 2, 2, 2, 256, 254, 3, 2, 2, 2, 256,
-	257, 3, 2, 2, 2, 257, 259, 3, 2, 2, 2, 258, 256, 3, 2, 2, 2, 259, 260,
-	7, 52, 2, 2, 260, 53, 3, 2, 2, 2, 261, 262, 7, 36, 2, 2, 262, 263, 7, 51,
-	2, 2, 263, 268, 5, 36, 19, 2, 264, 265, 7, 57, 2, 2, 265, 267, 5, 36, 19,
-	2, 266, 264, 3, 2, 2, 2, 267, 270, 3, 2, 2, 2, 268, 266, 3, 2, 2, 2, 268,
-	269, 3, 2, 2, 2, 269, 271, 3, 2, 2, 2, 270, 268, 3, 2, 2, 2, 271, 272,
-	7, 52, 2, 2, 272, 55, 3, 2, 2, 2, 273, 274, 7, 37, 2, 2, 274, 275, 7, 51,
-	2, 2, 275, 276, 5, 66, 34, 2, 276, 277, 7, 57, 2, 2, 277, 278, 5, 72, 37,
-	2, 278, 282, 7, 57, 2, 2, 279, 280, 5, 74, 38, 2, 280, 281, 7, 57, 2, 2,
-	281, 283, 3, 2, 2, 2, 282, 279, 3, 2, 2, 2, 282, 283, 3, 2, 2, 2, 283,
-	284, 3, 2, 2, 2, 284, 285, 5, 68, 35, 2, 285, 286, 7, 57, 2, 2, 286, 289,
-	5, 70, 36, 2, 287, 288, 7, 57, 2, 2, 288, 290, 5, 76, 39, 2, 289, 287,
-	3, 2, 2, 2, 289, 290, 3, 2, 2, 2, 290, 291, 3, 2, 2, 2, 291, 292, 7, 52,
-	2, 2, 292, 57, 3, 2, 2, 2, 293, 294, 5, 60, 31, 2, 294, 296, 5, 62, 32,
-	2, 295, 297, 5, 64, 33, 2, 296, 295, 3, 2, 2, 2, 296, 297, 3, 2, 2, 2,
-	297, 59, 3, 2, 2, 2, 298, 299, 7, 38, 2, 2, 299, 61, 3, 2, 2, 2, 300, 301,
-	7, 38, 2, 2, 301, 63, 3, 2, 2, 2, 302, 303, 7, 38, 2, 2, 303, 65, 3, 2,
-	2, 2, 304, 305, 7, 38, 2, 2, 305, 67, 3, 2, 2, 2, 306, 307, 7, 38, 2, 2,
-	307, 69, 3, 2, 2, 2, 308, 309, 7, 38, 2, 2, 309, 71, 3, 2, 2, 2, 310, 311,
-	7, 38, 2, 2, 311, 73, 3, 2, 2, 2, 312, 313, 7, 38, 2, 2, 313, 75, 3, 2,
-	2, 2, 314, 315, 7, 38, 2, 2, 315, 77, 3, 2, 2, 2, 316, 317, 5, 80, 41,
-	2, 317, 318, 9, 3, 2, 2, 318, 319, 5, 80, 41, 2, 319, 79, 3, 2, 2, 2, 320,
-	323, 5, 24, 13, 2, 321, 323, 5, 82, 42, 2, 322, 320, 3, 2, 2, 2, 322, 321,
-	3, 2, 2, 2, 323, 81, 3, 2, 2, 2, 324, 325, 7, 76, 2, 2, 325, 83, 3, 2,
-	2, 2, 326, 328, 5, 24, 13, 2, 327, 329, 7, 13, 2, 2, 328, 327, 3, 2, 2,
-	2, 328, 329, 3, 2, 2, 2, 329, 330, 3, 2, 2, 2, 330, 331, 7, 29, 2, 2, 331,
-	348, 7, 51, 2, 2, 332, 337, 5, 26, 14, 2, 333, 334, 7, 57, 2, 2, 334, 336,
-	5, 26, 14, 2, 335, 333, 3, 2, 2, 2, 336, 339, 3, 2, 2, 2, 337, 335, 3,
-	2, 2, 2, 337, 338, 3, 2, 2, 2, 338, 349, 3, 2, 2, 2, 339, 337, 3, 2, 2,
-	2, 340, 345, 5, 28, 15, 2, 341, 342, 7, 57, 2, 2, 342, 344, 5, 28, 15,
-	2, 343, 341, 3, 2, 2, 2, 344, 347, 3, 2, 2, 2, 345, 343, 3, 2, 2, 2, 345,
-	346, 3, 2, 2, 2, 346, 349, 3, 2, 2, 2, 347, 345, 3, 2, 2, 2, 348, 332,
-	3, 2, 2, 2, 348, 340, 3, 2, 2, 2, 349, 350, 3, 2, 2, 2, 350, 351, 7, 52,
-	2, 2, 351, 85, 3, 2, 2, 2, 27, 97, 108, 112, 121, 128, 136, 143, 153, 161,
-	180, 190, 206, 220, 232, 244, 256, 268, 282, 289, 296, 322, 328, 337, 345,
-	348,
+	9, 34, 4, 35, 9, 35, 3, 2, 3, 2, 3, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+	3, 7, 3, 80, 10, 3, 12, 3, 14, 3, 83, 11, 3, 3, 4, 3, 4, 3, 4, 3, 4, 3,
+	4, 3, 4, 7, 4, 91, 10, 4, 12, 4, 14, 4, 94, 11, 4, 3, 5, 5, 5, 97, 10,
+	5, 3, 5, 3, 5, 3, 6, 3, 6, 3, 6, 3, 6, 3, 6, 5, 6, 106, 10, 6, 3, 7, 3,
+	7, 3, 7, 3, 7, 3, 7, 3, 7, 3, 7, 5, 7, 115, 10, 7, 3, 8, 3, 8, 3, 8, 3,
+	8, 3, 9, 3, 9, 5, 9, 123, 10, 9, 3, 9, 3, 9, 3, 9, 3, 10, 3, 10, 5, 10,
+	130, 10, 10, 3, 10, 3, 10, 3, 10, 3, 10, 3, 10, 3, 11, 3, 11, 3, 11, 5,
+	11, 140, 10, 11, 3, 11, 3, 11, 3, 12, 3, 12, 3, 12, 3, 12, 5, 12, 148,
+	10, 12, 3, 13, 3, 13, 3, 14, 3, 14, 3, 15, 3, 15, 3, 16, 3, 16, 3, 17,
+	3, 17, 3, 17, 3, 17, 3, 17, 3, 17, 3, 17, 3, 18, 3, 18, 3, 18, 3, 18, 3,
+	18, 3, 18, 3, 18, 3, 18, 3, 18, 3, 19, 3, 19, 5, 19, 176, 10, 19, 3, 20,
+	3, 20, 3, 20, 3, 20, 3, 20, 3, 20, 3, 20, 3, 20, 5, 20, 186, 10, 20, 3,
+	21, 3, 21, 3, 21, 3, 21, 3, 21, 3, 22, 3, 22, 3, 22, 3, 23, 3, 23, 3, 23,
+	3, 23, 7, 23, 200, 10, 23, 12, 23, 14, 23, 203, 11, 23, 3, 23, 3, 23, 3,
+	24, 3, 24, 3, 24, 3, 25, 3, 25, 3, 25, 3, 25, 7, 25, 214, 10, 25, 12, 25,
+	14, 25, 217, 11, 25, 3, 25, 3, 25, 3, 26, 3, 26, 3, 26, 3, 26, 3, 26, 7,
+	26, 226, 10, 26, 12, 26, 14, 26, 229, 11, 26, 3, 26, 3, 26, 3, 27, 3, 27,
+	3, 27, 3, 27, 3, 27, 7, 27, 238, 10, 27, 12, 27, 14, 27, 241, 11, 27, 3,
+	27, 3, 27, 3, 28, 3, 28, 3, 28, 3, 28, 3, 28, 7, 28, 250, 10, 28, 12, 28,
+	14, 28, 253, 11, 28, 3, 28, 3, 28, 3, 29, 3, 29, 3, 29, 3, 29, 3, 29, 7,
+	29, 262, 10, 29, 12, 29, 14, 29, 265, 11, 29, 3, 29, 3, 29, 3, 30, 3, 30,
+	3, 30, 3, 30, 3, 30, 3, 30, 3, 30, 3, 30, 3, 30, 3, 30, 3, 30, 3, 31, 3,
+	31, 3, 31, 3, 32, 3, 32, 3, 32, 3, 32, 3, 33, 3, 33, 5, 33, 289, 10, 33,
+	3, 34, 3, 34, 3, 35, 3, 35, 5, 35, 295, 10, 35, 3, 35, 3, 35, 3, 35, 3,
+	35, 3, 35, 7, 35, 302, 10, 35, 12, 35, 14, 35, 305, 11, 35, 3, 35, 3, 35,
+	3, 35, 7, 35, 310, 10, 35, 12, 35, 14, 35, 313, 11, 35, 5, 35, 315, 10,
+	35, 3, 35, 3, 35, 3, 35, 2, 4, 4, 6, 36, 2, 4, 6, 8, 10, 12, 14, 16, 18,
+	20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 52, 54,
+	56, 58, 60, 62, 64, 66, 68, 2, 4, 3, 2, 14, 15, 4, 2, 3, 3, 25, 25, 2,
+	319, 2, 70, 3, 2, 2, 2, 4, 73, 3, 2, 2, 2, 6, 84, 3, 2, 2, 2, 8, 96, 3,
+	2, 2, 2, 10, 105, 3, 2, 2, 2, 12, 114, 3, 2, 2, 2, 14, 116, 3, 2, 2, 2,
+	16, 120, 3, 2, 2, 2, 18, 127, 3, 2, 2, 2, 20, 136, 3, 2, 2, 2, 22, 147,
+	3, 2, 2, 2, 24, 149, 3, 2, 2, 2, 26, 151, 3, 2, 2, 2, 28, 153, 3, 2, 2,
+	2, 30, 155, 3, 2, 2, 2, 32, 157, 3, 2, 2, 2, 34, 164, 3, 2, 2, 2, 36, 175,
+	3, 2, 2, 2, 38, 185, 3, 2, 2, 2, 40, 187, 3, 2, 2, 2, 42, 192, 3, 2, 2,
+	2, 44, 195, 3, 2, 2, 2, 46, 206, 3, 2, 2, 2, 48, 209, 3, 2, 2, 2, 50, 220,
+	3, 2, 2, 2, 52, 232, 3, 2, 2, 2, 54, 244, 3, 2, 2, 2, 56, 256, 3, 2, 2,
+	2, 58, 268, 3, 2, 2, 2, 60, 279, 3, 2, 2, 2, 62, 282, 3, 2, 2, 2, 64, 288,
+	3, 2, 2, 2, 66, 290, 3, 2, 2, 2, 68, 292, 3, 2, 2, 2, 70, 71, 5, 4, 3,
+	2, 71, 72, 7, 2, 2, 3, 72, 3, 3, 2, 2, 2, 73, 74, 8, 3, 1, 2, 74, 75, 5,
+	6, 4, 2, 75, 81, 3, 2, 2, 2, 76, 77, 12, 3, 2, 2, 77, 78, 7, 12, 2, 2,
+	78, 80, 5, 6, 4, 2, 79, 76, 3, 2, 2, 2, 80, 83, 3, 2, 2, 2, 81, 79, 3,
+	2, 2, 2, 81, 82, 3, 2, 2, 2, 82, 5, 3, 2, 2, 2, 83, 81, 3, 2, 2, 2, 84,
+	85, 8, 4, 1, 2, 85, 86, 5, 8, 5, 2, 86, 92, 3, 2, 2, 2, 87, 88, 12, 3,
+	2, 2, 88, 89, 7, 11, 2, 2, 89, 91, 5, 8, 5, 2, 90, 87, 3, 2, 2, 2, 91,
+	94, 3, 2, 2, 2, 92, 90, 3, 2, 2, 2, 92, 93, 3, 2, 2, 2, 93, 7, 3, 2, 2,
+	2, 94, 92, 3, 2, 2, 2, 95, 97, 7, 13, 2, 2, 96, 95, 3, 2, 2, 2, 96, 97,
+	3, 2, 2, 2, 97, 98, 3, 2, 2, 2, 98, 99, 5, 10, 6, 2, 99, 9, 3, 2, 2, 2,
+	100, 106, 5, 12, 7, 2, 101, 102, 7, 52, 2, 2, 102, 103, 5, 4, 3, 2, 103,
+	104, 7, 53, 2, 2, 104, 106, 3, 2, 2, 2, 105, 100, 3, 2, 2, 2, 105, 101,
+	3, 2, 2, 2, 106, 11, 3, 2, 2, 2, 107, 115, 5, 14, 8, 2, 108, 115, 5, 16,
+	9, 2, 109, 115, 5, 18, 10, 2, 110, 115, 5, 20, 11, 2, 111, 115, 5, 68,
+	35, 2, 112, 115, 5, 32, 17, 2, 113, 115, 5, 34, 18, 2, 114, 107, 3, 2,
+	2, 2, 114, 108, 3, 2, 2, 2, 114, 109, 3, 2, 2, 2, 114, 110, 3, 2, 2, 2,
+	114, 111, 3, 2, 2, 2, 114, 112, 3, 2, 2, 2, 114, 113, 3, 2, 2, 2, 115,
+	13, 3, 2, 2, 2, 116, 117, 5, 22, 12, 2, 117, 118, 7, 3, 2, 2, 118, 119,
+	5, 22, 12, 2, 119, 15, 3, 2, 2, 2, 120, 122, 5, 24, 13, 2, 121, 123, 7,
+	13, 2, 2, 122, 121, 3, 2, 2, 2, 122, 123, 3, 2, 2, 2, 123, 124, 3, 2, 2,
+	2, 124, 125, 9, 2, 2, 2, 125, 126, 5, 26, 14, 2, 126, 17, 3, 2, 2, 2, 127,
+	129, 5, 24, 13, 2, 128, 130, 7, 13, 2, 2, 129, 128, 3, 2, 2, 2, 129, 130,
+	3, 2, 2, 2, 130, 131, 3, 2, 2, 2, 131, 132, 7, 16, 2, 2, 132, 133, 5, 22,
+	12, 2, 133, 134, 7, 11, 2, 2, 134, 135, 5, 22, 12, 2, 135, 19, 3, 2, 2,
+	2, 136, 137, 5, 24, 13, 2, 137, 139, 7, 17, 2, 2, 138, 140, 7, 13, 2, 2,
+	139, 138, 3, 2, 2, 2, 139, 140, 3, 2, 2, 2, 140, 141, 3, 2, 2, 2, 141,
+	142, 7, 18, 2, 2, 142, 21, 3, 2, 2, 2, 143, 148, 5, 24, 13, 2, 144, 148,
+	5, 26, 14, 2, 145, 148, 5, 28, 15, 2, 146, 148, 5, 30, 16, 2, 147, 143,
+	3, 2, 2, 2, 147, 144, 3, 2, 2, 2, 147, 145, 3, 2, 2, 2, 147, 146, 3, 2,
+	2, 2, 148, 23, 3, 2, 2, 2, 149, 150, 7, 40, 2, 2, 150, 25, 3, 2, 2, 2,
+	151, 152, 7, 92, 2, 2, 152, 27, 3, 2, 2, 2, 153, 154, 7, 39, 2, 2, 154,
+	29, 3, 2, 2, 2, 155, 156, 7, 10, 2, 2, 156, 31, 3, 2, 2, 2, 157, 158, 7,
+	23, 2, 2, 158, 159, 7, 52, 2, 2, 159, 160, 5, 36, 19, 2, 160, 161, 7, 58,
+	2, 2, 161, 162, 5, 36, 19, 2, 162, 163, 7, 53, 2, 2, 163, 33, 3, 2, 2,
+	2, 164, 165, 7, 24, 2, 2, 165, 166, 7, 52, 2, 2, 166, 167, 5, 36, 19, 2,
+	167, 168, 7, 58, 2, 2, 168, 169, 5, 36, 19, 2, 169, 170, 7, 58, 2, 2, 170,
+	171, 7, 39, 2, 2, 171, 172, 7, 53, 2, 2, 172, 35, 3, 2, 2, 2, 173, 176,
+	5, 24, 13, 2, 174, 176, 5, 38, 20, 2, 175, 173, 3, 2, 2, 2, 175, 174, 3,
+	2, 2, 2, 176, 37, 3, 2, 2, 2, 177, 186, 5, 40, 21, 2, 178, 186, 5, 42,
+	22, 2, 179, 186, 5, 46, 24, 2, 180, 186, 5, 50, 26, 2, 181, 186, 5, 52,
+	27, 2, 182, 186, 5, 54, 28, 2, 183, 186, 5, 56, 29, 2, 184, 186, 5, 58,
+	30, 2, 185, 177, 3, 2, 2, 2, 185, 178, 3, 2, 2, 2, 185, 179, 3, 2, 2, 2,
+	185, 180, 3, 2, 2, 2, 185, 181, 3, 2, 2, 2, 185, 182, 3, 2, 2, 2, 185,
+	183, 3, 2, 2, 2, 185, 184, 3, 2, 2, 2, 186, 39, 3, 2, 2, 2, 187, 188, 7,
+	31, 2, 2, 188, 189, 7, 52, 2, 2, 189, 190, 5, 60, 31, 2, 190, 191, 7, 53,
+	2, 2, 191, 41, 3, 2, 2, 2, 192, 193, 7, 32, 2, 2, 193, 194, 5, 44, 23,
+	2, 194, 43, 3, 2, 2, 2, 195, 196, 7, 52, 2, 2, 196, 201, 5, 60, 31, 2,
+	197, 198, 7, 58, 2, 2, 198, 200, 5, 60, 31, 2, 199, 197, 3, 2, 2, 2, 200,
+	203, 3, 2, 2, 2, 201, 199, 3, 2, 2, 2, 201, 202, 3, 2, 2, 2, 202, 204,
+	3, 2, 2, 2, 203, 201, 3, 2, 2, 2, 204, 205, 7, 53, 2, 2, 205, 45, 3, 2,
+	2, 2, 206, 207, 7, 33, 2, 2, 207, 208, 5, 48, 25, 2, 208, 47, 3, 2, 2,
+	2, 209, 210, 7, 52, 2, 2, 210, 215, 5, 44, 23, 2, 211, 212, 7, 58, 2, 2,
+	212, 214, 5, 44, 23, 2, 213, 211, 3, 2, 2, 2, 214, 217, 3, 2, 2, 2, 215,
+	213, 3, 2, 2, 2, 215, 216, 3, 2, 2, 2, 216, 218, 3, 2, 2, 2, 217, 215,
+	3, 2, 2, 2, 218, 219, 7, 53, 2, 2, 219, 49, 3, 2, 2, 2, 220, 221, 7, 34,
+	2, 2, 221, 222, 7, 52, 2, 2, 222, 227, 5, 60, 31, 2, 223, 224, 7, 58, 2,
+	2, 224, 226, 5, 60, 31, 2, 225, 223, 3, 2, 2, 2, 226, 229, 3, 2, 2, 2,
+	227, 225, 3, 2, 2, 2, 227, 228, 3, 2, 2, 2, 228, 230, 3, 2, 2, 2, 229,
+	227, 3, 2, 2, 2, 230, 231, 7, 53, 2, 2, 231, 51, 3, 2, 2, 2, 232, 233,
+	7, 35, 2, 2, 233, 234, 7, 52, 2, 2, 234, 239, 5, 44, 23, 2, 235, 236, 7,
+	58, 2, 2, 236, 238, 5, 44, 23, 2, 237, 235, 3, 2, 2, 2, 238, 241, 3, 2,
+	2, 2, 239, 237, 3, 2, 2, 2, 239, 240, 3, 2, 2, 2, 240, 242, 3, 2, 2, 2,
+	241, 239, 3, 2, 2, 2, 242, 243, 7, 53, 2, 2, 243, 53, 3, 2, 2, 2, 244,
+	245, 7, 36, 2, 2, 245, 246, 7, 52, 2, 2, 246, 251, 5, 48, 25, 2, 247, 248,
+	7, 58, 2, 2, 248, 250, 5, 48, 25, 2, 249, 247, 3, 2, 2, 2, 250, 253, 3,
+	2, 2, 2, 251, 249, 3, 2, 2, 2, 251, 252, 3, 2, 2, 2, 252, 254, 3, 2, 2,
+	2, 253, 251, 3, 2, 2, 2, 254, 255, 7, 53, 2, 2, 255, 55, 3, 2, 2, 2, 256,
+	257, 7, 37, 2, 2, 257, 258, 7, 52, 2, 2, 258, 263, 5, 38, 20, 2, 259, 260,
+	7, 58, 2, 2, 260, 262, 5, 38, 20, 2, 261, 259, 3, 2, 2, 2, 262, 265, 3,
+	2, 2, 2, 263, 261, 3, 2, 2, 2, 263, 264, 3, 2, 2, 2, 264, 266, 3, 2, 2,
+	2, 265, 263, 3, 2, 2, 2, 266, 267, 7, 53, 2, 2, 267, 57, 3, 2, 2, 2, 268,
+	269, 7, 38, 2, 2, 269, 270, 7, 52, 2, 2, 270, 271, 7, 39, 2, 2, 271, 272,
+	7, 58, 2, 2, 272, 273, 7, 39, 2, 2, 273, 274, 7, 58, 2, 2, 274, 275, 7,
+	39, 2, 2, 275, 276, 7, 58, 2, 2, 276, 277, 7, 39, 2, 2, 277, 278, 7, 53,
+	2, 2, 278, 59, 3, 2, 2, 2, 279, 280, 7, 39, 2, 2, 280, 281, 7, 39, 2, 2,
+	281, 61, 3, 2, 2, 2, 282, 283, 5, 64, 33, 2, 283, 284, 9, 3, 2, 2, 284,
+	285, 5, 64, 33, 2, 285, 63, 3, 2, 2, 2, 286, 289, 5, 24, 13, 2, 287, 289,
+	5, 66, 34, 2, 288, 286, 3, 2, 2, 2, 288, 287, 3, 2, 2, 2, 289, 65, 3, 2,
+	2, 2, 290, 291, 7, 77, 2, 2, 291, 67, 3, 2, 2, 2, 292, 294, 5, 24, 13,
+	2, 293, 295, 7, 13, 2, 2, 294, 293, 3, 2, 2, 2, 294, 295, 3, 2, 2, 2, 295,
+	296, 3, 2, 2, 2, 296, 297, 7, 30, 2, 2, 297, 314, 7, 52, 2, 2, 298, 303,
+	5, 26, 14, 2, 299, 300, 7, 58, 2, 2, 300, 302, 5, 26, 14, 2, 301, 299,
+	3, 2, 2, 2, 302, 305, 3, 2, 2, 2, 303, 301, 3, 2, 2, 2, 303, 304, 3, 2,
+	2, 2, 304, 315, 3, 2, 2, 2, 305, 303, 3, 2, 2, 2, 306, 311, 5, 28, 15,
+	2, 307, 308, 7, 58, 2, 2, 308, 310, 5, 28, 15, 2, 309, 307, 3, 2, 2, 2,
+	310, 313, 3, 2, 2, 2, 311, 309, 3, 2, 2, 2, 311, 312, 3, 2, 2, 2, 312,
+	315, 3, 2, 2, 2, 313, 311, 3, 2, 2, 2, 314, 298, 3, 2, 2, 2, 314, 306,
+	3, 2, 2, 2, 315, 316, 3, 2, 2, 2, 316, 317, 7, 53, 2, 2, 317, 69, 3, 2,
+	2, 2, 24, 81, 92, 96, 105, 114, 122, 129, 139, 147, 175, 185, 201, 215,
+	227, 239, 251, 263, 288, 294, 303, 311, 314,
 }
 var deserializer = antlr.NewATNDeserializer(nil)
 var deserializedATN = deserializer.DeserializeFromUInt16(parserATN)
@@ -170,27 +157,29 @@ var deserializedATN = deserializer.DeserializeFromUInt16(parserATN)
 var literalNames = []string{
 	"", "", "'<'", "'='", "'>'", "", "", "", "", "", "", "", "", "", "", "",
 	"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
-	"", "", "", "", "", "", "", "", "'#'", "'$'", "'_'", "'\"'", "'%'", "'&'",
-	"", "'('", "')'", "'['", "']'", "'*'", "'+'", "','", "'-'", "'.'", "'/'",
-	"':'", "';'", "'?'", "'|'", "", "", "", "", "", "", "", "", "", "", "",
-	"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "''''",
+	"", "", "", "", "", "", "", "", "", "'#'", "'$'", "'_'", "'\"'", "'%'",
+	"'&'", "", "'('", "')'", "'['", "']'", "'*'", "'+'", "','", "'-'", "'.'",
+	"'/'", "':'", "';'", "'?'", "'|'", "", "", "", "", "", "", "", "", "",
+	"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
+	"''''",
 }
 var symbolicNames = []string{
 	"", "ComparisonOperator", "LT", "EQ", "GT", "NEQ", "GTEQ", "LTEQ", "BooleanLiteral",
 	"AND", "OR", "NOT", "LIKE", "ILIKE", "BETWEEN", "IS", "NULL", "WILDCARD",
-	"SINGLECHAR", "ESCAPECHAR", "NOCASE", "SpatialOperator", "TemporalOperator",
-	"ArrayOperator", "EXISTS", "EXIST", "DOES", "IN", "POINT", "LINESTRING",
-	"POLYGON", "MULTIPOINT", "MULTILINESTRING", "MULTIPOLYGON", "GEOMETRYCOLLECTION",
-	"ENVELOPE", "NumericLiteral", "Identifier", "IdentifierStart", "IdentifierPart",
-	"ALPHA", "DIGIT", "OCTOTHORP", "DOLLAR", "UNDERSCORE", "DOUBLEQUOTE", "PERCENT",
-	"AMPERSAND", "QUOTE", "LEFTPAREN", "RIGHTPAREN", "LEFTSQUAREBRACKET", "RIGHTSQUAREBRACKET",
-	"ASTERISK", "PLUS", "COMMA", "MINUS", "PERIOD", "SOLIDUS", "COLON", "SEMICOLON",
-	"QUESTIONMARK", "VERTICALBAR", "BIT", "HEXIT", "UnsignedNumericLiteral",
-	"SignedNumericLiteral", "ExactNumericLiteral", "ApproximateNumericLiteral",
-	"Mantissa", "Exponent", "SignedInteger", "UnsignedInteger", "Sign", "TemporalLiteral",
-	"Instant", "Interval", "InstantInInterval", "FullDate", "DateYear", "DateMonth",
-	"DateDay", "UtcTime", "TimeZoneOffset", "TimeHour", "TimeMinute", "TimeSecond",
-	"NOW", "WS", "CharacterStringLiteral", "QuotedQuote",
+	"SINGLECHAR", "ESCAPECHAR", "NOCASE", "SpatialOperator", "DistanceOperator",
+	"TemporalOperator", "ArrayOperator", "EXISTS", "EXIST", "DOES", "IN", "POINT",
+	"LINESTRING", "POLYGON", "MULTIPOINT", "MULTILINESTRING", "MULTIPOLYGON",
+	"GEOMETRYCOLLECTION", "ENVELOPE", "NumericLiteral", "Identifier", "IdentifierStart",
+	"IdentifierPart", "ALPHA", "DIGIT", "OCTOTHORP", "DOLLAR", "UNDERSCORE",
+	"DOUBLEQUOTE", "PERCENT", "AMPERSAND", "QUOTE", "LEFTPAREN", "RIGHTPAREN",
+	"LEFTSQUAREBRACKET", "RIGHTSQUAREBRACKET", "ASTERISK", "PLUS", "COMMA",
+	"MINUS", "PERIOD", "SOLIDUS", "COLON", "SEMICOLON", "QUESTIONMARK", "VERTICALBAR",
+	"BIT", "HEXIT", "UnsignedNumericLiteral", "SignedNumericLiteral", "ExactNumericLiteral",
+	"ApproximateNumericLiteral", "Mantissa", "Exponent", "SignedInteger", "UnsignedInteger",
+	"Sign", "TemporalLiteral", "Instant", "Interval", "InstantInInterval",
+	"FullDate", "DateYear", "DateMonth", "DateDay", "UtcTime", "TimeZoneOffset",
+	"TimeHour", "TimeMinute", "TimeSecond", "NOW", "WS", "CharacterStringLiteral",
+	"QuotedQuote",
 }
 
 var ruleNames = []string{
@@ -198,12 +187,10 @@ var ruleNames = []string{
 	"booleanPrimary", "predicate", "binaryComparisonPredicate", "likePredicate",
 	"betweenPredicate", "isNullPredicate", "scalarExpression", "propertyName",
 	"characterLiteral", "numericLiteral", "booleanLiteral", "spatialPredicate",
-	"geomExpression", "geomLiteral", "point", "linestring", "linestringDef",
-	"polygon", "polygonDef", "multiPoint", "multiLinestring", "multiPolygon",
-	"geometryCollection", "envelope", "coordinate", "xCoord", "yCoord", "zCoord",
-	"westBoundLon", "eastBoundLon", "northBoundLat", "southBoundLat", "minElev",
-	"maxElev", "temporalPredicate", "temporalExpression", "temporalLiteral",
-	"inPredicate",
+	"distancePredicate", "geomExpression", "geomLiteral", "point", "linestring",
+	"coordList", "polygon", "polygonDef", "multiPoint", "multiLinestring",
+	"multiPolygon", "geometryCollection", "envelope", "coordinate", "temporalPredicate",
+	"temporalExpression", "temporalLiteral", "inPredicate",
 }
 var decisionToDFA = make([]*antlr.DFA, len(deserializedATN.DecisionToState))
 
@@ -255,75 +242,76 @@ const (
 	CQLESCAPECHAR                = 19
 	CQLNOCASE                    = 20
 	CQLSpatialOperator           = 21
-	CQLTemporalOperator          = 22
-	CQLArrayOperator             = 23
-	CQLEXISTS                    = 24
-	CQLEXIST                     = 25
-	CQLDOES                      = 26
-	CQLIN                        = 27
-	CQLPOINT                     = 28
-	CQLLINESTRING                = 29
-	CQLPOLYGON                   = 30
-	CQLMULTIPOINT                = 31
-	CQLMULTILINESTRING           = 32
-	CQLMULTIPOLYGON              = 33
-	CQLGEOMETRYCOLLECTION        = 34
-	CQLENVELOPE                  = 35
-	CQLNumericLiteral            = 36
-	CQLIdentifier                = 37
-	CQLIdentifierStart           = 38
-	CQLIdentifierPart            = 39
-	CQLALPHA                     = 40
-	CQLDIGIT                     = 41
-	CQLOCTOTHORP                 = 42
-	CQLDOLLAR                    = 43
-	CQLUNDERSCORE                = 44
-	CQLDOUBLEQUOTE               = 45
-	CQLPERCENT                   = 46
-	CQLAMPERSAND                 = 47
-	CQLQUOTE                     = 48
-	CQLLEFTPAREN                 = 49
-	CQLRIGHTPAREN                = 50
-	CQLLEFTSQUAREBRACKET         = 51
-	CQLRIGHTSQUAREBRACKET        = 52
-	CQLASTERISK                  = 53
-	CQLPLUS                      = 54
-	CQLCOMMA                     = 55
-	CQLMINUS                     = 56
-	CQLPERIOD                    = 57
-	CQLSOLIDUS                   = 58
-	CQLCOLON                     = 59
-	CQLSEMICOLON                 = 60
-	CQLQUESTIONMARK              = 61
-	CQLVERTICALBAR               = 62
-	CQLBIT                       = 63
-	CQLHEXIT                     = 64
-	CQLUnsignedNumericLiteral    = 65
-	CQLSignedNumericLiteral      = 66
-	CQLExactNumericLiteral       = 67
-	CQLApproximateNumericLiteral = 68
-	CQLMantissa                  = 69
-	CQLExponent                  = 70
-	CQLSignedInteger             = 71
-	CQLUnsignedInteger           = 72
-	CQLSign                      = 73
-	CQLTemporalLiteral           = 74
-	CQLInstant                   = 75
-	CQLInterval                  = 76
-	CQLInstantInInterval         = 77
-	CQLFullDate                  = 78
-	CQLDateYear                  = 79
-	CQLDateMonth                 = 80
-	CQLDateDay                   = 81
-	CQLUtcTime                   = 82
-	CQLTimeZoneOffset            = 83
-	CQLTimeHour                  = 84
-	CQLTimeMinute                = 85
-	CQLTimeSecond                = 86
-	CQLNOW                       = 87
-	CQLWS                        = 88
-	CQLCharacterStringLiteral    = 89
-	CQLQuotedQuote               = 90
+	CQLDistanceOperator          = 22
+	CQLTemporalOperator          = 23
+	CQLArrayOperator             = 24
+	CQLEXISTS                    = 25
+	CQLEXIST                     = 26
+	CQLDOES                      = 27
+	CQLIN                        = 28
+	CQLPOINT                     = 29
+	CQLLINESTRING                = 30
+	CQLPOLYGON                   = 31
+	CQLMULTIPOINT                = 32
+	CQLMULTILINESTRING           = 33
+	CQLMULTIPOLYGON              = 34
+	CQLGEOMETRYCOLLECTION        = 35
+	CQLENVELOPE                  = 36
+	CQLNumericLiteral            = 37
+	CQLIdentifier                = 38
+	CQLIdentifierStart           = 39
+	CQLIdentifierPart            = 40
+	CQLALPHA                     = 41
+	CQLDIGIT                     = 42
+	CQLOCTOTHORP                 = 43
+	CQLDOLLAR                    = 44
+	CQLUNDERSCORE                = 45
+	CQLDOUBLEQUOTE               = 46
+	CQLPERCENT                   = 47
+	CQLAMPERSAND                 = 48
+	CQLQUOTE                     = 49
+	CQLLEFTPAREN                 = 50
+	CQLRIGHTPAREN                = 51
+	CQLLEFTSQUAREBRACKET         = 52
+	CQLRIGHTSQUAREBRACKET        = 53
+	CQLASTERISK                  = 54
+	CQLPLUS                      = 55
+	CQLCOMMA                     = 56
+	CQLMINUS                     = 57
+	CQLPERIOD                    = 58
+	CQLSOLIDUS                   = 59
+	CQLCOLON                     = 60
+	CQLSEMICOLON                 = 61
+	CQLQUESTIONMARK              = 62
+	CQLVERTICALBAR               = 63
+	CQLBIT                       = 64
+	CQLHEXIT                     = 65
+	CQLUnsignedNumericLiteral    = 66
+	CQLSignedNumericLiteral      = 67
+	CQLExactNumericLiteral       = 68
+	CQLApproximateNumericLiteral = 69
+	CQLMantissa                  = 70
+	CQLExponent                  = 71
+	CQLSignedInteger             = 72
+	CQLUnsignedInteger           = 73
+	CQLSign                      = 74
+	CQLTemporalLiteral           = 75
+	CQLInstant                   = 76
+	CQLInterval                  = 77
+	CQLInstantInInterval         = 78
+	CQLFullDate                  = 79
+	CQLDateYear                  = 80
+	CQLDateMonth                 = 81
+	CQLDateDay                   = 82
+	CQLUtcTime                   = 83
+	CQLTimeZoneOffset            = 84
+	CQLTimeHour                  = 85
+	CQLTimeMinute                = 86
+	CQLTimeSecond                = 87
+	CQLNOW                       = 88
+	CQLWS                        = 89
+	CQLCharacterStringLiteral    = 90
+	CQLQuotedQuote               = 91
 )
 
 // CQL rules.
@@ -344,32 +332,24 @@ const (
 	CQLRULE_numericLiteral            = 13
 	CQLRULE_booleanLiteral            = 14
 	CQLRULE_spatialPredicate          = 15
-	CQLRULE_geomExpression            = 16
-	CQLRULE_geomLiteral               = 17
-	CQLRULE_point                     = 18
-	CQLRULE_linestring                = 19
-	CQLRULE_linestringDef             = 20
-	CQLRULE_polygon                   = 21
-	CQLRULE_polygonDef                = 22
-	CQLRULE_multiPoint                = 23
-	CQLRULE_multiLinestring           = 24
-	CQLRULE_multiPolygon              = 25
-	CQLRULE_geometryCollection        = 26
-	CQLRULE_envelope                  = 27
-	CQLRULE_coordinate                = 28
-	CQLRULE_xCoord                    = 29
-	CQLRULE_yCoord                    = 30
-	CQLRULE_zCoord                    = 31
-	CQLRULE_westBoundLon              = 32
-	CQLRULE_eastBoundLon              = 33
-	CQLRULE_northBoundLat             = 34
-	CQLRULE_southBoundLat             = 35
-	CQLRULE_minElev                   = 36
-	CQLRULE_maxElev                   = 37
-	CQLRULE_temporalPredicate         = 38
-	CQLRULE_temporalExpression        = 39
-	CQLRULE_temporalLiteral           = 40
-	CQLRULE_inPredicate               = 41
+	CQLRULE_distancePredicate         = 16
+	CQLRULE_geomExpression            = 17
+	CQLRULE_geomLiteral               = 18
+	CQLRULE_point                     = 19
+	CQLRULE_linestring                = 20
+	CQLRULE_coordList                 = 21
+	CQLRULE_polygon                   = 22
+	CQLRULE_polygonDef                = 23
+	CQLRULE_multiPoint                = 24
+	CQLRULE_multiLinestring           = 25
+	CQLRULE_multiPolygon              = 26
+	CQLRULE_geometryCollection        = 27
+	CQLRULE_envelope                  = 28
+	CQLRULE_coordinate                = 29
+	CQLRULE_temporalPredicate         = 30
+	CQLRULE_temporalExpression        = 31
+	CQLRULE_temporalLiteral           = 32
+	CQLRULE_inPredicate               = 33
 )
 
 // ICqlFilterContext is an interface to support dynamic dispatch.
@@ -466,11 +446,11 @@ func (p *CQL) CqlFilter() (localctx ICqlFilterContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(84)
+		p.SetState(68)
 		p.booleanValueExpression(0)
 	}
 	{
-		p.SetState(85)
+		p.SetState(69)
 		p.Match(CQLEOF)
 	}
 
@@ -592,12 +572,12 @@ func (p *CQL) booleanValueExpression(_p int) (localctx IBooleanValueExpressionCo
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(88)
+		p.SetState(72)
 		p.booleanTerm(0)
 	}
 
 	p.GetParserRuleContext().SetStop(p.GetTokenStream().LT(-1))
-	p.SetState(95)
+	p.SetState(79)
 	p.GetErrorHandler().Sync(p)
 	_alt = p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 0, p.GetParserRuleContext())
 
@@ -609,22 +589,22 @@ func (p *CQL) booleanValueExpression(_p int) (localctx IBooleanValueExpressionCo
 			_prevctx = localctx
 			localctx = NewBooleanValueExpressionContext(p, _parentctx, _parentState)
 			p.PushNewRecursionContext(localctx, _startState, CQLRULE_booleanValueExpression)
-			p.SetState(90)
+			p.SetState(74)
 
 			if !(p.Precpred(p.GetParserRuleContext(), 1)) {
 				panic(antlr.NewFailedPredicateException(p, "p.Precpred(p.GetParserRuleContext(), 1)", ""))
 			}
 			{
-				p.SetState(91)
+				p.SetState(75)
 				p.Match(CQLOR)
 			}
 			{
-				p.SetState(92)
+				p.SetState(76)
 				p.booleanTerm(0)
 			}
 
 		}
-		p.SetState(97)
+		p.SetState(81)
 		p.GetErrorHandler().Sync(p)
 		_alt = p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 0, p.GetParserRuleContext())
 	}
@@ -747,12 +727,12 @@ func (p *CQL) booleanTerm(_p int) (localctx IBooleanTermContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(99)
+		p.SetState(83)
 		p.BooleanFactor()
 	}
 
 	p.GetParserRuleContext().SetStop(p.GetTokenStream().LT(-1))
-	p.SetState(106)
+	p.SetState(90)
 	p.GetErrorHandler().Sync(p)
 	_alt = p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 1, p.GetParserRuleContext())
 
@@ -764,22 +744,22 @@ func (p *CQL) booleanTerm(_p int) (localctx IBooleanTermContext) {
 			_prevctx = localctx
 			localctx = NewBooleanTermContext(p, _parentctx, _parentState)
 			p.PushNewRecursionContext(localctx, _startState, CQLRULE_booleanTerm)
-			p.SetState(101)
+			p.SetState(85)
 
 			if !(p.Precpred(p.GetParserRuleContext(), 1)) {
 				panic(antlr.NewFailedPredicateException(p, "p.Precpred(p.GetParserRuleContext(), 1)", ""))
 			}
 			{
-				p.SetState(102)
+				p.SetState(86)
 				p.Match(CQLAND)
 			}
 			{
-				p.SetState(103)
+				p.SetState(87)
 				p.BooleanFactor()
 			}
 
 		}
-		p.SetState(108)
+		p.SetState(92)
 		p.GetErrorHandler().Sync(p)
 		_alt = p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 1, p.GetParserRuleContext())
 	}
@@ -881,19 +861,19 @@ func (p *CQL) BooleanFactor() (localctx IBooleanFactorContext) {
 	}()
 
 	p.EnterOuterAlt(localctx, 1)
-	p.SetState(110)
+	p.SetState(94)
 	p.GetErrorHandler().Sync(p)
 	_la = p.GetTokenStream().LA(1)
 
 	if _la == CQLNOT {
 		{
-			p.SetState(109)
+			p.SetState(93)
 			p.Match(CQLNOT)
 		}
 
 	}
 	{
-		p.SetState(112)
+		p.SetState(96)
 		p.BooleanPrimary()
 	}
 
@@ -1006,29 +986,29 @@ func (p *CQL) BooleanPrimary() (localctx IBooleanPrimaryContext) {
 		}
 	}()
 
-	p.SetState(119)
+	p.SetState(103)
 	p.GetErrorHandler().Sync(p)
 
 	switch p.GetTokenStream().LA(1) {
-	case CQLBooleanLiteral, CQLNumericLiteral, CQLIdentifier, CQLCharacterStringLiteral:
+	case CQLBooleanLiteral, CQLSpatialOperator, CQLDistanceOperator, CQLNumericLiteral, CQLIdentifier, CQLCharacterStringLiteral:
 		p.EnterOuterAlt(localctx, 1)
 		{
-			p.SetState(114)
+			p.SetState(98)
 			p.Predicate()
 		}
 
 	case CQLLEFTPAREN:
 		p.EnterOuterAlt(localctx, 2)
 		{
-			p.SetState(115)
+			p.SetState(99)
 			p.Match(CQLLEFTPAREN)
 		}
 		{
-			p.SetState(116)
+			p.SetState(100)
 			p.booleanValueExpression(0)
 		}
 		{
-			p.SetState(117)
+			p.SetState(101)
 			p.Match(CQLRIGHTPAREN)
 		}
 
@@ -1127,6 +1107,26 @@ func (s *PredicateContext) InPredicate() IInPredicateContext {
 	return t.(IInPredicateContext)
 }
 
+func (s *PredicateContext) SpatialPredicate() ISpatialPredicateContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*ISpatialPredicateContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(ISpatialPredicateContext)
+}
+
+func (s *PredicateContext) DistancePredicate() IDistancePredicateContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IDistancePredicateContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IDistancePredicateContext)
+}
+
 func (s *PredicateContext) GetRuleContext() antlr.RuleContext {
 	return s
 }
@@ -1167,42 +1167,56 @@ func (p *CQL) Predicate() (localctx IPredicateContext) {
 		}
 	}()
 
-	p.SetState(126)
+	p.SetState(112)
 	p.GetErrorHandler().Sync(p)
 	switch p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 4, p.GetParserRuleContext()) {
 	case 1:
 		p.EnterOuterAlt(localctx, 1)
 		{
-			p.SetState(121)
+			p.SetState(105)
 			p.BinaryComparisonPredicate()
 		}
 
 	case 2:
 		p.EnterOuterAlt(localctx, 2)
 		{
-			p.SetState(122)
+			p.SetState(106)
 			p.LikePredicate()
 		}
 
 	case 3:
 		p.EnterOuterAlt(localctx, 3)
 		{
-			p.SetState(123)
+			p.SetState(107)
 			p.BetweenPredicate()
 		}
 
 	case 4:
 		p.EnterOuterAlt(localctx, 4)
 		{
-			p.SetState(124)
+			p.SetState(108)
 			p.IsNullPredicate()
 		}
 
 	case 5:
 		p.EnterOuterAlt(localctx, 5)
 		{
-			p.SetState(125)
+			p.SetState(109)
 			p.InPredicate()
+		}
+
+	case 6:
+		p.EnterOuterAlt(localctx, 6)
+		{
+			p.SetState(110)
+			p.SpatialPredicate()
+		}
+
+	case 7:
+		p.EnterOuterAlt(localctx, 7)
+		{
+			p.SetState(111)
+			p.DistancePredicate()
 		}
 
 	}
@@ -1317,15 +1331,15 @@ func (p *CQL) BinaryComparisonPredicate() (localctx IBinaryComparisonPredicateCo
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(128)
+		p.SetState(114)
 		p.ScalarExpression()
 	}
 	{
-		p.SetState(129)
+		p.SetState(115)
 		p.Match(CQLComparisonOperator)
 	}
 	{
-		p.SetState(130)
+		p.SetState(116)
 		p.ScalarExpression()
 	}
 
@@ -1445,21 +1459,21 @@ func (p *CQL) LikePredicate() (localctx ILikePredicateContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(132)
+		p.SetState(118)
 		p.PropertyName()
 	}
-	p.SetState(134)
+	p.SetState(120)
 	p.GetErrorHandler().Sync(p)
 	_la = p.GetTokenStream().LA(1)
 
 	if _la == CQLNOT {
 		{
-			p.SetState(133)
+			p.SetState(119)
 			p.Match(CQLNOT)
 		}
 
 	}
-	p.SetState(136)
+	p.SetState(122)
 	_la = p.GetTokenStream().LA(1)
 
 	if !(_la == CQLLIKE || _la == CQLILIKE) {
@@ -1469,7 +1483,7 @@ func (p *CQL) LikePredicate() (localctx ILikePredicateContext) {
 		p.Consume()
 	}
 	{
-		p.SetState(137)
+		p.SetState(123)
 		p.CharacterLiteral()
 	}
 
@@ -1602,34 +1616,34 @@ func (p *CQL) BetweenPredicate() (localctx IBetweenPredicateContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(139)
+		p.SetState(125)
 		p.PropertyName()
 	}
-	p.SetState(141)
+	p.SetState(127)
 	p.GetErrorHandler().Sync(p)
 	_la = p.GetTokenStream().LA(1)
 
 	if _la == CQLNOT {
 		{
-			p.SetState(140)
+			p.SetState(126)
 			p.Match(CQLNOT)
 		}
 
 	}
 	{
-		p.SetState(143)
+		p.SetState(129)
 		p.Match(CQLBETWEEN)
 	}
 	{
-		p.SetState(144)
+		p.SetState(130)
 		p.ScalarExpression()
 	}
 	{
-		p.SetState(145)
+		p.SetState(131)
 		p.Match(CQLAND)
 	}
 	{
-		p.SetState(146)
+		p.SetState(132)
 		p.ScalarExpression()
 	}
 
@@ -1739,26 +1753,26 @@ func (p *CQL) IsNullPredicate() (localctx IIsNullPredicateContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(148)
+		p.SetState(134)
 		p.PropertyName()
 	}
 	{
-		p.SetState(149)
+		p.SetState(135)
 		p.Match(CQLIS)
 	}
-	p.SetState(151)
+	p.SetState(137)
 	p.GetErrorHandler().Sync(p)
 	_la = p.GetTokenStream().LA(1)
 
 	if _la == CQLNOT {
 		{
-			p.SetState(150)
+			p.SetState(136)
 			p.Match(CQLNOT)
 		}
 
 	}
 	{
-		p.SetState(153)
+		p.SetState(139)
 		p.Match(CQLNULL)
 	}
 
@@ -1883,35 +1897,35 @@ func (p *CQL) ScalarExpression() (localctx IScalarExpressionContext) {
 		}
 	}()
 
-	p.SetState(159)
+	p.SetState(145)
 	p.GetErrorHandler().Sync(p)
 
 	switch p.GetTokenStream().LA(1) {
 	case CQLIdentifier:
 		p.EnterOuterAlt(localctx, 1)
 		{
-			p.SetState(155)
+			p.SetState(141)
 			p.PropertyName()
 		}
 
 	case CQLCharacterStringLiteral:
 		p.EnterOuterAlt(localctx, 2)
 		{
-			p.SetState(156)
+			p.SetState(142)
 			p.CharacterLiteral()
 		}
 
 	case CQLNumericLiteral:
 		p.EnterOuterAlt(localctx, 3)
 		{
-			p.SetState(157)
+			p.SetState(143)
 			p.NumericLiteral()
 		}
 
 	case CQLBooleanLiteral:
 		p.EnterOuterAlt(localctx, 4)
 		{
-			p.SetState(158)
+			p.SetState(144)
 			p.BooleanLiteral()
 		}
 
@@ -2006,7 +2020,7 @@ func (p *CQL) PropertyName() (localctx IPropertyNameContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(161)
+		p.SetState(147)
 		p.Match(CQLIdentifier)
 	}
 
@@ -2097,7 +2111,7 @@ func (p *CQL) CharacterLiteral() (localctx ICharacterLiteralContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(163)
+		p.SetState(149)
 		p.Match(CQLCharacterStringLiteral)
 	}
 
@@ -2188,7 +2202,7 @@ func (p *CQL) NumericLiteral() (localctx INumericLiteralContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(165)
+		p.SetState(151)
 		p.Match(CQLNumericLiteral)
 	}
 
@@ -2279,7 +2293,7 @@ func (p *CQL) BooleanLiteral() (localctx IBooleanLiteralContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(167)
+		p.SetState(153)
 		p.Match(CQLBooleanLiteral)
 	}
 
@@ -2405,27 +2419,189 @@ func (p *CQL) SpatialPredicate() (localctx ISpatialPredicateContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(169)
+		p.SetState(155)
 		p.Match(CQLSpatialOperator)
 	}
 	{
-		p.SetState(170)
+		p.SetState(156)
 		p.Match(CQLLEFTPAREN)
 	}
 	{
-		p.SetState(171)
+		p.SetState(157)
 		p.GeomExpression()
 	}
 	{
-		p.SetState(172)
+		p.SetState(158)
 		p.Match(CQLCOMMA)
 	}
 	{
-		p.SetState(173)
+		p.SetState(159)
 		p.GeomExpression()
 	}
 	{
-		p.SetState(174)
+		p.SetState(160)
+		p.Match(CQLRIGHTPAREN)
+	}
+
+	return localctx
+}
+
+// IDistancePredicateContext is an interface to support dynamic dispatch.
+type IDistancePredicateContext interface {
+	antlr.ParserRuleContext
+
+	// GetParser returns the parser.
+	GetParser() antlr.Parser
+
+	// IsDistancePredicateContext differentiates from other interfaces.
+	IsDistancePredicateContext()
+}
+
+type DistancePredicateContext struct {
+	*antlr.BaseParserRuleContext
+	parser antlr.Parser
+}
+
+func NewEmptyDistancePredicateContext() *DistancePredicateContext {
+	var p = new(DistancePredicateContext)
+	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
+	p.RuleIndex = CQLRULE_distancePredicate
+	return p
+}
+
+func (*DistancePredicateContext) IsDistancePredicateContext() {}
+
+func NewDistancePredicateContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *DistancePredicateContext {
+	var p = new(DistancePredicateContext)
+
+	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
+
+	p.parser = parser
+	p.RuleIndex = CQLRULE_distancePredicate
+
+	return p
+}
+
+func (s *DistancePredicateContext) GetParser() antlr.Parser { return s.parser }
+
+func (s *DistancePredicateContext) DistanceOperator() antlr.TerminalNode {
+	return s.GetToken(CQLDistanceOperator, 0)
+}
+
+func (s *DistancePredicateContext) LEFTPAREN() antlr.TerminalNode {
+	return s.GetToken(CQLLEFTPAREN, 0)
+}
+
+func (s *DistancePredicateContext) AllGeomExpression() []IGeomExpressionContext {
+	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*IGeomExpressionContext)(nil)).Elem())
+	var tst = make([]IGeomExpressionContext, len(ts))
+
+	for i, t := range ts {
+		if t != nil {
+			tst[i] = t.(IGeomExpressionContext)
+		}
+	}
+
+	return tst
+}
+
+func (s *DistancePredicateContext) GeomExpression(i int) IGeomExpressionContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IGeomExpressionContext)(nil)).Elem(), i)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IGeomExpressionContext)
+}
+
+func (s *DistancePredicateContext) AllCOMMA() []antlr.TerminalNode {
+	return s.GetTokens(CQLCOMMA)
+}
+
+func (s *DistancePredicateContext) COMMA(i int) antlr.TerminalNode {
+	return s.GetToken(CQLCOMMA, i)
+}
+
+func (s *DistancePredicateContext) NumericLiteral() antlr.TerminalNode {
+	return s.GetToken(CQLNumericLiteral, 0)
+}
+
+func (s *DistancePredicateContext) RIGHTPAREN() antlr.TerminalNode {
+	return s.GetToken(CQLRIGHTPAREN, 0)
+}
+
+func (s *DistancePredicateContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *DistancePredicateContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
+	return antlr.TreesStringTree(s, ruleNames, recog)
+}
+
+func (s *DistancePredicateContext) EnterRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(CQLListener); ok {
+		listenerT.EnterDistancePredicate(s)
+	}
+}
+
+func (s *DistancePredicateContext) ExitRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(CQLListener); ok {
+		listenerT.ExitDistancePredicate(s)
+	}
+}
+
+func (p *CQL) DistancePredicate() (localctx IDistancePredicateContext) {
+	localctx = NewDistancePredicateContext(p, p.GetParserRuleContext(), p.GetState())
+	p.EnterRule(localctx, 32, CQLRULE_distancePredicate)
+
+	defer func() {
+		p.ExitRule()
+	}()
+
+	defer func() {
+		if err := recover(); err != nil {
+			if v, ok := err.(antlr.RecognitionException); ok {
+				localctx.SetException(v)
+				p.GetErrorHandler().ReportError(p, v)
+				p.GetErrorHandler().Recover(p, v)
+			} else {
+				panic(err)
+			}
+		}
+	}()
+
+	p.EnterOuterAlt(localctx, 1)
+	{
+		p.SetState(162)
+		p.Match(CQLDistanceOperator)
+	}
+	{
+		p.SetState(163)
+		p.Match(CQLLEFTPAREN)
+	}
+	{
+		p.SetState(164)
+		p.GeomExpression()
+	}
+	{
+		p.SetState(165)
+		p.Match(CQLCOMMA)
+	}
+	{
+		p.SetState(166)
+		p.GeomExpression()
+	}
+	{
+		p.SetState(167)
+		p.Match(CQLCOMMA)
+	}
+	{
+		p.SetState(168)
+		p.Match(CQLNumericLiteral)
+	}
+	{
+		p.SetState(169)
 		p.Match(CQLRIGHTPAREN)
 	}
 
@@ -2512,7 +2688,7 @@ func (s *GeomExpressionContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *CQL) GeomExpression() (localctx IGeomExpressionContext) {
 	localctx = NewGeomExpressionContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 32, CQLRULE_geomExpression)
+	p.EnterRule(localctx, 34, CQLRULE_geomExpression)
 
 	defer func() {
 		p.ExitRule()
@@ -2530,21 +2706,21 @@ func (p *CQL) GeomExpression() (localctx IGeomExpressionContext) {
 		}
 	}()
 
-	p.SetState(178)
+	p.SetState(173)
 	p.GetErrorHandler().Sync(p)
 
 	switch p.GetTokenStream().LA(1) {
 	case CQLIdentifier:
 		p.EnterOuterAlt(localctx, 1)
 		{
-			p.SetState(176)
+			p.SetState(171)
 			p.PropertyName()
 		}
 
 	case CQLPOINT, CQLLINESTRING, CQLPOLYGON, CQLMULTIPOINT, CQLMULTILINESTRING, CQLMULTIPOLYGON, CQLGEOMETRYCOLLECTION, CQLENVELOPE:
 		p.EnterOuterAlt(localctx, 2)
 		{
-			p.SetState(177)
+			p.SetState(172)
 			p.GeomLiteral()
 		}
 
@@ -2695,7 +2871,7 @@ func (s *GeomLiteralContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *CQL) GeomLiteral() (localctx IGeomLiteralContext) {
 	localctx = NewGeomLiteralContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 34, CQLRULE_geomLiteral)
+	p.EnterRule(localctx, 36, CQLRULE_geomLiteral)
 
 	defer func() {
 		p.ExitRule()
@@ -2713,63 +2889,63 @@ func (p *CQL) GeomLiteral() (localctx IGeomLiteralContext) {
 		}
 	}()
 
-	p.SetState(188)
+	p.SetState(183)
 	p.GetErrorHandler().Sync(p)
 
 	switch p.GetTokenStream().LA(1) {
 	case CQLPOINT:
 		p.EnterOuterAlt(localctx, 1)
 		{
-			p.SetState(180)
+			p.SetState(175)
 			p.Point()
 		}
 
 	case CQLLINESTRING:
 		p.EnterOuterAlt(localctx, 2)
 		{
-			p.SetState(181)
+			p.SetState(176)
 			p.Linestring()
 		}
 
 	case CQLPOLYGON:
 		p.EnterOuterAlt(localctx, 3)
 		{
-			p.SetState(182)
+			p.SetState(177)
 			p.Polygon()
 		}
 
 	case CQLMULTIPOINT:
 		p.EnterOuterAlt(localctx, 4)
 		{
-			p.SetState(183)
+			p.SetState(178)
 			p.MultiPoint()
 		}
 
 	case CQLMULTILINESTRING:
 		p.EnterOuterAlt(localctx, 5)
 		{
-			p.SetState(184)
+			p.SetState(179)
 			p.MultiLinestring()
 		}
 
 	case CQLMULTIPOLYGON:
 		p.EnterOuterAlt(localctx, 6)
 		{
-			p.SetState(185)
+			p.SetState(180)
 			p.MultiPolygon()
 		}
 
 	case CQLGEOMETRYCOLLECTION:
 		p.EnterOuterAlt(localctx, 7)
 		{
-			p.SetState(186)
+			p.SetState(181)
 			p.GeometryCollection()
 		}
 
 	case CQLENVELOPE:
 		p.EnterOuterAlt(localctx, 8)
 		{
-			p.SetState(187)
+			p.SetState(182)
 			p.Envelope()
 		}
 
@@ -2862,7 +3038,7 @@ func (s *PointContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *CQL) Point() (localctx IPointContext) {
 	localctx = NewPointContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 36, CQLRULE_point)
+	p.EnterRule(localctx, 38, CQLRULE_point)
 
 	defer func() {
 		p.ExitRule()
@@ -2882,19 +3058,19 @@ func (p *CQL) Point() (localctx IPointContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(190)
+		p.SetState(185)
 		p.Match(CQLPOINT)
 	}
 	{
-		p.SetState(191)
+		p.SetState(186)
 		p.Match(CQLLEFTPAREN)
 	}
 	{
-		p.SetState(192)
+		p.SetState(187)
 		p.Coordinate()
 	}
 	{
-		p.SetState(193)
+		p.SetState(188)
 		p.Match(CQLRIGHTPAREN)
 	}
 
@@ -2943,14 +3119,14 @@ func (s *LinestringContext) LINESTRING() antlr.TerminalNode {
 	return s.GetToken(CQLLINESTRING, 0)
 }
 
-func (s *LinestringContext) LinestringDef() ILinestringDefContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*ILinestringDefContext)(nil)).Elem(), 0)
+func (s *LinestringContext) CoordList() ICoordListContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*ICoordListContext)(nil)).Elem(), 0)
 
 	if t == nil {
 		return nil
 	}
 
-	return t.(ILinestringDefContext)
+	return t.(ICoordListContext)
 }
 
 func (s *LinestringContext) GetRuleContext() antlr.RuleContext {
@@ -2975,7 +3151,7 @@ func (s *LinestringContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *CQL) Linestring() (localctx ILinestringContext) {
 	localctx = NewLinestringContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 38, CQLRULE_linestring)
+	p.EnterRule(localctx, 40, CQLRULE_linestring)
 
 	defer func() {
 		p.ExitRule()
@@ -2995,60 +3171,60 @@ func (p *CQL) Linestring() (localctx ILinestringContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(195)
+		p.SetState(190)
 		p.Match(CQLLINESTRING)
 	}
 	{
-		p.SetState(196)
-		p.LinestringDef()
+		p.SetState(191)
+		p.CoordList()
 	}
 
 	return localctx
 }
 
-// ILinestringDefContext is an interface to support dynamic dispatch.
-type ILinestringDefContext interface {
+// ICoordListContext is an interface to support dynamic dispatch.
+type ICoordListContext interface {
 	antlr.ParserRuleContext
 
 	// GetParser returns the parser.
 	GetParser() antlr.Parser
 
-	// IsLinestringDefContext differentiates from other interfaces.
-	IsLinestringDefContext()
+	// IsCoordListContext differentiates from other interfaces.
+	IsCoordListContext()
 }
 
-type LinestringDefContext struct {
+type CoordListContext struct {
 	*antlr.BaseParserRuleContext
 	parser antlr.Parser
 }
 
-func NewEmptyLinestringDefContext() *LinestringDefContext {
-	var p = new(LinestringDefContext)
+func NewEmptyCoordListContext() *CoordListContext {
+	var p = new(CoordListContext)
 	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
-	p.RuleIndex = CQLRULE_linestringDef
+	p.RuleIndex = CQLRULE_coordList
 	return p
 }
 
-func (*LinestringDefContext) IsLinestringDefContext() {}
+func (*CoordListContext) IsCoordListContext() {}
 
-func NewLinestringDefContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *LinestringDefContext {
-	var p = new(LinestringDefContext)
+func NewCoordListContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *CoordListContext {
+	var p = new(CoordListContext)
 
 	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
 
 	p.parser = parser
-	p.RuleIndex = CQLRULE_linestringDef
+	p.RuleIndex = CQLRULE_coordList
 
 	return p
 }
 
-func (s *LinestringDefContext) GetParser() antlr.Parser { return s.parser }
+func (s *CoordListContext) GetParser() antlr.Parser { return s.parser }
 
-func (s *LinestringDefContext) LEFTPAREN() antlr.TerminalNode {
+func (s *CoordListContext) LEFTPAREN() antlr.TerminalNode {
 	return s.GetToken(CQLLEFTPAREN, 0)
 }
 
-func (s *LinestringDefContext) AllCoordinate() []ICoordinateContext {
+func (s *CoordListContext) AllCoordinate() []ICoordinateContext {
 	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*ICoordinateContext)(nil)).Elem())
 	var tst = make([]ICoordinateContext, len(ts))
 
@@ -3061,7 +3237,7 @@ func (s *LinestringDefContext) AllCoordinate() []ICoordinateContext {
 	return tst
 }
 
-func (s *LinestringDefContext) Coordinate(i int) ICoordinateContext {
+func (s *CoordListContext) Coordinate(i int) ICoordinateContext {
 	var t = s.GetTypedRuleContext(reflect.TypeOf((*ICoordinateContext)(nil)).Elem(), i)
 
 	if t == nil {
@@ -3071,41 +3247,41 @@ func (s *LinestringDefContext) Coordinate(i int) ICoordinateContext {
 	return t.(ICoordinateContext)
 }
 
-func (s *LinestringDefContext) RIGHTPAREN() antlr.TerminalNode {
+func (s *CoordListContext) RIGHTPAREN() antlr.TerminalNode {
 	return s.GetToken(CQLRIGHTPAREN, 0)
 }
 
-func (s *LinestringDefContext) AllCOMMA() []antlr.TerminalNode {
+func (s *CoordListContext) AllCOMMA() []antlr.TerminalNode {
 	return s.GetTokens(CQLCOMMA)
 }
 
-func (s *LinestringDefContext) COMMA(i int) antlr.TerminalNode {
+func (s *CoordListContext) COMMA(i int) antlr.TerminalNode {
 	return s.GetToken(CQLCOMMA, i)
 }
 
-func (s *LinestringDefContext) GetRuleContext() antlr.RuleContext {
+func (s *CoordListContext) GetRuleContext() antlr.RuleContext {
 	return s
 }
 
-func (s *LinestringDefContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
+func (s *CoordListContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
-func (s *LinestringDefContext) EnterRule(listener antlr.ParseTreeListener) {
+func (s *CoordListContext) EnterRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(CQLListener); ok {
-		listenerT.EnterLinestringDef(s)
+		listenerT.EnterCoordList(s)
 	}
 }
 
-func (s *LinestringDefContext) ExitRule(listener antlr.ParseTreeListener) {
+func (s *CoordListContext) ExitRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(CQLListener); ok {
-		listenerT.ExitLinestringDef(s)
+		listenerT.ExitCoordList(s)
 	}
 }
 
-func (p *CQL) LinestringDef() (localctx ILinestringDefContext) {
-	localctx = NewLinestringDefContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 40, CQLRULE_linestringDef)
+func (p *CQL) CoordList() (localctx ICoordListContext) {
+	localctx = NewCoordListContext(p, p.GetParserRuleContext(), p.GetState())
+	p.EnterRule(localctx, 42, CQLRULE_coordList)
 	var _la int
 
 	defer func() {
@@ -3126,33 +3302,33 @@ func (p *CQL) LinestringDef() (localctx ILinestringDefContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(198)
+		p.SetState(193)
 		p.Match(CQLLEFTPAREN)
 	}
 	{
-		p.SetState(199)
+		p.SetState(194)
 		p.Coordinate()
 	}
-	p.SetState(204)
+	p.SetState(199)
 	p.GetErrorHandler().Sync(p)
 	_la = p.GetTokenStream().LA(1)
 
 	for _la == CQLCOMMA {
 		{
-			p.SetState(200)
+			p.SetState(195)
 			p.Match(CQLCOMMA)
 		}
 		{
-			p.SetState(201)
+			p.SetState(196)
 			p.Coordinate()
 		}
 
-		p.SetState(206)
+		p.SetState(201)
 		p.GetErrorHandler().Sync(p)
 		_la = p.GetTokenStream().LA(1)
 	}
 	{
-		p.SetState(207)
+		p.SetState(202)
 		p.Match(CQLRIGHTPAREN)
 	}
 
@@ -3233,7 +3409,7 @@ func (s *PolygonContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *CQL) Polygon() (localctx IPolygonContext) {
 	localctx = NewPolygonContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 42, CQLRULE_polygon)
+	p.EnterRule(localctx, 44, CQLRULE_polygon)
 
 	defer func() {
 		p.ExitRule()
@@ -3253,11 +3429,11 @@ func (p *CQL) Polygon() (localctx IPolygonContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(209)
+		p.SetState(204)
 		p.Match(CQLPOLYGON)
 	}
 	{
-		p.SetState(210)
+		p.SetState(205)
 		p.PolygonDef()
 	}
 
@@ -3306,27 +3482,27 @@ func (s *PolygonDefContext) LEFTPAREN() antlr.TerminalNode {
 	return s.GetToken(CQLLEFTPAREN, 0)
 }
 
-func (s *PolygonDefContext) AllLinestringDef() []ILinestringDefContext {
-	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*ILinestringDefContext)(nil)).Elem())
-	var tst = make([]ILinestringDefContext, len(ts))
+func (s *PolygonDefContext) AllCoordList() []ICoordListContext {
+	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*ICoordListContext)(nil)).Elem())
+	var tst = make([]ICoordListContext, len(ts))
 
 	for i, t := range ts {
 		if t != nil {
-			tst[i] = t.(ILinestringDefContext)
+			tst[i] = t.(ICoordListContext)
 		}
 	}
 
 	return tst
 }
 
-func (s *PolygonDefContext) LinestringDef(i int) ILinestringDefContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*ILinestringDefContext)(nil)).Elem(), i)
+func (s *PolygonDefContext) CoordList(i int) ICoordListContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*ICoordListContext)(nil)).Elem(), i)
 
 	if t == nil {
 		return nil
 	}
 
-	return t.(ILinestringDefContext)
+	return t.(ICoordListContext)
 }
 
 func (s *PolygonDefContext) RIGHTPAREN() antlr.TerminalNode {
@@ -3363,7 +3539,7 @@ func (s *PolygonDefContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *CQL) PolygonDef() (localctx IPolygonDefContext) {
 	localctx = NewPolygonDefContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 44, CQLRULE_polygonDef)
+	p.EnterRule(localctx, 46, CQLRULE_polygonDef)
 	var _la int
 
 	defer func() {
@@ -3384,33 +3560,33 @@ func (p *CQL) PolygonDef() (localctx IPolygonDefContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(212)
+		p.SetState(207)
 		p.Match(CQLLEFTPAREN)
 	}
 	{
-		p.SetState(213)
-		p.LinestringDef()
+		p.SetState(208)
+		p.CoordList()
 	}
-	p.SetState(218)
+	p.SetState(213)
 	p.GetErrorHandler().Sync(p)
 	_la = p.GetTokenStream().LA(1)
 
 	for _la == CQLCOMMA {
 		{
-			p.SetState(214)
+			p.SetState(209)
 			p.Match(CQLCOMMA)
 		}
 		{
-			p.SetState(215)
-			p.LinestringDef()
+			p.SetState(210)
+			p.CoordList()
 		}
 
-		p.SetState(220)
+		p.SetState(215)
 		p.GetErrorHandler().Sync(p)
 		_la = p.GetTokenStream().LA(1)
 	}
 	{
-		p.SetState(221)
+		p.SetState(216)
 		p.Match(CQLRIGHTPAREN)
 	}
 
@@ -3520,7 +3696,7 @@ func (s *MultiPointContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *CQL) MultiPoint() (localctx IMultiPointContext) {
 	localctx = NewMultiPointContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 46, CQLRULE_multiPoint)
+	p.EnterRule(localctx, 48, CQLRULE_multiPoint)
 	var _la int
 
 	defer func() {
@@ -3541,37 +3717,37 @@ func (p *CQL) MultiPoint() (localctx IMultiPointContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(223)
+		p.SetState(218)
 		p.Match(CQLMULTIPOINT)
 	}
 	{
-		p.SetState(224)
+		p.SetState(219)
 		p.Match(CQLLEFTPAREN)
 	}
 	{
-		p.SetState(225)
+		p.SetState(220)
 		p.Coordinate()
 	}
-	p.SetState(230)
+	p.SetState(225)
 	p.GetErrorHandler().Sync(p)
 	_la = p.GetTokenStream().LA(1)
 
 	for _la == CQLCOMMA {
 		{
-			p.SetState(226)
+			p.SetState(221)
 			p.Match(CQLCOMMA)
 		}
 		{
-			p.SetState(227)
+			p.SetState(222)
 			p.Coordinate()
 		}
 
-		p.SetState(232)
+		p.SetState(227)
 		p.GetErrorHandler().Sync(p)
 		_la = p.GetTokenStream().LA(1)
 	}
 	{
-		p.SetState(233)
+		p.SetState(228)
 		p.Match(CQLRIGHTPAREN)
 	}
 
@@ -3624,27 +3800,27 @@ func (s *MultiLinestringContext) LEFTPAREN() antlr.TerminalNode {
 	return s.GetToken(CQLLEFTPAREN, 0)
 }
 
-func (s *MultiLinestringContext) AllLinestringDef() []ILinestringDefContext {
-	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*ILinestringDefContext)(nil)).Elem())
-	var tst = make([]ILinestringDefContext, len(ts))
+func (s *MultiLinestringContext) AllCoordList() []ICoordListContext {
+	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*ICoordListContext)(nil)).Elem())
+	var tst = make([]ICoordListContext, len(ts))
 
 	for i, t := range ts {
 		if t != nil {
-			tst[i] = t.(ILinestringDefContext)
+			tst[i] = t.(ICoordListContext)
 		}
 	}
 
 	return tst
 }
 
-func (s *MultiLinestringContext) LinestringDef(i int) ILinestringDefContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*ILinestringDefContext)(nil)).Elem(), i)
+func (s *MultiLinestringContext) CoordList(i int) ICoordListContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*ICoordListContext)(nil)).Elem(), i)
 
 	if t == nil {
 		return nil
 	}
 
-	return t.(ILinestringDefContext)
+	return t.(ICoordListContext)
 }
 
 func (s *MultiLinestringContext) RIGHTPAREN() antlr.TerminalNode {
@@ -3681,7 +3857,7 @@ func (s *MultiLinestringContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *CQL) MultiLinestring() (localctx IMultiLinestringContext) {
 	localctx = NewMultiLinestringContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 48, CQLRULE_multiLinestring)
+	p.EnterRule(localctx, 50, CQLRULE_multiLinestring)
 	var _la int
 
 	defer func() {
@@ -3702,37 +3878,37 @@ func (p *CQL) MultiLinestring() (localctx IMultiLinestringContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(235)
+		p.SetState(230)
 		p.Match(CQLMULTILINESTRING)
 	}
 	{
-		p.SetState(236)
+		p.SetState(231)
 		p.Match(CQLLEFTPAREN)
 	}
 	{
-		p.SetState(237)
-		p.LinestringDef()
+		p.SetState(232)
+		p.CoordList()
 	}
-	p.SetState(242)
+	p.SetState(237)
 	p.GetErrorHandler().Sync(p)
 	_la = p.GetTokenStream().LA(1)
 
 	for _la == CQLCOMMA {
 		{
-			p.SetState(238)
+			p.SetState(233)
 			p.Match(CQLCOMMA)
 		}
 		{
-			p.SetState(239)
-			p.LinestringDef()
+			p.SetState(234)
+			p.CoordList()
 		}
 
-		p.SetState(244)
+		p.SetState(239)
 		p.GetErrorHandler().Sync(p)
 		_la = p.GetTokenStream().LA(1)
 	}
 	{
-		p.SetState(245)
+		p.SetState(240)
 		p.Match(CQLRIGHTPAREN)
 	}
 
@@ -3842,7 +4018,7 @@ func (s *MultiPolygonContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *CQL) MultiPolygon() (localctx IMultiPolygonContext) {
 	localctx = NewMultiPolygonContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 50, CQLRULE_multiPolygon)
+	p.EnterRule(localctx, 52, CQLRULE_multiPolygon)
 	var _la int
 
 	defer func() {
@@ -3863,37 +4039,37 @@ func (p *CQL) MultiPolygon() (localctx IMultiPolygonContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(247)
+		p.SetState(242)
 		p.Match(CQLMULTIPOLYGON)
 	}
 	{
-		p.SetState(248)
+		p.SetState(243)
 		p.Match(CQLLEFTPAREN)
 	}
 	{
-		p.SetState(249)
+		p.SetState(244)
 		p.PolygonDef()
 	}
-	p.SetState(254)
+	p.SetState(249)
 	p.GetErrorHandler().Sync(p)
 	_la = p.GetTokenStream().LA(1)
 
 	for _la == CQLCOMMA {
 		{
-			p.SetState(250)
+			p.SetState(245)
 			p.Match(CQLCOMMA)
 		}
 		{
-			p.SetState(251)
+			p.SetState(246)
 			p.PolygonDef()
 		}
 
-		p.SetState(256)
+		p.SetState(251)
 		p.GetErrorHandler().Sync(p)
 		_la = p.GetTokenStream().LA(1)
 	}
 	{
-		p.SetState(257)
+		p.SetState(252)
 		p.Match(CQLRIGHTPAREN)
 	}
 
@@ -4003,7 +4179,7 @@ func (s *GeometryCollectionContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *CQL) GeometryCollection() (localctx IGeometryCollectionContext) {
 	localctx = NewGeometryCollectionContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 52, CQLRULE_geometryCollection)
+	p.EnterRule(localctx, 54, CQLRULE_geometryCollection)
 	var _la int
 
 	defer func() {
@@ -4024,37 +4200,37 @@ func (p *CQL) GeometryCollection() (localctx IGeometryCollectionContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(259)
+		p.SetState(254)
 		p.Match(CQLGEOMETRYCOLLECTION)
 	}
 	{
-		p.SetState(260)
+		p.SetState(255)
 		p.Match(CQLLEFTPAREN)
 	}
 	{
-		p.SetState(261)
+		p.SetState(256)
 		p.GeomLiteral()
 	}
-	p.SetState(266)
+	p.SetState(261)
 	p.GetErrorHandler().Sync(p)
 	_la = p.GetTokenStream().LA(1)
 
 	for _la == CQLCOMMA {
 		{
-			p.SetState(262)
+			p.SetState(257)
 			p.Match(CQLCOMMA)
 		}
 		{
-			p.SetState(263)
+			p.SetState(258)
 			p.GeomLiteral()
 		}
 
-		p.SetState(268)
+		p.SetState(263)
 		p.GetErrorHandler().Sync(p)
 		_la = p.GetTokenStream().LA(1)
 	}
 	{
-		p.SetState(269)
+		p.SetState(264)
 		p.Match(CQLRIGHTPAREN)
 	}
 
@@ -4107,14 +4283,12 @@ func (s *EnvelopeContext) LEFTPAREN() antlr.TerminalNode {
 	return s.GetToken(CQLLEFTPAREN, 0)
 }
 
-func (s *EnvelopeContext) WestBoundLon() IWestBoundLonContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IWestBoundLonContext)(nil)).Elem(), 0)
+func (s *EnvelopeContext) AllNumericLiteral() []antlr.TerminalNode {
+	return s.GetTokens(CQLNumericLiteral)
+}
 
-	if t == nil {
-		return nil
-	}
-
-	return t.(IWestBoundLonContext)
+func (s *EnvelopeContext) NumericLiteral(i int) antlr.TerminalNode {
+	return s.GetToken(CQLNumericLiteral, i)
 }
 
 func (s *EnvelopeContext) AllCOMMA() []antlr.TerminalNode {
@@ -4125,58 +4299,8 @@ func (s *EnvelopeContext) COMMA(i int) antlr.TerminalNode {
 	return s.GetToken(CQLCOMMA, i)
 }
 
-func (s *EnvelopeContext) SouthBoundLat() ISouthBoundLatContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*ISouthBoundLatContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(ISouthBoundLatContext)
-}
-
-func (s *EnvelopeContext) EastBoundLon() IEastBoundLonContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IEastBoundLonContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IEastBoundLonContext)
-}
-
-func (s *EnvelopeContext) NorthBoundLat() INorthBoundLatContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*INorthBoundLatContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(INorthBoundLatContext)
-}
-
 func (s *EnvelopeContext) RIGHTPAREN() antlr.TerminalNode {
 	return s.GetToken(CQLRIGHTPAREN, 0)
-}
-
-func (s *EnvelopeContext) MinElev() IMinElevContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IMinElevContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IMinElevContext)
-}
-
-func (s *EnvelopeContext) MaxElev() IMaxElevContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IMaxElevContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IMaxElevContext)
 }
 
 func (s *EnvelopeContext) GetRuleContext() antlr.RuleContext {
@@ -4201,8 +4325,7 @@ func (s *EnvelopeContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *CQL) Envelope() (localctx IEnvelopeContext) {
 	localctx = NewEnvelopeContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 54, CQLRULE_envelope)
-	var _la int
+	p.EnterRule(localctx, 56, CQLRULE_envelope)
 
 	defer func() {
 		p.ExitRule()
@@ -4222,72 +4345,43 @@ func (p *CQL) Envelope() (localctx IEnvelopeContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(271)
+		p.SetState(266)
 		p.Match(CQLENVELOPE)
 	}
 	{
-		p.SetState(272)
+		p.SetState(267)
 		p.Match(CQLLEFTPAREN)
 	}
 	{
+		p.SetState(268)
+		p.Match(CQLNumericLiteral)
+	}
+	{
+		p.SetState(269)
+		p.Match(CQLCOMMA)
+	}
+	{
+		p.SetState(270)
+		p.Match(CQLNumericLiteral)
+	}
+	{
+		p.SetState(271)
+		p.Match(CQLCOMMA)
+	}
+	{
+		p.SetState(272)
+		p.Match(CQLNumericLiteral)
+	}
+	{
 		p.SetState(273)
-		p.WestBoundLon()
+		p.Match(CQLCOMMA)
 	}
 	{
 		p.SetState(274)
-		p.Match(CQLCOMMA)
+		p.Match(CQLNumericLiteral)
 	}
 	{
 		p.SetState(275)
-		p.SouthBoundLat()
-	}
-	{
-		p.SetState(276)
-		p.Match(CQLCOMMA)
-	}
-	p.SetState(280)
-	p.GetErrorHandler().Sync(p)
-
-	if p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 17, p.GetParserRuleContext()) == 1 {
-		{
-			p.SetState(277)
-			p.MinElev()
-		}
-		{
-			p.SetState(278)
-			p.Match(CQLCOMMA)
-		}
-
-	}
-	{
-		p.SetState(282)
-		p.EastBoundLon()
-	}
-	{
-		p.SetState(283)
-		p.Match(CQLCOMMA)
-	}
-	{
-		p.SetState(284)
-		p.NorthBoundLat()
-	}
-	p.SetState(287)
-	p.GetErrorHandler().Sync(p)
-	_la = p.GetTokenStream().LA(1)
-
-	if _la == CQLCOMMA {
-		{
-			p.SetState(285)
-			p.Match(CQLCOMMA)
-		}
-		{
-			p.SetState(286)
-			p.MaxElev()
-		}
-
-	}
-	{
-		p.SetState(289)
 		p.Match(CQLRIGHTPAREN)
 	}
 
@@ -4332,34 +4426,12 @@ func NewCoordinateContext(parser antlr.Parser, parent antlr.ParserRuleContext, i
 
 func (s *CoordinateContext) GetParser() antlr.Parser { return s.parser }
 
-func (s *CoordinateContext) XCoord() IXCoordContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IXCoordContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IXCoordContext)
+func (s *CoordinateContext) AllNumericLiteral() []antlr.TerminalNode {
+	return s.GetTokens(CQLNumericLiteral)
 }
 
-func (s *CoordinateContext) YCoord() IYCoordContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IYCoordContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IYCoordContext)
-}
-
-func (s *CoordinateContext) ZCoord() IZCoordContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IZCoordContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IZCoordContext)
+func (s *CoordinateContext) NumericLiteral(i int) antlr.TerminalNode {
+	return s.GetToken(CQLNumericLiteral, i)
 }
 
 func (s *CoordinateContext) GetRuleContext() antlr.RuleContext {
@@ -4384,8 +4456,7 @@ func (s *CoordinateContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *CQL) Coordinate() (localctx ICoordinateContext) {
 	localctx = NewCoordinateContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 56, CQLRULE_coordinate)
-	var _la int
+	p.EnterRule(localctx, 58, CQLRULE_coordinate)
 
 	defer func() {
 		p.ExitRule()
@@ -4405,841 +4476,11 @@ func (p *CQL) Coordinate() (localctx ICoordinateContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(291)
-		p.XCoord()
-	}
-	{
-		p.SetState(292)
-		p.YCoord()
-	}
-	p.SetState(294)
-	p.GetErrorHandler().Sync(p)
-	_la = p.GetTokenStream().LA(1)
-
-	if _la == CQLNumericLiteral {
-		{
-			p.SetState(293)
-			p.ZCoord()
-		}
-
-	}
-
-	return localctx
-}
-
-// IXCoordContext is an interface to support dynamic dispatch.
-type IXCoordContext interface {
-	antlr.ParserRuleContext
-
-	// GetParser returns the parser.
-	GetParser() antlr.Parser
-
-	// IsXCoordContext differentiates from other interfaces.
-	IsXCoordContext()
-}
-
-type XCoordContext struct {
-	*antlr.BaseParserRuleContext
-	parser antlr.Parser
-}
-
-func NewEmptyXCoordContext() *XCoordContext {
-	var p = new(XCoordContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
-	p.RuleIndex = CQLRULE_xCoord
-	return p
-}
-
-func (*XCoordContext) IsXCoordContext() {}
-
-func NewXCoordContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *XCoordContext {
-	var p = new(XCoordContext)
-
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
-
-	p.parser = parser
-	p.RuleIndex = CQLRULE_xCoord
-
-	return p
-}
-
-func (s *XCoordContext) GetParser() antlr.Parser { return s.parser }
-
-func (s *XCoordContext) NumericLiteral() antlr.TerminalNode {
-	return s.GetToken(CQLNumericLiteral, 0)
-}
-
-func (s *XCoordContext) GetRuleContext() antlr.RuleContext {
-	return s
-}
-
-func (s *XCoordContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
-	return antlr.TreesStringTree(s, ruleNames, recog)
-}
-
-func (s *XCoordContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CQLListener); ok {
-		listenerT.EnterXCoord(s)
-	}
-}
-
-func (s *XCoordContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CQLListener); ok {
-		listenerT.ExitXCoord(s)
-	}
-}
-
-func (p *CQL) XCoord() (localctx IXCoordContext) {
-	localctx = NewXCoordContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 58, CQLRULE_xCoord)
-
-	defer func() {
-		p.ExitRule()
-	}()
-
-	defer func() {
-		if err := recover(); err != nil {
-			if v, ok := err.(antlr.RecognitionException); ok {
-				localctx.SetException(v)
-				p.GetErrorHandler().ReportError(p, v)
-				p.GetErrorHandler().Recover(p, v)
-			} else {
-				panic(err)
-			}
-		}
-	}()
-
-	p.EnterOuterAlt(localctx, 1)
-	{
-		p.SetState(296)
+		p.SetState(277)
 		p.Match(CQLNumericLiteral)
 	}
-
-	return localctx
-}
-
-// IYCoordContext is an interface to support dynamic dispatch.
-type IYCoordContext interface {
-	antlr.ParserRuleContext
-
-	// GetParser returns the parser.
-	GetParser() antlr.Parser
-
-	// IsYCoordContext differentiates from other interfaces.
-	IsYCoordContext()
-}
-
-type YCoordContext struct {
-	*antlr.BaseParserRuleContext
-	parser antlr.Parser
-}
-
-func NewEmptyYCoordContext() *YCoordContext {
-	var p = new(YCoordContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
-	p.RuleIndex = CQLRULE_yCoord
-	return p
-}
-
-func (*YCoordContext) IsYCoordContext() {}
-
-func NewYCoordContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *YCoordContext {
-	var p = new(YCoordContext)
-
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
-
-	p.parser = parser
-	p.RuleIndex = CQLRULE_yCoord
-
-	return p
-}
-
-func (s *YCoordContext) GetParser() antlr.Parser { return s.parser }
-
-func (s *YCoordContext) NumericLiteral() antlr.TerminalNode {
-	return s.GetToken(CQLNumericLiteral, 0)
-}
-
-func (s *YCoordContext) GetRuleContext() antlr.RuleContext {
-	return s
-}
-
-func (s *YCoordContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
-	return antlr.TreesStringTree(s, ruleNames, recog)
-}
-
-func (s *YCoordContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CQLListener); ok {
-		listenerT.EnterYCoord(s)
-	}
-}
-
-func (s *YCoordContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CQLListener); ok {
-		listenerT.ExitYCoord(s)
-	}
-}
-
-func (p *CQL) YCoord() (localctx IYCoordContext) {
-	localctx = NewYCoordContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 60, CQLRULE_yCoord)
-
-	defer func() {
-		p.ExitRule()
-	}()
-
-	defer func() {
-		if err := recover(); err != nil {
-			if v, ok := err.(antlr.RecognitionException); ok {
-				localctx.SetException(v)
-				p.GetErrorHandler().ReportError(p, v)
-				p.GetErrorHandler().Recover(p, v)
-			} else {
-				panic(err)
-			}
-		}
-	}()
-
-	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(298)
-		p.Match(CQLNumericLiteral)
-	}
-
-	return localctx
-}
-
-// IZCoordContext is an interface to support dynamic dispatch.
-type IZCoordContext interface {
-	antlr.ParserRuleContext
-
-	// GetParser returns the parser.
-	GetParser() antlr.Parser
-
-	// IsZCoordContext differentiates from other interfaces.
-	IsZCoordContext()
-}
-
-type ZCoordContext struct {
-	*antlr.BaseParserRuleContext
-	parser antlr.Parser
-}
-
-func NewEmptyZCoordContext() *ZCoordContext {
-	var p = new(ZCoordContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
-	p.RuleIndex = CQLRULE_zCoord
-	return p
-}
-
-func (*ZCoordContext) IsZCoordContext() {}
-
-func NewZCoordContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *ZCoordContext {
-	var p = new(ZCoordContext)
-
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
-
-	p.parser = parser
-	p.RuleIndex = CQLRULE_zCoord
-
-	return p
-}
-
-func (s *ZCoordContext) GetParser() antlr.Parser { return s.parser }
-
-func (s *ZCoordContext) NumericLiteral() antlr.TerminalNode {
-	return s.GetToken(CQLNumericLiteral, 0)
-}
-
-func (s *ZCoordContext) GetRuleContext() antlr.RuleContext {
-	return s
-}
-
-func (s *ZCoordContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
-	return antlr.TreesStringTree(s, ruleNames, recog)
-}
-
-func (s *ZCoordContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CQLListener); ok {
-		listenerT.EnterZCoord(s)
-	}
-}
-
-func (s *ZCoordContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CQLListener); ok {
-		listenerT.ExitZCoord(s)
-	}
-}
-
-func (p *CQL) ZCoord() (localctx IZCoordContext) {
-	localctx = NewZCoordContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 62, CQLRULE_zCoord)
-
-	defer func() {
-		p.ExitRule()
-	}()
-
-	defer func() {
-		if err := recover(); err != nil {
-			if v, ok := err.(antlr.RecognitionException); ok {
-				localctx.SetException(v)
-				p.GetErrorHandler().ReportError(p, v)
-				p.GetErrorHandler().Recover(p, v)
-			} else {
-				panic(err)
-			}
-		}
-	}()
-
-	p.EnterOuterAlt(localctx, 1)
-	{
-		p.SetState(300)
-		p.Match(CQLNumericLiteral)
-	}
-
-	return localctx
-}
-
-// IWestBoundLonContext is an interface to support dynamic dispatch.
-type IWestBoundLonContext interface {
-	antlr.ParserRuleContext
-
-	// GetParser returns the parser.
-	GetParser() antlr.Parser
-
-	// IsWestBoundLonContext differentiates from other interfaces.
-	IsWestBoundLonContext()
-}
-
-type WestBoundLonContext struct {
-	*antlr.BaseParserRuleContext
-	parser antlr.Parser
-}
-
-func NewEmptyWestBoundLonContext() *WestBoundLonContext {
-	var p = new(WestBoundLonContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
-	p.RuleIndex = CQLRULE_westBoundLon
-	return p
-}
-
-func (*WestBoundLonContext) IsWestBoundLonContext() {}
-
-func NewWestBoundLonContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *WestBoundLonContext {
-	var p = new(WestBoundLonContext)
-
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
-
-	p.parser = parser
-	p.RuleIndex = CQLRULE_westBoundLon
-
-	return p
-}
-
-func (s *WestBoundLonContext) GetParser() antlr.Parser { return s.parser }
-
-func (s *WestBoundLonContext) NumericLiteral() antlr.TerminalNode {
-	return s.GetToken(CQLNumericLiteral, 0)
-}
-
-func (s *WestBoundLonContext) GetRuleContext() antlr.RuleContext {
-	return s
-}
-
-func (s *WestBoundLonContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
-	return antlr.TreesStringTree(s, ruleNames, recog)
-}
-
-func (s *WestBoundLonContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CQLListener); ok {
-		listenerT.EnterWestBoundLon(s)
-	}
-}
-
-func (s *WestBoundLonContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CQLListener); ok {
-		listenerT.ExitWestBoundLon(s)
-	}
-}
-
-func (p *CQL) WestBoundLon() (localctx IWestBoundLonContext) {
-	localctx = NewWestBoundLonContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 64, CQLRULE_westBoundLon)
-
-	defer func() {
-		p.ExitRule()
-	}()
-
-	defer func() {
-		if err := recover(); err != nil {
-			if v, ok := err.(antlr.RecognitionException); ok {
-				localctx.SetException(v)
-				p.GetErrorHandler().ReportError(p, v)
-				p.GetErrorHandler().Recover(p, v)
-			} else {
-				panic(err)
-			}
-		}
-	}()
-
-	p.EnterOuterAlt(localctx, 1)
-	{
-		p.SetState(302)
-		p.Match(CQLNumericLiteral)
-	}
-
-	return localctx
-}
-
-// IEastBoundLonContext is an interface to support dynamic dispatch.
-type IEastBoundLonContext interface {
-	antlr.ParserRuleContext
-
-	// GetParser returns the parser.
-	GetParser() antlr.Parser
-
-	// IsEastBoundLonContext differentiates from other interfaces.
-	IsEastBoundLonContext()
-}
-
-type EastBoundLonContext struct {
-	*antlr.BaseParserRuleContext
-	parser antlr.Parser
-}
-
-func NewEmptyEastBoundLonContext() *EastBoundLonContext {
-	var p = new(EastBoundLonContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
-	p.RuleIndex = CQLRULE_eastBoundLon
-	return p
-}
-
-func (*EastBoundLonContext) IsEastBoundLonContext() {}
-
-func NewEastBoundLonContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *EastBoundLonContext {
-	var p = new(EastBoundLonContext)
-
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
-
-	p.parser = parser
-	p.RuleIndex = CQLRULE_eastBoundLon
-
-	return p
-}
-
-func (s *EastBoundLonContext) GetParser() antlr.Parser { return s.parser }
-
-func (s *EastBoundLonContext) NumericLiteral() antlr.TerminalNode {
-	return s.GetToken(CQLNumericLiteral, 0)
-}
-
-func (s *EastBoundLonContext) GetRuleContext() antlr.RuleContext {
-	return s
-}
-
-func (s *EastBoundLonContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
-	return antlr.TreesStringTree(s, ruleNames, recog)
-}
-
-func (s *EastBoundLonContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CQLListener); ok {
-		listenerT.EnterEastBoundLon(s)
-	}
-}
-
-func (s *EastBoundLonContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CQLListener); ok {
-		listenerT.ExitEastBoundLon(s)
-	}
-}
-
-func (p *CQL) EastBoundLon() (localctx IEastBoundLonContext) {
-	localctx = NewEastBoundLonContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 66, CQLRULE_eastBoundLon)
-
-	defer func() {
-		p.ExitRule()
-	}()
-
-	defer func() {
-		if err := recover(); err != nil {
-			if v, ok := err.(antlr.RecognitionException); ok {
-				localctx.SetException(v)
-				p.GetErrorHandler().ReportError(p, v)
-				p.GetErrorHandler().Recover(p, v)
-			} else {
-				panic(err)
-			}
-		}
-	}()
-
-	p.EnterOuterAlt(localctx, 1)
-	{
-		p.SetState(304)
-		p.Match(CQLNumericLiteral)
-	}
-
-	return localctx
-}
-
-// INorthBoundLatContext is an interface to support dynamic dispatch.
-type INorthBoundLatContext interface {
-	antlr.ParserRuleContext
-
-	// GetParser returns the parser.
-	GetParser() antlr.Parser
-
-	// IsNorthBoundLatContext differentiates from other interfaces.
-	IsNorthBoundLatContext()
-}
-
-type NorthBoundLatContext struct {
-	*antlr.BaseParserRuleContext
-	parser antlr.Parser
-}
-
-func NewEmptyNorthBoundLatContext() *NorthBoundLatContext {
-	var p = new(NorthBoundLatContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
-	p.RuleIndex = CQLRULE_northBoundLat
-	return p
-}
-
-func (*NorthBoundLatContext) IsNorthBoundLatContext() {}
-
-func NewNorthBoundLatContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *NorthBoundLatContext {
-	var p = new(NorthBoundLatContext)
-
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
-
-	p.parser = parser
-	p.RuleIndex = CQLRULE_northBoundLat
-
-	return p
-}
-
-func (s *NorthBoundLatContext) GetParser() antlr.Parser { return s.parser }
-
-func (s *NorthBoundLatContext) NumericLiteral() antlr.TerminalNode {
-	return s.GetToken(CQLNumericLiteral, 0)
-}
-
-func (s *NorthBoundLatContext) GetRuleContext() antlr.RuleContext {
-	return s
-}
-
-func (s *NorthBoundLatContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
-	return antlr.TreesStringTree(s, ruleNames, recog)
-}
-
-func (s *NorthBoundLatContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CQLListener); ok {
-		listenerT.EnterNorthBoundLat(s)
-	}
-}
-
-func (s *NorthBoundLatContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CQLListener); ok {
-		listenerT.ExitNorthBoundLat(s)
-	}
-}
-
-func (p *CQL) NorthBoundLat() (localctx INorthBoundLatContext) {
-	localctx = NewNorthBoundLatContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 68, CQLRULE_northBoundLat)
-
-	defer func() {
-		p.ExitRule()
-	}()
-
-	defer func() {
-		if err := recover(); err != nil {
-			if v, ok := err.(antlr.RecognitionException); ok {
-				localctx.SetException(v)
-				p.GetErrorHandler().ReportError(p, v)
-				p.GetErrorHandler().Recover(p, v)
-			} else {
-				panic(err)
-			}
-		}
-	}()
-
-	p.EnterOuterAlt(localctx, 1)
-	{
-		p.SetState(306)
-		p.Match(CQLNumericLiteral)
-	}
-
-	return localctx
-}
-
-// ISouthBoundLatContext is an interface to support dynamic dispatch.
-type ISouthBoundLatContext interface {
-	antlr.ParserRuleContext
-
-	// GetParser returns the parser.
-	GetParser() antlr.Parser
-
-	// IsSouthBoundLatContext differentiates from other interfaces.
-	IsSouthBoundLatContext()
-}
-
-type SouthBoundLatContext struct {
-	*antlr.BaseParserRuleContext
-	parser antlr.Parser
-}
-
-func NewEmptySouthBoundLatContext() *SouthBoundLatContext {
-	var p = new(SouthBoundLatContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
-	p.RuleIndex = CQLRULE_southBoundLat
-	return p
-}
-
-func (*SouthBoundLatContext) IsSouthBoundLatContext() {}
-
-func NewSouthBoundLatContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *SouthBoundLatContext {
-	var p = new(SouthBoundLatContext)
-
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
-
-	p.parser = parser
-	p.RuleIndex = CQLRULE_southBoundLat
-
-	return p
-}
-
-func (s *SouthBoundLatContext) GetParser() antlr.Parser { return s.parser }
-
-func (s *SouthBoundLatContext) NumericLiteral() antlr.TerminalNode {
-	return s.GetToken(CQLNumericLiteral, 0)
-}
-
-func (s *SouthBoundLatContext) GetRuleContext() antlr.RuleContext {
-	return s
-}
-
-func (s *SouthBoundLatContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
-	return antlr.TreesStringTree(s, ruleNames, recog)
-}
-
-func (s *SouthBoundLatContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CQLListener); ok {
-		listenerT.EnterSouthBoundLat(s)
-	}
-}
-
-func (s *SouthBoundLatContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CQLListener); ok {
-		listenerT.ExitSouthBoundLat(s)
-	}
-}
-
-func (p *CQL) SouthBoundLat() (localctx ISouthBoundLatContext) {
-	localctx = NewSouthBoundLatContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 70, CQLRULE_southBoundLat)
-
-	defer func() {
-		p.ExitRule()
-	}()
-
-	defer func() {
-		if err := recover(); err != nil {
-			if v, ok := err.(antlr.RecognitionException); ok {
-				localctx.SetException(v)
-				p.GetErrorHandler().ReportError(p, v)
-				p.GetErrorHandler().Recover(p, v)
-			} else {
-				panic(err)
-			}
-		}
-	}()
-
-	p.EnterOuterAlt(localctx, 1)
-	{
-		p.SetState(308)
-		p.Match(CQLNumericLiteral)
-	}
-
-	return localctx
-}
-
-// IMinElevContext is an interface to support dynamic dispatch.
-type IMinElevContext interface {
-	antlr.ParserRuleContext
-
-	// GetParser returns the parser.
-	GetParser() antlr.Parser
-
-	// IsMinElevContext differentiates from other interfaces.
-	IsMinElevContext()
-}
-
-type MinElevContext struct {
-	*antlr.BaseParserRuleContext
-	parser antlr.Parser
-}
-
-func NewEmptyMinElevContext() *MinElevContext {
-	var p = new(MinElevContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
-	p.RuleIndex = CQLRULE_minElev
-	return p
-}
-
-func (*MinElevContext) IsMinElevContext() {}
-
-func NewMinElevContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *MinElevContext {
-	var p = new(MinElevContext)
-
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
-
-	p.parser = parser
-	p.RuleIndex = CQLRULE_minElev
-
-	return p
-}
-
-func (s *MinElevContext) GetParser() antlr.Parser { return s.parser }
-
-func (s *MinElevContext) NumericLiteral() antlr.TerminalNode {
-	return s.GetToken(CQLNumericLiteral, 0)
-}
-
-func (s *MinElevContext) GetRuleContext() antlr.RuleContext {
-	return s
-}
-
-func (s *MinElevContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
-	return antlr.TreesStringTree(s, ruleNames, recog)
-}
-
-func (s *MinElevContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CQLListener); ok {
-		listenerT.EnterMinElev(s)
-	}
-}
-
-func (s *MinElevContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CQLListener); ok {
-		listenerT.ExitMinElev(s)
-	}
-}
-
-func (p *CQL) MinElev() (localctx IMinElevContext) {
-	localctx = NewMinElevContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 72, CQLRULE_minElev)
-
-	defer func() {
-		p.ExitRule()
-	}()
-
-	defer func() {
-		if err := recover(); err != nil {
-			if v, ok := err.(antlr.RecognitionException); ok {
-				localctx.SetException(v)
-				p.GetErrorHandler().ReportError(p, v)
-				p.GetErrorHandler().Recover(p, v)
-			} else {
-				panic(err)
-			}
-		}
-	}()
-
-	p.EnterOuterAlt(localctx, 1)
-	{
-		p.SetState(310)
-		p.Match(CQLNumericLiteral)
-	}
-
-	return localctx
-}
-
-// IMaxElevContext is an interface to support dynamic dispatch.
-type IMaxElevContext interface {
-	antlr.ParserRuleContext
-
-	// GetParser returns the parser.
-	GetParser() antlr.Parser
-
-	// IsMaxElevContext differentiates from other interfaces.
-	IsMaxElevContext()
-}
-
-type MaxElevContext struct {
-	*antlr.BaseParserRuleContext
-	parser antlr.Parser
-}
-
-func NewEmptyMaxElevContext() *MaxElevContext {
-	var p = new(MaxElevContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
-	p.RuleIndex = CQLRULE_maxElev
-	return p
-}
-
-func (*MaxElevContext) IsMaxElevContext() {}
-
-func NewMaxElevContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *MaxElevContext {
-	var p = new(MaxElevContext)
-
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
-
-	p.parser = parser
-	p.RuleIndex = CQLRULE_maxElev
-
-	return p
-}
-
-func (s *MaxElevContext) GetParser() antlr.Parser { return s.parser }
-
-func (s *MaxElevContext) NumericLiteral() antlr.TerminalNode {
-	return s.GetToken(CQLNumericLiteral, 0)
-}
-
-func (s *MaxElevContext) GetRuleContext() antlr.RuleContext {
-	return s
-}
-
-func (s *MaxElevContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
-	return antlr.TreesStringTree(s, ruleNames, recog)
-}
-
-func (s *MaxElevContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CQLListener); ok {
-		listenerT.EnterMaxElev(s)
-	}
-}
-
-func (s *MaxElevContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CQLListener); ok {
-		listenerT.ExitMaxElev(s)
-	}
-}
-
-func (p *CQL) MaxElev() (localctx IMaxElevContext) {
-	localctx = NewMaxElevContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 74, CQLRULE_maxElev)
-
-	defer func() {
-		p.ExitRule()
-	}()
-
-	defer func() {
-		if err := recover(); err != nil {
-			if v, ok := err.(antlr.RecognitionException); ok {
-				localctx.SetException(v)
-				p.GetErrorHandler().ReportError(p, v)
-				p.GetErrorHandler().Recover(p, v)
-			} else {
-				panic(err)
-			}
-		}
-	}()
-
-	p.EnterOuterAlt(localctx, 1)
-	{
-		p.SetState(312)
+		p.SetState(278)
 		p.Match(CQLNumericLiteral)
 	}
 
@@ -5337,7 +4578,7 @@ func (s *TemporalPredicateContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *CQL) TemporalPredicate() (localctx ITemporalPredicateContext) {
 	localctx = NewTemporalPredicateContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 76, CQLRULE_temporalPredicate)
+	p.EnterRule(localctx, 60, CQLRULE_temporalPredicate)
 	var _la int
 
 	defer func() {
@@ -5358,10 +4599,10 @@ func (p *CQL) TemporalPredicate() (localctx ITemporalPredicateContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(314)
+		p.SetState(280)
 		p.TemporalExpression()
 	}
-	p.SetState(315)
+	p.SetState(281)
 	_la = p.GetTokenStream().LA(1)
 
 	if !(_la == CQLComparisonOperator || _la == CQLTemporalOperator) {
@@ -5371,7 +4612,7 @@ func (p *CQL) TemporalPredicate() (localctx ITemporalPredicateContext) {
 		p.Consume()
 	}
 	{
-		p.SetState(316)
+		p.SetState(282)
 		p.TemporalExpression()
 	}
 
@@ -5458,7 +4699,7 @@ func (s *TemporalExpressionContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *CQL) TemporalExpression() (localctx ITemporalExpressionContext) {
 	localctx = NewTemporalExpressionContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 78, CQLRULE_temporalExpression)
+	p.EnterRule(localctx, 62, CQLRULE_temporalExpression)
 
 	defer func() {
 		p.ExitRule()
@@ -5476,21 +4717,21 @@ func (p *CQL) TemporalExpression() (localctx ITemporalExpressionContext) {
 		}
 	}()
 
-	p.SetState(320)
+	p.SetState(286)
 	p.GetErrorHandler().Sync(p)
 
 	switch p.GetTokenStream().LA(1) {
 	case CQLIdentifier:
 		p.EnterOuterAlt(localctx, 1)
 		{
-			p.SetState(318)
+			p.SetState(284)
 			p.PropertyName()
 		}
 
 	case CQLTemporalLiteral:
 		p.EnterOuterAlt(localctx, 2)
 		{
-			p.SetState(319)
+			p.SetState(285)
 			p.TemporalLiteral()
 		}
 
@@ -5565,7 +4806,7 @@ func (s *TemporalLiteralContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *CQL) TemporalLiteral() (localctx ITemporalLiteralContext) {
 	localctx = NewTemporalLiteralContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 80, CQLRULE_temporalLiteral)
+	p.EnterRule(localctx, 64, CQLRULE_temporalLiteral)
 
 	defer func() {
 		p.ExitRule()
@@ -5585,7 +4826,7 @@ func (p *CQL) TemporalLiteral() (localctx ITemporalLiteralContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(322)
+		p.SetState(288)
 		p.Match(CQLTemporalLiteral)
 	}
 
@@ -5732,7 +4973,7 @@ func (s *InPredicateContext) ExitRule(listener antlr.ParseTreeListener) {
 
 func (p *CQL) InPredicate() (localctx IInPredicateContext) {
 	localctx = NewInPredicateContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 82, CQLRULE_inPredicate)
+	p.EnterRule(localctx, 66, CQLRULE_inPredicate)
 	var _la int
 
 	defer func() {
@@ -5753,76 +4994,76 @@ func (p *CQL) InPredicate() (localctx IInPredicateContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(324)
+		p.SetState(290)
 		p.PropertyName()
 	}
-	p.SetState(326)
+	p.SetState(292)
 	p.GetErrorHandler().Sync(p)
 	_la = p.GetTokenStream().LA(1)
 
 	if _la == CQLNOT {
 		{
-			p.SetState(325)
+			p.SetState(291)
 			p.Match(CQLNOT)
 		}
 
 	}
 	{
-		p.SetState(328)
+		p.SetState(294)
 		p.Match(CQLIN)
 	}
 	{
-		p.SetState(329)
+		p.SetState(295)
 		p.Match(CQLLEFTPAREN)
 	}
-	p.SetState(346)
+	p.SetState(312)
 	p.GetErrorHandler().Sync(p)
 
 	switch p.GetTokenStream().LA(1) {
 	case CQLCharacterStringLiteral:
 		{
-			p.SetState(330)
+			p.SetState(296)
 			p.CharacterLiteral()
 		}
-		p.SetState(335)
+		p.SetState(301)
 		p.GetErrorHandler().Sync(p)
 		_la = p.GetTokenStream().LA(1)
 
 		for _la == CQLCOMMA {
 			{
-				p.SetState(331)
+				p.SetState(297)
 				p.Match(CQLCOMMA)
 			}
 			{
-				p.SetState(332)
+				p.SetState(298)
 				p.CharacterLiteral()
 			}
 
-			p.SetState(337)
+			p.SetState(303)
 			p.GetErrorHandler().Sync(p)
 			_la = p.GetTokenStream().LA(1)
 		}
 
 	case CQLNumericLiteral:
 		{
-			p.SetState(338)
+			p.SetState(304)
 			p.NumericLiteral()
 		}
-		p.SetState(343)
+		p.SetState(309)
 		p.GetErrorHandler().Sync(p)
 		_la = p.GetTokenStream().LA(1)
 
 		for _la == CQLCOMMA {
 			{
-				p.SetState(339)
+				p.SetState(305)
 				p.Match(CQLCOMMA)
 			}
 			{
-				p.SetState(340)
+				p.SetState(306)
 				p.NumericLiteral()
 			}
 
-			p.SetState(345)
+			p.SetState(311)
 			p.GetErrorHandler().Sync(p)
 			_la = p.GetTokenStream().LA(1)
 		}
@@ -5831,7 +5072,7 @@ func (p *CQL) InPredicate() (localctx IInPredicateContext) {
 		panic(antlr.NewNoViableAltException(p, nil, nil, nil, nil, nil))
 	}
 	{
-		p.SetState(348)
+		p.SetState(314)
 		p.Match(CQLRIGHTPAREN)
 	}
 
