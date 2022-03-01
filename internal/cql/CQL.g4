@@ -113,7 +113,9 @@ geomLiteral: point
              | geometryCollection
              | envelope;
 
-point : POINT LEFTPAREN coordinate RIGHTPAREN;
+point : POINT pointList;
+
+pointList : LEFTPAREN coordinate RIGHTPAREN;
 
 linestring : LINESTRING coordList;
 
@@ -123,7 +125,7 @@ polygon : POLYGON polygonDef;
 
 polygonDef : LEFTPAREN coordList (COMMA coordList)* RIGHTPAREN;
 
-multiPoint : MULTIPOINT LEFTPAREN coordinate (COMMA coordinate)* RIGHTPAREN;
+multiPoint : MULTIPOINT LEFTPAREN pointList (COMMA pointList)* RIGHTPAREN;
 
 multiLinestring : MULTILINESTRING LEFTPAREN coordList (COMMA coordList)* RIGHTPAREN;
 

@@ -140,6 +140,12 @@ func (s *BaseCQLListener) EnterPoint(ctx *PointContext) {}
 // ExitPoint is called when production point is exited.
 func (s *BaseCQLListener) ExitPoint(ctx *PointContext) {}
 
+// EnterPointList is called when production pointList is entered.
+func (s *BaseCQLListener) EnterPointList(ctx *PointListContext) {}
+
+// ExitPointList is called when production pointList is exited.
+func (s *BaseCQLListener) ExitPointList(ctx *PointListContext) {}
+
 // EnterLinestring is called when production linestring is entered.
 func (s *BaseCQLListener) EnterLinestring(ctx *LinestringContext) {}
 

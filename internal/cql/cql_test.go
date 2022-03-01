@@ -71,8 +71,8 @@ func TestGeometryLiteral(t *testing.T) {
 		"ST_Equals(\"geom\",'SRID=4326;POLYGON((0 0,0 9,9 0,0 0))'::geometry)")
 	checkCQL(t, "equals(geom, POLYGON((0 0, 0 9, 9 0, 0 0),(1 1, 1 8, 8 1, 1 1)))",
 		"ST_Equals(\"geom\",'SRID=4326;POLYGON((0 0,0 9,9 0,0 0),(1 1,1 8,8 1,1 1))'::geometry)")
-	checkCQL(t, "equals(geom, MULTIPOINT(0 0, 0 9))",
-		"ST_Equals(\"geom\",'SRID=4326;MULTIPOINT(0 0,0 9)'::geometry)")
+	checkCQL(t, "equals(geom, MULTIPOINT((0 0), (0 9)))",
+		"ST_Equals(\"geom\",'SRID=4326;MULTIPOINT((0 0),(0 9))'::geometry)")
 	checkCQL(t, "equals(geom, MULTILINESTRING((0 0, 1 1),(1 1, 2 2)))",
 		"ST_Equals(\"geom\",'SRID=4326;MULTILINESTRING((0 0,1 1),(1 1,2 2))'::geometry)")
 	checkCQL(t, "equals(geom, MULTIPOLYGON(((1 4, 4 1, 1 1, 1 4)), ((1 9, 4 9, 1 6, 1 9))))",

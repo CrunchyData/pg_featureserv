@@ -67,6 +67,9 @@ type CQLListener interface {
 	// EnterPoint is called when entering the point production.
 	EnterPoint(c *PointContext)
 
+	// EnterPointList is called when entering the pointList production.
+	EnterPointList(c *PointListContext)
+
 	// EnterLinestring is called when entering the linestring production.
 	EnterLinestring(c *LinestringContext)
 
@@ -168,6 +171,9 @@ type CQLListener interface {
 
 	// ExitPoint is called when exiting the point production.
 	ExitPoint(c *PointContext)
+
+	// ExitPointList is called when exiting the pointList production.
+	ExitPointList(c *PointListContext)
 
 	// ExitLinestring is called when exiting the linestring production.
 	ExitLinestring(c *LinestringContext)
