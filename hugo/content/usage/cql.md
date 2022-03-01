@@ -119,18 +119,18 @@ values for points, lines, polygons (with holes), and collections:
 
 ```
 POINT (1 2)
-LINESTRING(0 0, 1 1)
-POLYGON((0 0, 0 9, 9 0, 0 0))
-POLYGON((0 0, 0 9, 9 0, 0 0),(1 1, 1 8, 8 1, 1 1))
-MULTIPOINT((0 0), (0 9))
-MULTILINESTRING((0 0, 1 1),(1 1, 2 2))
-MULTIPOLYGON(((1 4, 4 1, 1 1, 1 4)), ((1 9, 4 9, 1 6, 1 9)))
-GEOMETRYCOLLECTION(POLYGON((1 4, 4 1, 1 1, 1 4)),LINESTRING (3 3, 5 5), POINT (1 5))
+LINESTRING (0 0, 1 1)
+POLYGON ((0 0, 0 9, 9 0, 0 0))
+POLYGON ((0 0, 0 9, 9 0, 0 0),(1 1, 1 8, 8 1, 1 1))
+MULTIPOINT ((0 0), (0 9))
+MULTILINESTRING ((0 0, 1 1),(1 1, 2 2))
+MULTIPOLYGON (((1 4, 4 1, 1 1, 1 4)), ((1 9, 4 9, 1 6, 1 9)))
+GEOMETRYCOLLECTION(POLYGON ((1 4, 4 1, 1 1, 1 4)), LINESTRING (3 3, 5 5), POINT (1 5))
 ```
 
 CQL also provides a syntax for concisely defining a rectangular polygon:
 ```
-ENVELOPE(1, 2, 3, 4)
+ENVELOPE (1, 2, 3, 4)
 ```
 
 By default the coordinate system of geometry literal values is assumed to be geodetic (SRID = 4326).
