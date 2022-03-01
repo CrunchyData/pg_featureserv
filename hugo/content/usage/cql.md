@@ -11,7 +11,8 @@ the [Common Query Language](https://portal.ogc.org/files/96288) (CQL).
 CQL expressions return a value of `true` or `false`.
 Only features which evaluate to `true` are returned.
 In `pg_featureserv` the filter expression is evaluated by the database,
-so it can take advantage of indexes to make filter evaluation very efficient.
+so it can take advantage of indexes (standard and spatial)
+to make filter evaluation very efficient.
 
 This section describes the CQL query language subset supported by `pg_featureserv`.
 
@@ -169,6 +170,3 @@ The `DWITHIN` predicate allows testing whether a geometry lies within a given di
 ```
 filter=DWITHIN(geom, POINT(-100 49), 0.1)
 ```
-
-Note that if a spatial index is defined on the table being queried,
-PostGIS will use it to evaluate spatial conditions very efficiently.
