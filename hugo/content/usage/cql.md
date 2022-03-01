@@ -1,5 +1,5 @@
 ---
-title: "Filtering with CQL"
+title: "CQL Filters"
 date:
 draft: false
 weight: 175
@@ -11,25 +11,30 @@ the [Common Query Language](https://portal.ogc.org/files/96288) (CQL).
 CQL expressions return a value of `true` or `false`.
 Only features which evaluate to `true` are returned.
 
-In `pg_featureserv` the filter expression is evaluated by the database,
-so it can take advantage of indexes (standard and spatial)
-to make filter evaluation very efficient.
-
 This section describes the CQL query language subset supported by `pg_featureserv`.
+
+{{% note %}}
+The filter expression is evaluated by the database,
+which will take advantage of indexes (attribute and spatial)
+to make filter evaluation very efficient.
+{{% /note %}}
 
 ## Property and Literal Values
 
 The basic elements of filter expressions are values obtained
-from feature collection properties and literals.
+from feature collection properties, and literals.
+
 Properties are referred to by name.
 Property names can be quoted, to support including special characters.
-Literals can be numbers, boolean or text values.
 
-#### Example
 ```
 propname
 "quoted_name$"
+```
 
+Literals can be numbers, boolean or text values.
+
+```
 1.234
 true
 'a text value'
@@ -50,7 +55,7 @@ name = 'Finland'
 
 ## BETWEEN predicate
 
-The `BETWEEN` predicate tests if a value lies in a range defined by start and end values (inclusive):
+The `BETWEEN` predicate tests if a value lies in a range defined by a start and end value (inclusive):
 ```
 property [NOT] BETWEEN a AND b
 ```
@@ -109,7 +114,7 @@ subexpressions in parentheses.
 
 #### Example
 ```
-(continent = 'Europe' OR continent = 'Afica') AND pop_est < 1000000
+(continent = 'Europe' OR continent = 'Africa') AND pop_est < 1000000
 ```
 
 ## Spatial filters
@@ -164,8 +169,8 @@ For detailed definitions of the spatial predicates see the
 [CQL standard](https://portal.ogc.org/files/96288#enhanced-spatial-operators)
 and the [PostGIS function reference](https://postgis.net/docs/reference.html#Spatial_Relationships).
 
-Typically a spatial predicate will be applied to the spatial column of the collection
-being queried, and a geometry literal value.
+Typically a spatial predicate is used to test the relationship between the spatial column of the queried collection
+and a geometry literal value.
 
 #### Examples
 ```

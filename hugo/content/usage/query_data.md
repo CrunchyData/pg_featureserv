@@ -51,7 +51,7 @@ http://localhost:9000/collections/ne.countries/items?bbox=10.4,43.3,26.4,47.7
 http://localhost:9000/collections/ne.countries/items?bbox-crs=3005&bbox=1000000,400000,1001000,401000
 ```
 
-### Filter by properties
+### Filter by property values
 
 The response feature set can be filtered to include
 only features which have a given value for one or more properties.
@@ -72,7 +72,7 @@ See the [CQL section](/query_data/cql/) for more details.
 
 #### Example
 ```
-http://localhost:9000/collections/ne.countries/items?filter=continent='Europe' AND pop_est<2000000
+http://localhost:9000/collections/ne.countries/items?filter=continent='Europe' AND pop_est < 2000000
 ```
 
 ### Filter geometry coordinate system
@@ -84,7 +84,7 @@ can be specified by using the query parameter `filter-crs=SRID`.
 
 #### Example
 ```
-http://localhost:9000/collections/ebc.voting_area/items.json?filter=DWITHIN(geom,POINT(1209000+477000),1000)&filter-crs=3005
+http://localhost:9000/collections/ebc.voting_area/items.json?filter-crs=3005&filter=DWITHIN(geom,POINT(1209000+477000),1000)
 ```
 
 ### Response properties
@@ -109,9 +109,11 @@ feature geometry in the response.
 The SRID must be a coordinate system which is defined in the PostGIS instance.
 By default data is returned in WGS84 (SRID=4326) geodetic coordinate system.
 
-Note: GeoJSON technically does not support coordinate systems other than 4326,
+{{% note %}}
+GeoJSON technically does not support coordinate systems other than 4326,
 but the OGC API standard allows non-geodetic data to be encoded in GeoJSON.
 However, this data may not be compatible with other systems.
+{{% /note %}}
 
 #### Example
 ```

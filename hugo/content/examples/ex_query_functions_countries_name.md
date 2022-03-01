@@ -7,7 +7,8 @@ weight: 210
 
 This is the same spatial function example shown in the [Usage](/usage/functions/) section.  Here we'll show a sample GeoJSON response and the web UI preview.
 
-Note: this functionality can now be obtained more easily by using the `filter` query parameter with a `LIKE` CQl expression.
+Note:
+Another way to obtain this functionality is to use the `filter` query parameter with a `LIKE` CQl expression.  See the [CQL section](/usage/cql/)
 
 ## Create a spatial function that returns a filtered set of countries
 
