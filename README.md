@@ -40,11 +40,11 @@ For a full list of software capabilities see [FEATURES](FEATURES.md).
 
 ### Relevant Standards
 
-* [OGC API - Features - Part 1: Core](http://docs.ogc.org/is/17-069r3/17-069r3.html)
-* [OGC API - Features - Part 2: Coordinate Reference Systems by Reference](https://docs.ogc.org/is/18-058/18-058.html)
-* [OGC API - Features - Part 3: Filtering](http://docs.ogc.org/DRAFTS/19-079r1.html)
-* [Common Query Language (CQL2)](https://docs.ogc.org/DRAFTS/21-065.html)
-* [GeoJSON](https://www.rfc-editor.org/rfc/rfc7946.txt)
+* [*OGC API - Features - Part 1: Core*](http://docs.ogc.org/is/17-069r3/17-069r3.html)
+* [*OGC API - Features - Part 2: Coordinate Reference Systems by Reference*](https://docs.ogc.org/is/18-058/18-058.html)
+* [**DRAFT** *OGC API - Features - Part 3: Filtering*](http://docs.ogc.org/DRAFTS/19-079r1.html)
+* [**DRAFT** *Common Query Language (CQL2)*](https://docs.ogc.org/DRAFTS/21-065.html)
+* [*GeoJSON*](https://www.rfc-editor.org/rfc/rfc7946.txt)
 
 ## Download
 
