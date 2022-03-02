@@ -152,12 +152,6 @@ func (s *BaseCQLListener) EnterLinestring(ctx *LinestringContext) {}
 // ExitLinestring is called when production linestring is exited.
 func (s *BaseCQLListener) ExitLinestring(ctx *LinestringContext) {}
 
-// EnterCoordList is called when production coordList is entered.
-func (s *BaseCQLListener) EnterCoordList(ctx *CoordListContext) {}
-
-// ExitCoordList is called when production coordList is exited.
-func (s *BaseCQLListener) ExitCoordList(ctx *CoordListContext) {}
-
 // EnterPolygon is called when production polygon is entered.
 func (s *BaseCQLListener) EnterPolygon(ctx *PolygonContext) {}
 
@@ -200,29 +194,17 @@ func (s *BaseCQLListener) EnterEnvelope(ctx *EnvelopeContext) {}
 // ExitEnvelope is called when production envelope is exited.
 func (s *BaseCQLListener) ExitEnvelope(ctx *EnvelopeContext) {}
 
+// EnterCoordList is called when production coordList is entered.
+func (s *BaseCQLListener) EnterCoordList(ctx *CoordListContext) {}
+
+// ExitCoordList is called when production coordList is exited.
+func (s *BaseCQLListener) ExitCoordList(ctx *CoordListContext) {}
+
 // EnterCoordinate is called when production coordinate is entered.
 func (s *BaseCQLListener) EnterCoordinate(ctx *CoordinateContext) {}
 
 // ExitCoordinate is called when production coordinate is exited.
 func (s *BaseCQLListener) ExitCoordinate(ctx *CoordinateContext) {}
-
-// EnterTemporalPredicate is called when production temporalPredicate is entered.
-func (s *BaseCQLListener) EnterTemporalPredicate(ctx *TemporalPredicateContext) {}
-
-// ExitTemporalPredicate is called when production temporalPredicate is exited.
-func (s *BaseCQLListener) ExitTemporalPredicate(ctx *TemporalPredicateContext) {}
-
-// EnterTemporalExpression is called when production temporalExpression is entered.
-func (s *BaseCQLListener) EnterTemporalExpression(ctx *TemporalExpressionContext) {}
-
-// ExitTemporalExpression is called when production temporalExpression is exited.
-func (s *BaseCQLListener) ExitTemporalExpression(ctx *TemporalExpressionContext) {}
-
-// EnterTemporalLiteral is called when production temporalLiteral is entered.
-func (s *BaseCQLListener) EnterTemporalLiteral(ctx *TemporalLiteralContext) {}
-
-// ExitTemporalLiteral is called when production temporalLiteral is exited.
-func (s *BaseCQLListener) ExitTemporalLiteral(ctx *TemporalLiteralContext) {}
 
 // EnterInPredicate is called when production inPredicate is entered.
 func (s *BaseCQLListener) EnterInPredicate(ctx *InPredicateContext) {}

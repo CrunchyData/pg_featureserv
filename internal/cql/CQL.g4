@@ -11,23 +11,20 @@
 parser grammar CQL;
 options { tokenVocab=CqlLexer;  }
 
-/*
-#=============================================================================#
+/*============================================================================
 # A CQL filter is a logically connected expression of one or more predicates.
-#=============================================================================#
-*/
+#============================================================================*/
+
 cqlFilter : booleanValueExpression EOF;
 booleanValueExpression : booleanTerm | booleanValueExpression OR booleanTerm;
 booleanTerm : booleanFactor | booleanTerm AND booleanFactor;
-booleanFactor : (NOT)? booleanPrimary;
+booleanFactor : ( NOT )? booleanPrimary;
 booleanPrimary : predicate
                 | LEFTPAREN booleanValueExpression RIGHTPAREN;
 
-/*
-#=============================================================================#
+/*============================================================================
 #  CQL supports scalar, spatial, temporal and existence predicates.
-#=============================================================================#
-*/
+#============================================================================*/
 
 predicate : binaryComparisonPredicate
             | likePredicate
@@ -41,14 +38,13 @@ predicate : binaryComparisonPredicate
 //            | existencePredicate
             ;
 
-/*
-#=============================================================================#
+/*============================================================================
 # A comparison predicate evaluates if two scalar expression statisfy the
 # specified comparison operator.  The comparion operators include an operator
 # to evaluate regular expressions (LIKE), a range evaluation operator and
 # an operator to test if a scalar expression is NULL or not.
-#=============================================================================#
-*/
+#============================================================================*/
+
 binaryComparisonPredicate : scalarExpression ComparisonOperator scalarExpression;
 
 likePredicate :  propertyName (NOT)? ( LIKE | ILIKE ) characterLiteral;
@@ -68,22 +64,18 @@ scalarExpression : propertyName
                     | numericLiteral
                     | booleanLiteral
 //                    | function
-                    /*| arithmeticExpression*/;
+//                    | arithmeticExpression
+                    ;
 
 propertyName: Identifier;
-
 characterLiteral: CharacterStringLiteral;
-
 numericLiteral: NumericLiteral;
-
 booleanLiteral: BooleanLiteral;
 
-/*
-#=============================================================================#
+/*============================================================================
 # A spatial predicate evaluates if two spatial expressions satisfy the
 # specified spatial operator.
-#=============================================================================#
-*/
+#============================================================================*/
 
 spatialPredicate :  SpatialOperator LEFTPAREN geomExpression COMMA geomExpression RIGHTPAREN;
 
@@ -98,11 +90,9 @@ geomExpression : propertyName
                | geomLiteral
                /*| function*/;
 
-/*
-#=============================================================================#
+/*============================================================================
 # Definition of GEOMETRIC literals
-#=============================================================================#
-*/
+#============================================================================*/
 
 geomLiteral: point
              | linestring
@@ -114,57 +104,39 @@ geomLiteral: point
              | envelope;
 
 point : POINT pointList;
-
 pointList : LEFTPAREN coordinate RIGHTPAREN;
-
 linestring : LINESTRING coordList;
-
-coordList: LEFTPAREN coordinate (COMMA coordinate)* RIGHTPAREN;
-
 polygon : POLYGON polygonDef;
-
 polygonDef : LEFTPAREN coordList (COMMA coordList)* RIGHTPAREN;
-
 multiPoint : MULTIPOINT LEFTPAREN pointList (COMMA pointList)* RIGHTPAREN;
-
 multiLinestring : MULTILINESTRING LEFTPAREN coordList (COMMA coordList)* RIGHTPAREN;
-
 multiPolygon : MULTIPOLYGON LEFTPAREN polygonDef (COMMA polygonDef)* RIGHTPAREN;
-
 geometryCollection : GEOMETRYCOLLECTION LEFTPAREN geomLiteral (COMMA geomLiteral)* RIGHTPAREN;
 
 envelope: ENVELOPE LEFTPAREN NumericLiteral COMMA NumericLiteral COMMA NumericLiteral  COMMA NumericLiteral RIGHTPAREN;
 
+coordList: LEFTPAREN coordinate (COMMA coordinate)* RIGHTPAREN;
 coordinate : NumericLiteral NumericLiteral;
 
-/*
-#=============================================================================#
+/*============================================================================
 # A temporal predicate evaluates if two temporal expressions satisfy the
 # specified temporal operator.
-#=============================================================================#
-*/
+#============================================================================*/
+/*
 temporalPredicate : temporalExpression (TemporalOperator | ComparisonOperator) temporalExpression;
 
 temporalExpression : propertyName
                    | temporalLiteral
-                   /*| function*/;
+                   //| function
+                   ;
 
 temporalLiteral: TemporalLiteral;
+*/
 
-/*
-#=============================================================================#
+/*============================================================================
 # The IN predicate
-#=============================================================================#
-*/
-/*
-inPredicate : (propertyName | function)? (NOT)? IN LEFTPAREN ( characterLiteral |
-                                            numericLiteral |
-                                            geomLiteral |
-                                            temporalLiteral  ) ( COMMA (characterLiteral |
-                                                              numericLiteral |
-                                                              geomLiteral |
-                                                              temporalLiteral)  )* RIGHTPAREN;
-*/
+#============================================================================*/
+
 inPredicate : propertyName NOT? IN LEFTPAREN (
         characterLiteral (COMMA characterLiteral)*
         | numericLiteral (COMMA numericLiteral)*

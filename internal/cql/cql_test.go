@@ -24,6 +24,7 @@ import (
 
 func TestPredicate(t *testing.T) {
 	checkCQL(t, "", "")
+	checkCQL(t, "id > tt", "\"id\" > \"tt\"")
 	checkCQL(t, "id > 1", "\"id\" > 1")
 	checkCQL(t, "id >= 1", "\"id\" >= 1")
 	checkCQL(t, "id < 1", "\"id\" < 1")
