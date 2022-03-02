@@ -33,11 +33,13 @@ propname
 ```
 
 Literals can be numbers, boolean or text values.
+To include single quotes in text values use repeated single quotes.
 
 ```
 1.234
 true
 'a text value'
+'it''s easy'
 ```
 
 ## Comparisons
