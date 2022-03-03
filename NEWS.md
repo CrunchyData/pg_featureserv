@@ -6,15 +6,16 @@
 ### New Features
 
 * Support for HTTPS
-* Provide the `groupby` query parameter, and ability to aggregate query features
-* Support OGC API `sortby` query parameter (`orderBy` is deprecated)
 * Support Postgres data types: JSON, array of text/int/float/numeric
 * Add support for partitioned tables and foreign tables
 * Add configuration to include/exclude published schemas and tables
 * Add configuration for web UI map view basemap URL template
 * Add configuration to set base path (#88)
-* Add standard query parameters `crs` and `bbox-crs` (#98)
+* Add configuration via enviroment variables (#104)
 * Allow configuring published function schemas (#99)
+* Add the `groupby` query parameter, and ability to aggregate query features
+* Support OGC API query parameter `sortby` (`orderBy` is deprecated)
+* Add OGC API query parameters `crs` and `bbox-crs` (#98)
 * Add support for CQL filtering with `filter` and `filter-crs` query parameters (#101, #102, #103)
 
 ### Performance Improvements
