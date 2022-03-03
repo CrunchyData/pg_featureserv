@@ -81,11 +81,11 @@ func (s *BaseCQLParserListener) EnterIsNullPredicate(ctx *IsNullPredicateContext
 // ExitIsNullPredicate is called when production isNullPredicate is exited.
 func (s *BaseCQLParserListener) ExitIsNullPredicate(ctx *IsNullPredicateContext) {}
 
-// EnterArithmeticExpression is called when production arithmeticExpression is entered.
-func (s *BaseCQLParserListener) EnterArithmeticExpression(ctx *ArithmeticExpressionContext) {}
+// EnterScalarExpression is called when production scalarExpression is entered.
+func (s *BaseCQLParserListener) EnterScalarExpression(ctx *ScalarExpressionContext) {}
 
-// ExitArithmeticExpression is called when production arithmeticExpression is exited.
-func (s *BaseCQLParserListener) ExitArithmeticExpression(ctx *ArithmeticExpressionContext) {}
+// ExitScalarExpression is called when production scalarExpression is exited.
+func (s *BaseCQLParserListener) ExitScalarExpression(ctx *ScalarExpressionContext) {}
 
 // EnterScalarValue is called when production scalarValue is entered.
 func (s *BaseCQLParserListener) EnterScalarValue(ctx *ScalarValueContext) {}

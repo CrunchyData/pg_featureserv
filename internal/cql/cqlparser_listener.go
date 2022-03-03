@@ -37,8 +37,8 @@ type CQLParserListener interface {
 	// EnterIsNullPredicate is called when entering the isNullPredicate production.
 	EnterIsNullPredicate(c *IsNullPredicateContext)
 
-	// EnterArithmeticExpression is called when entering the arithmeticExpression production.
-	EnterArithmeticExpression(c *ArithmeticExpressionContext)
+	// EnterScalarExpression is called when entering the scalarExpression production.
+	EnterScalarExpression(c *ScalarExpressionContext)
 
 	// EnterScalarValue is called when entering the scalarValue production.
 	EnterScalarValue(c *ScalarValueContext)
@@ -136,8 +136,8 @@ type CQLParserListener interface {
 	// ExitIsNullPredicate is called when exiting the isNullPredicate production.
 	ExitIsNullPredicate(c *IsNullPredicateContext)
 
-	// ExitArithmeticExpression is called when exiting the arithmeticExpression production.
-	ExitArithmeticExpression(c *ArithmeticExpressionContext)
+	// ExitScalarExpression is called when exiting the scalarExpression production.
+	ExitScalarExpression(c *ScalarExpressionContext)
 
 	// ExitScalarValue is called when exiting the scalarValue production.
 	ExitScalarValue(c *ScalarValueContext)

@@ -47,6 +47,8 @@ true
 Numeric values can be combined using the
 arithmetic operators `+`,`-`,`*`,`/` and `%` (modulo), with parentheses if needed
 for operator precedence.
+
+**NOTE:** `+` needs to be URL-encoded as `%2B`.
 ```
 x + 3
 2 * (y - 3)

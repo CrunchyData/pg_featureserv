@@ -266,8 +266,8 @@ func (l *cqlListener) ExitPredicate(ctx *PredicateContext) {
 }
 
 func (l *cqlListener) ExitBinaryComparisonPredicate(ctx *BinaryComparisonPredicateContext) {
-	expr1 := sqlFor(ctx.ArithmeticExpression(0))
-	expr2 := sqlFor(ctx.ArithmeticExpression(1))
+	expr1 := sqlFor(ctx.ScalarExpression(0))
+	expr2 := sqlFor(ctx.ScalarExpression(1))
 	op := getNodeText(ctx.ComparisonOperator())
 	sql := expr1 + " " + op + " " + expr2
 	ctx.SetSql(sql)
@@ -287,13 +287,13 @@ func (l *cqlListener) ExitScalarValue(ctx *ScalarValueContext) {
 	ctx.SetSql(sql)
 }
 
-func (l *cqlListener) ExitArithmeticExpression(ctx *ArithmeticExpressionContext) {
+func (l *cqlListener) ExitScalarExpression(ctx *ScalarExpressionContext) {
 	var sql string
 	if ctx.LEFTPAREN() != nil {
-		sql = "(" + sqlFor(ctx.ArithmeticExpression(0)) + ")"
+		sql = "(" + sqlFor(ctx.ScalarExpression(0)) + ")"
 	} else if ctx.ArithmeticOperator() != nil {
-		expr1 := sqlFor(ctx.ArithmeticExpression(0))
-		expr2 := sqlFor(ctx.ArithmeticExpression(1))
+		expr1 := sqlFor(ctx.ScalarExpression(0))
+		expr2 := sqlFor(ctx.ScalarExpression(1))
 		op := getNodeText(ctx.ArithmeticOperator())
 		sql = expr1 + " " + op + " " + expr2
 	} else {
@@ -323,8 +323,8 @@ func (l *cqlListener) ExitBetweenPredicate(ctx *BetweenPredicateContext) {
 	if ctx.NOT() != nil {
 		not = " NOT"
 	}
-	expr1 := sqlFor(ctx.ArithmeticExpression(0))
-	expr2 := sqlFor(ctx.ArithmeticExpression(1))
+	expr1 := sqlFor(ctx.ScalarExpression(0))
+	expr2 := sqlFor(ctx.ScalarExpression(1))
 	sql := " " + prop + not + " BETWEEN " + expr1 + " AND " + expr2
 	ctx.SetSql(sql)
 }

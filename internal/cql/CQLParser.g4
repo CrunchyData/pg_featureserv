@@ -45,29 +45,28 @@ predicate : binaryComparisonPredicate
 # an operator to test if a scalar expression is NULL or not.
 #============================================================================*/
 
-binaryComparisonPredicate : arithmeticExpression ComparisonOperator arithmeticExpression;
+binaryComparisonPredicate : scalarExpression ComparisonOperator scalarExpression;
 
 likePredicate :  propertyName (NOT)? ( LIKE | ILIKE ) characterLiteral;
 
 betweenPredicate : propertyName (NOT)? BETWEEN
-                             arithmeticExpression AND arithmeticExpression ;
+                             scalarExpression AND scalarExpression ;
 //                             (scalarValue | temporalExpression) AND (scalarValue | temporalExpression);
 
 isNullPredicate : propertyName IS (NOT)? NULL;
 
 /*============================================================================
-# Arithmetic expressions
+# Scalar expressions
+#
+# Note: does not enforce type consistency.
+# That occurs when transpiled expression is evaluated.
 #============================================================================*/
 
-arithmeticExpression : scalarValue
-                    | LEFTPAREN arithmeticExpression RIGHTPAREN
-                    | arithmeticExpression ArithmeticOperator arithmeticExpression
+scalarExpression : scalarValue
+                    | LEFTPAREN scalarExpression RIGHTPAREN
+                    | scalarExpression ArithmeticOperator scalarExpression
                     ;
 
-/*
-# A scalar value is a property name, a chracter literal, a numeric
-# literal or a function/method invocation that returns a scalar value.
-*/
 scalarValue : propertyName
                     | characterLiteral
                     | numericLiteral

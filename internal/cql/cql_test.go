@@ -70,6 +70,7 @@ func TestArithmetic(t *testing.T) {
 	checkCQL(t, "p > (y + 5) / (3 - x)", "\"p\" > (\"y\" + 5) / (3 - \"x\")")
 	checkCQL(t, "p = x % 10", "\"p\" = \"x\" % 10")
 	checkCQL(t, "p BETWEEN x + 10 AND x * 2", "\"p\" BETWEEN \"x\" + 10 AND \"x\" * 2")
+	checkCQL(t, "p BETWEEN 2 * (1 + 1000000) AND 900000", "\"p\" BETWEEN 2 * (1 + 1000000) AND 900000")
 }
 
 func TestGeometryLiteral(t *testing.T) {

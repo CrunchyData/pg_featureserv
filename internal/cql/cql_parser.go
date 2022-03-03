@@ -182,7 +182,7 @@ var symbolicNames = []string{
 var ruleNames = []string{
 	"cqlFilter", "booleanValueExpression", "booleanTerm", "booleanFactor",
 	"booleanPrimary", "predicate", "binaryComparisonPredicate", "likePredicate",
-	"betweenPredicate", "isNullPredicate", "arithmeticExpression", "scalarValue",
+	"betweenPredicate", "isNullPredicate", "scalarExpression", "scalarValue",
 	"propertyName", "characterLiteral", "numericLiteral", "booleanLiteral",
 	"spatialPredicate", "distancePredicate", "geomExpression", "geomLiteral",
 	"point", "pointList", "linestring", "polygon", "polygonDef", "multiPoint",
@@ -301,7 +301,7 @@ const (
 	CQLParserRULE_likePredicate             = 7
 	CQLParserRULE_betweenPredicate          = 8
 	CQLParserRULE_isNullPredicate           = 9
-	CQLParserRULE_arithmeticExpression      = 10
+	CQLParserRULE_scalarExpression          = 10
 	CQLParserRULE_scalarValue               = 11
 	CQLParserRULE_propertyName              = 12
 	CQLParserRULE_characterLiteral          = 13
@@ -1233,27 +1233,27 @@ func NewBinaryComparisonPredicateContext(parser antlr.Parser, parent antlr.Parse
 
 func (s *BinaryComparisonPredicateContext) GetParser() antlr.Parser { return s.parser }
 
-func (s *BinaryComparisonPredicateContext) AllArithmeticExpression() []IArithmeticExpressionContext {
-	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*IArithmeticExpressionContext)(nil)).Elem())
-	var tst = make([]IArithmeticExpressionContext, len(ts))
+func (s *BinaryComparisonPredicateContext) AllScalarExpression() []IScalarExpressionContext {
+	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*IScalarExpressionContext)(nil)).Elem())
+	var tst = make([]IScalarExpressionContext, len(ts))
 
 	for i, t := range ts {
 		if t != nil {
-			tst[i] = t.(IArithmeticExpressionContext)
+			tst[i] = t.(IScalarExpressionContext)
 		}
 	}
 
 	return tst
 }
 
-func (s *BinaryComparisonPredicateContext) ArithmeticExpression(i int) IArithmeticExpressionContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IArithmeticExpressionContext)(nil)).Elem(), i)
+func (s *BinaryComparisonPredicateContext) ScalarExpression(i int) IScalarExpressionContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IScalarExpressionContext)(nil)).Elem(), i)
 
 	if t == nil {
 		return nil
 	}
 
-	return t.(IArithmeticExpressionContext)
+	return t.(IScalarExpressionContext)
 }
 
 func (s *BinaryComparisonPredicateContext) ComparisonOperator() antlr.TerminalNode {
@@ -1303,7 +1303,7 @@ func (p *CQLParser) BinaryComparisonPredicate() (localctx IBinaryComparisonPredi
 	p.EnterOuterAlt(localctx, 1)
 	{
 		p.SetState(112)
-		p.arithmeticExpression(0)
+		p.scalarExpression(0)
 	}
 	{
 		p.SetState(113)
@@ -1311,7 +1311,7 @@ func (p *CQLParser) BinaryComparisonPredicate() (localctx IBinaryComparisonPredi
 	}
 	{
 		p.SetState(114)
-		p.arithmeticExpression(0)
+		p.scalarExpression(0)
 	}
 
 	return localctx
@@ -1513,27 +1513,27 @@ func (s *BetweenPredicateContext) BETWEEN() antlr.TerminalNode {
 	return s.GetToken(CQLParserBETWEEN, 0)
 }
 
-func (s *BetweenPredicateContext) AllArithmeticExpression() []IArithmeticExpressionContext {
-	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*IArithmeticExpressionContext)(nil)).Elem())
-	var tst = make([]IArithmeticExpressionContext, len(ts))
+func (s *BetweenPredicateContext) AllScalarExpression() []IScalarExpressionContext {
+	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*IScalarExpressionContext)(nil)).Elem())
+	var tst = make([]IScalarExpressionContext, len(ts))
 
 	for i, t := range ts {
 		if t != nil {
-			tst[i] = t.(IArithmeticExpressionContext)
+			tst[i] = t.(IScalarExpressionContext)
 		}
 	}
 
 	return tst
 }
 
-func (s *BetweenPredicateContext) ArithmeticExpression(i int) IArithmeticExpressionContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IArithmeticExpressionContext)(nil)).Elem(), i)
+func (s *BetweenPredicateContext) ScalarExpression(i int) IScalarExpressionContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IScalarExpressionContext)(nil)).Elem(), i)
 
 	if t == nil {
 		return nil
 	}
 
-	return t.(IArithmeticExpressionContext)
+	return t.(IScalarExpressionContext)
 }
 
 func (s *BetweenPredicateContext) AND() antlr.TerminalNode {
@@ -1607,7 +1607,7 @@ func (p *CQLParser) BetweenPredicate() (localctx IBetweenPredicateContext) {
 	}
 	{
 		p.SetState(128)
-		p.arithmeticExpression(0)
+		p.scalarExpression(0)
 	}
 	{
 		p.SetState(129)
@@ -1615,7 +1615,7 @@ func (p *CQLParser) BetweenPredicate() (localctx IBetweenPredicateContext) {
 	}
 	{
 		p.SetState(130)
-		p.arithmeticExpression(0)
+		p.scalarExpression(0)
 	}
 
 	return localctx
@@ -1750,45 +1750,45 @@ func (p *CQLParser) IsNullPredicate() (localctx IIsNullPredicateContext) {
 	return localctx
 }
 
-// IArithmeticExpressionContext is an interface to support dynamic dispatch.
-type IArithmeticExpressionContext interface {
+// IScalarExpressionContext is an interface to support dynamic dispatch.
+type IScalarExpressionContext interface {
 	antlr.ParserRuleContext
 
 	// GetParser returns the parser.
 	GetParser() antlr.Parser
 
-	// IsArithmeticExpressionContext differentiates from other interfaces.
-	IsArithmeticExpressionContext()
+	// IsScalarExpressionContext differentiates from other interfaces.
+	IsScalarExpressionContext()
 }
 
-type ArithmeticExpressionContext struct {
+type ScalarExpressionContext struct {
 	*CqlContext
 	parser antlr.Parser
 }
 
-func NewEmptyArithmeticExpressionContext() *ArithmeticExpressionContext {
-	var p = new(ArithmeticExpressionContext)
+func NewEmptyScalarExpressionContext() *ScalarExpressionContext {
+	var p = new(ScalarExpressionContext)
 	p.CqlContext = NewCqlContext(nil, -1)
-	p.RuleIndex = CQLParserRULE_arithmeticExpression
+	p.RuleIndex = CQLParserRULE_scalarExpression
 	return p
 }
 
-func (*ArithmeticExpressionContext) IsArithmeticExpressionContext() {}
+func (*ScalarExpressionContext) IsScalarExpressionContext() {}
 
-func NewArithmeticExpressionContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *ArithmeticExpressionContext {
-	var p = new(ArithmeticExpressionContext)
+func NewScalarExpressionContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *ScalarExpressionContext {
+	var p = new(ScalarExpressionContext)
 
 	p.CqlContext = NewCqlContext(parent, invokingState)
 
 	p.parser = parser
-	p.RuleIndex = CQLParserRULE_arithmeticExpression
+	p.RuleIndex = CQLParserRULE_scalarExpression
 
 	return p
 }
 
-func (s *ArithmeticExpressionContext) GetParser() antlr.Parser { return s.parser }
+func (s *ScalarExpressionContext) GetParser() antlr.Parser { return s.parser }
 
-func (s *ArithmeticExpressionContext) ScalarValue() IScalarValueContext {
+func (s *ScalarExpressionContext) ScalarValue() IScalarValueContext {
 	var t = s.GetTypedRuleContext(reflect.TypeOf((*IScalarValueContext)(nil)).Elem(), 0)
 
 	if t == nil {
@@ -1798,73 +1798,73 @@ func (s *ArithmeticExpressionContext) ScalarValue() IScalarValueContext {
 	return t.(IScalarValueContext)
 }
 
-func (s *ArithmeticExpressionContext) LEFTPAREN() antlr.TerminalNode {
+func (s *ScalarExpressionContext) LEFTPAREN() antlr.TerminalNode {
 	return s.GetToken(CQLParserLEFTPAREN, 0)
 }
 
-func (s *ArithmeticExpressionContext) AllArithmeticExpression() []IArithmeticExpressionContext {
-	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*IArithmeticExpressionContext)(nil)).Elem())
-	var tst = make([]IArithmeticExpressionContext, len(ts))
+func (s *ScalarExpressionContext) AllScalarExpression() []IScalarExpressionContext {
+	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*IScalarExpressionContext)(nil)).Elem())
+	var tst = make([]IScalarExpressionContext, len(ts))
 
 	for i, t := range ts {
 		if t != nil {
-			tst[i] = t.(IArithmeticExpressionContext)
+			tst[i] = t.(IScalarExpressionContext)
 		}
 	}
 
 	return tst
 }
 
-func (s *ArithmeticExpressionContext) ArithmeticExpression(i int) IArithmeticExpressionContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IArithmeticExpressionContext)(nil)).Elem(), i)
+func (s *ScalarExpressionContext) ScalarExpression(i int) IScalarExpressionContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IScalarExpressionContext)(nil)).Elem(), i)
 
 	if t == nil {
 		return nil
 	}
 
-	return t.(IArithmeticExpressionContext)
+	return t.(IScalarExpressionContext)
 }
 
-func (s *ArithmeticExpressionContext) RIGHTPAREN() antlr.TerminalNode {
+func (s *ScalarExpressionContext) RIGHTPAREN() antlr.TerminalNode {
 	return s.GetToken(CQLParserRIGHTPAREN, 0)
 }
 
-func (s *ArithmeticExpressionContext) ArithmeticOperator() antlr.TerminalNode {
+func (s *ScalarExpressionContext) ArithmeticOperator() antlr.TerminalNode {
 	return s.GetToken(CQLParserArithmeticOperator, 0)
 }
 
-func (s *ArithmeticExpressionContext) GetRuleContext() antlr.RuleContext {
+func (s *ScalarExpressionContext) GetRuleContext() antlr.RuleContext {
 	return s
 }
 
-func (s *ArithmeticExpressionContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
+func (s *ScalarExpressionContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
-func (s *ArithmeticExpressionContext) EnterRule(listener antlr.ParseTreeListener) {
+func (s *ScalarExpressionContext) EnterRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(CQLParserListener); ok {
-		listenerT.EnterArithmeticExpression(s)
+		listenerT.EnterScalarExpression(s)
 	}
 }
 
-func (s *ArithmeticExpressionContext) ExitRule(listener antlr.ParseTreeListener) {
+func (s *ScalarExpressionContext) ExitRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(CQLParserListener); ok {
-		listenerT.ExitArithmeticExpression(s)
+		listenerT.ExitScalarExpression(s)
 	}
 }
 
-func (p *CQLParser) ArithmeticExpression() (localctx IArithmeticExpressionContext) {
-	return p.arithmeticExpression(0)
+func (p *CQLParser) ScalarExpression() (localctx IScalarExpressionContext) {
+	return p.scalarExpression(0)
 }
 
-func (p *CQLParser) arithmeticExpression(_p int) (localctx IArithmeticExpressionContext) {
+func (p *CQLParser) scalarExpression(_p int) (localctx IScalarExpressionContext) {
 	var _parentctx antlr.ParserRuleContext = p.GetParserRuleContext()
 	_parentState := p.GetState()
-	localctx = NewArithmeticExpressionContext(p, p.GetParserRuleContext(), _parentState)
-	var _prevctx IArithmeticExpressionContext = localctx
+	localctx = NewScalarExpressionContext(p, p.GetParserRuleContext(), _parentState)
+	var _prevctx IScalarExpressionContext = localctx
 	var _ antlr.ParserRuleContext = _prevctx // TODO: To prevent unused variable warning.
 	_startState := 20
-	p.EnterRecursionRule(localctx, 20, CQLParserRULE_arithmeticExpression, _p)
+	p.EnterRecursionRule(localctx, 20, CQLParserRULE_scalarExpression, _p)
 
 	defer func() {
 		p.UnrollRecursionContexts(_parentctx)
@@ -1902,7 +1902,7 @@ func (p *CQLParser) arithmeticExpression(_p int) (localctx IArithmeticExpression
 		}
 		{
 			p.SetState(142)
-			p.arithmeticExpression(0)
+			p.scalarExpression(0)
 		}
 		{
 			p.SetState(143)
@@ -1923,8 +1923,8 @@ func (p *CQLParser) arithmeticExpression(_p int) (localctx IArithmeticExpression
 				p.TriggerExitRuleEvent()
 			}
 			_prevctx = localctx
-			localctx = NewArithmeticExpressionContext(p, _parentctx, _parentState)
-			p.PushNewRecursionContext(localctx, _startState, CQLParserRULE_arithmeticExpression)
+			localctx = NewScalarExpressionContext(p, _parentctx, _parentState)
+			p.PushNewRecursionContext(localctx, _startState, CQLParserRULE_scalarExpression)
 			p.SetState(147)
 
 			if !(p.Precpred(p.GetParserRuleContext(), 1)) {
@@ -1936,7 +1936,7 @@ func (p *CQLParser) arithmeticExpression(_p int) (localctx IArithmeticExpression
 			}
 			{
 				p.SetState(149)
-				p.arithmeticExpression(2)
+				p.scalarExpression(2)
 			}
 
 		}
@@ -5016,11 +5016,11 @@ func (p *CQLParser) Sempred(localctx antlr.RuleContext, ruleIndex, predIndex int
 		return p.BooleanTerm_Sempred(t, predIndex)
 
 	case 10:
-		var t *ArithmeticExpressionContext = nil
+		var t *ScalarExpressionContext = nil
 		if localctx != nil {
-			t = localctx.(*ArithmeticExpressionContext)
+			t = localctx.(*ScalarExpressionContext)
 		}
-		return p.ArithmeticExpression_Sempred(t, predIndex)
+		return p.ScalarExpression_Sempred(t, predIndex)
 
 	default:
 		panic("No predicate with index: " + fmt.Sprint(ruleIndex))
@@ -5047,7 +5047,7 @@ func (p *CQLParser) BooleanTerm_Sempred(localctx antlr.RuleContext, predIndex in
 	}
 }
 
-func (p *CQLParser) ArithmeticExpression_Sempred(localctx antlr.RuleContext, predIndex int) bool {
+func (p *CQLParser) ScalarExpression_Sempred(localctx antlr.RuleContext, predIndex int) bool {
 	switch predIndex {
 	case 2:
 		return p.Precpred(p.GetParserRuleContext(), 1)
