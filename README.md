@@ -104,7 +104,7 @@ Postgres [connection string](https://www.postgresql.org/docs/12/libpq-connect.ht
 export DATABASE_URL="host=localhost user=postgres"
 ```
 
-Other parameters in the configuration file can be over-ridden at run-time in the environment.
+Other parameters in the configuration file can be over-ridden in the environment.
 Prepend the upper-cased parameter name with `PGFS_section_` to set the value.
 For example, to change the HTTP port and service title:
 ```bash
@@ -121,7 +121,7 @@ openssl req  -nodes -new -x509  -keyout server.key -out server.crt
 
 ## Run the service
 
-* If not already done, move to the application directory:
+* Change to the application directory:
   * `cd $GOPATH/src/github.com/CrunchyData/pg_featureserv`
 * Start the server:
   * `./pg_featureserv`
@@ -139,7 +139,7 @@ openssl req  -nodes -new -x509  -keyout server.key -out server.crt
 
 ## Troubleshooting
 
-To get information about what is going on behind the scenes,
+To get detailed information about service operation
 run with the `--debug` commandline parameter.
 ```sh
 ./pg_featureserv --debug
