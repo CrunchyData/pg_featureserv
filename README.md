@@ -113,10 +113,15 @@ export PGFS_METADATA_TITLE="My PGFS"
 ```
 
 ### SSL
-For SSL support, you will need both a server private key and an authority certificate.
-For testing purposes you can generate a self-signed key/cert pair using `openssl`:
+For SSL support, a server **private key** and an **authority certificate** are needed.
+For testing purposes you can generate a **self-signed key/cert pair** using `openssl`:
 ```bash
 openssl req  -nodes -new -x509  -keyout server.key -out server.crt
+```
+These are set in the configuration file:
+```
+TlsServerCertificateFile = "/path/server.crt"
+TlsServerPrivateKeyFile = "/path/server.key"
 ```
 
 ## Run the service
