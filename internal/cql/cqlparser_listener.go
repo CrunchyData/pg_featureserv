@@ -1,10 +1,10 @@
-// Generated from CQL.g4 by ANTLR 4.7.
+// Generated from CQLParser.g4 by ANTLR 4.7.
 
-package cql // CQL
+package cql // CQLParser
 import "github.com/antlr/antlr4/runtime/Go/antlr"
 
-// CQLListener is a complete listener for a parse tree produced by CQL.
-type CQLListener interface {
+// CQLParserListener is a complete listener for a parse tree produced by CQLParser.
+type CQLParserListener interface {
 	antlr.ParseTreeListener
 
 	// EnterCqlFilter is called when entering the cqlFilter production.

@@ -8,7 +8,7 @@
 # https://portal.ogc.org/files/96288#cql-bnf
 # https://github.com/interactive-instruments/xtraplatform-spatial/tree/master/xtraplatform-cql/src/main/antlr/de/ii/xtraplatform/cql/infra
 */
-parser grammar CQL;
+parser grammar CQLParser;
 options { tokenVocab=CqlLexer; contextSuperClass=CqlContext; }
 
 /*============================================================================

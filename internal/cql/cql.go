@@ -37,7 +37,7 @@ func TranspileToSQL(cqlStr string, filterSRID int, sourceSRID int) (string, erro
 
 	//-- create parser
 	stream := antlr.NewCommonTokenStream(lexer, antlr.TokenDefaultChannel)
-	parser := NewCQL(stream)
+	parser := NewCQLParser(stream)
 	parser.RemoveErrorListeners()
 	parser.AddErrorListener(parseErrors)
 
@@ -110,7 +110,7 @@ func (l *CqlErrorListener) ReportContextSensitivity(recognizer antlr.Parser, dfa
 //----------------------------------
 
 type cqlListener struct {
-	*BaseCQLListener
+	*BaseCQLParserListener
 	// SRID for filter CRS
 	filterSRID int
 	// SRID for source CRS
@@ -441,7 +441,7 @@ func extractGeomText(trees []antlr.Tree, sb *strings.Builder) {
 		tn, ok := t.(antlr.TerminalNode)
 		if ok {
 			//-- add a blank between consecutive numbers to separate them
-			if tn.GetSymbol().GetTokenType() == CQLNumericLiteral {
+			if tn.GetSymbol().GetTokenType() == CQLParserNumericLiteral {
 				if isPrevNumeric {
 					sb.WriteString(" ")
 				}
