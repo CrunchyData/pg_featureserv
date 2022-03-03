@@ -9,7 +9,7 @@
 # https://github.com/interactive-instruments/xtraplatform-spatial/tree/master/xtraplatform-cql/src/main/antlr/de/ii/xtraplatform/cql/infra
 */
 parser grammar CQL;
-options { tokenVocab=CqlLexer;  }
+options { tokenVocab=CqlLexer; contextSuperClass=CqlContext; }
 
 /*============================================================================
 # A CQL filter is a logically connected expression of one or more predicates.

@@ -77,6 +77,7 @@ func syntaxErrorMsg(input string, col int) string {
 	return msg
 }
 
+//======================================
 type CqlErrorListener struct {
 	*antlr.DefaultErrorListener
 	errorCount int
@@ -114,9 +115,8 @@ type cqlListener struct {
 	filterSRID int
 	// SRID for source CRS
 	sourceSRID int
-	// SQL fragments for parse tree nodes
-	sqlFrags map[*antlr.BaseRuleContext]string
-	// result SQL
+
+	// final result SQL
 	sql string
 }
 
@@ -124,26 +124,10 @@ func NewCqlListener(filterSRID int, sourceSRID int) *cqlListener {
 	this := new(cqlListener)
 	this.filterSRID = filterSRID
 	this.sourceSRID = sourceSRID
-	this.sqlFrags = make(map[*antlr.BaseRuleContext]string)
 	return this
 }
 func (l *cqlListener) GetSQL() string {
 	return l.sql
-}
-
-// saveSql stores the SQL fragment for a parse tree node in the map
-func (l *cqlListener) saveSql(ctx antlr.ParserRuleContext, sql string) {
-	l.sqlFrags[ctx.GetBaseRuleContext()] = sql
-}
-
-// helper function to avoid nil pointer problems
-func (l *cqlListener) sqlFor(ctx antlr.ParserRuleContext) string {
-	if ctx == nil {
-		return ""
-	}
-	frag := l.sqlFrags[ctx.GetBaseRuleContext()]
-	//log.Debug("sqlFrag for " + ctx.GetText() + " -> " + frag)
-	return frag
 }
 
 func (l *cqlListener) sqlGeometryLiteral(wkt string) string {
@@ -178,6 +162,43 @@ func getNodeText(node antlr.TerminalNode) string {
 	return node.GetText()
 }
 
+//========================================
+type CqlContext struct {
+	*antlr.BaseParserRuleContext
+	// SQL fragment for the context subtree
+	sql string
+}
+
+type SqlHolder interface {
+	GetSql() string
+}
+
+func NewCqlContext(parent antlr.ParserRuleContext, invokingStateNumber int) *CqlContext {
+	var p = new(CqlContext)
+	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingStateNumber)
+	return p
+}
+
+func (c *CqlContext) SetSql(sql string) {
+	c.sql = sql
+	//	fmt.Printf("setting sql for %s = %s\n", c.GetText(), sql)
+}
+
+func (c *CqlContext) GetSql() string {
+	return c.sql
+}
+
+// helper function to get SQL from any context
+func sqlFor(ctx antlr.ParserRuleContext) string {
+	cc, ok := ctx.(SqlHolder)
+	if ok {
+		return cc.GetSql()
+	}
+	return "!ERROR!"
+}
+
+//========================================
+
 /*
 func (l *cqlListener) EnterEveryRule(ctx antlr.ParserRuleContext) {
 	//fmt.Println(ctx.GetText())
@@ -185,73 +206,71 @@ func (l *cqlListener) EnterEveryRule(ctx antlr.ParserRuleContext) {
 */
 
 func (l *cqlListener) ExitCqlFilter(ctx *CqlFilterContext) {
-	l.sql = l.sqlFor(ctx.BooleanValueExpression())
+	l.sql = sqlFor(ctx.BooleanValueExpression())
 }
 
 func (l *cqlListener) ExitBooleanValueExpression(ctx *BooleanValueExpressionContext) {
-	sql := l.sqlFor(ctx.BooleanTerm())
+	sql := sqlFor(ctx.BooleanTerm())
 	if ctx.OR() != nil {
-		expr := l.sqlFor(ctx.BooleanValueExpression())
+		expr := sqlFor(ctx.BooleanValueExpression())
 		sql = expr + " OR " + sql
 	}
-	l.saveSql(ctx, sql)
+	ctx.SetSql(sql)
 }
 
 func (l *cqlListener) ExitBooleanTerm(ctx *BooleanTermContext) {
-	sql := l.sqlFor(ctx.BooleanFactor())
+	sql := sqlFor(ctx.BooleanFactor())
 	if ctx.AND() != nil {
-		expr := l.sqlFor(ctx.BooleanTerm())
+		expr := sqlFor(ctx.BooleanTerm())
 		sql = expr + " AND " + sql
 	}
-	l.saveSql(ctx, sql)
+	ctx.SetSql(sql)
 }
 
 func (l *cqlListener) ExitBooleanFactor(ctx *BooleanFactorContext) {
-	sql := l.sqlFor(ctx.BooleanPrimary())
+	sql := sqlFor(ctx.BooleanPrimary())
 	if ctx.NOT() != nil {
 		sql = " NOT " + sql
 	}
-	l.saveSql(ctx, sql)
+	ctx.SetSql(sql)
 }
 
 func (l *cqlListener) ExitBooleanPrimary(ctx *BooleanPrimaryContext) {
 	var sql string
 	if ctx.LEFTPAREN() == nil {
-		sql = l.sqlFor(ctx.Predicate())
+		sql = sqlFor(ctx.Predicate())
 	} else {
-		sql = "(" + l.sqlFor(ctx.BooleanValueExpression()) + ")"
+		sql = "(" + sqlFor(ctx.BooleanValueExpression()) + ")"
 	}
-	l.saveSql(ctx, sql)
+	ctx.SetSql(sql)
 }
 
 func (l *cqlListener) ExitPredicate(ctx *PredicateContext) {
 	var sql string
 	if ctx.BinaryComparisonPredicate() != nil {
-		sql = l.sqlFor(ctx.BinaryComparisonPredicate())
+		sql = sqlFor(ctx.BinaryComparisonPredicate())
 	} else if ctx.LikePredicate() != nil {
-		sql = l.sqlFor(ctx.LikePredicate())
+		sql = sqlFor(ctx.LikePredicate())
 	} else if ctx.BetweenPredicate() != nil {
-		sql = l.sqlFor(ctx.BetweenPredicate())
+		sql = sqlFor(ctx.BetweenPredicate())
 	} else if ctx.IsNullPredicate() != nil {
-		sql = l.sqlFor(ctx.IsNullPredicate())
+		sql = sqlFor(ctx.IsNullPredicate())
 	} else if ctx.InPredicate() != nil {
-		sql = l.sqlFor(ctx.InPredicate())
+		sql = sqlFor(ctx.InPredicate())
 	} else if ctx.SpatialPredicate() != nil {
-		sql = l.sqlFor(ctx.SpatialPredicate())
+		sql = sqlFor(ctx.SpatialPredicate())
 	} else if ctx.DistancePredicate() != nil {
-		sql = l.sqlFor(ctx.DistancePredicate())
+		sql = sqlFor(ctx.DistancePredicate())
 	}
-	l.saveSql(ctx, sql)
+	ctx.SetSql(sql)
 }
 
 func (l *cqlListener) ExitBinaryComparisonPredicate(ctx *BinaryComparisonPredicateContext) {
-	//expr1 := l.sqlFor(ctx.ScalarExpression(0))
-	//expr2 := l.sqlFor(ctx.ScalarExpression(1))
-	expr1 := l.sqlFor(ctx.ArithmeticExpression(0))
-	expr2 := l.sqlFor(ctx.ArithmeticExpression(1))
+	expr1 := sqlFor(ctx.ArithmeticExpression(0))
+	expr2 := sqlFor(ctx.ArithmeticExpression(1))
 	op := getNodeText(ctx.ComparisonOperator())
 	sql := expr1 + " " + op + " " + expr2
-	l.saveSql(ctx, sql)
+	ctx.SetSql(sql)
 }
 
 func (l *cqlListener) ExitScalarValue(ctx *ScalarValueContext) {
@@ -265,22 +284,22 @@ func (l *cqlListener) ExitScalarValue(ctx *ScalarValueContext) {
 	} else if ctx.BooleanLiteral() != nil {
 		sql = getText(ctx.BooleanLiteral())
 	}
-	l.saveSql(ctx, sql)
+	ctx.SetSql(sql)
 }
 
 func (l *cqlListener) ExitArithmeticExpression(ctx *ArithmeticExpressionContext) {
 	var sql string
 	if ctx.LEFTPAREN() != nil {
-		sql = "(" + l.sqlFor(ctx.ArithmeticExpression(0)) + ")"
+		sql = "(" + sqlFor(ctx.ArithmeticExpression(0)) + ")"
 	} else if ctx.ArithmeticOperator() != nil {
-		expr1 := l.sqlFor(ctx.ArithmeticExpression(0))
-		expr2 := l.sqlFor(ctx.ArithmeticExpression(1))
+		expr1 := sqlFor(ctx.ArithmeticExpression(0))
+		expr2 := sqlFor(ctx.ArithmeticExpression(1))
 		op := getNodeText(ctx.ArithmeticOperator())
 		sql = expr1 + " " + op + " " + expr2
 	} else {
-		sql = l.sqlFor(ctx.ScalarValue())
+		sql = sqlFor(ctx.ScalarValue())
 	}
-	l.saveSql(ctx, sql)
+	ctx.SetSql(sql)
 }
 
 func (l *cqlListener) ExitLikePredicate(ctx *LikePredicateContext) {
@@ -295,7 +314,7 @@ func (l *cqlListener) ExitLikePredicate(ctx *LikePredicateContext) {
 	}
 	sb.WriteString(op)
 	sb.WriteString(quotedText(getText(ctx.CharacterLiteral())))
-	l.saveSql(ctx, sb.String())
+	ctx.SetSql(sb.String())
 }
 
 func (l *cqlListener) ExitBetweenPredicate(ctx *BetweenPredicateContext) {
@@ -304,10 +323,10 @@ func (l *cqlListener) ExitBetweenPredicate(ctx *BetweenPredicateContext) {
 	if ctx.NOT() != nil {
 		not = " NOT"
 	}
-	expr1 := l.sqlFor(ctx.ArithmeticExpression(0))
-	expr2 := l.sqlFor(ctx.ArithmeticExpression(1))
+	expr1 := sqlFor(ctx.ArithmeticExpression(0))
+	expr2 := sqlFor(ctx.ArithmeticExpression(1))
 	sql := " " + prop + not + " BETWEEN " + expr1 + " AND " + expr2
-	l.saveSql(ctx, sql)
+	ctx.SetSql(sql)
 }
 
 func (l *cqlListener) ExitIsNullPredicate(ctx *IsNullPredicateContext) {
@@ -317,7 +336,7 @@ func (l *cqlListener) ExitIsNullPredicate(ctx *IsNullPredicateContext) {
 		not = " NOT"
 	}
 	sql := " " + prop + " IS" + not + " NULL"
-	l.saveSql(ctx, sql)
+	ctx.SetSql(sql)
 }
 
 func (l *cqlListener) ExitInPredicate(ctx *InPredicateContext) {
@@ -330,7 +349,7 @@ func (l *cqlListener) ExitInPredicate(ctx *InPredicateContext) {
 	inPredValueList(ctx, &sb)
 	sb.WriteString(") ")
 	sql := sb.String()
-	l.saveSql(ctx, sql)
+	ctx.SetSql(sql)
 }
 
 func inPredValueList(ctx *InPredicateContext, sb *strings.Builder) {
@@ -361,24 +380,24 @@ func (l *cqlListener) ExitSpatialPredicate(ctx *SpatialPredicateContext) {
 	var sb strings.Builder
 	sb.WriteString(toPostGISFunction(ctx.SpatialOperator().GetText()))
 	sb.WriteString("(")
-	sb.WriteString(l.sqlFor(ctx.GeomExpression(0)))
+	sb.WriteString(sqlFor(ctx.GeomExpression(0)))
 	sb.WriteString(",")
-	sb.WriteString(l.sqlFor(ctx.GeomExpression(1)))
+	sb.WriteString(sqlFor(ctx.GeomExpression(1)))
 	sb.WriteString(")")
-	l.saveSql(ctx, sb.String())
+	ctx.SetSql(sb.String())
 }
 
 func (l *cqlListener) ExitDistancePredicate(ctx *DistancePredicateContext) {
 	var sb strings.Builder
 	sb.WriteString(toPostGISFunction(ctx.DistanceOperator().GetText()))
 	sb.WriteString("(")
-	sb.WriteString(l.sqlFor(ctx.GeomExpression(0)))
+	sb.WriteString(sqlFor(ctx.GeomExpression(0)))
 	sb.WriteString(",")
-	sb.WriteString(l.sqlFor(ctx.GeomExpression(1)))
+	sb.WriteString(sqlFor(ctx.GeomExpression(1)))
 	sb.WriteString(",")
 	sb.WriteString(ctx.NumericLiteral().GetText())
 	sb.WriteString(")")
-	l.saveSql(ctx, sb.String())
+	ctx.SetSql(sb.String())
 }
 
 func (l *cqlListener) ExitGeomExpression(ctx *GeomExpressionContext) {
@@ -386,9 +405,9 @@ func (l *cqlListener) ExitGeomExpression(ctx *GeomExpressionContext) {
 	if ctx.PropertyName() != nil {
 		sb.WriteString(quotedName(getText(ctx.PropertyName())))
 	} else {
-		sb.WriteString(l.sqlFor(ctx.GeomLiteral()))
+		sb.WriteString(sqlFor(ctx.GeomLiteral()))
 	}
-	l.saveSql(ctx, sb.String())
+	ctx.SetSql(sb.String())
 }
 
 func (l *cqlListener) ExitGeomLiteral(ctx *GeomLiteralContext) {
@@ -406,7 +425,7 @@ func (l *cqlListener) ExitGeomLiteral(ctx *GeomLiteralContext) {
 		sql = l.sqlGeometryLiteral(wkt)
 	}
 	sql = l.sqlTransformCrs(sql)
-	l.saveSql(ctx, sql)
+	ctx.SetSql(sql)
 }
 
 func getGeomText(ctx *GeomLiteralContext) string {

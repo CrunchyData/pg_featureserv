@@ -338,13 +338,13 @@ type ICqlFilterContext interface {
 }
 
 type CqlFilterContext struct {
-	*antlr.BaseParserRuleContext
+	*CqlContext
 	parser antlr.Parser
 }
 
 func NewEmptyCqlFilterContext() *CqlFilterContext {
 	var p = new(CqlFilterContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
+	p.CqlContext = NewCqlContext(nil, -1)
 	p.RuleIndex = CQLRULE_cqlFilter
 	return p
 }
@@ -354,7 +354,7 @@ func (*CqlFilterContext) IsCqlFilterContext() {}
 func NewCqlFilterContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *CqlFilterContext {
 	var p = new(CqlFilterContext)
 
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
+	p.CqlContext = NewCqlContext(parent, invokingState)
 
 	p.parser = parser
 	p.RuleIndex = CQLRULE_cqlFilter
@@ -443,13 +443,13 @@ type IBooleanValueExpressionContext interface {
 }
 
 type BooleanValueExpressionContext struct {
-	*antlr.BaseParserRuleContext
+	*CqlContext
 	parser antlr.Parser
 }
 
 func NewEmptyBooleanValueExpressionContext() *BooleanValueExpressionContext {
 	var p = new(BooleanValueExpressionContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
+	p.CqlContext = NewCqlContext(nil, -1)
 	p.RuleIndex = CQLRULE_booleanValueExpression
 	return p
 }
@@ -459,7 +459,7 @@ func (*BooleanValueExpressionContext) IsBooleanValueExpressionContext() {}
 func NewBooleanValueExpressionContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *BooleanValueExpressionContext {
 	var p = new(BooleanValueExpressionContext)
 
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
+	p.CqlContext = NewCqlContext(parent, invokingState)
 
 	p.parser = parser
 	p.RuleIndex = CQLRULE_booleanValueExpression
@@ -598,13 +598,13 @@ type IBooleanTermContext interface {
 }
 
 type BooleanTermContext struct {
-	*antlr.BaseParserRuleContext
+	*CqlContext
 	parser antlr.Parser
 }
 
 func NewEmptyBooleanTermContext() *BooleanTermContext {
 	var p = new(BooleanTermContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
+	p.CqlContext = NewCqlContext(nil, -1)
 	p.RuleIndex = CQLRULE_booleanTerm
 	return p
 }
@@ -614,7 +614,7 @@ func (*BooleanTermContext) IsBooleanTermContext() {}
 func NewBooleanTermContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *BooleanTermContext {
 	var p = new(BooleanTermContext)
 
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
+	p.CqlContext = NewCqlContext(parent, invokingState)
 
 	p.parser = parser
 	p.RuleIndex = CQLRULE_booleanTerm
@@ -753,13 +753,13 @@ type IBooleanFactorContext interface {
 }
 
 type BooleanFactorContext struct {
-	*antlr.BaseParserRuleContext
+	*CqlContext
 	parser antlr.Parser
 }
 
 func NewEmptyBooleanFactorContext() *BooleanFactorContext {
 	var p = new(BooleanFactorContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
+	p.CqlContext = NewCqlContext(nil, -1)
 	p.RuleIndex = CQLRULE_booleanFactor
 	return p
 }
@@ -769,7 +769,7 @@ func (*BooleanFactorContext) IsBooleanFactorContext() {}
 func NewBooleanFactorContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *BooleanFactorContext {
 	var p = new(BooleanFactorContext)
 
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
+	p.CqlContext = NewCqlContext(parent, invokingState)
 
 	p.parser = parser
 	p.RuleIndex = CQLRULE_booleanFactor
@@ -866,13 +866,13 @@ type IBooleanPrimaryContext interface {
 }
 
 type BooleanPrimaryContext struct {
-	*antlr.BaseParserRuleContext
+	*CqlContext
 	parser antlr.Parser
 }
 
 func NewEmptyBooleanPrimaryContext() *BooleanPrimaryContext {
 	var p = new(BooleanPrimaryContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
+	p.CqlContext = NewCqlContext(nil, -1)
 	p.RuleIndex = CQLRULE_booleanPrimary
 	return p
 }
@@ -882,7 +882,7 @@ func (*BooleanPrimaryContext) IsBooleanPrimaryContext() {}
 func NewBooleanPrimaryContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *BooleanPrimaryContext {
 	var p = new(BooleanPrimaryContext)
 
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
+	p.CqlContext = NewCqlContext(parent, invokingState)
 
 	p.parser = parser
 	p.RuleIndex = CQLRULE_booleanPrimary
@@ -1002,13 +1002,13 @@ type IPredicateContext interface {
 }
 
 type PredicateContext struct {
-	*antlr.BaseParserRuleContext
+	*CqlContext
 	parser antlr.Parser
 }
 
 func NewEmptyPredicateContext() *PredicateContext {
 	var p = new(PredicateContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
+	p.CqlContext = NewCqlContext(nil, -1)
 	p.RuleIndex = CQLRULE_predicate
 	return p
 }
@@ -1018,7 +1018,7 @@ func (*PredicateContext) IsPredicateContext() {}
 func NewPredicateContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *PredicateContext {
 	var p = new(PredicateContext)
 
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
+	p.CqlContext = NewCqlContext(parent, invokingState)
 
 	p.parser = parser
 	p.RuleIndex = CQLRULE_predicate
@@ -1207,13 +1207,13 @@ type IBinaryComparisonPredicateContext interface {
 }
 
 type BinaryComparisonPredicateContext struct {
-	*antlr.BaseParserRuleContext
+	*CqlContext
 	parser antlr.Parser
 }
 
 func NewEmptyBinaryComparisonPredicateContext() *BinaryComparisonPredicateContext {
 	var p = new(BinaryComparisonPredicateContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
+	p.CqlContext = NewCqlContext(nil, -1)
 	p.RuleIndex = CQLRULE_binaryComparisonPredicate
 	return p
 }
@@ -1223,7 +1223,7 @@ func (*BinaryComparisonPredicateContext) IsBinaryComparisonPredicateContext() {}
 func NewBinaryComparisonPredicateContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *BinaryComparisonPredicateContext {
 	var p = new(BinaryComparisonPredicateContext)
 
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
+	p.CqlContext = NewCqlContext(parent, invokingState)
 
 	p.parser = parser
 	p.RuleIndex = CQLRULE_binaryComparisonPredicate
@@ -1329,13 +1329,13 @@ type ILikePredicateContext interface {
 }
 
 type LikePredicateContext struct {
-	*antlr.BaseParserRuleContext
+	*CqlContext
 	parser antlr.Parser
 }
 
 func NewEmptyLikePredicateContext() *LikePredicateContext {
 	var p = new(LikePredicateContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
+	p.CqlContext = NewCqlContext(nil, -1)
 	p.RuleIndex = CQLRULE_likePredicate
 	return p
 }
@@ -1345,7 +1345,7 @@ func (*LikePredicateContext) IsLikePredicateContext() {}
 func NewLikePredicateContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *LikePredicateContext {
 	var p = new(LikePredicateContext)
 
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
+	p.CqlContext = NewCqlContext(parent, invokingState)
 
 	p.parser = parser
 	p.RuleIndex = CQLRULE_likePredicate
@@ -1473,13 +1473,13 @@ type IBetweenPredicateContext interface {
 }
 
 type BetweenPredicateContext struct {
-	*antlr.BaseParserRuleContext
+	*CqlContext
 	parser antlr.Parser
 }
 
 func NewEmptyBetweenPredicateContext() *BetweenPredicateContext {
 	var p = new(BetweenPredicateContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
+	p.CqlContext = NewCqlContext(nil, -1)
 	p.RuleIndex = CQLRULE_betweenPredicate
 	return p
 }
@@ -1489,7 +1489,7 @@ func (*BetweenPredicateContext) IsBetweenPredicateContext() {}
 func NewBetweenPredicateContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *BetweenPredicateContext {
 	var p = new(BetweenPredicateContext)
 
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
+	p.CqlContext = NewCqlContext(parent, invokingState)
 
 	p.parser = parser
 	p.RuleIndex = CQLRULE_betweenPredicate
@@ -1633,13 +1633,13 @@ type IIsNullPredicateContext interface {
 }
 
 type IsNullPredicateContext struct {
-	*antlr.BaseParserRuleContext
+	*CqlContext
 	parser antlr.Parser
 }
 
 func NewEmptyIsNullPredicateContext() *IsNullPredicateContext {
 	var p = new(IsNullPredicateContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
+	p.CqlContext = NewCqlContext(nil, -1)
 	p.RuleIndex = CQLRULE_isNullPredicate
 	return p
 }
@@ -1649,7 +1649,7 @@ func (*IsNullPredicateContext) IsIsNullPredicateContext() {}
 func NewIsNullPredicateContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *IsNullPredicateContext {
 	var p = new(IsNullPredicateContext)
 
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
+	p.CqlContext = NewCqlContext(parent, invokingState)
 
 	p.parser = parser
 	p.RuleIndex = CQLRULE_isNullPredicate
@@ -1762,13 +1762,13 @@ type IArithmeticExpressionContext interface {
 }
 
 type ArithmeticExpressionContext struct {
-	*antlr.BaseParserRuleContext
+	*CqlContext
 	parser antlr.Parser
 }
 
 func NewEmptyArithmeticExpressionContext() *ArithmeticExpressionContext {
 	var p = new(ArithmeticExpressionContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
+	p.CqlContext = NewCqlContext(nil, -1)
 	p.RuleIndex = CQLRULE_arithmeticExpression
 	return p
 }
@@ -1778,7 +1778,7 @@ func (*ArithmeticExpressionContext) IsArithmeticExpressionContext() {}
 func NewArithmeticExpressionContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *ArithmeticExpressionContext {
 	var p = new(ArithmeticExpressionContext)
 
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
+	p.CqlContext = NewCqlContext(parent, invokingState)
 
 	p.parser = parser
 	p.RuleIndex = CQLRULE_arithmeticExpression
@@ -1960,13 +1960,13 @@ type IScalarValueContext interface {
 }
 
 type ScalarValueContext struct {
-	*antlr.BaseParserRuleContext
+	*CqlContext
 	parser antlr.Parser
 }
 
 func NewEmptyScalarValueContext() *ScalarValueContext {
 	var p = new(ScalarValueContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
+	p.CqlContext = NewCqlContext(nil, -1)
 	p.RuleIndex = CQLRULE_scalarValue
 	return p
 }
@@ -1976,7 +1976,7 @@ func (*ScalarValueContext) IsScalarValueContext() {}
 func NewScalarValueContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *ScalarValueContext {
 	var p = new(ScalarValueContext)
 
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
+	p.CqlContext = NewCqlContext(parent, invokingState)
 
 	p.parser = parser
 	p.RuleIndex = CQLRULE_scalarValue
@@ -2117,13 +2117,13 @@ type IPropertyNameContext interface {
 }
 
 type PropertyNameContext struct {
-	*antlr.BaseParserRuleContext
+	*CqlContext
 	parser antlr.Parser
 }
 
 func NewEmptyPropertyNameContext() *PropertyNameContext {
 	var p = new(PropertyNameContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
+	p.CqlContext = NewCqlContext(nil, -1)
 	p.RuleIndex = CQLRULE_propertyName
 	return p
 }
@@ -2133,7 +2133,7 @@ func (*PropertyNameContext) IsPropertyNameContext() {}
 func NewPropertyNameContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *PropertyNameContext {
 	var p = new(PropertyNameContext)
 
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
+	p.CqlContext = NewCqlContext(parent, invokingState)
 
 	p.parser = parser
 	p.RuleIndex = CQLRULE_propertyName
@@ -2208,13 +2208,13 @@ type ICharacterLiteralContext interface {
 }
 
 type CharacterLiteralContext struct {
-	*antlr.BaseParserRuleContext
+	*CqlContext
 	parser antlr.Parser
 }
 
 func NewEmptyCharacterLiteralContext() *CharacterLiteralContext {
 	var p = new(CharacterLiteralContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
+	p.CqlContext = NewCqlContext(nil, -1)
 	p.RuleIndex = CQLRULE_characterLiteral
 	return p
 }
@@ -2224,7 +2224,7 @@ func (*CharacterLiteralContext) IsCharacterLiteralContext() {}
 func NewCharacterLiteralContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *CharacterLiteralContext {
 	var p = new(CharacterLiteralContext)
 
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
+	p.CqlContext = NewCqlContext(parent, invokingState)
 
 	p.parser = parser
 	p.RuleIndex = CQLRULE_characterLiteral
@@ -2299,13 +2299,13 @@ type INumericLiteralContext interface {
 }
 
 type NumericLiteralContext struct {
-	*antlr.BaseParserRuleContext
+	*CqlContext
 	parser antlr.Parser
 }
 
 func NewEmptyNumericLiteralContext() *NumericLiteralContext {
 	var p = new(NumericLiteralContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
+	p.CqlContext = NewCqlContext(nil, -1)
 	p.RuleIndex = CQLRULE_numericLiteral
 	return p
 }
@@ -2315,7 +2315,7 @@ func (*NumericLiteralContext) IsNumericLiteralContext() {}
 func NewNumericLiteralContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *NumericLiteralContext {
 	var p = new(NumericLiteralContext)
 
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
+	p.CqlContext = NewCqlContext(parent, invokingState)
 
 	p.parser = parser
 	p.RuleIndex = CQLRULE_numericLiteral
@@ -2390,13 +2390,13 @@ type IBooleanLiteralContext interface {
 }
 
 type BooleanLiteralContext struct {
-	*antlr.BaseParserRuleContext
+	*CqlContext
 	parser antlr.Parser
 }
 
 func NewEmptyBooleanLiteralContext() *BooleanLiteralContext {
 	var p = new(BooleanLiteralContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
+	p.CqlContext = NewCqlContext(nil, -1)
 	p.RuleIndex = CQLRULE_booleanLiteral
 	return p
 }
@@ -2406,7 +2406,7 @@ func (*BooleanLiteralContext) IsBooleanLiteralContext() {}
 func NewBooleanLiteralContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *BooleanLiteralContext {
 	var p = new(BooleanLiteralContext)
 
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
+	p.CqlContext = NewCqlContext(parent, invokingState)
 
 	p.parser = parser
 	p.RuleIndex = CQLRULE_booleanLiteral
@@ -2481,13 +2481,13 @@ type ISpatialPredicateContext interface {
 }
 
 type SpatialPredicateContext struct {
-	*antlr.BaseParserRuleContext
+	*CqlContext
 	parser antlr.Parser
 }
 
 func NewEmptySpatialPredicateContext() *SpatialPredicateContext {
 	var p = new(SpatialPredicateContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
+	p.CqlContext = NewCqlContext(nil, -1)
 	p.RuleIndex = CQLRULE_spatialPredicate
 	return p
 }
@@ -2497,7 +2497,7 @@ func (*SpatialPredicateContext) IsSpatialPredicateContext() {}
 func NewSpatialPredicateContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *SpatialPredicateContext {
 	var p = new(SpatialPredicateContext)
 
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
+	p.CqlContext = NewCqlContext(parent, invokingState)
 
 	p.parser = parser
 	p.RuleIndex = CQLRULE_spatialPredicate
@@ -2627,13 +2627,13 @@ type IDistancePredicateContext interface {
 }
 
 type DistancePredicateContext struct {
-	*antlr.BaseParserRuleContext
+	*CqlContext
 	parser antlr.Parser
 }
 
 func NewEmptyDistancePredicateContext() *DistancePredicateContext {
 	var p = new(DistancePredicateContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
+	p.CqlContext = NewCqlContext(nil, -1)
 	p.RuleIndex = CQLRULE_distancePredicate
 	return p
 }
@@ -2643,7 +2643,7 @@ func (*DistancePredicateContext) IsDistancePredicateContext() {}
 func NewDistancePredicateContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *DistancePredicateContext {
 	var p = new(DistancePredicateContext)
 
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
+	p.CqlContext = NewCqlContext(parent, invokingState)
 
 	p.parser = parser
 	p.RuleIndex = CQLRULE_distancePredicate
@@ -2789,13 +2789,13 @@ type IGeomExpressionContext interface {
 }
 
 type GeomExpressionContext struct {
-	*antlr.BaseParserRuleContext
+	*CqlContext
 	parser antlr.Parser
 }
 
 func NewEmptyGeomExpressionContext() *GeomExpressionContext {
 	var p = new(GeomExpressionContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
+	p.CqlContext = NewCqlContext(nil, -1)
 	p.RuleIndex = CQLRULE_geomExpression
 	return p
 }
@@ -2805,7 +2805,7 @@ func (*GeomExpressionContext) IsGeomExpressionContext() {}
 func NewGeomExpressionContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *GeomExpressionContext {
 	var p = new(GeomExpressionContext)
 
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
+	p.CqlContext = NewCqlContext(parent, invokingState)
 
 	p.parser = parser
 	p.RuleIndex = CQLRULE_geomExpression
@@ -2912,13 +2912,13 @@ type IGeomLiteralContext interface {
 }
 
 type GeomLiteralContext struct {
-	*antlr.BaseParserRuleContext
+	*CqlContext
 	parser antlr.Parser
 }
 
 func NewEmptyGeomLiteralContext() *GeomLiteralContext {
 	var p = new(GeomLiteralContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
+	p.CqlContext = NewCqlContext(nil, -1)
 	p.RuleIndex = CQLRULE_geomLiteral
 	return p
 }
@@ -2928,7 +2928,7 @@ func (*GeomLiteralContext) IsGeomLiteralContext() {}
 func NewGeomLiteralContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *GeomLiteralContext {
 	var p = new(GeomLiteralContext)
 
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
+	p.CqlContext = NewCqlContext(parent, invokingState)
 
 	p.parser = parser
 	p.RuleIndex = CQLRULE_geomLiteral
@@ -3137,13 +3137,13 @@ type IPointContext interface {
 }
 
 type PointContext struct {
-	*antlr.BaseParserRuleContext
+	*CqlContext
 	parser antlr.Parser
 }
 
 func NewEmptyPointContext() *PointContext {
 	var p = new(PointContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
+	p.CqlContext = NewCqlContext(nil, -1)
 	p.RuleIndex = CQLRULE_point
 	return p
 }
@@ -3153,7 +3153,7 @@ func (*PointContext) IsPointContext() {}
 func NewPointContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *PointContext {
 	var p = new(PointContext)
 
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
+	p.CqlContext = NewCqlContext(parent, invokingState)
 
 	p.parser = parser
 	p.RuleIndex = CQLRULE_point
@@ -3242,13 +3242,13 @@ type IPointListContext interface {
 }
 
 type PointListContext struct {
-	*antlr.BaseParserRuleContext
+	*CqlContext
 	parser antlr.Parser
 }
 
 func NewEmptyPointListContext() *PointListContext {
 	var p = new(PointListContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
+	p.CqlContext = NewCqlContext(nil, -1)
 	p.RuleIndex = CQLRULE_pointList
 	return p
 }
@@ -3258,7 +3258,7 @@ func (*PointListContext) IsPointListContext() {}
 func NewPointListContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *PointListContext {
 	var p = new(PointListContext)
 
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
+	p.CqlContext = NewCqlContext(parent, invokingState)
 
 	p.parser = parser
 	p.RuleIndex = CQLRULE_pointList
@@ -3355,13 +3355,13 @@ type ILinestringContext interface {
 }
 
 type LinestringContext struct {
-	*antlr.BaseParserRuleContext
+	*CqlContext
 	parser antlr.Parser
 }
 
 func NewEmptyLinestringContext() *LinestringContext {
 	var p = new(LinestringContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
+	p.CqlContext = NewCqlContext(nil, -1)
 	p.RuleIndex = CQLRULE_linestring
 	return p
 }
@@ -3371,7 +3371,7 @@ func (*LinestringContext) IsLinestringContext() {}
 func NewLinestringContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *LinestringContext {
 	var p = new(LinestringContext)
 
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
+	p.CqlContext = NewCqlContext(parent, invokingState)
 
 	p.parser = parser
 	p.RuleIndex = CQLRULE_linestring
@@ -3460,13 +3460,13 @@ type IPolygonContext interface {
 }
 
 type PolygonContext struct {
-	*antlr.BaseParserRuleContext
+	*CqlContext
 	parser antlr.Parser
 }
 
 func NewEmptyPolygonContext() *PolygonContext {
 	var p = new(PolygonContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
+	p.CqlContext = NewCqlContext(nil, -1)
 	p.RuleIndex = CQLRULE_polygon
 	return p
 }
@@ -3476,7 +3476,7 @@ func (*PolygonContext) IsPolygonContext() {}
 func NewPolygonContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *PolygonContext {
 	var p = new(PolygonContext)
 
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
+	p.CqlContext = NewCqlContext(parent, invokingState)
 
 	p.parser = parser
 	p.RuleIndex = CQLRULE_polygon
@@ -3565,13 +3565,13 @@ type IPolygonDefContext interface {
 }
 
 type PolygonDefContext struct {
-	*antlr.BaseParserRuleContext
+	*CqlContext
 	parser antlr.Parser
 }
 
 func NewEmptyPolygonDefContext() *PolygonDefContext {
 	var p = new(PolygonDefContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
+	p.CqlContext = NewCqlContext(nil, -1)
 	p.RuleIndex = CQLRULE_polygonDef
 	return p
 }
@@ -3581,7 +3581,7 @@ func (*PolygonDefContext) IsPolygonDefContext() {}
 func NewPolygonDefContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *PolygonDefContext {
 	var p = new(PolygonDefContext)
 
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
+	p.CqlContext = NewCqlContext(parent, invokingState)
 
 	p.parser = parser
 	p.RuleIndex = CQLRULE_polygonDef
@@ -3718,13 +3718,13 @@ type IMultiPointContext interface {
 }
 
 type MultiPointContext struct {
-	*antlr.BaseParserRuleContext
+	*CqlContext
 	parser antlr.Parser
 }
 
 func NewEmptyMultiPointContext() *MultiPointContext {
 	var p = new(MultiPointContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
+	p.CqlContext = NewCqlContext(nil, -1)
 	p.RuleIndex = CQLRULE_multiPoint
 	return p
 }
@@ -3734,7 +3734,7 @@ func (*MultiPointContext) IsMultiPointContext() {}
 func NewMultiPointContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *MultiPointContext {
 	var p = new(MultiPointContext)
 
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
+	p.CqlContext = NewCqlContext(parent, invokingState)
 
 	p.parser = parser
 	p.RuleIndex = CQLRULE_multiPoint
@@ -3879,13 +3879,13 @@ type IMultiLinestringContext interface {
 }
 
 type MultiLinestringContext struct {
-	*antlr.BaseParserRuleContext
+	*CqlContext
 	parser antlr.Parser
 }
 
 func NewEmptyMultiLinestringContext() *MultiLinestringContext {
 	var p = new(MultiLinestringContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
+	p.CqlContext = NewCqlContext(nil, -1)
 	p.RuleIndex = CQLRULE_multiLinestring
 	return p
 }
@@ -3895,7 +3895,7 @@ func (*MultiLinestringContext) IsMultiLinestringContext() {}
 func NewMultiLinestringContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *MultiLinestringContext {
 	var p = new(MultiLinestringContext)
 
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
+	p.CqlContext = NewCqlContext(parent, invokingState)
 
 	p.parser = parser
 	p.RuleIndex = CQLRULE_multiLinestring
@@ -4040,13 +4040,13 @@ type IMultiPolygonContext interface {
 }
 
 type MultiPolygonContext struct {
-	*antlr.BaseParserRuleContext
+	*CqlContext
 	parser antlr.Parser
 }
 
 func NewEmptyMultiPolygonContext() *MultiPolygonContext {
 	var p = new(MultiPolygonContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
+	p.CqlContext = NewCqlContext(nil, -1)
 	p.RuleIndex = CQLRULE_multiPolygon
 	return p
 }
@@ -4056,7 +4056,7 @@ func (*MultiPolygonContext) IsMultiPolygonContext() {}
 func NewMultiPolygonContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *MultiPolygonContext {
 	var p = new(MultiPolygonContext)
 
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
+	p.CqlContext = NewCqlContext(parent, invokingState)
 
 	p.parser = parser
 	p.RuleIndex = CQLRULE_multiPolygon
@@ -4201,13 +4201,13 @@ type IGeometryCollectionContext interface {
 }
 
 type GeometryCollectionContext struct {
-	*antlr.BaseParserRuleContext
+	*CqlContext
 	parser antlr.Parser
 }
 
 func NewEmptyGeometryCollectionContext() *GeometryCollectionContext {
 	var p = new(GeometryCollectionContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
+	p.CqlContext = NewCqlContext(nil, -1)
 	p.RuleIndex = CQLRULE_geometryCollection
 	return p
 }
@@ -4217,7 +4217,7 @@ func (*GeometryCollectionContext) IsGeometryCollectionContext() {}
 func NewGeometryCollectionContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *GeometryCollectionContext {
 	var p = new(GeometryCollectionContext)
 
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
+	p.CqlContext = NewCqlContext(parent, invokingState)
 
 	p.parser = parser
 	p.RuleIndex = CQLRULE_geometryCollection
@@ -4362,13 +4362,13 @@ type IEnvelopeContext interface {
 }
 
 type EnvelopeContext struct {
-	*antlr.BaseParserRuleContext
+	*CqlContext
 	parser antlr.Parser
 }
 
 func NewEmptyEnvelopeContext() *EnvelopeContext {
 	var p = new(EnvelopeContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
+	p.CqlContext = NewCqlContext(nil, -1)
 	p.RuleIndex = CQLRULE_envelope
 	return p
 }
@@ -4378,7 +4378,7 @@ func (*EnvelopeContext) IsEnvelopeContext() {}
 func NewEnvelopeContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *EnvelopeContext {
 	var p = new(EnvelopeContext)
 
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
+	p.CqlContext = NewCqlContext(parent, invokingState)
 
 	p.parser = parser
 	p.RuleIndex = CQLRULE_envelope
@@ -4513,13 +4513,13 @@ type ICoordListContext interface {
 }
 
 type CoordListContext struct {
-	*antlr.BaseParserRuleContext
+	*CqlContext
 	parser antlr.Parser
 }
 
 func NewEmptyCoordListContext() *CoordListContext {
 	var p = new(CoordListContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
+	p.CqlContext = NewCqlContext(nil, -1)
 	p.RuleIndex = CQLRULE_coordList
 	return p
 }
@@ -4529,7 +4529,7 @@ func (*CoordListContext) IsCoordListContext() {}
 func NewCoordListContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *CoordListContext {
 	var p = new(CoordListContext)
 
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
+	p.CqlContext = NewCqlContext(parent, invokingState)
 
 	p.parser = parser
 	p.RuleIndex = CQLRULE_coordList
@@ -4666,13 +4666,13 @@ type ICoordinateContext interface {
 }
 
 type CoordinateContext struct {
-	*antlr.BaseParserRuleContext
+	*CqlContext
 	parser antlr.Parser
 }
 
 func NewEmptyCoordinateContext() *CoordinateContext {
 	var p = new(CoordinateContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
+	p.CqlContext = NewCqlContext(nil, -1)
 	p.RuleIndex = CQLRULE_coordinate
 	return p
 }
@@ -4682,7 +4682,7 @@ func (*CoordinateContext) IsCoordinateContext() {}
 func NewCoordinateContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *CoordinateContext {
 	var p = new(CoordinateContext)
 
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
+	p.CqlContext = NewCqlContext(parent, invokingState)
 
 	p.parser = parser
 	p.RuleIndex = CQLRULE_coordinate
@@ -4765,13 +4765,13 @@ type IInPredicateContext interface {
 }
 
 type InPredicateContext struct {
-	*antlr.BaseParserRuleContext
+	*CqlContext
 	parser antlr.Parser
 }
 
 func NewEmptyInPredicateContext() *InPredicateContext {
 	var p = new(InPredicateContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
+	p.CqlContext = NewCqlContext(nil, -1)
 	p.RuleIndex = CQLRULE_inPredicate
 	return p
 }
@@ -4781,7 +4781,7 @@ func (*InPredicateContext) IsInPredicateContext() {}
 func NewInPredicateContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *InPredicateContext {
 	var p = new(InPredicateContext)
 
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
+	p.CqlContext = NewCqlContext(parent, invokingState)
 
 	p.parser = parser
 	p.RuleIndex = CQLRULE_inPredicate
