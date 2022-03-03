@@ -58,7 +58,7 @@ func syntaxErrorMsg(input string, col int) string {
 	}
 
 	//-- extract parts and insert error flag
-	before := input[start : col-1]
+	before := input[start:col]
 	after := input[col:end]
 	msg := "\"" + dots1 + before + " !!>> " + after + dots2 + "\""
 	return msg
@@ -232,14 +232,16 @@ func (l *cqlListener) ExitPredicate(ctx *PredicateContext) {
 }
 
 func (l *cqlListener) ExitBinaryComparisonPredicate(ctx *BinaryComparisonPredicateContext) {
-	expr1 := l.sqlFor(ctx.ScalarExpression(0))
-	expr2 := l.sqlFor(ctx.ScalarExpression(1))
+	//expr1 := l.sqlFor(ctx.ScalarExpression(0))
+	//expr2 := l.sqlFor(ctx.ScalarExpression(1))
+	expr1 := l.sqlFor(ctx.ArithmeticExpression(0))
+	expr2 := l.sqlFor(ctx.ArithmeticExpression(1))
 	op := getNodeText(ctx.ComparisonOperator())
 	sql := expr1 + " " + op + " " + expr2
 	l.saveSql(ctx, sql)
 }
 
-func (l *cqlListener) ExitScalarExpression(ctx *ScalarExpressionContext) {
+func (l *cqlListener) ExitScalarValue(ctx *ScalarValueContext) {
 	var sql string
 	if ctx.PropertyName() != nil {
 		sql = quotedName(getText(ctx.PropertyName()))
@@ -249,6 +251,21 @@ func (l *cqlListener) ExitScalarExpression(ctx *ScalarExpressionContext) {
 		sql = getText(ctx.NumericLiteral())
 	} else if ctx.BooleanLiteral() != nil {
 		sql = getText(ctx.BooleanLiteral())
+	}
+	l.saveSql(ctx, sql)
+}
+
+func (l *cqlListener) ExitArithmeticExpression(ctx *ArithmeticExpressionContext) {
+	var sql string
+	if ctx.LEFTPAREN() != nil {
+		sql = "(" + l.sqlFor(ctx.ArithmeticExpression(0)) + ")"
+	} else if ctx.ArithmeticOperator() != nil {
+		expr1 := l.sqlFor(ctx.ArithmeticExpression(0))
+		expr2 := l.sqlFor(ctx.ArithmeticExpression(1))
+		op := getNodeText(ctx.ArithmeticOperator())
+		sql = expr1 + " " + op + " " + expr2
+	} else {
+		sql = l.sqlFor(ctx.ScalarValue())
 	}
 	l.saveSql(ctx, sql)
 }
@@ -274,8 +291,8 @@ func (l *cqlListener) ExitBetweenPredicate(ctx *BetweenPredicateContext) {
 	if ctx.NOT() != nil {
 		not = " NOT"
 	}
-	expr1 := l.sqlFor(ctx.ScalarExpression(0))
-	expr2 := l.sqlFor(ctx.ScalarExpression(1))
+	expr1 := l.sqlFor(ctx.ArithmeticExpression(0))
+	expr2 := l.sqlFor(ctx.ArithmeticExpression(1))
 	sql := " " + prop + not + " BETWEEN " + expr1 + " AND " + expr2
 	l.saveSql(ctx, sql)
 }

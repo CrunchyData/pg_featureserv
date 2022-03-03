@@ -42,6 +42,17 @@ true
 'it''s easy'
 ```
 
+## Arithmetic expressions
+
+Numeric values can be combined using the
+arithmetic operators `+`,`-`,`*`,`/` and `%` (modulo), with parentheses if needed
+for operator precedence.
+```
+x + 3
+2 * (y - 3)
+p % 10
+```
+
 ## Comparisons
 
 Values can be compared using conditional operators:
