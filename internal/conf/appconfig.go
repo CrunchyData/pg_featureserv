@@ -20,12 +20,14 @@ type AppConfiguration struct {
 	// AppName name of the software
 	Name string
 	// AppVersion version number of the software
-	Version  string
-	EnvDBURL string
+	Version   string
+	EnvDBURL  string
+	EnvPrefix string
 }
 
 var AppConfig = AppConfiguration{
-	Name:     "pg_featureserv",
-	Version:  setVersion,
-	EnvDBURL: "DATABASE_URL",
+	Name:      "pg_featureserv",
+	Version:   setVersion,
+	EnvDBURL:  "DATABASE_URL",
+	EnvPrefix: "PGFS",
 }

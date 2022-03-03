@@ -75,7 +75,7 @@ func main() {
 
 	log.Infof("----  %s - Version %s ----------\n", conf.AppConfig.Name, conf.AppConfig.Version)
 
-	conf.InitConfig(flagConfigFilename)
+	conf.InitConfig(flagConfigFilename, flagDebugOn)
 
 	var catalog data.Catalog
 	if flagTestModeOn {

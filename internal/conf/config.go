@@ -94,7 +94,7 @@ type Database struct {
 
 // Metadata config
 type Metadata struct {
-	Title       string
+	Title       string //`mapstructure:"METADATA_TITLE"`
 	Description string
 }
 
@@ -108,9 +108,17 @@ func (conf *Config) IsTLSEnabled() bool {
 }
 
 // InitConfig initializes the configuration from the config file
-func InitConfig(configFilename string) {
+func InitConfig(configFilename string, isDebug bool) {
 	// --- defaults
 	setDefaultConfig()
+
+	if isDebug {
+		viper.Set("Debug", true)
+	}
+
+	viper.SetEnvPrefix(AppConfig.EnvPrefix)
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	viper.AutomaticEnv()
 
 	isExplictConfigFile := configFilename != ""
 	confFile := AppConfig.Name + ".toml"

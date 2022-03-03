@@ -13,7 +13,7 @@ It supports the [*OGC API - Features*](https://ogcapi.ogc.org/features/) REST AP
 
 * Implements the [*OGC API - Features*](https://ogcapi.ogc.org/features/) standard.
   * Standard query parameters: `limit`, `bbox`, `bbox-crs`, property filtering, `sortby`, `crs`
-  * Query parameters `filter` and `filter-crs` allow [CQL filtering](https://portal.ogc.org/files/96288), with spatial support 
+  * Query parameters `filter` and `filter-crs` allow [CQL filtering](https://portal.ogc.org/files/96288), with spatial support
   * Extended query parameters: `offset`, `properties`, `transform`, `precision`, `groupby`
 * Data responses are formatted in JSON and [GeoJSON](https://www.rfc-editor.org/rfc/rfc7946.txt)
 * Provides a simple HTML user interface, with web maps to view spatial data
@@ -22,7 +22,7 @@ It supports the [*OGC API - Features*](https://ogcapi.ogc.org/features/) REST AP
   * Feature collections are defined by database objects (tables and views)
   * Filters are executed in the database, and use indexes where defined
 * Uses PostGIS to provide geospatial functionality:
-  * Spatial filtering  
+  * Spatial filtering
   * Transforming geometry data into the output coordinate system
   * Marshalling feature data into GeoJSON
 * Full-featured HTTP support
@@ -56,7 +56,7 @@ Builds of the latest code:
 * [Docker](https://hub.docker.com/r/pramsey/pg_featureserv)
 
 
-## Building from Source
+## Build from Source
 
 `pg_featureserv` is developed under Go 1.13.  It may also work with earlier versions.
 
@@ -70,7 +70,7 @@ go build
 * This creates a `pg_featureserv` executable in the application directory
 * (Optional) Run the unit tests using `go test ./...`
 
-### Building a Docker image
+### Build a Docker image
 
 * Build the `pg_featureserv` executable with the command:
 ```bash
@@ -84,14 +84,42 @@ docker build -f container/Dockerfile --build-arg VERSION=<VERSION> -t crunchydat
 ```
 Replace version `<VERSION>` with the `pg_featureserv` version you are building against.
 
-## Configuring the service
+## Configure the service
 
-* Set the environment variable `DATABASE_URL` with a Postgres [connection string](https://www.postgresql.org/docs/12/libpq-connect.html#LIBPQ-CONNSTRING)
-  * Example: `export DATABASE_URL="host=localhost user=postgres"`
-  * Database URL can also be set in the configuration file
-* Edit the configuration file `pg_featureserv.toml`, located in `./config`, `/config`, or `/etc`
+The [configuration file](config/pg_featureserv.toml.example) is automatically read from the following locations, if it exists:
 
-## Running the service
+* In the system configuration directory, at `/etc/pg_featureserv.toml`
+* Relative to the directory from which the program is run, `./config/pg_featureserv.toml`
+* In a root volume at `/config/pg_featureserv.toml`
+
+To specify a configuration file directly use the `--config` commandline parameter.
+In this case configuration files in other locations are ignored.
+
+### Configuration Using Environment Variables
+
+To set the database connection the environment variable `DATABASE_URL`
+can be used with a
+Postgres [connection string](https://www.postgresql.org/docs/12/libpq-connect.html#LIBPQ-CONNSTRING):
+```bash
+export DATABASE_URL="host=localhost user=postgres"
+```
+
+Other parameters in the configuration file can be over-ridden at run-time in the environment.
+Prepend the upper-cased parameter name with `PGFS_section_` to set the value.
+For example, to change the HTTP port and service title:
+```bash
+export PGFS_SERVER_HTTPPORT=8889
+export PGFS_METADATA_TITLE="My PGFS"
+```
+
+### SSL
+For SSL support, you will need both a server private key and an authority certificate.
+For testing purposes you can generate a self-signed key/cert pair using `openssl`:
+```bash
+openssl req  -nodes -new -x509  -keyout server.key -out server.crt
+```
+
+## Run the service
 
 * If not already done, move to the application directory:
   * `cd $GOPATH/src/github.com/CrunchyData/pg_featureserv`
@@ -108,6 +136,19 @@ Replace version `<VERSION>` with the `pg_featureserv` version you are building a
 * `--devel` - run in development mode (e.g. HTML templates reloaded every query)
 * `--test` - run in test mode, with an internal catalog of tables and data
 * `--version` - display the version number
+
+## Troubleshooting
+
+To get information about what is going on behind the scenes,
+run with the `--debug` commandline parameter.
+```sh
+./pg_featureserv --debug
+```
+Debugging can also be enabled via the configuration file (`Server.Debug=true`),
+or in the environment:
+```sh
+export PGFS_SERVER_DEBUG=true
+ ```
 
 ## Requests Overview
 
