@@ -45,26 +45,34 @@ predicate : binaryComparisonPredicate
 # an operator to test if a scalar expression is NULL or not.
 #============================================================================*/
 
-binaryComparisonPredicate : scalarExpression ComparisonOperator scalarExpression;
+binaryComparisonPredicate : arithmeticExpression ComparisonOperator arithmeticExpression;
 
 likePredicate :  propertyName (NOT)? ( LIKE | ILIKE ) characterLiteral;
 
 betweenPredicate : propertyName (NOT)? BETWEEN
-                             scalarExpression AND scalarExpression ;
-//                             (scalarExpression | temporalExpression) AND (scalarExpression | temporalExpression);
+                             arithmeticExpression AND arithmeticExpression ;
+//                             (scalarValue | temporalExpression) AND (scalarValue | temporalExpression);
 
 isNullPredicate : propertyName IS (NOT)? NULL;
 
+/*============================================================================
+# Arithmetic expressions
+#============================================================================*/
+
+arithmeticExpression : scalarValue
+                    | LEFTPAREN arithmeticExpression RIGHTPAREN
+                    | arithmeticExpression ArithmeticOperator arithmeticExpression
+                    ;
+
 /*
-# A scalar expression is the property name, a chracter literal, a numeric
+# A scalar value is a property name, a chracter literal, a numeric
 # literal or a function/method invocation that returns a scalar value.
 */
-scalarExpression : propertyName
+scalarValue : propertyName
                     | characterLiteral
                     | numericLiteral
                     | booleanLiteral
 //                    | function
-//                    | arithmeticExpression
                     ;
 
 propertyName: Identifier;

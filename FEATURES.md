@@ -64,9 +64,8 @@ It includes [*OGC API - Features*](http://docs.opengeospatial.org/is/17-069r3/17
 - [x] property names
 - [x] character literals
 - [x] numeric literals
-- [x] geometry literals
-  - `POINT`,`LINESTRING`,`POLYGON`,`MULTIPOINT`,`MULTILINESTRING`,`MULTIPOLYGON`,`GEOMETRYCOLLECTION`,`ENVELOPE`
-- [ ] temporal literals
+- [x] arithemetic expressions
+  - `+`,`-`,`*`,`/`, `%`, parentheses
 - [x] binary comparisons
   - `<`,`<=`,`>`,`>=`,`=`,`<>`
 - [x] `property [NOT] BETWEEN a AND B`
@@ -74,11 +73,14 @@ It includes [*OGC API - Features*](http://docs.opengeospatial.org/is/17-069r3/17
 - [x] `property [NOT] (LIKE | ILIKE) pattern`
   - `pattern` can include `%` wildcards
 - [x] `property [NOT] IS NULL`
-- [x] boolean combinations (`AND`,`OR`,`NOT`)
+- [x] boolean combinations (`AND`,`OR`,`NOT`, parentheses)
+- [x] geometry literals
+  - `POINT`,`LINESTRING`,`POLYGON`,`MULTIPOINT`,`MULTILINESTRING`,`MULTIPOLYGON`,`GEOMETRYCOLLECTION`,`ENVELOPE`
 - [x] spatial predicates
   - `INTERSECTS`,`DISJOINT`,`CONTAINS`,`WITHIN`,`EQUALS`,`CROSSES`,`OVERLAPS`,`TOUCHES`
 - [x] distance predicate
   - `DWITHIN`
+- [ ] temporal literals
 - [ ] temporal predicates
 - [ ] functions
 

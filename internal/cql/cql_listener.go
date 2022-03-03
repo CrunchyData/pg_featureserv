@@ -37,8 +37,11 @@ type CQLListener interface {
 	// EnterIsNullPredicate is called when entering the isNullPredicate production.
 	EnterIsNullPredicate(c *IsNullPredicateContext)
 
-	// EnterScalarExpression is called when entering the scalarExpression production.
-	EnterScalarExpression(c *ScalarExpressionContext)
+	// EnterArithmeticExpression is called when entering the arithmeticExpression production.
+	EnterArithmeticExpression(c *ArithmeticExpressionContext)
+
+	// EnterScalarValue is called when entering the scalarValue production.
+	EnterScalarValue(c *ScalarValueContext)
 
 	// EnterPropertyName is called when entering the propertyName production.
 	EnterPropertyName(c *PropertyNameContext)
@@ -133,8 +136,11 @@ type CQLListener interface {
 	// ExitIsNullPredicate is called when exiting the isNullPredicate production.
 	ExitIsNullPredicate(c *IsNullPredicateContext)
 
-	// ExitScalarExpression is called when exiting the scalarExpression production.
-	ExitScalarExpression(c *ScalarExpressionContext)
+	// ExitArithmeticExpression is called when exiting the arithmeticExpression production.
+	ExitArithmeticExpression(c *ArithmeticExpressionContext)
+
+	// ExitScalarValue is called when exiting the scalarValue production.
+	ExitScalarValue(c *ScalarValueContext)
 
 	// ExitPropertyName is called when exiting the propertyName production.
 	ExitPropertyName(c *PropertyNameContext)

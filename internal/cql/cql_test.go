@@ -63,6 +63,15 @@ func TestSpatialPredicate(t *testing.T) {
 	checkCQL(t, "Dwithin(geom, POINT(0 0), 100)", "ST_DWithin(\"geom\",'SRID=4326;POINT(0 0)'::geometry,100)")
 }
 
+func TestArithmetic(t *testing.T) {
+	checkCQL(t, "p > 1 + x", "\"p\" > 1 + \"x\"")
+	checkCQL(t, "p > 2 * 3 + x", "\"p\" > 2 * 3 + \"x\"")
+	checkCQL(t, "p > 2 * (3 + x)", "\"p\" > 2 * (3 + \"x\")")
+	checkCQL(t, "p > (y + 5) / (3 - x)", "\"p\" > (\"y\" + 5) / (3 - \"x\")")
+	checkCQL(t, "p = x % 10", "\"p\" = \"x\" % 10")
+	checkCQL(t, "p BETWEEN x + 10 AND x * 2", "\"p\" BETWEEN \"x\" + 10 AND \"x\" * 2")
+}
+
 func TestGeometryLiteral(t *testing.T) {
 	checkCQL(t, "equals(geom, POINT(0 0))",
 		"ST_Equals(\"geom\",'SRID=4326;POINT(0 0)'::geometry)")

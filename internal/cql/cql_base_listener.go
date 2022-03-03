@@ -80,11 +80,17 @@ func (s *BaseCQLListener) EnterIsNullPredicate(ctx *IsNullPredicateContext) {}
 // ExitIsNullPredicate is called when production isNullPredicate is exited.
 func (s *BaseCQLListener) ExitIsNullPredicate(ctx *IsNullPredicateContext) {}
 
-// EnterScalarExpression is called when production scalarExpression is entered.
-func (s *BaseCQLListener) EnterScalarExpression(ctx *ScalarExpressionContext) {}
+// EnterArithmeticExpression is called when production arithmeticExpression is entered.
+func (s *BaseCQLListener) EnterArithmeticExpression(ctx *ArithmeticExpressionContext) {}
 
-// ExitScalarExpression is called when production scalarExpression is exited.
-func (s *BaseCQLListener) ExitScalarExpression(ctx *ScalarExpressionContext) {}
+// ExitArithmeticExpression is called when production arithmeticExpression is exited.
+func (s *BaseCQLListener) ExitArithmeticExpression(ctx *ArithmeticExpressionContext) {}
+
+// EnterScalarValue is called when production scalarValue is entered.
+func (s *BaseCQLListener) EnterScalarValue(ctx *ScalarValueContext) {}
+
+// ExitScalarValue is called when production scalarValue is exited.
+func (s *BaseCQLListener) ExitScalarValue(ctx *ScalarValueContext) {}
 
 // EnterPropertyName is called when production propertyName is entered.
 func (s *BaseCQLListener) EnterPropertyName(ctx *PropertyNameContext) {}
