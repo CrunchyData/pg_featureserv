@@ -15,7 +15,7 @@
 * Add configuration to set base path (#88)
 * Add standard query parameters `crs` and `bbox-crs` (#98)
 * Allow configuring published function schemas (#99)
-* Add support for CQL filtering with `filter` and `filter-crs` query parameters (#101, #102)
+* Add support for CQL filtering with `filter` and `filter-crs` query parameters (#101, #102, #103)
 
 ### Performance Improvements
 
