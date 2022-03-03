@@ -5,10 +5,20 @@ draft: false
 weight: 400
 ---
 
+`pg_featureserv` provides a number of configuration options to control its operation.
+Configuration can be provided in a number of ways:
+
+* via a configuration file
+* by environment variables
+* on the command-line
+
 ## Configuration file
 
-The configuration file is automatically read from the file `config/pg_featureserv.toml`
-in the directory the application starts in, if it exists.
+The configuration file is automatically read from from the following locations, if it exists:
+
+* In the system configuration directory, at `/etc/pg_featureserv.toml`
+* Relative to the directory from which the program is run, `./config/pg_featureserv.toml`
+* In a root volume at `/config/pg_featureserv.toml`
 
 If you want to specify a different file, use the `--config` commandline parameter to pass in a full path to the configuration file.  When using the `--config` option, the local configuration file is ignored.
 
@@ -23,6 +33,25 @@ Where possible, the program autodetects values such as the `UrlBase`.
 The only required configuration is the `DbConnection` setting,
 if not provided in the environment variable `DATABASE_URL`.
 (This is not required if the server is run with the `--test` flag.)
+
+### Configuration Using Environment Variables
+
+To set the database connection the environment variable `DATABASE_URL`
+can be used with a
+Postgres [connection string](https://www.postgresql.org/docs/12/libpq-connect.html#LIBPQ-CONNSTRING):
+```bash
+export DATABASE_URL="host=localhost user=postgres"
+```
+
+Other parameters in the configuration file can be over-ridden in the environment.
+Prepend the upper-cased parameter name with `PGFS_section_` to set the value.
+For example, to change the HTTP port and service title:
+```bash
+export PGFS_SERVER_HTTPPORT=8889
+export PGFS_METADATA_TITLE="My PGFS"
+```
+
+### Example Configuration
 
 An example configuration file is shown below.
 
