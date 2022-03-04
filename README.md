@@ -9,6 +9,8 @@
 A lightweight RESTful geospatial feature server for [PostGIS](https://postgis.net/), written in [Go](https://golang.org/).
 It supports the [*OGC API - Features*](https://ogcapi.ogc.org/features/) REST API standard.
 
+See also our companion project [`pg_tileserv`](https://github.com/CrunchyData/pg_tileserv).
+
 ## Features
 
 * Implements the [*OGC API - Features*](https://ogcapi.ogc.org/features/) standard.
