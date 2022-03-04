@@ -15,7 +15,7 @@ Builds of the latest code:
 
 * [Linux](https://postgisftw.s3.amazonaws.com/pg_featureserv_latest_linux.zip)
 * [Windows](https://postgisftw.s3.amazonaws.com/pg_featureserv_latest_windows.zip)
-* [OSX](https://postgisftw.s3.amazonaws.com/pg_featureserv_latest_osx.zip)
+* [Mac OSX](https://postgisftw.s3.amazonaws.com/pg_featureserv_latest_macos.zip)
 
 Unzip the file, copy the `pg_featureserv` binary wherever you wish, or use it in place. If you move the binary, remember to move the `assets/` directory to the same location, or start the server using the `AssetsDir` configuration option.
 
