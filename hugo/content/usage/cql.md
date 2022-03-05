@@ -11,13 +11,14 @@ the [Common Query Language](https://portal.ogc.org/files/96288) (CQL).
 CQL expressions return a value of `true` or `false`.
 Only features which evaluate to `true` are returned.
 
-This section describes the CQL query language subset supported by `pg_featureserv`.
-
 {{% note %}}
 The filter expression is evaluated by the database,
 which will take advantage of indexes (attribute and spatial)
 to make filter evaluation very efficient.
 {{% /note %}}
+
+This section describes the CQL query language subset supported by `pg_featureserv`.
+Note that some special characters may need to be [URL-encoded](https://en.wikipedia.org/wiki/Percent-encoding) in some clients.
 
 ## Property and Literal Values
 
