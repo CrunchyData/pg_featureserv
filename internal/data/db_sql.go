@@ -52,7 +52,7 @@ AND i.indnatts = 1)
 LEFT JOIN pg_attribute ia ON (ia.attrelid = i.indexrelid)
 LEFT JOIN pg_type it ON (ia.atttypid = it.oid AND it.typname in ('int2', 'int4', 'int8'))
 WHERE c.relkind IN ('r', 'v', 'm', 'p', 'f')
-AND t.typname = 'geometry'
+AND t.typname IN ('geometry', 'geography')
 AND has_table_privilege(c.oid, 'select')
 AND postgis_typmod_srid(a.atttypmod) > 0
 ORDER BY id
@@ -129,7 +129,7 @@ func sqlExtentExact(tbl *Table) string {
 const sqlFmtFeatures = "SELECT %v %v FROM \"%s\".\"%s\" %v %v %v %s;"
 
 func sqlFeatures(tbl *Table, param *QueryParam) (string, []interface{}) {
-	geomCol := sqlGeomCol(tbl.GeometryColumn, param)
+	geomCol := sqlGeomCol(tbl.GeometryColumn, tbl.Srid, param)
 	propCols := sqlColList(param.Columns, tbl.DbTypes, true)
 	bboxFilter := sqlBBoxFilter(tbl.GeometryColumn, tbl.Srid, param.Bbox, param.BboxCrs)
 	attrFilter, attrVals := sqlAttrFilter(param.Filter)
@@ -185,7 +185,7 @@ func sqlColExpr(name string, dbtype string) string {
 const sqlFmtFeature = "SELECT %v %v FROM \"%s\".\"%s\" WHERE \"%v\" = $1 LIMIT 1"
 
 func sqlFeature(tbl *Table, param *QueryParam) string {
-	geomCol := sqlGeomCol(tbl.GeometryColumn, param)
+	geomCol := sqlGeomCol(tbl.GeometryColumn, tbl.Srid, param)
 	propCols := sqlColList(param.Columns, tbl.DbTypes, true)
 	sql := fmt.Sprintf(sqlFmtFeature, geomCol, propCols, tbl.Schema, tbl.Table, tbl.IDColumn)
 	return sql
@@ -246,13 +246,22 @@ func sqlBBoxFilter(geomCol string, srcSRID int, bbox *Extent, bboxSRID int) stri
 		srcSRID)
 }
 
-const sqlFmtGeomCol = `ST_AsGeoJSON( ST_Transform( %v, %v) %v ) AS _geojson`
+const sqlFmtGeomCol = `ST_AsGeoJSON( %v %v ) AS _geojson`
 
-func sqlGeomCol(geomCol string, param *QueryParam) string {
+func sqlGeomCol(geomCol string, sourceSRID int, param *QueryParam) string {
 	geomColSafe := strconv.Quote(geomCol)
 	geomExpr := applyTransform(param.TransformFuns, geomColSafe)
-	sql := fmt.Sprintf(sqlFmtGeomCol, geomExpr, param.Crs, sqlPrecisionArg(param.Precision))
+	geomOutExpr := transformToOutCrs(geomExpr, sourceSRID, param.Crs)
+	sql := fmt.Sprintf(sqlFmtGeomCol, geomOutExpr, sqlPrecisionArg(param.Precision))
 	return sql
+}
+
+func transformToOutCrs(geomExpr string, sourceSRID, outSRID int) string {
+	if sourceSRID == outSRID {
+		return geomExpr
+	}
+	//-- ST_Transform only accepts geometry, so cast to make sure
+	return fmt.Sprintf("ST_Transform( (%v)::geometry, %v)", geomExpr, outSRID)
 }
 
 func sqlPrecisionArg(precision int) string {
@@ -318,7 +327,7 @@ const sqlFmtGeomFunction = "SELECT %s %s FROM \"%s\".\"%s\"( %v ) %v %v %s;"
 
 func sqlGeomFunction(fn *Function, args map[string]string, propCols []string, param *QueryParam) (string, []interface{}) {
 	sqlArgs, argVals := sqlFunctionArgs(fn, args)
-	sqlGeomCol := sqlGeomCol(fn.GeometryColumn, param)
+	sqlGeomCol := sqlGeomCol(fn.GeometryColumn, SRID_4326, param)
 	sqlPropCols := sqlColList(propCols, fn.Types, true)
 	//-- SRS of function output is unknown, so have to assume 4326
 	bboxFilter := sqlBBoxFilter(fn.GeometryColumn, SRID_4326, param.Bbox, param.BboxCrs)
