@@ -39,12 +39,14 @@ func setDefaultConfig() {
 	viper.SetDefault("Server.ReadTimeoutSec", 5)
 	viper.SetDefault("Server.WriteTimeoutSec", 30)
 
-	viper.SetDefault("Paging.LimitDefault", 10)
-	viper.SetDefault("Paging.LimitMax", 1000)
-
 	viper.SetDefault("Database.DbPoolMaxConnLifeTime", "1h")
 	viper.SetDefault("Database.DbPoolMaxConns", 4)
+	viper.SetDefault("Database.TableIncludes", []string{})
+	viper.SetDefault("Database.TableExcludes", []string{})
 	viper.SetDefault("Database.FunctionIncludes", []string{"postgisftw"})
+
+	viper.SetDefault("Paging.LimitDefault", 10)
+	viper.SetDefault("Paging.LimitMax", 1000)
 
 	viper.SetDefault("Metadata.Title", "pg-featureserv")
 	viper.SetDefault("Metadata.Description", "Crunchy Data Feature Server for PostGIS")
@@ -160,7 +162,12 @@ func InitConfig(configFilename string, isDebug bool) {
 
 	// sanitize the configuration
 	Configuration.Server.BasePath = strings.TrimRight(Configuration.Server.BasePath, "/")
+}
 
+func DumpConfig() {
 	//fmt.Printf("Viper: %v\n", viper.AllSettings())
 	//fmt.Printf("Config: %v\n", Configuration)
+	log.Debugf("TableIncludes = %v", Configuration.Database.TableIncludes)
+	log.Debugf("TableExcludes = %v", Configuration.Database.TableExcludes)
+	log.Debugf("FunctionIncludes = %v", Configuration.Database.FunctionIncludes)
 }

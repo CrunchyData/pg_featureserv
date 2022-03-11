@@ -97,6 +97,7 @@ func main() {
 		log.SetLevel(log.TraceLevel)
 		log.Debugf("Log level = DEBUG\n")
 	}
+	conf.DumpConfig()
 	service.Initialize()
 	service.Serve(catalog)
 }
