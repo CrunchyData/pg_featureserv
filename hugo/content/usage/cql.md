@@ -225,3 +225,4 @@ t > 2001-01-01T00:00 AND t <= 2002-12-31T11:59:59
 They can also be used in the `BETWEEN` predicate:
 ```
 t BETWEEN 2001-01-01 AND 2001-12-31
+```
