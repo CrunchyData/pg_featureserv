@@ -17,7 +17,7 @@
 * Add the `groupby` query parameter, and ability to aggregate query features
 * Support OGC API query parameter `sortby` (`orderBy` is deprecated)
 * Add OGC API query parameters `crs` and `bbox-crs` (#98)
-* Add support for CQL filtering with `filter` and `filter-crs` query parameters (#101, #102, #103)
+* Add support for CQL filtering with `filter` and `filter-crs` query parameters (#101, #102, #103, #105)
 
 ### Performance Improvements
 
