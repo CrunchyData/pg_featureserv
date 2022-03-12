@@ -80,8 +80,9 @@ It includes [*OGC API - Features*](http://docs.opengeospatial.org/is/17-069r3/17
   - `INTERSECTS`,`DISJOINT`,`CONTAINS`,`WITHIN`,`EQUALS`,`CROSSES`,`OVERLAPS`,`TOUCHES`
 - [x] distance predicate
   - `DWITHIN`
-- [ ] temporal literals
-- [ ] temporal predicates
+- [x] temporal literals
+  - `1999-01-01`, `2001-12-25T10:01:02`
+- [x] temporal predicates
 - [ ] functions
 
 ### Output formats

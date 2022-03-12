@@ -261,6 +261,8 @@ func (l *cqlListener) ExitPredicate(ctx *PredicateContext) {
 		sql = sqlFor(ctx.SpatialPredicate())
 	} else if ctx.DistancePredicate() != nil {
 		sql = sqlFor(ctx.DistancePredicate())
+	} else if ctx.TemporalPredicate() != nil {
+		sql = sqlFor(ctx.TemporalPredicate())
 	}
 	ctx.SetSql(sql)
 }
@@ -323,8 +325,20 @@ func (l *cqlListener) ExitBetweenPredicate(ctx *BetweenPredicateContext) {
 	if ctx.NOT() != nil {
 		not = " NOT"
 	}
-	expr1 := sqlFor(ctx.ScalarExpression(0))
-	expr2 := sqlFor(ctx.ScalarExpression(1))
+	var expr1 string
+	if ctx.ScalarExpression(0) != nil {
+		expr1 = sqlFor(ctx.ScalarExpression(0))
+	}
+	if ctx.TemporalExpression(0) != nil {
+		expr1 = sqlFor(ctx.TemporalExpression(0))
+	}
+	var expr2 string
+	if ctx.ScalarExpression(0) != nil {
+		expr2 = sqlFor(ctx.ScalarExpression(1))
+	}
+	if ctx.TemporalExpression(0) != nil {
+		expr2 = sqlFor(ctx.TemporalExpression(1))
+	}
 	sql := " " + prop + not + " BETWEEN " + expr1 + " AND " + expr2
 	ctx.SetSql(sql)
 }
@@ -398,6 +412,35 @@ func (l *cqlListener) ExitDistancePredicate(ctx *DistancePredicateContext) {
 	sb.WriteString(ctx.NumericLiteral().GetText())
 	sb.WriteString(")")
 	ctx.SetSql(sb.String())
+}
+
+func (l *cqlListener) ExitTemporalPredicate(ctx *TemporalPredicateContext) {
+	expr1 := sqlFor(ctx.TemporalExpression(0))
+	expr2 := sqlFor(ctx.TemporalExpression(1))
+	op := getNodeText(ctx.ComparisonOperator())
+	sql := expr1 + " " + op + " " + expr2
+	ctx.SetSql(sql)
+}
+
+func (l *cqlListener) ExitTemporalExpression(ctx *TemporalExpressionContext) {
+	var sb strings.Builder
+	if ctx.PropertyName() != nil {
+		sb.WriteString(quotedName(getText(ctx.PropertyName())))
+	} else {
+		sb.WriteString(sqlFor(ctx.TemporalLiteral()))
+	}
+	ctx.SetSql(sb.String())
+}
+
+func (l *cqlListener) ExitTemporalLiteral(ctx *TemporalLiteralContext) {
+	val := strings.ToUpper(ctx.GetText())
+	//var sql string
+	if strings.HasPrefix(val, "NOW") {
+		val = "NOW"
+	}
+	sql := fmt.Sprintf("timestamp '%s'", val)
+	//TODO: handle NOW()
+	ctx.SetSql(sql)
 }
 
 func (l *cqlListener) ExitGeomExpression(ctx *GeomExpressionContext) {

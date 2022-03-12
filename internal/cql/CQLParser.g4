@@ -2,7 +2,7 @@
 # CQL2 Antlr grammar, with small modifications.
 # - Additions: ILIKE
 
-# Build: in this dir: antlr -Dlanguage=Go -package cql CQL.g4 CqlLexer.g4
+# Build: in this dir: antlr -Dlanguage=Go -package cql CQLParser.g4 CqlLexer.g4
 #
 # See examples:
 # https://portal.ogc.org/files/96288#cql-bnf
@@ -33,7 +33,7 @@ predicate : binaryComparisonPredicate
             | inPredicate
             | spatialPredicate
             | distancePredicate
-//            | temporalPredicate
+            | temporalPredicate
 //            | arrayPredicate
 //            | existencePredicate
             ;
@@ -50,8 +50,8 @@ binaryComparisonPredicate : scalarExpression ComparisonOperator scalarExpression
 likePredicate :  propertyName (NOT)? ( LIKE | ILIKE ) characterLiteral;
 
 betweenPredicate : propertyName (NOT)? BETWEEN
-                             scalarExpression AND scalarExpression ;
-//                             (scalarValue | temporalExpression) AND (scalarValue | temporalExpression);
+//                             scalarExpression AND scalarExpression ;
+                             (scalarExpression | temporalExpression) AND (scalarExpression | temporalExpression);
 
 isNullPredicate : propertyName IS (NOT)? NULL;
 
@@ -68,11 +68,11 @@ scalarExpression : scalarValue
                     ;
 
 scalarValue : propertyName
-                    | characterLiteral
-                    | numericLiteral
-                    | booleanLiteral
-//                    | function
-                    ;
+            | characterLiteral
+            | numericLiteral
+            | booleanLiteral
+//                   | function
+             ;
 
 propertyName: Identifier;
 characterLiteral: CharacterStringLiteral;
@@ -129,8 +129,9 @@ coordinate : NumericLiteral NumericLiteral;
 # A temporal predicate evaluates if two temporal expressions satisfy the
 # specified temporal operator.
 #============================================================================*/
-/*
-temporalPredicate : temporalExpression (TemporalOperator | ComparisonOperator) temporalExpression;
+
+temporalPredicate : temporalExpression ComparisonOperator temporalExpression;
+//temporalPredicate : temporalExpression (TemporalOperator | ComparisonOperator) temporalExpression;
 
 temporalExpression : propertyName
                    | temporalLiteral
@@ -138,7 +139,7 @@ temporalExpression : propertyName
                    ;
 
 temporalLiteral: TemporalLiteral;
-*/
+
 
 /*============================================================================
 # The IN predicate

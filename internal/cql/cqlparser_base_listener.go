@@ -213,6 +213,24 @@ func (s *BaseCQLParserListener) EnterCoordinate(ctx *CoordinateContext) {}
 // ExitCoordinate is called when production coordinate is exited.
 func (s *BaseCQLParserListener) ExitCoordinate(ctx *CoordinateContext) {}
 
+// EnterTemporalPredicate is called when production temporalPredicate is entered.
+func (s *BaseCQLParserListener) EnterTemporalPredicate(ctx *TemporalPredicateContext) {}
+
+// ExitTemporalPredicate is called when production temporalPredicate is exited.
+func (s *BaseCQLParserListener) ExitTemporalPredicate(ctx *TemporalPredicateContext) {}
+
+// EnterTemporalExpression is called when production temporalExpression is entered.
+func (s *BaseCQLParserListener) EnterTemporalExpression(ctx *TemporalExpressionContext) {}
+
+// ExitTemporalExpression is called when production temporalExpression is exited.
+func (s *BaseCQLParserListener) ExitTemporalExpression(ctx *TemporalExpressionContext) {}
+
+// EnterTemporalLiteral is called when production temporalLiteral is entered.
+func (s *BaseCQLParserListener) EnterTemporalLiteral(ctx *TemporalLiteralContext) {}
+
+// ExitTemporalLiteral is called when production temporalLiteral is exited.
+func (s *BaseCQLParserListener) ExitTemporalLiteral(ctx *TemporalLiteralContext) {}
+
 // EnterInPredicate is called when production inPredicate is entered.
 func (s *BaseCQLParserListener) EnterInPredicate(ctx *InPredicateContext) {}
 
