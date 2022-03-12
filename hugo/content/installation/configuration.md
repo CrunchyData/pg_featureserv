@@ -109,6 +109,15 @@ WriteTimeoutSec = 30
 # Hold no more than this number of connections in the database pool
 # DbPoolMaxConns = 4
 
+# Publish only these schemas and tables (default is to publish all spatial tables)
+# TableIncludes = [ "public", "priv_schema.tbl" ]
+
+# Do not publish these schemas and tables
+# TableExcludes = [ "priv_schema", "public.my_tbl" ]
+
+# Publish functions from these schemas (default is publish postgisftw)
+# FunctionIncludes = [ "postgisftw", "schema2" ]
+
 [Paging]
 # The default number of features in a response
 LimitDefault = 20
@@ -220,8 +229,8 @@ The maximum number of database connections held in the connection pool.
 
 #### TableIncludes
 
-A list of schemas and tables to publish feature collections from.
-The default is to include all geometry tables.
+A list of the schemas and tables to publish feature collections from.
+The default is to publish all geometry tables.
 
 #### TableExcludes
 
@@ -230,8 +239,8 @@ Overrides items specified in `TableIncludes`.
 
 #### FunctionIncludes
 
-A list of schemas to publish functions from.
-The default is to publish functions in `postgisftw`.
+A list of the schemas to publish functions from.
+The default is to publish functions in the `postgisftw` schema.
 
 #### LimitDefault
 

@@ -59,7 +59,7 @@ WriteTimeoutSec = 30
 # Hold no more than this number of connections in the database pool
 # DbPoolMaxConns = 4
 
-# Publish only these schemas and tables
+# Publish only these schemas and tables (default is to publish all spatial tables)
 # TableIncludes = [ "public", "priv_schema.tbl" ]
 
 # Do not publish these schemas and tables
