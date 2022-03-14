@@ -261,8 +261,8 @@ func (l *cqlListener) ExitPredicate(ctx *PredicateContext) {
 		sql = sqlFor(ctx.SpatialPredicate())
 	} else if ctx.DistancePredicate() != nil {
 		sql = sqlFor(ctx.DistancePredicate())
-	} else if ctx.TemporalPredicate() != nil {
-		sql = sqlFor(ctx.TemporalPredicate())
+		//	} else if ctx.TemporalPredicate() != nil {
+		//		sql = sqlFor(ctx.TemporalPredicate())
 	}
 	ctx.SetSql(sql)
 }
@@ -285,6 +285,8 @@ func (l *cqlListener) ExitScalarValue(ctx *ScalarValueContext) {
 		sql = getText(ctx.NumericLiteral())
 	} else if ctx.BooleanLiteral() != nil {
 		sql = getText(ctx.BooleanLiteral())
+	} else if ctx.TemporalLiteral() != nil {
+		sql = sqlFor(ctx.TemporalLiteral())
 	}
 	ctx.SetSql(sql)
 }
@@ -329,16 +331,20 @@ func (l *cqlListener) ExitBetweenPredicate(ctx *BetweenPredicateContext) {
 	if ctx.ScalarExpression(0) != nil {
 		expr1 = sqlFor(ctx.ScalarExpression(0))
 	}
-	if ctx.TemporalExpression(0) != nil {
-		expr1 = sqlFor(ctx.TemporalExpression(0))
-	}
+	/*
+		if ctx.TemporalExpression(0) != nil {
+			expr1 = sqlFor(ctx.TemporalExpression(0))
+		}
+	*/
 	var expr2 string
 	if ctx.ScalarExpression(0) != nil {
 		expr2 = sqlFor(ctx.ScalarExpression(1))
 	}
-	if ctx.TemporalExpression(0) != nil {
-		expr2 = sqlFor(ctx.TemporalExpression(1))
-	}
+	/*
+		if ctx.TemporalExpression(0) != nil {
+			expr2 = sqlFor(ctx.TemporalExpression(1))
+		}
+	*/
 	sql := " " + prop + not + " BETWEEN " + expr1 + " AND " + expr2
 	ctx.SetSql(sql)
 }
@@ -414,20 +420,12 @@ func (l *cqlListener) ExitDistancePredicate(ctx *DistancePredicateContext) {
 	ctx.SetSql(sb.String())
 }
 
-func (l *cqlListener) ExitTemporalPredicate(ctx *TemporalPredicateContext) {
-	expr1 := sqlFor(ctx.TemporalExpression(0))
-	expr2 := sqlFor(ctx.TemporalExpression(1))
-	op := getNodeText(ctx.ComparisonOperator())
-	sql := expr1 + " " + op + " " + expr2
-	ctx.SetSql(sql)
-}
-
-func (l *cqlListener) ExitTemporalExpression(ctx *TemporalExpressionContext) {
+func (l *cqlListener) ExitGeomExpression(ctx *GeomExpressionContext) {
 	var sb strings.Builder
 	if ctx.PropertyName() != nil {
 		sb.WriteString(quotedName(getText(ctx.PropertyName())))
 	} else {
-		sb.WriteString(sqlFor(ctx.TemporalLiteral()))
+		sb.WriteString(sqlFor(ctx.GeomLiteral()))
 	}
 	ctx.SetSql(sb.String())
 }
@@ -441,16 +439,6 @@ func (l *cqlListener) ExitTemporalLiteral(ctx *TemporalLiteralContext) {
 	sql := fmt.Sprintf("timestamp '%s'", val)
 	//TODO: handle NOW()
 	ctx.SetSql(sql)
-}
-
-func (l *cqlListener) ExitGeomExpression(ctx *GeomExpressionContext) {
-	var sb strings.Builder
-	if ctx.PropertyName() != nil {
-		sb.WriteString(quotedName(getText(ctx.PropertyName())))
-	} else {
-		sb.WriteString(sqlFor(ctx.GeomLiteral()))
-	}
-	ctx.SetSql(sb.String())
 }
 
 func (l *cqlListener) ExitGeomLiteral(ctx *GeomLiteralContext) {

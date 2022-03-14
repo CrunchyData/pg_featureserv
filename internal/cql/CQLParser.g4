@@ -33,7 +33,7 @@ predicate : binaryComparisonPredicate
             | inPredicate
             | spatialPredicate
             | distancePredicate
-            | temporalPredicate
+//            | temporalPredicate
 //            | arrayPredicate
 //            | existencePredicate
             ;
@@ -50,8 +50,13 @@ binaryComparisonPredicate : scalarExpression ComparisonOperator scalarExpression
 likePredicate :  propertyName (NOT)? ( LIKE | ILIKE ) characterLiteral;
 
 betweenPredicate : propertyName (NOT)? BETWEEN
-//                             scalarExpression AND scalarExpression ;
-                             (scalarExpression | temporalExpression) AND (scalarExpression | temporalExpression);
+                             scalarExpression AND scalarExpression ;
+//                             (scalarExpression | temporalExpression) AND (scalarExpression | temporalExpression);
+
+inPredicate : propertyName NOT? IN LEFTPAREN (
+        characterLiteral (COMMA characterLiteral)*
+        | numericLiteral (COMMA numericLiteral)*
+    ) RIGHTPAREN;
 
 isNullPredicate : propertyName IS (NOT)? NULL;
 
@@ -71,6 +76,7 @@ scalarValue : propertyName
             | characterLiteral
             | numericLiteral
             | booleanLiteral
+            | temporalLiteral
 //                   | function
              ;
 
@@ -78,6 +84,7 @@ propertyName: Identifier;
 characterLiteral: CharacterStringLiteral;
 numericLiteral: NumericLiteral;
 booleanLiteral: BooleanLiteral;
+temporalLiteral: TemporalLiteral;
 
 /*============================================================================
 # A spatial predicate evaluates if two spatial expressions satisfy the
@@ -124,28 +131,3 @@ envelope: ENVELOPE LEFTPAREN NumericLiteral COMMA NumericLiteral COMMA NumericLi
 
 coordList: LEFTPAREN coordinate (COMMA coordinate)* RIGHTPAREN;
 coordinate : NumericLiteral NumericLiteral;
-
-/*============================================================================
-# A temporal predicate evaluates if two temporal expressions satisfy the
-# specified temporal operator.
-#============================================================================*/
-
-temporalPredicate : temporalExpression ComparisonOperator temporalExpression;
-//temporalPredicate : temporalExpression (TemporalOperator | ComparisonOperator) temporalExpression;
-
-temporalExpression : propertyName
-                   | temporalLiteral
-                   //| function
-                   ;
-
-temporalLiteral: TemporalLiteral;
-
-
-/*============================================================================
-# The IN predicate
-#============================================================================*/
-
-inPredicate : propertyName NOT? IN LEFTPAREN (
-        characterLiteral (COMMA characterLiteral)*
-        | numericLiteral (COMMA numericLiteral)*
-    ) RIGHTPAREN;

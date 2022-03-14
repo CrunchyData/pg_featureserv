@@ -75,6 +75,12 @@ func (s *BaseCQLParserListener) EnterBetweenPredicate(ctx *BetweenPredicateConte
 // ExitBetweenPredicate is called when production betweenPredicate is exited.
 func (s *BaseCQLParserListener) ExitBetweenPredicate(ctx *BetweenPredicateContext) {}
 
+// EnterInPredicate is called when production inPredicate is entered.
+func (s *BaseCQLParserListener) EnterInPredicate(ctx *InPredicateContext) {}
+
+// ExitInPredicate is called when production inPredicate is exited.
+func (s *BaseCQLParserListener) ExitInPredicate(ctx *InPredicateContext) {}
+
 // EnterIsNullPredicate is called when production isNullPredicate is entered.
 func (s *BaseCQLParserListener) EnterIsNullPredicate(ctx *IsNullPredicateContext) {}
 
@@ -116,6 +122,12 @@ func (s *BaseCQLParserListener) EnterBooleanLiteral(ctx *BooleanLiteralContext) 
 
 // ExitBooleanLiteral is called when production booleanLiteral is exited.
 func (s *BaseCQLParserListener) ExitBooleanLiteral(ctx *BooleanLiteralContext) {}
+
+// EnterTemporalLiteral is called when production temporalLiteral is entered.
+func (s *BaseCQLParserListener) EnterTemporalLiteral(ctx *TemporalLiteralContext) {}
+
+// ExitTemporalLiteral is called when production temporalLiteral is exited.
+func (s *BaseCQLParserListener) ExitTemporalLiteral(ctx *TemporalLiteralContext) {}
 
 // EnterSpatialPredicate is called when production spatialPredicate is entered.
 func (s *BaseCQLParserListener) EnterSpatialPredicate(ctx *SpatialPredicateContext) {}
@@ -212,27 +224,3 @@ func (s *BaseCQLParserListener) EnterCoordinate(ctx *CoordinateContext) {}
 
 // ExitCoordinate is called when production coordinate is exited.
 func (s *BaseCQLParserListener) ExitCoordinate(ctx *CoordinateContext) {}
-
-// EnterTemporalPredicate is called when production temporalPredicate is entered.
-func (s *BaseCQLParserListener) EnterTemporalPredicate(ctx *TemporalPredicateContext) {}
-
-// ExitTemporalPredicate is called when production temporalPredicate is exited.
-func (s *BaseCQLParserListener) ExitTemporalPredicate(ctx *TemporalPredicateContext) {}
-
-// EnterTemporalExpression is called when production temporalExpression is entered.
-func (s *BaseCQLParserListener) EnterTemporalExpression(ctx *TemporalExpressionContext) {}
-
-// ExitTemporalExpression is called when production temporalExpression is exited.
-func (s *BaseCQLParserListener) ExitTemporalExpression(ctx *TemporalExpressionContext) {}
-
-// EnterTemporalLiteral is called when production temporalLiteral is entered.
-func (s *BaseCQLParserListener) EnterTemporalLiteral(ctx *TemporalLiteralContext) {}
-
-// ExitTemporalLiteral is called when production temporalLiteral is exited.
-func (s *BaseCQLParserListener) ExitTemporalLiteral(ctx *TemporalLiteralContext) {}
-
-// EnterInPredicate is called when production inPredicate is entered.
-func (s *BaseCQLParserListener) EnterInPredicate(ctx *InPredicateContext) {}
-
-// ExitInPredicate is called when production inPredicate is exited.
-func (s *BaseCQLParserListener) ExitInPredicate(ctx *InPredicateContext) {}
