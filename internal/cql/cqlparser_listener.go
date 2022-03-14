@@ -103,6 +103,15 @@ type CQLParserListener interface {
 	// EnterCoordinate is called when entering the coordinate production.
 	EnterCoordinate(c *CoordinateContext)
 
+	// EnterTemporalPredicate is called when entering the temporalPredicate production.
+	EnterTemporalPredicate(c *TemporalPredicateContext)
+
+	// EnterTemporalExpression is called when entering the temporalExpression production.
+	EnterTemporalExpression(c *TemporalExpressionContext)
+
+	// EnterTemporalLiteral is called when entering the temporalLiteral production.
+	EnterTemporalLiteral(c *TemporalLiteralContext)
+
 	// EnterInPredicate is called when entering the inPredicate production.
 	EnterInPredicate(c *InPredicateContext)
 
@@ -201,6 +210,15 @@ type CQLParserListener interface {
 
 	// ExitCoordinate is called when exiting the coordinate production.
 	ExitCoordinate(c *CoordinateContext)
+
+	// ExitTemporalPredicate is called when exiting the temporalPredicate production.
+	ExitTemporalPredicate(c *TemporalPredicateContext)
+
+	// ExitTemporalExpression is called when exiting the temporalExpression production.
+	ExitTemporalExpression(c *TemporalExpressionContext)
+
+	// ExitTemporalLiteral is called when exiting the temporalLiteral production.
+	ExitTemporalLiteral(c *TemporalLiteralContext)
 
 	// ExitInPredicate is called when exiting the inPredicate production.
 	ExitInPredicate(c *InPredicateContext)
