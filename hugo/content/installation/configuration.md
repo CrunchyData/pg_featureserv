@@ -38,7 +38,7 @@ if not provided in the environment variable `DATABASE_URL`.
 
 To set the database connection the environment variable `DATABASE_URL`
 can be used with a
-Postgres [connection string](https://www.postgresql.org/docs/12/libpq-connect.html#LIBPQ-CONNSTRING):
+Postgres [connection string](https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNSTRING):
 ```bash
 export DATABASE_URL="host=localhost user=postgres"
 ```
