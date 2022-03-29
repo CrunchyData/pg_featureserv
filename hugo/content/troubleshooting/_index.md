@@ -56,13 +56,36 @@ connect as the same user that the service is using.
 
 To delve more deeply into the SQL that is being run on the database, you can turn on [statement logging](https://www.postgresql.org/docs/current/runtime-config-logging.html#GUC-LOG-STATEMENT) in PostgreSQL by editing the `postgresql.conf` file for your database and restarting.
 
-## Missing Tables
+## Common Problems
 
-If tables are not being discovered as expected ensure that the tables have the correct metadata visible in the geometry views. In particular, note that recent versions of the [`AddGeometryColumn()`](https://postgis.net/docs/AddGeometryColumn.html) method do not update this metadata and will not be discovered by the pg_featureserv catalog.
+### Table not published
+
+If a table/view is not published as expected, check the following:
+
+* ensure that the table geometry column has full metadata.
+  This can be checked by displaying the table definition using `\d tablename`,
+  or by querying the geometry metadata views.
+  In particular, note that recent versions of the [`AddGeometryColumn()`](https://postgis.net/docs/AddGeometryColumn.html) method do not update this metadata and will not be discovered by the `pg_featureserv` catalog query.
+* ensure that the table is visible to the service user.
+  Table privileges can be checked using the following query:
+
+```sql
+SELECT grantee, table_catalog, privilege_type, table_schema, table_name
+  FROM information_schema.table_privileges
+  WHERE table_name = 'tablename'
+  ORDER BY grantee, table_schema, table_name;
+```
+
+### Too few query result features
+
+If a query result contains fewer features than expected,
+the `limit=N` query parameter may need to be specified, or the limit increased.
+If increasing this parameter has no effect, the query result size may be exceeding
+the `LimitMax` configuration parameter.
 
 ## Bug reporting
 
-If you find an issue with the feature server, it can be reported on the GitHub issue tracker:
+If you find an issue, it can be reported on the GitHub issue tracker:
 
 * https://github.com/crunchydata/pg_featureserv/issues
 
