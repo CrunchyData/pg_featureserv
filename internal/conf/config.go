@@ -50,6 +50,8 @@ func setDefaultConfig() {
 
 	viper.SetDefault("Metadata.Title", "pg-featureserv")
 	viper.SetDefault("Metadata.Description", "Crunchy Data Feature Server for PostGIS")
+
+	viper.SetDefault("Website.BasemapUrl", "")
 }
 
 // Config for system
@@ -167,6 +169,11 @@ func InitConfig(configFilename string, isDebug bool) {
 func DumpConfig() {
 	//fmt.Printf("Viper: %v\n", viper.AllSettings())
 	//fmt.Printf("Config: %v\n", Configuration)
+	var basemapURL = Configuration.Website.BasemapUrl
+	if basemapURL == "" {
+		basemapURL = "*** NO URL PROVIDED ***"
+	}
+	log.Debugf("BasemapUrl = %v", basemapURL)
 	log.Debugf("TableIncludes = %v", Configuration.Database.TableIncludes)
 	log.Debugf("TableExcludes = %v", Configuration.Database.TableExcludes)
 	log.Debugf("FunctionIncludes = %v", Configuration.Database.FunctionIncludes)
