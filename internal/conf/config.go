@@ -167,14 +167,15 @@ func InitConfig(configFilename string, isDebug bool) {
 }
 
 func DumpConfig() {
+	log.Debugf("--- Configuration ---")
 	//fmt.Printf("Viper: %v\n", viper.AllSettings())
 	//fmt.Printf("Config: %v\n", Configuration)
 	var basemapURL = Configuration.Website.BasemapUrl
 	if basemapURL == "" {
 		basemapURL = "*** NO URL PROVIDED ***"
 	}
-	log.Debugf("BasemapUrl = %v", basemapURL)
-	log.Debugf("TableIncludes = %v", Configuration.Database.TableIncludes)
-	log.Debugf("TableExcludes = %v", Configuration.Database.TableExcludes)
-	log.Debugf("FunctionIncludes = %v", Configuration.Database.FunctionIncludes)
+	log.Debugf("  BasemapUrl = %v", basemapURL)
+	log.Debugf("  TableIncludes = %v", Configuration.Database.TableIncludes)
+	log.Debugf("  TableExcludes = %v", Configuration.Database.TableExcludes)
+	log.Debugf("  FunctionIncludes = %v", Configuration.Database.FunctionIncludes)
 }

@@ -77,17 +77,6 @@ func main() {
 
 	conf.InitConfig(flagConfigFilename, flagDebugOn)
 
-	var catalog data.Catalog
-	if flagTestModeOn {
-		catalog = data.CatMockInstance()
-	} else {
-		catalog = data.CatDBInstance()
-	}
-	//tableIncludes := []string{"bc.voting_area"}
-	includes := conf.Configuration.Database.TableIncludes
-	excludes := conf.Configuration.Database.TableExcludes
-	catalog.SetIncludeExclude(includes, excludes)
-
 	if flagTestModeOn || flagDevModeOn {
 		ui.HTMLDynamicLoad = true
 		log.Info("Running in development mode")
@@ -98,6 +87,19 @@ func main() {
 		log.Debugf("Log level = DEBUG\n")
 	}
 	conf.DumpConfig()
+
+	//-- Initialize catalog (with DB conn if used)
+	var catalog data.Catalog
+	if flagTestModeOn {
+		catalog = data.CatMockInstance()
+	} else {
+		catalog = data.CatDBInstance()
+	}
+	includes := conf.Configuration.Database.TableIncludes
+	excludes := conf.Configuration.Database.TableExcludes
+	catalog.SetIncludeExclude(includes, excludes)
+
+	//-- Start up service
 	service.Initialize()
 	service.Serve(catalog)
 }
