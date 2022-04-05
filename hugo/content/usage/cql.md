@@ -45,9 +45,9 @@ true
 
 ## Arithmetic expressions
 
-Numeric values can be combined using the
-arithmetic operators `+`,`-`,`*`,`/` and `%` (modulo), with parentheses if needed
-for operator precedence.
+Values of numeric expressions can be computed using the
+arithmetic operators `+`,`-`,`*`,`/` and `%` (modulo),
+with parentheses to specify operator precedence.
 
 **NOTE:** `+` needs to be URL-encoded as `%2B`.
 ```
@@ -67,18 +67,20 @@ a = b   a <> b   a > b   a >= b   a < b   a <= b
 ```
 pop_est >= 1000000
 name = 'Finland'
+count % 10 = 1
 ```
 
 ## BETWEEN predicate
 
-The `BETWEEN` predicate tests if a value lies in a range defined by a start and end value (inclusive):
+The `BETWEEN` predicate tests if a value (a property, literal or expression) lies
+in the range defined by a start and end value (inclusive):
 ```
-property [NOT] BETWEEN a AND b
+e1 [NOT] BETWEEN e2 AND e3
 ```
 
 #### Examples
 ```
-pop_est BETWEEN 100000 AND 1000000
+pop_est BETWEEN 1000000 AND 9000000
 name NOT BETWEEN 'Chile' AND 'Denmark'
 ```
 
@@ -222,7 +224,10 @@ Temporal values can be compared using the conditional operators `<`,`<=`,`>`,`>=
 t > 2001-01-01T00:00 AND t <= 2002-12-31T11:59:59
 ```
 
-They can also be used in the `BETWEEN` predicate:
+They can also be used in the `BETWEEN` predicate.
+The values used can be properties or literals:
+
 ```
 t BETWEEN 2001-01-01 AND 2001-12-31
+2001-01-01 BETWEEN time1 AND time2
 ```
