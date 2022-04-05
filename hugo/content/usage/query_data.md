@@ -109,11 +109,9 @@ feature geometry in the response.
 The SRID must be a coordinate system which is defined in the PostGIS instance.
 By default data is returned in WGS84 (SRID=4326) geodetic coordinate system.
 
-{{% note %}}
 GeoJSON technically does not support coordinate systems other than 4326,
 but the OGC API standard allows non-geodetic data to be encoded in GeoJSON.
 However, this data may not be compatible with other systems.
-{{% /note %}}
 
 #### Example
 ```
