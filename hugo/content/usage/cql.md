@@ -23,9 +23,9 @@ Note that some special characters may need to be [URL-encoded](https://en.wikipe
 ## Property and Literal Values
 
 The basic elements of filter expressions are values obtained
-from feature collection properties, and literals.
+from feature collection properties, and literals (constants).
 
-Properties are referred to by name.
+**Properties** are referred to by name.
 Property names can be quoted, to support including special characters.
 
 ```
@@ -33,7 +33,7 @@ propname
 "quoted_name$"
 ```
 
-Literals can be numbers, boolean or text values.
+**Literals** can be numbers, boolean or text values.
 To include single quotes in text values use repeated single quotes.
 
 ```
@@ -209,7 +209,7 @@ DWITHIN(geom, POINT(-100 49), 0.1)
 
 Temporal filtering in CQL supports date-time literals and the ability to use
 them in conditions against temporal-valued properties
-(PostgreSQL [dates or timestamps](https://www.postgresql.org/docs/current/datatype-datetime.html)).
+(table columns with type [date or timestamp](https://www.postgresql.org/docs/current/datatype-datetime.html)).
 
 Date-time literals specifiy a date, or a timestamp including a date and time (with optional seconds value):
 ```
