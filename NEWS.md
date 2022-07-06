@@ -39,6 +39,7 @@
 * Fix `offset` parameter to allow any non-negative value
 * Fix encoding of primary key column names in item requests (#80)
 * Fix error handling during Feature reading from database (#96)
+* Check for empty strings in Forwarded header parsing
 
 ## Version 1.2
 *Released: 2020 Dec 1*

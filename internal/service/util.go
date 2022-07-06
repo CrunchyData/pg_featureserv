@@ -159,9 +159,11 @@ func serveURLBase(r *http.Request) string {
 	xf := http.CanonicalHeaderKey("Forwarded")
 	if f, ok := r.Header[xf]; ok {
 		if fm, err := httpforwarded.Parse(f); err == nil {
-			ph = fm["host"][0]
-			ps = fm["proto"][0]
-			return fmt.Sprintf("%v://%v/", ps, ph)
+			if len(fm["host"]) > 0 && len(fm["proto"]) > 0 {
+				ph = fm["host"][0]
+				ps = fm["proto"][0]
+				return fmt.Sprintf("%v://%v/", ps, ph)
+			}
 		}
 	}
 
