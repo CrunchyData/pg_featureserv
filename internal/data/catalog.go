@@ -22,7 +22,8 @@ import (
 const (
 	//errMsgCollectionNotFound = "Collection not found: %v"
 	//errMsgFeatureNotFound    = "Feature not found: %v"
-	SRID_4326 = 4326
+	SRID_4326    = 4326
+	SRID_UNKNOWN = -1
 )
 
 // Catalog tbd
