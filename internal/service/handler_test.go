@@ -23,6 +23,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"runtime"
+	"strings"
 	"testing"
 
 	"github.com/CrunchyData/pg_featureserv/internal/api"
@@ -61,14 +62,14 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func setup(path string){
+func setup(path string) {
 	router = initRouter(path)
 	conf.Configuration = conf.Config{
 		Server: conf.Server{
 			HttpHost:   "0.0.0.0",
 			HttpPort:   9000,
 			UrlBase:    urlBase,
-			BasePath:	path,
+			BasePath:   path,
 			AssetsPath: "../../assets",
 			TransformFunctions: []string{
 				"ST_Centroid",
@@ -93,7 +94,7 @@ func TestRoot(t *testing.T) {
 	var v api.RootInfo
 	json.Unmarshal(body, &v)
 
-	checkLink(t, v.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+"//"+api.RootPageName)
+	checkLink(t, v.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+"/"+api.RootPageName)
 	checkLink(t, v.Links[1], api.RelAlt, api.ContentTypeHTML, urlBase+"/"+api.RootPageName+".html")
 	checkLink(t, v.Links[2], api.RelServiceDesc, api.ContentTypeOpenAPI, urlBase+"/api")
 	checkLink(t, v.Links[3], api.RelConformance, api.ContentTypeJSON, urlBase+"/conformance")
@@ -401,7 +402,12 @@ func TestHTMLItem(t *testing.T) {
 	doRequest(t, "/collections/mock_a/items/1.html")
 }
 func TestHTMLFunctions(t *testing.T) {
-	doRequest(t, "/functions.html")
+	rr := doRequest(t, "/functions.html")
+	for _, fun := range catalogMock.FunctionDefs {
+		if !strings.Contains(rr.Body.String(), "http://test/functions/"+fun.Name+".json") {
+			t.Errorf("Functions response should contain reference to " + fun.Name + ".json")
+		}
+	}
 }
 func TestHTMLFunction(t *testing.T) {
 	doRequest(t, "/functions/fun_a.html")
