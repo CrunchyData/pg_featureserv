@@ -45,6 +45,7 @@ const (
 	ParamProperties = "properties"
 	ParamSortBy     = "sortby"
 	ParamTransform  = "transform"
+	ParamType       = "type"
 
 	OrderByDirSep = ":"
 	OrderByDirD   = "d"

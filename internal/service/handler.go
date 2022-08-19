@@ -24,6 +24,7 @@ import (
 	"github.com/CrunchyData/pg_featureserv/internal/conf"
 	"github.com/CrunchyData/pg_featureserv/internal/data"
 	"github.com/CrunchyData/pg_featureserv/internal/ui"
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/gorilla/mux"
 )
 
@@ -57,6 +58,8 @@ func initRouter(basePath string) *mux.Router {
 
 	addRoute(router, "/collections/{id}/items", handleCollectionItems)
 	addRoute(router, "/collections/{id}/items.{fmt}", handleCollectionItems)
+
+	addRoute(router, "/collections/{id}/schema", handleCollectionSchemas)
 
 	addRoute(router, "/collections/{id}/items/{fid}", handleItem)
 	addRoute(router, "/collections/{id}/items/{fid}.{fmt}", handleItem)
@@ -254,6 +257,45 @@ func handleCollection(w http.ResponseWriter, r *http.Request) *appError {
 	}
 }
 
+func handleCollectionSchemas(w http.ResponseWriter, r *http.Request) *appError {
+	// TODO: determine content from request header?
+	format := api.RequestedFormat(r)
+	urlBase := serveURLBase(r)
+
+	//--- extract request parameters
+	name := getRequestVar(routeVarID, r)
+	tbl, err1 := catalogInstance.TableByName(name)
+	if err1 != nil {
+		return appErrorInternalFmt(err1, api.ErrMsgCollectionAccess, name)
+	}
+	if tbl == nil {
+		return appErrorNotFoundFmt(err1, api.ErrMsgCollectionNotFound, name)
+	}
+
+	queryValues := r.URL.Query()
+	paramValues := extractSingleArgs(queryValues)
+	// --- type parameter
+	schemaType := parseString(paramValues, api.ParamType)
+
+	ctx := r.Context()
+	switch format {
+	case api.FormatSchemaJSON:
+		{
+			switch schemaType {
+			case "create":
+				return writeCreateItemSchemaJSON(ctx, w, tbl, urlBase)
+			default:
+				return appErrorBadRequest(nil, fmt.Sprintf("Asked schema type %s not implemented!", schemaType))
+			}
+		}
+	default:
+		{
+			return appErrorBadRequest(nil, fmt.Sprintf("Format %s not implemented!", format))
+		}
+	}
+
+}
+
 func handleCollectionItems(w http.ResponseWriter, r *http.Request) *appError {
 	// TODO: determine content from request header?
 	format := api.RequestedFormat(r)
@@ -288,6 +330,58 @@ func handleCollectionItems(w http.ResponseWriter, r *http.Request) *appError {
 		return writeItemsHTML(w, tbl, name, query, urlBase)
 	}
 	return nil
+}
+
+func writeCreateItemSchemaJSON(ctx context.Context, w http.ResponseWriter, table *data.Table, urlBase string) *appError {
+	// Feature schema skeleton
+	var featureInfoSchema openapi3.Schema = openapi3.Schema{
+		Type:     "object",
+		Required: []string{"type", "geometry", "properties"},
+		Properties: map[string]*openapi3.SchemaRef{
+			"id": {Value: &openapi3.Schema{Type: "number", Format: "long"}},
+			"type": {
+				Value: &openapi3.Schema{
+					Type:    "string",
+					Default: "Feature",
+				},
+			},
+			"geometry": {
+				Value: &openapi3.Schema{
+					Items: &openapi3.SchemaRef{
+						Ref: fmt.Sprintf("https://geojson.org/schema/%v.json", table.GeometryType),
+					},
+				},
+			},
+			"properties": {
+				Value: &openapi3.Schema{},
+			},
+		},
+	}
+	featureInfoSchema.Description = table.Description
+
+	props := featureInfoSchema.Properties["properties"].Value
+	props.Type = "object"
+
+	// update required properties
+	var requiredTypes []string
+	for k, c := range table.DbTypes {
+		if c.IsRequired {
+			requiredTypes = append(requiredTypes, k)
+		}
+	}
+	props.Required = requiredTypes
+
+	// update properties by their name and type
+	props.Properties = make(map[string]*openapi3.SchemaRef)
+	for k, v := range table.DbTypes {
+		props.Properties[k] = &openapi3.SchemaRef{
+			Value: &openapi3.Schema{
+				Type: v.Type,
+			},
+		}
+	}
+
+	return writeJSON(w, api.ContentTypeSchemaJSON, featureInfoSchema)
 }
 
 func writeItemsHTML(w http.ResponseWriter, tbl *data.Table, name string, query string, urlBase string) *appError {
