@@ -41,48 +41,51 @@ func newCatalogMock() CatalogMock {
 	// must be in synch with featureMock type
 	propNames := []string{"prop_a", "prop_b", "prop_c", "prop_d"}
 	types := map[string]Column{
-		"prop_a": Column{Index: 0, Type: "text", IsRequired: true},
-		"prop_b": Column{Index: 0, Type: "int", IsRequired: true},
-		"prop_c": Column{Index: 0, Type: "text", IsRequired: false},
-		"prop_d": Column{Index: 0, Type: "int", IsRequired: false},
+		"prop_a": {Index: 0, Type: "text", IsRequired: true},
+		"prop_b": {Index: 1, Type: "int", IsRequired: true},
+		"prop_c": {Index: 2, Type: "text", IsRequired: false},
+		"prop_d": {Index: 3, Type: "int", IsRequired: false},
 	}
 	jtypes := []string{"string", "number", "string", "number"}
 	colDesc := []string{"Property A", "Property B", "Property C", "Property D"}
 
 	layerA := &Table{
-		ID:          "mock_a",
-		Title:       "Mock A",
-		Description: "This dataset contains mock data about A (9 points)",
-		Extent:      Extent{Minx: -120, Miny: 40, Maxx: -74, Maxy: 50},
-		Srid:        4326,
-		Columns:     propNames,
-		DbTypes:     types,
-		JSONTypes:   jtypes,
-		ColDesc:     colDesc,
+		ID:           "mock_a",
+		Title:        "Mock A",
+		Description:  "This dataset contains mock data about A (9 points)",
+		Extent:       Extent{Minx: -120, Miny: 40, Maxx: -74, Maxy: 50},
+		Srid:         4326,
+		GeometryType: "Point",
+		Columns:      propNames,
+		DbTypes:      types,
+		JSONTypes:    jtypes,
+		ColDesc:      colDesc,
 	}
 
 	layerB := &Table{
-		ID:          "mock_b",
-		Title:       "Mock B",
-		Description: "This dataset contains mock data about B (100 points)",
-		Extent:      Extent{Minx: -75, Miny: 45, Maxx: -74, Maxy: 46},
-		Srid:        4326,
-		Columns:     propNames,
-		DbTypes:     types,
-		JSONTypes:   jtypes,
-		ColDesc:     colDesc,
+		ID:           "mock_b",
+		Title:        "Mock B",
+		Description:  "This dataset contains mock data about B (100 points)",
+		Extent:       Extent{Minx: -75, Miny: 45, Maxx: -74, Maxy: 46},
+		Srid:         4326,
+		GeometryType: "Point",
+		Columns:      propNames,
+		DbTypes:      types,
+		JSONTypes:    jtypes,
+		ColDesc:      colDesc,
 	}
 
 	layerC := &Table{
-		ID:          "mock_c",
-		Title:       "Mock C",
-		Description: "This dataset contains mock data about C (10000 points)",
-		Extent:      Extent{Minx: -120, Miny: 40, Maxx: -74, Maxy: 60},
-		Srid:        4326,
-		Columns:     propNames,
-		DbTypes:     types,
-		JSONTypes:   jtypes,
-		ColDesc:     colDesc,
+		ID:           "mock_c",
+		Title:        "Mock C",
+		Description:  "This dataset contains mock data about C (10000 points)",
+		Extent:       Extent{Minx: -120, Miny: 40, Maxx: -74, Maxy: 60},
+		Srid:         4326,
+		GeometryType: "Point",
+		Columns:      propNames,
+		DbTypes:      types,
+		JSONTypes:    jtypes,
+		ColDesc:      colDesc,
 	}
 
 	tableData := map[string][]*featureMock{}

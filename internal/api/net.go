@@ -26,6 +26,9 @@ const (
 	// ContentTypeGeoJSON
 	ContentTypeGeoJSON = "application/geo+json"
 
+	// ContentTypeSchemaJSON
+	ContentTypeSchemaJSON = "application/schema+json"
+
 	// ContentTypeHTML
 	ContentTypeHTML = "text/html"
 
@@ -49,6 +52,9 @@ const (
 
 	// FormatText code and extension for Text
 	FormatSVG = "svg"
+
+	// FormatJSON code and extension for JSON
+	FormatSchemaJSON = "schema+json"
 )
 
 // RequestedFormat gets the format for a request from extension or headers
@@ -70,6 +76,9 @@ func RequestedFormat(r *http.Request) string {
 	// Use Accept header if present
 	hdrAccept := r.Header.Get("Accept")
 	//fmt.Println("Accept:" + hdrAccept)
+	if strings.Contains(hdrAccept, ContentTypeSchemaJSON) {
+		return FormatSchemaJSON
+	}
 	if strings.Contains(hdrAccept, ContentTypeHTML) {
 		return FormatHTML
 	}

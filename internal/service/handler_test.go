@@ -15,14 +15,9 @@ package service
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
-	"net/http/httptest"
 	"os"
-	"path/filepath"
-	"reflect"
-	"runtime"
 	"strings"
 	"testing"
 
@@ -50,6 +45,7 @@ type FeatureCollection struct {
 }
 
 const urlBase = "http://test"
+
 var basePath = "/pg_featureserv"
 
 var catalogMock *data.CatalogMock
@@ -433,34 +429,6 @@ func TestHTMLFunction(t *testing.T) {
 
 //===================================================
 
-func readBody(resp *httptest.ResponseRecorder) []byte {
-	body, _ := ioutil.ReadAll(resp.Body)
-	return body
-}
-
-func doRequest(t *testing.T, url string) *httptest.ResponseRecorder {
-	return doRequestStatus(t, url, http.StatusOK)
-}
-
-func doRequestStatus(t *testing.T, url string,
-	statusExpected int) *httptest.ResponseRecorder {
-	req, err := http.NewRequest("GET", basePath+url, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	rr := httptest.NewRecorder()
-	router.ServeHTTP(rr, req)
-
-	// Check the status code
-	//fmt.Println("Status:", rr.Code)
-	if status := rr.Code; status != statusExpected {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, statusExpected)
-	}
-	return rr
-}
-
 func checkCollection(tb testing.TB, coll *api.CollectionInfo, name string, title string) {
 	equals(tb, name, coll.Name, "Collection name")
 	equals(tb, title, coll.Title, "Collection title")
@@ -472,6 +440,7 @@ func checkCollection(tb testing.TB, coll *api.CollectionInfo, name string, title
 	pathItems := path + "/items"
 	checkLink(tb, coll.Links[2], api.RelItems, api.ContentTypeGeoJSON, urlBase+pathItems)
 }
+
 func checkLink(tb testing.TB, link *api.Link, rel string, conType string, href string) {
 	equals(tb, rel, link.Rel, "Link rel")
 	equals(tb, conType, link.Type, "Link type")
@@ -529,24 +498,4 @@ func checkFunction(t *testing.T, fun *data.Function) {
 		itemsType = api.ContentTypeGeoJSON
 	}
 	checkLink(t, v.Links[2], api.RelItems, itemsType, urlBase+path+"/items")
-}
-
-//---- testing utilities from https://github.com/benbjohnson/testing
-
-// assert fails the test if the condition is false.
-func assert(tb testing.TB, condition bool, msg string, v ...interface{}) {
-	if !condition {
-		_, file, line, _ := runtime.Caller(1)
-		fmt.Printf("\033[31m%s:%d: "+msg+"\033[39m\n\n", append([]interface{}{filepath.Base(file), line}, v...)...)
-		tb.FailNow()
-	}
-}
-
-// equals fails the test if exp is not equal to act.
-func equals(tb testing.TB, exp, act interface{}, msg string) {
-	if !reflect.DeepEqual(exp, act) {
-		_, file, line, _ := runtime.Caller(1)
-		fmt.Printf("%s:%d: %s - expected: %#v; got: %#v\n", filepath.Base(file), line, msg, exp, act)
-		tb.FailNow()
-	}
 }

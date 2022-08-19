@@ -211,6 +211,16 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 			AllowEmptyValue: false,
 		},
 	}
+	paramType := openapi3.ParameterRef{
+		Value: &openapi3.Parameter{
+			Name:            "type",
+			Description:     "Data schema type (create, update, etc.).",
+			In:              "query",
+			Required:        false,
+			Schema:          &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+			AllowEmptyValue: false,
+		},
+	}
 	return &openapi3.Swagger{
 		OpenAPI: "3.0.0",
 		Info: openapi3.Info{
@@ -342,12 +352,38 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 					Responses: openapi3.Responses{
 						"200": &openapi3.ResponseRef{
 							Value: &openapi3.Response{
-								Description: "GeoJSON Featuree Collection document containing data for features",
+								Description: "GeoJSON Feature Collection document containing data for features",
 								/*
 									// TODO: create schema for result?
 									Content: openapi3.NewContentWithJSONSchemaRef(
 										&openapi3.SchemaRef{
 											Ref: "http://geojson.org/schema/FeatureCollection.json",
+										},
+									),
+								*/
+							},
+						},
+					},
+				},
+			},
+			apiBase + "collections/{collectionId}/schema": &openapi3.PathItem{
+				Summary:     "Feature schema for collection",
+				Description: "Provides access to data representation (schema) for any features in specified collection",
+				Get: &openapi3.Operation{
+					OperationID: "getCollectionSchema",
+					Parameters: openapi3.Parameters{
+						&paramCollectionID,
+						&paramType,
+					},
+					Responses: openapi3.Responses{
+						"200": &openapi3.ResponseRef{
+							Value: &openapi3.Response{
+								Description: "GeoJSON Feature Collection document containing data schema for specific type",
+								/*
+									// TODO: create schema for result?
+									Content: openapi3.NewContentWithJSONSchemaRef(
+										&openapi3.SchemaRef{
+											Ref: "http://geojson.org/schema/FeatureSchema.json",
 										},
 									),
 								*/
