@@ -14,13 +14,17 @@ package service
 */
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/CrunchyData/pg_featureserv/internal/api"
+	"github.com/CrunchyData/pg_featureserv/internal/data"
 	"github.com/getkin/kin-openapi/openapi3"
 )
 
@@ -65,4 +69,37 @@ func TestGetCollectionCreateSchema(t *testing.T) {
 	equals(t, "prop_a", fis.Properties["properties"].Value.Required[0], "feature required a")
 	equals(t, "prop_b", fis.Properties["properties"].Value.Required[1], "feature required b")
 	equals(t, "Feature", fis.Properties["type"].Value.Default, "feature required b")
+}
+
+func TestCreateFeature(t *testing.T) {
+	//--- retrieve max feature id
+	params := data.QueryParam{
+		Limit:  100,
+		Offset: 0,
+	}
+	features, _ := catalogMock.TableFeatures(context.Background(), "mock_a", &params)
+	maxId := len(features)
+
+	var header = make(http.Header)
+	header.Add("Content-Type", "application/geo+json")
+	jsonStr := catalogMock.MakeFeatureMockPointAsJSON(maxId, 12, 34)
+	fmt.Println(jsonStr)
+	rr := doPostRequest(t, "/collections/mock_a/items", []byte(jsonStr), header)
+
+	loc := rr.Header().Get("Location")
+
+	assert(t, len(loc) > 1, "Header location must not be empty")
+	assert(t, strings.Contains(loc, "/collections/mock_a/items/"), "Header location must contain valid data")
+
+	// retrieve new object id from location header
+	parts := strings.Split(loc, "/")
+	actId, err := strconv.Atoi(parts[len(parts)-1])
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert(t, actId > maxId, fmt.Sprintf("Returned id must be > actual feature number: %d > %d", actId, maxId))
+
+	// check if it can be read
+	checkItem(t, actId)
 }

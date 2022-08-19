@@ -234,6 +234,10 @@ func (cat *catalogDB) TableFeature(ctx context.Context, name string, id string, 
 	return features[0], nil
 }
 
+func (cat *catalogDB) AddTableFeature(ctx context.Context, tableName string, jsonData []byte) (int64, error) {
+	panic("catalogDB::AddTableFeature unimplemented")
+}
+
 func (cat *catalogDB) refreshTables(force bool) {
 	// TODO: refresh on timed basis?
 	if force || isStartup {

@@ -19,6 +19,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -163,6 +164,11 @@ func TestCollectionItemsResponse(t *testing.T) {
 	equals(t, 9, len(v.Features), "# features")
 	checkLink(t, v.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+path)
 	checkLink(t, v.Links[1], api.RelAlt, api.ContentTypeHTML, urlBase+path+".html")
+}
+
+// check if item is available and is not empty
+func TestCollectionItem(t *testing.T) {
+	checkItem(t, 1)
 }
 
 func TestFilterB(t *testing.T) {
@@ -499,4 +505,27 @@ func checkFunction(t *testing.T, fun *data.Function) {
 		itemsType = api.ContentTypeGeoJSON
 	}
 	checkLink(t, v.Links[2], api.RelItems, itemsType, urlBase+path+"/items")
+}
+
+// check if item is available and is not empty
+func checkItem(t *testing.T, id int) {
+	path := fmt.Sprintf("/collections/mock_a/items/%d", id)
+	resp := doRequest(t, path)
+	body, _ := ioutil.ReadAll(resp.Body)
+
+	// extracted from catalog_db.go
+	type featureData struct {
+		Type  string                 `json:"type"`
+		ID    string                 `json:"id,omitempty"`
+		Geom  *json.RawMessage       `json:"geometry"`
+		Props map[string]interface{} `json:"properties"`
+	}
+
+	var v featureData
+	json.Unmarshal(body, &v)
+
+	equals(t, "Feature", v.Type, "feature type")
+	actId, _ := strconv.Atoi(v.ID)
+	equals(t, id+1, actId, "feature id") // TODO should be 1 ?
+	equals(t, 4, len(v.Props), "# feature props")
 }

@@ -17,7 +17,9 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io/ioutil"
 	"net/http"
+	"sort"
 	"strings"
 
 	"github.com/CrunchyData/pg_featureserv/internal/api"
@@ -58,6 +60,7 @@ func initRouter(basePath string) *mux.Router {
 
 	addRoute(router, "/collections/{id}/items", handleCollectionItems)
 	addRoute(router, "/collections/{id}/items.{fmt}", handleCollectionItems)
+	addRouteWithMethod(router, "/collections/{id}/items", handleCreateCollectionItem, "POST")
 
 	addRoute(router, "/collections/{id}/schema", handleCollectionSchemas)
 
@@ -77,7 +80,11 @@ func initRouter(basePath string) *mux.Router {
 }
 
 func addRoute(router *mux.Router, path string, handler func(http.ResponseWriter, *http.Request) *appError) {
-	router.Handle(path, appHandler(handler))
+	addRouteWithMethod(router, path, handler, "GET")
+}
+
+func addRouteWithMethod(router *mux.Router, path string, handler func(http.ResponseWriter, *http.Request) *appError, method string) {
+	router.Handle(path, appHandler(handler)).Methods(method)
 }
 
 //nolint:unused
@@ -296,6 +303,45 @@ func handleCollectionSchemas(w http.ResponseWriter, r *http.Request) *appError {
 
 }
 
+func handleCreateCollectionItem(w http.ResponseWriter, r *http.Request) *appError {
+	urlBase := serveURLBase(r)
+
+	//--- extract request parameters
+	name := getRequestVar(routeVarID, r)
+
+	//--- check query parameters
+	queryValues := r.URL.Query()
+	paramValues := extractSingleArgs(queryValues)
+	if len(paramValues) != 0 {
+		return appErrorMsg(nil, "No parameter allowed", http.StatusBadRequest)
+	}
+
+	//--- check feature availability
+	tbl, err1 := catalogInstance.TableByName(name)
+	if err1 != nil {
+		return appErrorInternalFmt(err1, api.ErrMsgCollectionAccess, name)
+	}
+	if tbl == nil {
+		return appErrorNotFoundFmt(err1, api.ErrMsgCollectionNotFound, name)
+	}
+
+	//--- json body
+	body, errBody := ioutil.ReadAll(r.Body)
+	if errBody != nil || len(body) == 0 {
+		return appErrorInternalFmt(errBody, "Unable to read request body for Collection: %v", name)
+	}
+
+	newId, err2 := catalogInstance.AddTableFeature(r.Context(), name, body)
+	if err2 != nil {
+		return appErrorInternalFmt(err2, api.ErrMsgCreateFeature, name)
+	}
+
+	w.Header().Set("Location", fmt.Sprintf("%scollections/%s/items/%d", urlBase, name, newId))
+	w.WriteHeader(http.StatusCreated)
+	w.Write([]byte(""))
+	return nil
+}
+
 func handleCollectionItems(w http.ResponseWriter, r *http.Request) *appError {
 	// TODO: determine content from request header?
 	format := api.RequestedFormat(r)
@@ -363,12 +409,20 @@ func writeCreateItemSchemaJSON(ctx context.Context, w http.ResponseWriter, table
 	props.Type = "object"
 
 	// update required properties
+	requiredTypeKeys := make([]string, 0, len(table.DbTypes))
+
+	for k := range table.DbTypes {
+		requiredTypeKeys = append(requiredTypeKeys, k)
+	}
+	sort.Strings(requiredTypeKeys)
+
 	var requiredTypes []string
-	for k, c := range table.DbTypes {
-		if c.IsRequired {
+	for _, k := range requiredTypeKeys {
+		if table.DbTypes[k].IsRequired {
 			requiredTypes = append(requiredTypes, k)
 		}
 	}
+
 	props.Required = requiredTypes
 
 	// update properties by their name and type

@@ -47,6 +47,10 @@ type Catalog interface {
 	// It returns an empty string if the table or feature does not exist
 	TableFeature(ctx context.Context, name string, id string, param *QueryParam) (string, error)
 
+	// AddTableFeature returns the id of the new feature created in the table tableName
+	// using the JSON data to create the feature
+	AddTableFeature(ctx context.Context, tableName string, jsonData []byte) (int64, error)
+
 	Functions() ([]*Function, error)
 
 	// FunctionByName returns the function with given name.
