@@ -26,6 +26,9 @@ const (
 	// ContentTypeGeoJSON
 	ContentTypeGeoJSON = "application/geo+json"
 
+	// ContentTypeGML
+	ContentTypeGML = "application/gml+xml"
+
 	// ContentTypeSchemaJSON
 	ContentTypeSchemaJSON = "application/schema+json"
 
@@ -55,6 +58,9 @@ const (
 
 	// FormatJSON code and extension for JSON
 	FormatSchemaJSON = "schema+json"
+
+	// FormatXML code and extension for XML/GML
+	FormatXML = "xml"
 )
 
 // RequestedFormat gets the format for a request from extension or headers
@@ -81,6 +87,19 @@ func RequestedFormat(r *http.Request) string {
 	}
 	if strings.Contains(hdrAccept, ContentTypeHTML) {
 		return FormatHTML
+	}
+	return FormatJSON
+}
+
+// RequestedFormat gets the format for a request from extension or headers
+func SentDataFormat(r *http.Request) string {
+	// Use ContentType header if present
+	hdrContentType := r.Header.Get("Content-Type")
+	if strings.Contains(hdrContentType, ContentTypeGeoJSON) {
+		return FormatJSON
+	}
+	if strings.Contains(hdrContentType, ContentTypeGML) {
+		return FormatXML
 	}
 	return FormatJSON
 }

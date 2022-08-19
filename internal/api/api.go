@@ -76,6 +76,7 @@ const (
 	ErrMsgCollectionNotFound    = "Collection not found: %v"
 	ErrMsgCollectionAccess      = "Unable to access Collection: %v"
 	ErrMsgFeatureNotFound       = "Feature not found: %v"
+	ErrMsgCreateFeature         = "Unable to create new feature in Collection: %v"
 	ErrMsgLoadFunctions         = "Unable to access Functions"
 	ErrMsgFunctionNotFound      = "Function not found: %v"
 	ErrMsgFunctionAccess        = "Unable to access Function: %v"

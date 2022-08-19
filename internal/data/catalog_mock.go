@@ -245,6 +245,10 @@ func (cat *CatalogMock) TableFeature(ctx context.Context, name string, id string
 	return features[index].toJSON(propNames), nil
 }
 
+func (cat *CatalogMock) AddTableFeature(ctx context.Context, tableName string, jsonData []byte) (int64, error) {
+	panic("CatalogMock::AddTableFeature unimplemented")
+}
+
 func (cat *CatalogMock) Functions() ([]*Function, error) {
 	return cat.FunctionDefs, nil
 }
@@ -267,6 +271,12 @@ func (cat *CatalogMock) FunctionFeatures(ctx context.Context, name string, args 
 func (cat *CatalogMock) FunctionData(ctx context.Context, name string, args map[string]string, param *QueryParam) ([]map[string]interface{}, error) {
 	// TODO:
 	return nil, nil
+}
+
+func (cat *CatalogMock) MakeFeatureMockPointAsJSON(id int, x float64, y float64) string {
+	feat := makeFeatureMockPoint(id, x, y)
+	propNames := cat.TableDefs[0].Columns
+	return feat.toJSON(propNames)
 }
 
 func makePointFeatures(extent Extent, nx int, ny int) []*featureMock {

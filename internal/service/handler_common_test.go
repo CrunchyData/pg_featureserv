@@ -36,24 +36,14 @@ func doRequest(t *testing.T, url string) *httptest.ResponseRecorder {
 	return doRequestStatus(t, url, http.StatusOK)
 }
 
+func doPostRequest(t *testing.T, url string, data []byte, header http.Header) *httptest.ResponseRecorder {
+	return doRequestMethodStatus(t, "POST", url, data, header, http.StatusCreated)
+}
+
 // do an http request to url with default method GET and a specific expected status
 func doRequestStatus(t *testing.T, url string,
 	statusExpected int) *httptest.ResponseRecorder {
-	req, err := http.NewRequest("GET", basePath+url, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	rr := httptest.NewRecorder()
-	router.ServeHTTP(rr, req)
-
-	// Check the status code
-	//fmt.Println("Status:", rr.Code)
-	if status := rr.Code; status != statusExpected {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, statusExpected)
-	}
-	return rr
+	return doRequestMethodStatus(t, "GET", url, nil, nil, statusExpected)
 }
 
 // do an http request to url with a specific method and specific expected status
