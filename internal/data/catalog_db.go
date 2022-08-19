@@ -340,7 +340,7 @@ func scanTable(rows pgx.Rows) *Table {
 	// Since Go map order is random, list columns in array
 	columns := make([]string, arrLen)
 	jsontypes := make([]string, arrLen)
-	datatypes := make(map[string]string)
+	datatypes := make(map[string]Column)
 	colDesc := make([]string, arrLen)
 
 	for i := arrStart; i < arrLen; i++ {
@@ -348,7 +348,8 @@ func scanTable(rows pgx.Rows) *Table {
 		name := props.Elements[elmPos].String
 		datatype := props.Elements[elmPos+1].String
 		columns[i] = name
-		datatypes[name] = datatype
+		// TODO must find a way to compute IsRequired
+		datatypes[name] = Column{Index: i, Type: datatype, IsRequired: true}
 		jsontypes[i] = toJSONTypeFromPG(datatype)
 		colDesc[i] = props.Elements[elmPos+2].String
 	}

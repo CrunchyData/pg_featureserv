@@ -93,6 +93,13 @@ type QueryParam struct {
 	TransformFuns []TransformFunction
 }
 
+// Column holds metadata for column objects
+type Column struct {
+	Index      int
+	Type       string
+	IsRequired bool
+}
+
 // Table holds metadata for table/view objects
 type Table struct {
 	ID             string
@@ -106,7 +113,7 @@ type Table struct {
 	Srid           int
 	Extent         Extent
 	Columns        []string
-	DbTypes        map[string]string
+	DbTypes        map[string]Column
 	JSONTypes      []string
 	ColDesc        []string
 }

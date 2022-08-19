@@ -40,11 +40,11 @@ func CatMockInstance() *CatalogMock {
 func newCatalogMock() CatalogMock {
 	// must be in synch with featureMock type
 	propNames := []string{"prop_a", "prop_b", "prop_c", "prop_d"}
-	types := map[string]string{
-		"prop_a": "text",
-		"prop_b": "int",
-		"prop_c": "text",
-		"prop_d": "int",
+	types := map[string]Column{
+		"prop_a": Column{Index: 0, Type: "text", IsRequired: true},
+		"prop_b": Column{Index: 0, Type: "int", IsRequired: true},
+		"prop_c": Column{Index: 0, Type: "text", IsRequired: false},
+		"prop_d": Column{Index: 0, Type: "int", IsRequired: false},
 	}
 	jtypes := []string{"string", "number", "string", "number"}
 	colDesc := []string{"Property A", "Property B", "Property C", "Property D"}
