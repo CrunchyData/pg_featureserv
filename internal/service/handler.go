@@ -535,7 +535,8 @@ func handleFunction(w http.ResponseWriter, r *http.Request) *appError {
 	format := api.RequestedFormat(r)
 	urlBase := serveURLBase(r)
 
-	name := data.FunctionQualifiedId(getRequestVar(routeVarID, r))
+	shortName := getRequestVar(routeVarID, r)
+	name := data.FunctionQualifiedId(shortName)
 
 	fn, err := catalogInstance.FunctionByName(name)
 	if fn == nil && err == nil {
@@ -549,7 +550,7 @@ func handleFunction(w http.ResponseWriter, r *http.Request) *appError {
 	// --- encoding
 	switch format {
 	case api.FormatHTML:
-		pathItems := api.PathFunctionItems(name)
+		pathItems := api.PathFunctionItems(shortName)
 		context := ui.NewPageData()
 		context.URLHome = urlPathFormat(urlBase, "", api.FormatHTML)
 		context.URLFunctions = urlPathFormat(urlBase, api.TagFunctions, api.FormatHTML)
@@ -563,7 +564,7 @@ func handleFunction(w http.ResponseWriter, r *http.Request) *appError {
 
 		return writeHTML(w, content, context, ui.PageFunction())
 	default:
-		content.Links = linksFunction(name, urlBase, false, isGeomFun)
+		content.Links = linksFunction(shortName, urlBase, false, isGeomFun)
 
 		return writeJSON(w, api.ContentTypeJSON, content)
 	}

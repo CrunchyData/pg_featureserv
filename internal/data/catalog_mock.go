@@ -248,7 +248,7 @@ func (cat *CatalogMock) Functions() ([]*Function, error) {
 
 func (cat *CatalogMock) FunctionByName(name string) (*Function, error) {
 	for _, fn := range cat.FunctionDefs {
-		if fn.ID == name {
+		if fn.Schema+"."+fn.ID == name {
 			return fn, nil
 		}
 	}
