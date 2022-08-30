@@ -30,7 +30,8 @@ func TestApiContainsCollectionSchemas(t *testing.T) {
 	body, _ := ioutil.ReadAll(resp.Body)
 
 	var v openapi3.Swagger
-	json.Unmarshal(body, &v)
+	errUnMarsh := json.Unmarshal(body, &v)
+	assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 
 	equals(t, 11, len(v.Paths), "# api paths")
 	path := v.Paths.Find("/collections/{collectionId}/schema")
