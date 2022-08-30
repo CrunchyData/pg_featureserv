@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"sort"
 	"strings"
-	"text/template"
 	"time"
 
 	"github.com/CrunchyData/pg_featureserv/internal/conf"
@@ -60,7 +59,6 @@ type catalogDB struct {
 var isStartup bool
 var isFunctionsLoaded bool
 var instanceDB catalogDB
-var templateFeature *template.Template
 
 const fmtQueryStats = "Database query result: %v rows in %v"
 
@@ -381,18 +379,20 @@ func scanTable(rows pgx.Rows) *Table {
 
 //=================================================
 
+//nolint:unused
 func readFeatures(ctx context.Context, db *pgxpool.Pool, sql string, idColIndex int, propCols []string) ([]string, error) {
 	return readFeaturesWithArgs(ctx, db, sql, nil, idColIndex, propCols)
 }
 
+//nolint:unused
 func readFeaturesWithArgs(ctx context.Context, db *pgxpool.Pool, sql string, args []interface{}, idColIndex int, propCols []string) ([]string, error) {
 	start := time.Now()
 	rows, err := db.Query(ctx, sql, args...)
-	defer rows.Close()
 	if err != nil {
 		log.Warnf("Error running Features query: %v", err)
 		return nil, err
 	}
+	defer rows.Close()
 
 	data, err := scanFeatures(ctx, rows, idColIndex, propCols)
 	if err != nil {
@@ -468,43 +468,43 @@ func toJSONValue(value interface{}) interface{} {
 	case *pgtype.Numeric:
 		var num float64
 		// TODO: handle error
-		v.AssignTo(&num)
+		v.AssignTo(&num) //nolint:errcheck
 		return num
 	case *pgtype.JSON:
 		var jsonval string
-		v.AssignTo(&jsonval)
+		v.AssignTo(&jsonval) //nolint:errcheck
 		return json.RawMessage(jsonval)
 	case *pgtype.TextArray:
 		var strarr []string
-		v.AssignTo(&strarr)
+		v.AssignTo(&strarr) //nolint:errcheck
 		return strarr
 	case *pgtype.BoolArray:
 		var valarr []bool
-		v.AssignTo(&valarr)
+		v.AssignTo(&valarr) //nolint:errcheck
 		return valarr
 	case *pgtype.Int2Array:
 		var numarr []int16
-		v.AssignTo(&numarr)
+		v.AssignTo(&numarr) //nolint:errcheck
 		return numarr
 	case *pgtype.Int4Array:
 		var numarr []int32
-		v.AssignTo(&numarr)
+		v.AssignTo(&numarr) //nolint:errcheck
 		return numarr
 	case *pgtype.Int8Array:
 		var numarr []int64
-		v.AssignTo(&numarr)
+		v.AssignTo(&numarr) //nolint:errcheck
 		return numarr
 	case *pgtype.Float4Array:
 		var numarr []float64
-		v.AssignTo(&numarr)
+		v.AssignTo(&numarr) //nolint:errcheck
 		return numarr
 	case *pgtype.Float8Array:
 		var numarr []float64
-		v.AssignTo(&numarr)
+		v.AssignTo(&numarr) //nolint:errcheck
 		return numarr
 	case *pgtype.NumericArray:
 		var numarr []float64
-		v.AssignTo(&numarr)
+		v.AssignTo(&numarr) //nolint:errcheck
 		return numarr
 		// TODO: handle other conversions?
 	}

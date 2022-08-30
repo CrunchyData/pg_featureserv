@@ -77,6 +77,7 @@ func addRoute(router *mux.Router, path string, handler func(http.ResponseWriter,
 	router.Handle(path, appHandler(handler))
 }
 
+//nolint:unused
 func handleRootJSON(w http.ResponseWriter, r *http.Request) *appError {
 	return doRoot(w, r, api.FormatJSON)
 }
@@ -356,16 +357,21 @@ func handleItem(w http.ResponseWriter, r *http.Request) *appError {
 	if tbl == nil {
 		return appErrorNotFoundFmt(err1, api.ErrMsgCollectionNotFound, name)
 	}
-	param, err := createQueryParams(&reqParam, tbl.Columns, tbl.Srid)
+	param, errQuery := createQueryParams(&reqParam, tbl.Columns, tbl.Srid)
 
-	ctx := r.Context()
-	switch format {
-	case api.FormatJSON:
-		return writeItemJSON(ctx, w, name, fid, param, urlBase)
-	case api.FormatHTML:
-		return writeItemHTML(w, tbl, name, fid, query, urlBase)
+	if errQuery == nil {
+		ctx := r.Context()
+		switch format {
+		case api.FormatJSON:
+			return writeItemJSON(ctx, w, name, fid, param, urlBase)
+		case api.FormatHTML:
+			return writeItemHTML(w, tbl, name, fid, query, urlBase)
+		default:
+			return nil
+		}
+	} else {
+		return appErrorInternalFmt(errQuery, api.ErrMsgInvalidQuery)
 	}
-	return nil
 }
 
 func writeItemHTML(w http.ResponseWriter, tbl *data.Table, name string, fid string, query string, urlBase string) *appError {

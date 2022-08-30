@@ -241,11 +241,11 @@ func removeNames(names []string, ex1 string, ex2 string) []string {
 func readDataWithArgs(ctx context.Context, db *pgxpool.Pool, propCols []string, sql string, args []interface{}) ([]map[string]interface{}, error) {
 	start := time.Now()
 	rows, err := db.Query(context.Background(), sql, args...)
-	defer rows.Close()
 	if err != nil {
 		log.Warnf("Error running Data query: %v", err)
 		return nil, err
 	}
+	defer rows.Close()
 	data := scanData(ctx, rows, propCols)
 	log.Debugf(fmtQueryStats, len(data), time.Since(start))
 	return data, nil

@@ -23,3 +23,5 @@ repos:
       - id: golangci-lint
         language: golang
         types: [go]
+        # skip generated files:
+        args: [ "--skip-files", "internal/cql/cql_parser.go" ]
