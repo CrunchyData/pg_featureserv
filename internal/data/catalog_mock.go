@@ -322,6 +322,10 @@ func (cat *CatalogMock) PartialUpdateTableFeature(ctx context.Context, tableName
 	return jsonStr, nil
 }
 
+func (cat *CatalogMock) ReplaceTableFeature(ctx context.Context, tableName string, id string, jsonData []byte) (string, error) {
+	panic("CatalogMock::ReplaceTableFeature unimplemented")
+}
+
 func (cat *CatalogMock) Functions() ([]*Function, error) {
 	return cat.FunctionDefs, nil
 }

@@ -70,6 +70,7 @@ func InitRouter(basePath string) *mux.Router {
 
 	addRoute(router, "/collections/{id}/items/{fid}", handleItem)
 	addRoute(router, "/collections/{id}/items/{fid}.{fmt}", handleItem)
+
 	addRouteWithMethod(router, "/collections/{id}/items/{fid}", handlePartialUpdateItem, "PATCH")
 	addRouteWithMethod(router, "/collections/{id}/items/{fid}.{fmt}", handlePartialUpdateItem, "PATCH")
 
@@ -563,7 +564,6 @@ func handleItem(w http.ResponseWriter, r *http.Request) *appError {
 }
 
 func handlePartialUpdateItem(w http.ResponseWriter, r *http.Request) *appError {
-
 	// extract request parameters
 	name := getRequestVar(routeVarID, r)
 	fid := getRequestVar(routeVarFeatureID, r)
@@ -613,6 +613,48 @@ func handlePartialUpdateItem(w http.ResponseWriter, r *http.Request) *appError {
 		return appErrorInternalFmt(err, api.ErrMsgPartialUpdateFeature, name)
 	}
 	if feature == "" {
+		return appErrorNotFoundFmt(nil, api.ErrMsgFeatureNotFound, fid)
+	}
+
+	encodedContent := []byte(feature)
+	writeResponse(w, api.ContentTypeGeoJSON, encodedContent)
+	return nil
+}
+
+// TODO: DRAFT
+func handleReplaceItem(w http.ResponseWriter, r *http.Request) *appError {
+	// extract request parameters
+	name := getRequestVar(routeVarID, r)
+	fid := getRequestVar(routeVarFeatureID, r)
+
+	// check query parameters
+	queryValues := r.URL.Query()
+	paramValues := extractSingleArgs(queryValues)
+	if len(paramValues) != 0 {
+		return appErrorMsg(nil, "No parameter allowed", http.StatusBadRequest)
+	}
+
+	// check that collection exists
+	tbl, err1 := catalogInstance.TableByName(name)
+	if err1 != nil {
+		return appErrorInternalFmt(err1, api.ErrMsgCollectionAccess, name)
+	}
+	if tbl == nil {
+		return appErrorNotFoundFmt(err1, api.ErrMsgCollectionNotFound, name)
+	}
+
+	// extract JSON from request body
+	body, errBody := ioutil.ReadAll(r.Body)
+	if errBody != nil || len(body) == 0 {
+		return appErrorInternalFmt(errBody, "Unable to read request body for Collection: %v", name)
+	}
+
+	// perform replace in database
+	feature, err2 := catalogInstance.ReplaceTableFeature(r.Context(), name, fid, body)
+	if err2 != nil {
+		return appErrorInternalFmt(err2, api.ErrMsgReplaceFeature, name)
+	}
+	if len(feature) == 0 {
 		return appErrorNotFoundFmt(nil, api.ErrMsgFeatureNotFound, fid)
 	}
 

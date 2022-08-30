@@ -88,6 +88,7 @@ const (
 	ErrMsgDataWriteError          = "Unable to write data to: %v"
 	ErrMsgNoDataRead              = "No data read from: %v"
 	ErrMsgRequestTimeout          = "Maximum time exceeded.  Request cancelled."
+	ErrMsgReplaceFeature          = "Unable to replace feature in Collection: %v"
 )
 
 const (
