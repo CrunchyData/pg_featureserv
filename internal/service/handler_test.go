@@ -522,7 +522,8 @@ func checkItem(t *testing.T, id int) {
 	}
 
 	var v featureData
-	json.Unmarshal(body, &v)
+	errUnMarsh := json.Unmarshal(body, &v)
+	assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 
 	equals(t, "Feature", v.Type, "feature type")
 	actId, _ := strconv.Atoi(v.ID)

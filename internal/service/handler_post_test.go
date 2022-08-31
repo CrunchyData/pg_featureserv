@@ -56,13 +56,9 @@ func TestGetCollectionCreateSchema(t *testing.T) {
 	resp := doRequestMethodStatus(t, "GET", path, nil, header, http.StatusOK)
 	body, _ := ioutil.ReadAll(resp.Body)
 
-	fmt.Println(string(body))
-
 	var fis openapi3.Schema
-	err := fis.UnmarshalJSON(body)
-	if err != nil {
-		t.Fatal(err)
-	}
+	errUnMarsh := json.Unmarshal(body, &fis)
+	assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 
 	equals(t, "This dataset contains mock data about A (9 points)", fis.Description, "feature description")
 	equals(t, "https://geojson.org/schema/Point.json", fis.Properties["geometry"].Value.Items.Ref, "feature geometry")
@@ -82,24 +78,41 @@ func TestCreateFeature(t *testing.T) {
 
 	var header = make(http.Header)
 	header.Add("Content-Type", "application/geo+json")
-	jsonStr := catalogMock.MakeFeatureMockPointAsJSON(maxId, 12, 34)
-	fmt.Println(jsonStr)
-	rr := doPostRequest(t, "/collections/mock_a/items", []byte(jsonStr), header)
-
-	loc := rr.Header().Get("Location")
-
-	assert(t, len(loc) > 1, "Header location must not be empty")
-	assert(t, strings.Contains(loc, "/collections/mock_a/items/"), "Header location must contain valid data")
-
-	// retrieve new object id from location header
-	parts := strings.Split(loc, "/")
-	actId, err := strconv.Atoi(parts[len(parts)-1])
-	if err != nil {
-		t.Fatal(err)
+	{
+		jsonStr := `[{
+		"id": 101,
+		"name": "Test",
+		"email": "test@test.com"
+	      }, {
+		"id": 102,
+		"name": "Sample",
+		"email": "sample@test.com"
+	    }]`
+		rr := doRequestMethodStatus(t, "POST", "/collections/mock_a/items", []byte(jsonStr), header, http.StatusInternalServerError)
+		equals(t, http.StatusInternalServerError, rr.Code, "Should have failed")
+		assert(t, strings.Index(rr.Body.String(), fmt.Sprintf(api.ErrMsgCreateFeatureNotConform+"\n", "mock_a")) == 0, "Should have failed with not conform")
 	}
 
-	assert(t, actId > maxId, fmt.Sprintf("Returned id must be > actual feature number: %d > %d", actId, maxId))
+	{
+		jsonStr := catalogMock.MakeFeatureMockPointAsJSON(maxId, 12, 34)
+		fmt.Println(jsonStr)
+		rr := doPostRequest(t, "/collections/mock_a/items", []byte(jsonStr), header)
 
-	// check if it can be read
-	checkItem(t, actId)
+		loc := rr.Header().Get("Location")
+
+		assert(t, len(loc) > 1, "Header location must not be empty")
+		assert(t, strings.Contains(loc, "/collections/mock_a/items/"), "Header location must contain valid data")
+
+		// retrieve new object id from location header
+		parts := strings.Split(loc, "/")
+		actId, err := strconv.Atoi(parts[len(parts)-1])
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		assert(t, actId > maxId, fmt.Sprintf("Returned id must be > actual feature number: %d > %d", actId, maxId))
+
+		// check if it can be read
+		checkItem(t, actId)
+	}
 }
