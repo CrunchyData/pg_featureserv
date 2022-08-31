@@ -16,6 +16,7 @@ package service
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -267,7 +268,6 @@ func handleCollection(w http.ResponseWriter, r *http.Request) *appError {
 func handleCollectionSchemas(w http.ResponseWriter, r *http.Request) *appError {
 	// TODO: determine content from request header?
 	format := api.RequestedFormat(r)
-	urlBase := serveURLBase(r)
 
 	//--- extract request parameters
 	name := getRequestVar(routeVarID, r)
@@ -290,7 +290,7 @@ func handleCollectionSchemas(w http.ResponseWriter, r *http.Request) *appError {
 		{
 			switch schemaType {
 			case "create":
-				return writeCreateItemSchemaJSON(ctx, w, tbl, urlBase)
+				return writeCreateItemSchemaJSON(ctx, w, tbl)
 			default:
 				return appErrorBadRequest(nil, fmt.Sprintf("Asked schema type %s not implemented!", schemaType))
 			}
@@ -326,19 +326,30 @@ func handleCreateCollectionItem(w http.ResponseWriter, r *http.Request) *appErro
 	}
 
 	//--- json body
-	body, errBody := ioutil.ReadAll(r.Body)
-	if errBody != nil || len(body) == 0 {
+	bodyContent, errBody := ioutil.ReadAll(r.Body)
+	if errBody != nil || len(bodyContent) == 0 {
 		return appErrorInternalFmt(errBody, "Unable to read request body for Collection: %v", name)
 	}
 
-	newId, err2 := catalogInstance.AddTableFeature(r.Context(), name, body)
+	//--- check if body matches the schema
+	createSchema, errGetSch := getCreateItemSchema(r.Context(), tbl)
+	if errGetSch != nil {
+		return appErrorInternalFmt(errGetSch, errGetSch.Error())
+	}
+	var val interface{}
+	_ = json.Unmarshal(bodyContent, &val)
+	errValSch := createSchema.VisitJSON(val)
+	if errValSch != nil {
+		return appErrorInternalFmt(errValSch, api.ErrMsgCreateFeatureNotConform, name)
+	}
+
+	newId, err2 := catalogInstance.AddTableFeature(r.Context(), name, bodyContent)
 	if err2 != nil {
-		return appErrorInternalFmt(err2, api.ErrMsgCreateFeature, name)
+		return appErrorInternalFmt(err2, api.ErrMsgCreateFeatureInCatalog, name)
 	}
 
 	w.Header().Set("Location", fmt.Sprintf("%scollections/%s/items/%d", urlBase, name, newId))
 	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte(""))
 	return nil
 }
 
@@ -378,13 +389,22 @@ func handleCollectionItems(w http.ResponseWriter, r *http.Request) *appError {
 	return nil
 }
 
-func writeCreateItemSchemaJSON(ctx context.Context, w http.ResponseWriter, table *data.Table, urlBase string) *appError {
+func writeCreateItemSchemaJSON(ctx context.Context, w http.ResponseWriter, table *data.Table) *appError {
+	createSchema, err := getCreateItemSchema(ctx, table)
+	if err != nil {
+		return appErrorMsg(err, err.Error(), http.StatusInternalServerError)
+	}
+	return writeJSON(w, api.ContentTypeSchemaJSON, createSchema)
+
+}
+
+func getCreateItemSchema(ctx context.Context, table *data.Table) (openapi3.Schema, error) {
 	// Feature schema skeleton
 	var featureInfoSchema openapi3.Schema = openapi3.Schema{
 		Type:     "object",
 		Required: []string{"type", "geometry", "properties"},
 		Properties: map[string]*openapi3.SchemaRef{
-			"id": {Value: &openapi3.Schema{Type: "number", Format: "long"}},
+			"id": {Value: &openapi3.Schema{Type: "string", Format: "uri"}},
 			"type": {
 				Value: &openapi3.Schema{
 					Type:    "string",
@@ -395,6 +415,9 @@ func writeCreateItemSchemaJSON(ctx context.Context, w http.ResponseWriter, table
 				Value: &openapi3.Schema{
 					Items: &openapi3.SchemaRef{
 						Ref: fmt.Sprintf("https://geojson.org/schema/%v.json", table.GeometryType),
+						Value: &openapi3.Schema{
+							Type: "string", // mandatory to validate the schema
+						},
 					},
 				},
 			},
@@ -428,14 +451,24 @@ func writeCreateItemSchemaJSON(ctx context.Context, w http.ResponseWriter, table
 	// update properties by their name and type
 	props.Properties = make(map[string]*openapi3.SchemaRef)
 	for k, v := range table.DbTypes {
+		propType := v.Type
+		if api.Db2OpenapiFormatMap[v.Type] != "" {
+			propType = api.Db2OpenapiFormatMap[v.Type]
+		}
 		props.Properties[k] = &openapi3.SchemaRef{
 			Value: &openapi3.Schema{
-				Type: v.Type,
+				Type: propType,
 			},
 		}
 	}
 
-	return writeJSON(w, api.ContentTypeSchemaJSON, featureInfoSchema)
+	errVal := featureInfoSchema.Validate(ctx)
+	if errVal != nil {
+		encodedContent, _ := json.Marshal(featureInfoSchema)
+		return featureInfoSchema, fmt.Errorf("schema not valid: %v\n\t%v", errVal, string(encodedContent))
+	}
+
+	return featureInfoSchema, nil
 }
 
 func writeItemsHTML(w http.ResponseWriter, tbl *data.Table, name string, query string, urlBase string) *appError {
