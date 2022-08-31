@@ -71,10 +71,15 @@ func doRequestMethodStatus(t *testing.T, method string, url string,
 			bodyMsg = "Error: " + string(body)
 		}
 
-		assert(t,
-			status == statusExpected,
-			fmt.Errorf("handler returned wrong status code: got %v want %v. %v",
-				status, statusExpected, bodyMsg).Error())
+		if bodyMsg != "" {
+			equals(t,
+				statusExpected, status,
+				fmt.Errorf("handler returned wrong status code.\n\tCaused by: %v", bodyMsg).Error())
+		} else {
+			equals(t,
+				statusExpected, status,
+				"handler returned wrong status code.")
+		}
 	}
 	return rr
 }
