@@ -18,6 +18,8 @@ import (
 	"fmt"
 	"strconv"
 
+	orb "github.com/paulmach/orb"
+	"github.com/paulmach/orb/geojson"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -303,26 +305,25 @@ func makePointFeatures(extent Extent, nx int, ny int) []*featureMock {
 }
 
 type featureMock struct {
-	ID    string
-	Geom  string
-	PropA string
-	PropB int
-	PropC string
-	PropD int
+	ID    string            `json:"ID"`
+	Geom  *geojson.Geometry `json:"geometry"`
+	PropA string            `json:"prop_a"`
+	PropB int               `json:"prop_b"`
+	PropC string            `json:"prop_c"`
+	PropD int               `json:"prop_d"`
 }
 
 func makeFeatureMockPoint(id int, x float64, y float64) *featureMock {
-	geomFmt := `{"type": "Point","coordinates": [ %v, %v ]  }`
-	geomStr := fmt.Sprintf(geomFmt, x, y)
+	geom := geojson.NewGeometry(orb.Point{x, y})
 
 	idstr := strconv.Itoa(id)
-	feat := featureMock{idstr, geomStr, "propA", id, "propC", id % 10}
+	feat := featureMock{idstr, geom, "propA", id, "propC", id % 10}
 	return &feat
 }
 
 func (fm *featureMock) toJSON(propNames []string) string {
 	props := fm.extractProperties(propNames)
-	return makeFeatureJSON(fm.ID, fm.Geom, props)
+	return makeGeojsonFeatureJSON(fm.ID, *fm.Geom, props)
 }
 
 func (fm *featureMock) extractProperties(propNames []string) map[string]interface{} {
