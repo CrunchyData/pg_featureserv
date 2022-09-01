@@ -17,6 +17,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"sort"
 	"strings"
 	"time"
@@ -26,6 +27,7 @@ import (
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/log/logrusadapter"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/paulmach/orb/geojson"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -431,29 +433,33 @@ func scanFeatures(ctx context.Context, rows pgx.Rows, idColIndex int, propCols [
 }
 
 func scanFeature(rows pgx.Rows, idColIndex int, propNames []string) string {
-	var id, geom string
+	var id string
+
 	vals, err := rows.Values()
 	if err != nil {
 		log.Warnf("Error scanning row for Feature: %v", err)
 		return ""
 	}
 	//fmt.Println(vals)
-	//--- geom value is expected to be a GeoJSON string
-	//--- convert NULL to an empty string
-	if vals[0] != nil {
-		geom = vals[0].(string)
-	} else {
-		geom = ""
-	}
 
 	propOffset := 1
 	if idColIndex >= 0 {
 		id = fmt.Sprintf("%v", vals[idColIndex+propOffset])
 	}
 
-	//fmt.Println(geom)
 	props := extractProperties(vals, propOffset, propNames)
-	return makeFeatureJSON(id, geom, props)
+
+	//--- geom value is expected to be a GeoJSON string or geojson object
+	//--- convert NULL to an empty string
+	if vals[0] != nil {
+		if "string" == reflect.TypeOf(vals[0]).String() {
+			return makeFeatureJSON(id, vals[0].(string), props)
+		} else {
+			return makeGeojsonFeatureJSON(id, vals[0].(geojson.Geometry), props)
+		}
+	} else {
+		return makeFeatureJSON(id, "", props)
+	}
 }
 
 func extractProperties(vals []interface{}, propOffset int, propNames []string) map[string]interface{} {
@@ -573,6 +579,30 @@ func makeFeatureJSON(id string, geom string, props map[string]interface{}) strin
 		Type:  "Feature",
 		ID:    id,
 		Geom:  &geomRaw,
+		Props: props,
+	}
+	json, err := json.Marshal(featData)
+	if err != nil {
+		log.Errorf("Error marshalling feature into JSON: %v", err)
+		return ""
+	}
+	jsonStr := string(json)
+	//fmt.Println(jsonStr)
+	return jsonStr
+}
+
+type geojsonFeatureData struct {
+	Type  string                 `json:"type"`
+	ID    string                 `json:"id,omitempty"`
+	Geom  *geojson.Geometry      `json:"geometry"`
+	Props map[string]interface{} `json:"properties"`
+}
+
+func makeGeojsonFeatureJSON(id string, geom geojson.Geometry, props map[string]interface{}) string {
+	featData := geojsonFeatureData{
+		Type:  "Feature",
+		ID:    id,
+		Geom:  &geom,
 		Props: props,
 	}
 	json, err := json.Marshal(featData)
