@@ -161,7 +161,7 @@ func TestCollectionItemsResponse(t *testing.T) {
 	errUnMarsh := json.Unmarshal(body, &v)
 	assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 
-	equals(t, 9, len(v.Features), "# features")
+	equals(t, int(catalogMock.TableSize("mock_a")), len(v.Features), "# features")
 	checkLink(t, v.Links[0], api.RelSelf, api.ContentTypeJSON, urlBase+path)
 	checkLink(t, v.Links[1], api.RelAlt, api.ContentTypeHTML, urlBase+path+".html")
 }
@@ -218,7 +218,7 @@ func TestSortBy(t *testing.T) {
 	errUnMarsh := json.Unmarshal(readBody(rr), &v)
 	assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 
-	equals(t, 9, len(v.Features), "# features")
+	equals(t, int(catalogMock.TableSize("mock_a")), len(v.Features), "# features")
 }
 
 func TestSortByDesc(t *testing.T) {
@@ -228,7 +228,7 @@ func TestSortByDesc(t *testing.T) {
 	errUnMarsh := json.Unmarshal(readBody(rr), &v)
 	assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 
-	equals(t, 9, len(v.Features), "# features")
+	equals(t, int(catalogMock.TableSize("mock_a")), len(v.Features), "# features")
 }
 
 func TestSortByAsc(t *testing.T) {
@@ -238,7 +238,7 @@ func TestSortByAsc(t *testing.T) {
 	errUnMarsh := json.Unmarshal(readBody(rr), &v)
 	assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 
-	equals(t, 9, len(v.Features), "# features")
+	equals(t, int(catalogMock.TableSize("mock_a")), len(v.Features), "# features")
 }
 
 func TestLimit(t *testing.T) {
@@ -527,6 +527,6 @@ func checkItem(t *testing.T, id int) {
 
 	equals(t, "Feature", v.Type, "feature type")
 	actId, _ := strconv.Atoi(v.ID)
-	equals(t, id+1, actId, "feature id") // TODO should be 1 ?
+	equals(t, id, actId, "feature id")
 	equals(t, 4, len(v.Props), "# feature props")
 }

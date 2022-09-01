@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strconv"
 	"strings"
 	"testing"
 
@@ -68,14 +67,6 @@ func TestGetCollectionCreateSchema(t *testing.T) {
 }
 
 func TestCreateFeature(t *testing.T) {
-	//--- retrieve max feature id
-	params := data.QueryParam{
-		Limit:  100,
-		Offset: 0,
-	}
-	features, _ := catalogMock.TableFeatures(context.Background(), "mock_a", &params)
-	maxId := len(features)
-
 	var header = make(http.Header)
 	header.Add("Content-Type", "application/geo+json")
 	{
@@ -94,25 +85,20 @@ func TestCreateFeature(t *testing.T) {
 	}
 
 	{
-		jsonStr := catalogMock.MakeFeatureMockPointAsJSON(maxId, 12, 34)
+		jsonStr := catalogMock.MakeFeatureMockPointAsJSON(0, 12, 34)
 		fmt.Println(jsonStr)
 		rr := doPostRequest(t, "/collections/mock_a/items", []byte(jsonStr), header)
 
 		loc := rr.Header().Get("Location")
 
+		//--- retrieve max feature id
+		params := data.QueryParam{Limit: 100, Offset: 0}
+		features, _ := catalogMock.TableFeatures(context.Background(), "mock_a", &params)
+		maxId := len(features)
 		assert(t, len(loc) > 1, "Header location must not be empty")
-		assert(t, strings.Contains(loc, "/collections/mock_a/items/"), "Header location must contain valid data")
-
-		// retrieve new object id from location header
-		parts := strings.Split(loc, "/")
-		actId, err := strconv.Atoi(parts[len(parts)-1])
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		assert(t, actId > maxId, fmt.Sprintf("Returned id must be > actual feature number: %d > %d", actId, maxId))
+		assert(t, strings.Contains(loc, fmt.Sprintf("/collections/mock_a/items/%d", maxId)), "Header location must contain valid data")
 
 		// check if it can be read
-		checkItem(t, actId)
+		checkItem(t, maxId)
 	}
 }

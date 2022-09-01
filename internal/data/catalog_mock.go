@@ -15,6 +15,7 @@ package data
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strconv"
 
@@ -234,6 +235,8 @@ func (cat *CatalogMock) TableFeature(ctx context.Context, name string, id string
 		return "", nil
 	}
 
+	index--
+
 	// TODO: return not found if index out of range
 	if index < 0 || index >= len(features) {
 		return "", nil
@@ -247,8 +250,31 @@ func (cat *CatalogMock) TableFeature(ctx context.Context, name string, id string
 	return features[index].toJSON(propNames), nil
 }
 
+// returns the number of feature for a specific table
+func (cat *CatalogMock) TableSize(tableName string) int64 {
+	return int64(len(cat.tableData[tableName]))
+}
+
 func (cat *CatalogMock) AddTableFeature(ctx context.Context, tableName string, jsonData []byte) (int64, error) {
-	panic("CatalogMock::AddTableFeature unimplemented")
+	var newFeature featureMock
+
+	var schemaObject geojsonFeatureData
+	err := json.Unmarshal(jsonData, &schemaObject)
+	if err != nil {
+		return 0, err
+	}
+
+	maxId := cat.TableSize(tableName)
+
+	newFeature.ID = fmt.Sprintf("%d", maxId+1)
+	newFeature.Geom = schemaObject.Geom
+	newFeature.PropA = schemaObject.Props["prop_a"].(string)
+	newFeature.PropB = int(schemaObject.Props["prop_b"].(float64))
+	newFeature.PropC = schemaObject.Props["prop_c"].(string)
+	newFeature.PropD = int(schemaObject.Props["prop_d"].(float64))
+
+	cat.tableData[tableName] = append(cat.tableData[tableName], &newFeature)
+	return maxId + 1, nil
 }
 
 func (cat *CatalogMock) Functions() ([]*Function, error) {
