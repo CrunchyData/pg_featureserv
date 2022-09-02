@@ -92,9 +92,9 @@ func newCatalogMock() CatalogMock {
 	}
 
 	tableData := map[string][]*featureMock{}
-	tableData["mock_a"] = makePointFeatures(layerA.Extent, 3, 3)
-	tableData["mock_b"] = makePointFeatures(layerB.Extent, 10, 10)
-	tableData["mock_c"] = makePointFeatures(layerC.Extent, 100, 100)
+	tableData["mock_a"] = MakePointFeatures(layerA.Extent, 3, 3)
+	tableData["mock_b"] = MakePointFeatures(layerB.Extent, 10, 10)
+	tableData["mock_c"] = MakePointFeatures(layerC.Extent, 100, 100)
 
 	var tables []*Table
 	tables = append(tables, layerA)
@@ -306,7 +306,7 @@ func MakeFeatureMockPointAsJSON(id int, x float64, y float64, columns []string) 
 	return feat.toJSON(columns)
 }
 
-func makePointFeatures(extent Extent, nx int, ny int) []*featureMock {
+func MakePointFeatures(extent Extent, nx int, ny int) []*featureMock {
 	basex := extent.Minx
 	basey := extent.Miny
 	dx := (extent.Maxx - extent.Minx) / float64(nx)
