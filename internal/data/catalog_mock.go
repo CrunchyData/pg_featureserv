@@ -301,10 +301,9 @@ func (cat *CatalogMock) FunctionData(ctx context.Context, name string, args map[
 	return nil, nil
 }
 
-func (cat *CatalogMock) MakeFeatureMockPointAsJSON(id int, x float64, y float64) string {
+func MakeFeatureMockPointAsJSON(id int, x float64, y float64, columns []string) string {
 	feat := makeFeatureMockPoint(id, x, y)
-	propNames := cat.TableDefs[0].Columns
-	return feat.toJSON(propNames)
+	return feat.toJSON(columns)
 }
 
 func makePointFeatures(extent Extent, nx int, ny int) []*featureMock {

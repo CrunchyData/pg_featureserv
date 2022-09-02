@@ -24,26 +24,27 @@ import (
 
 	"github.com/CrunchyData/pg_featureserv/internal/api"
 	"github.com/CrunchyData/pg_featureserv/internal/data"
+	"github.com/CrunchyData/pg_featureserv/util"
 	"github.com/getkin/kin-openapi/openapi3"
 )
 
 // checks swagger api contains get operation from collection schema
 func TestApiContainsCollectionSchemas(t *testing.T) {
-	resp := doRequest(t, "/api")
+	resp := hTest.DoRequest(t, "/api")
 	body, _ := ioutil.ReadAll(resp.Body)
 
 	var v openapi3.Swagger
 	errUnMarsh := json.Unmarshal(body, &v)
-	assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
+	util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 
-	equals(t, 11, len(v.Paths), "# api paths")
+	util.Equals(t, 11, len(v.Paths), "# api paths")
 	path := v.Paths.Find("/collections/{collectionId}/schema")
-	assert(t, path != nil, "schema path exists")
-	equals(t, "Provides access to data representation (schema) for any features in specified collection", path.Description, "schema path present")
-	equals(t, "getCollectionSchema", path.Get.OperationID, "schema path get present")
-	equals(t, 2, len(path.Get.Parameters), "schema path get present")
-	assert(t, path.Get.Parameters.GetByInAndName("path", "collectionId") != nil, "collectionId path parameter exists")
-	assert(t, path.Get.Parameters.GetByInAndName("query", "type") != nil, "type query parameter exists")
+	util.Assert(t, path != nil, "schema path exists")
+	util.Equals(t, "Provides access to data representation (schema) for any features in specified collection", path.Description, "schema path present")
+	util.Equals(t, "getCollectionSchema", path.Get.OperationID, "schema path get present")
+	util.Equals(t, 2, len(path.Get.Parameters), "schema path get present")
+	util.Assert(t, path.Get.Parameters.GetByInAndName("path", "collectionId") != nil, "collectionId path parameter exists")
+	util.Assert(t, path.Get.Parameters.GetByInAndName("query", "type") != nil, "type query parameter exists")
 }
 
 // checks collection schema contains valid data description
@@ -52,18 +53,18 @@ func TestGetCollectionCreateSchema(t *testing.T) {
 	var header = make(http.Header)
 	header.Add("Accept", api.ContentTypeSchemaJSON)
 
-	resp := doRequestMethodStatus(t, "GET", path, nil, header, http.StatusOK)
+	resp := hTest.DoRequestMethodStatus(t, "GET", path, nil, header, http.StatusOK)
 	body, _ := ioutil.ReadAll(resp.Body)
 
 	var fis openapi3.Schema
 	errUnMarsh := json.Unmarshal(body, &fis)
-	assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
+	util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 
-	equals(t, "This dataset contains mock data about A (9 points)", fis.Description, "feature description")
-	equals(t, "https://geojson.org/schema/Point.json", fis.Properties["geometry"].Value.Items.Ref, "feature geometry")
-	equals(t, "prop_a", fis.Properties["properties"].Value.Required[0], "feature required a")
-	equals(t, "prop_b", fis.Properties["properties"].Value.Required[1], "feature required b")
-	equals(t, "Feature", fis.Properties["type"].Value.Default, "feature required b")
+	util.Equals(t, "This dataset contains mock data about A (9 points)", fis.Description, "feature description")
+	util.Equals(t, "https://geojson.org/schema/Point.json", fis.Properties["geometry"].Value.Items.Ref, "feature geometry")
+	util.Equals(t, "prop_a", fis.Properties["properties"].Value.Required[0], "feature required a")
+	util.Equals(t, "prop_b", fis.Properties["properties"].Value.Required[1], "feature required b")
+	util.Equals(t, "Feature", fis.Properties["type"].Value.Default, "feature required b")
 }
 
 func TestCreateFeature(t *testing.T) {
@@ -79,15 +80,22 @@ func TestCreateFeature(t *testing.T) {
 		"name": "Sample",
 		"email": "sample@test.com"
 	    }]`
-		rr := doRequestMethodStatus(t, "POST", "/collections/mock_a/items", []byte(jsonStr), header, http.StatusInternalServerError)
-		equals(t, http.StatusInternalServerError, rr.Code, "Should have failed")
-		assert(t, strings.Index(rr.Body.String(), fmt.Sprintf(api.ErrMsgCreateFeatureNotConform+"\n", "mock_a")) == 0, "Should have failed with not conform")
+		rr := hTest.DoRequestMethodStatus(t, "POST", "/collections/mock_a/items", []byte(jsonStr), header, http.StatusInternalServerError)
+		util.Equals(t, http.StatusInternalServerError, rr.Code, "Should have failed")
+		util.Assert(t, strings.Index(rr.Body.String(), fmt.Sprintf(api.ErrMsgCreateFeatureNotConform+"\n", "mock_a")) == 0, "Should have failed with not conform")
 	}
 
 	{
-		jsonStr := catalogMock.MakeFeatureMockPointAsJSON(0, 12, 34)
+		var cols []string
+		for _, t := range catalogMock.TableDefs {
+			if t.ID == "mock_a" {
+				cols = t.Columns
+				break
+			}
+		}
+		jsonStr := data.MakeFeatureMockPointAsJSON(0, 12, 34, cols)
 		fmt.Println(jsonStr)
-		rr := doPostRequest(t, "/collections/mock_a/items", []byte(jsonStr), header)
+		rr := hTest.DoPostRequest(t, "/collections/mock_a/items", []byte(jsonStr), header)
 
 		loc := rr.Header().Get("Location")
 
@@ -95,8 +103,8 @@ func TestCreateFeature(t *testing.T) {
 		params := data.QueryParam{Limit: 100, Offset: 0}
 		features, _ := catalogMock.TableFeatures(context.Background(), "mock_a", &params)
 		maxId := len(features)
-		assert(t, len(loc) > 1, "Header location must not be empty")
-		assert(t, strings.Contains(loc, fmt.Sprintf("/collections/mock_a/items/%d", maxId)), "Header location must contain valid data")
+		util.Assert(t, len(loc) > 1, "Header location must not be empty")
+		util.Assert(t, strings.Contains(loc, fmt.Sprintf("/collections/mock_a/items/%d", maxId)), "Header location must contain valid data")
 
 		// check if it can be read
 		checkItem(t, maxId)

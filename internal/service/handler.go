@@ -36,7 +36,7 @@ const (
 	routeVarFeatureID = "fid"
 )
 
-func initRouter(basePath string) *mux.Router {
+func InitRouter(basePath string) *mux.Router {
 	router := mux.NewRouter().
 		StrictSlash(true).
 		PathPrefix("/" + strings.TrimRight(strings.TrimLeft(basePath, "/"), "/")).
