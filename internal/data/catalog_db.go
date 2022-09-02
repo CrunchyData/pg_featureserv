@@ -155,8 +155,8 @@ func (cat *catalogDB) Tables() ([]*Table, error) {
 }
 
 func (cat *catalogDB) TableReload(name string) {
-	tbl, ok := cat.tableMap[name]
-	if !ok {
+	tbl, err := cat.TableByName(name)
+	if err != nil {
 		return
 	}
 	// load extent (which may change over time
@@ -196,7 +196,11 @@ func (cat *catalogDB) TableByName(name string) (*Table, error) {
 	cat.refreshTables(false)
 	tbl, ok := cat.tableMap[name]
 	if !ok {
-		return nil, nil
+		tbl, ok := cat.tableMap["public."+name]
+		if !ok {
+			return nil, nil
+		}
+		return tbl, nil
 	}
 	return tbl, nil
 }
@@ -237,7 +241,60 @@ func (cat *catalogDB) TableFeature(ctx context.Context, name string, id string, 
 }
 
 func (cat *catalogDB) AddTableFeature(ctx context.Context, tableName string, jsonData []byte) (int64, error) {
-	panic("catalogDB::AddTableFeature unimplemented")
+	var schemaObject geojsonFeatureData
+	err := json.Unmarshal(jsonData, &schemaObject)
+	if err != nil {
+		return -9999, err
+	}
+	var columnStr string
+	var placementStr string
+	var values []interface{}
+
+	tbl, err := cat.TableByName(tableName)
+	if err != nil {
+		return -9999, err
+	}
+	var i = 0
+	for c, t := range tbl.DbTypes {
+		if c == tbl.IDColumn {
+			continue // ignore id column
+		}
+
+		i++
+		columnStr += c
+		placementStr += fmt.Sprintf("$%d", i)
+		if t.Type == "int4" {
+			values = append(values, int(schemaObject.Props[c].(float64)))
+		} else {
+			values = append(values, schemaObject.Props[c])
+		}
+
+		if i < len(tbl.Columns)-1 {
+			columnStr += ", "
+			placementStr += ", "
+		}
+
+	}
+
+	i++
+	columnStr += ", " + tbl.GeometryColumn
+	placementStr += fmt.Sprintf(", ST_GeomFromGeoJSON($%d)", i)
+	geomJson, _ := schemaObject.Geom.MarshalJSON()
+	values = append(values, geomJson)
+
+	sqlStatement := fmt.Sprintf(`
+		INSERT INTO %s (%s)
+		VALUES (%s)
+		RETURNING %s`,
+		tbl.ID, columnStr, placementStr, tbl.IDColumn)
+
+	var id int64 = -1
+	err = cat.dbconn.QueryRow(ctx, sqlStatement, values...).Scan(&id)
+	if err != nil {
+		return -9999, err
+	}
+
+	return id, nil
 }
 
 func (cat *catalogDB) refreshTables(force bool) {
@@ -391,7 +448,6 @@ func readFeatures(ctx context.Context, db *pgxpool.Pool, sql string, idColIndex 
 	return readFeaturesWithArgs(ctx, db, sql, nil, idColIndex, propCols)
 }
 
-//nolint:unused
 func readFeaturesWithArgs(ctx context.Context, db *pgxpool.Pool, sql string, args []interface{}, idColIndex int, propCols []string) ([]string, error) {
 	start := time.Now()
 	rows, err := db.Query(ctx, sql, args...)
@@ -447,7 +503,7 @@ func scanFeature(rows pgx.Rows, idColIndex int, propNames []string) string {
 		id = fmt.Sprintf("%v", vals[idColIndex+propOffset])
 	}
 
-	props := extractProperties(vals, propOffset, propNames)
+	props := extractProperties(vals, idColIndex, propOffset, propNames)
 
 	//--- geom value is expected to be a GeoJSON string or geojson object
 	//--- convert NULL to an empty string
@@ -462,9 +518,12 @@ func scanFeature(rows pgx.Rows, idColIndex int, propNames []string) string {
 	}
 }
 
-func extractProperties(vals []interface{}, propOffset int, propNames []string) map[string]interface{} {
+func extractProperties(vals []interface{}, idColIndex int, propOffset int, propNames []string) map[string]interface{} {
 	props := make(map[string]interface{})
 	for i, name := range propNames {
+		if i == idColIndex {
+			continue
+		}
 		// offset vals index by 2 to skip geom, id
 		props[name] = toJSONValue(vals[i+propOffset])
 		//fmt.Printf("%v: %v\n", name, val)
@@ -591,6 +650,7 @@ func makeFeatureJSON(id string, geom string, props map[string]interface{}) strin
 	return jsonStr
 }
 
+// TODO should be exported in catalog.go
 type geojsonFeatureData struct {
 	Type  string                 `json:"type"`
 	ID    string                 `json:"id,omitempty"`
@@ -598,6 +658,7 @@ type geojsonFeatureData struct {
 	Props map[string]interface{} `json:"properties"`
 }
 
+// TODO should be exported in catalog.go
 func makeGeojsonFeatureJSON(id string, geom geojson.Geometry, props map[string]interface{}) string {
 	featData := geojsonFeatureData{
 		Type:  "Feature",

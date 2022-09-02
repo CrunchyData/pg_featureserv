@@ -435,7 +435,9 @@ func getCreateItemSchema(ctx context.Context, table *data.Table) (openapi3.Schem
 	requiredTypeKeys := make([]string, 0, len(table.DbTypes))
 
 	for k := range table.DbTypes {
-		requiredTypeKeys = append(requiredTypeKeys, k)
+		if k != table.IDColumn {
+			requiredTypeKeys = append(requiredTypeKeys, k)
+		}
 	}
 	sort.Strings(requiredTypeKeys)
 
@@ -451,14 +453,16 @@ func getCreateItemSchema(ctx context.Context, table *data.Table) (openapi3.Schem
 	// update properties by their name and type
 	props.Properties = make(map[string]*openapi3.SchemaRef)
 	for k, v := range table.DbTypes {
-		propType := v.Type
-		if api.Db2OpenapiFormatMap[v.Type] != "" {
-			propType = api.Db2OpenapiFormatMap[v.Type]
-		}
-		props.Properties[k] = &openapi3.SchemaRef{
-			Value: &openapi3.Schema{
-				Type: propType,
-			},
+		if k != table.IDColumn {
+			propType := v.Type
+			if api.Db2OpenapiFormatMap[v.Type] != "" {
+				propType = api.Db2OpenapiFormatMap[v.Type]
+			}
+			props.Properties[k] = &openapi3.SchemaRef{
+				Value: &openapi3.Schema{
+					Type: propType,
+				},
+			}
 		}
 	}
 
