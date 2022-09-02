@@ -1,4 +1,4 @@
-package service
+package util
 
 /*
  Copyright 2022 Crunchy Data Solutions, Inc.
@@ -19,38 +19,78 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"path/filepath"
-	"reflect"
-	"runtime"
 	"testing"
+
+	"github.com/CrunchyData/pg_featureserv/internal/conf"
+	"github.com/gorilla/mux"
 )
 
+type HttpTesting struct {
+	UrlBase  string
+	BasePath string
+	Router   *mux.Router
+}
+
+func MakeHttpTesting(urlBase string, basePath string, router *mux.Router) HttpTesting {
+	hTest := HttpTesting{
+		UrlBase:  urlBase,
+		BasePath: basePath,
+		Router:   router,
+	}
+	hTest.Setup()
+	return hTest
+}
+
+func (hTest *HttpTesting) Setup() {
+	conf.Configuration = conf.Config{
+		Server: conf.Server{
+			HttpHost:   "0.0.0.0",
+			HttpPort:   9000,
+			UrlBase:    hTest.UrlBase,
+			BasePath:   hTest.BasePath,
+			AssetsPath: "../../assets",
+			TransformFunctions: []string{
+				"ST_Centroid",
+				"ST_PointOnSurface",
+			},
+		},
+		Paging: conf.Paging{
+			LimitDefault: 10,
+			LimitMax:     1000,
+		},
+		Metadata: conf.Metadata{
+			Title:       "test",
+			Description: "test",
+		},
+	}
+}
+
 // returns the all the body from an http response
-func readBody(resp *httptest.ResponseRecorder) []byte {
+func (hTest *HttpTesting) ReadBody(resp *httptest.ResponseRecorder) []byte {
 	body, _ := ioutil.ReadAll(resp.Body)
 	return body
 }
 
 // do an http request to url with default method GET and expected status OK
-func doRequest(t *testing.T, url string) *httptest.ResponseRecorder {
-	return doRequestStatus(t, url, http.StatusOK)
+func (hTest *HttpTesting) DoRequest(t *testing.T, url string) *httptest.ResponseRecorder {
+	return hTest.DoRequestStatus(t, url, http.StatusOK)
 }
 
-func doPostRequest(t *testing.T, url string, data []byte, header http.Header) *httptest.ResponseRecorder {
-	return doRequestMethodStatus(t, "POST", url, data, header, http.StatusCreated)
+func (hTest *HttpTesting) DoPostRequest(t *testing.T, url string, data []byte, header http.Header) *httptest.ResponseRecorder {
+	return hTest.DoRequestMethodStatus(t, "POST", url, data, header, http.StatusCreated)
 }
 
 // do an http request to url with default method GET and a specific expected status
-func doRequestStatus(t *testing.T, url string,
+func (hTest *HttpTesting) DoRequestStatus(t *testing.T, url string,
 	statusExpected int) *httptest.ResponseRecorder {
-	return doRequestMethodStatus(t, "GET", url, nil, nil, statusExpected)
+	return hTest.DoRequestMethodStatus(t, "GET", url, nil, nil, statusExpected)
 }
 
 // do an http request to url with a specific method and specific expected status
-func doRequestMethodStatus(t *testing.T, method string, url string,
+func (hTest *HttpTesting) DoRequestMethodStatus(t *testing.T, method string, url string,
 	data []byte, header http.Header, statusExpected int) *httptest.ResponseRecorder {
 
-	req, err := http.NewRequest(method, basePath+url, bytes.NewReader(data))
+	req, err := http.NewRequest(method, hTest.BasePath+url, bytes.NewReader(data))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -60,7 +100,7 @@ func doRequestMethodStatus(t *testing.T, method string, url string,
 	}
 
 	rr := httptest.NewRecorder()
-	router.ServeHTTP(rr, req)
+	hTest.Router.ServeHTTP(rr, req)
 
 	// Check the status code
 	status := rr.Code
@@ -72,34 +112,14 @@ func doRequestMethodStatus(t *testing.T, method string, url string,
 		}
 
 		if bodyMsg != "" {
-			equals(t,
+			Equals(t,
 				statusExpected, status,
 				fmt.Errorf("handler returned wrong status code.\n\tCaused by: %v", bodyMsg).Error())
 		} else {
-			equals(t,
+			Equals(t,
 				statusExpected, status,
 				"handler returned wrong status code.")
 		}
 	}
 	return rr
-}
-
-//---- testing utilities from https://github.com/benbjohnson/testing
-
-// assert fails the test if the condition is false.
-func assert(tb testing.TB, condition bool, msg string, v ...interface{}) {
-	if !condition {
-		_, file, line, _ := runtime.Caller(1)
-		fmt.Printf("\033[31m%s:%d: "+msg+"\033[39m\n\n", append([]interface{}{filepath.Base(file), line}, v...)...)
-		tb.FailNow()
-	}
-}
-
-// equals fails the test if exp is not equal to act.
-func equals(tb testing.TB, exp, act interface{}, msg string) {
-	if !reflect.DeepEqual(exp, act) {
-		_, file, line, _ := runtime.Caller(1)
-		fmt.Printf("%s:%d: %s - expected: %#v; got: %#v\n", filepath.Base(file), line, msg, exp, act)
-		tb.FailNow()
-	}
 }
