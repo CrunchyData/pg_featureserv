@@ -427,6 +427,22 @@ func (cat *catalogDB) ReplaceTableFeature(ctx context.Context, tableName string,
 	return nil
 }
 
+func (cat *catalogDB) DeleteTableFeature(ctx context.Context, tableName string, fid string) (string, error) {
+
+	sqlStatement := fmt.Sprintf(`
+		DELETE FROM %s
+		WHERE id = %s`,
+		tableName, fid)
+
+	var id int64 = -1
+	err := cat.dbconn.QueryRow(ctx, sqlStatement).Scan(&id)
+	if err != nil {
+		return "", err
+	}
+
+	return "", nil
+}
+
 func (cat *catalogDB) refreshTables(force bool) {
 	// TODO: refresh on timed basis?
 	if force || isStartup {

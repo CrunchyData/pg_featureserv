@@ -16,6 +16,7 @@ package data
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 
@@ -235,8 +236,6 @@ func (cat *CatalogMock) TableFeature(ctx context.Context, name string, id string
 		return "", nil
 	}
 
-	index--
-
 	// TODO: return not found if index out of range
 	if index < 0 || index >= len(features) {
 		return "", nil
@@ -247,7 +246,14 @@ func (cat *CatalogMock) TableFeature(ctx context.Context, name string, id string
 		propNames = param.Columns
 	}
 
-	return features[index].toJSON(propNames), nil
+	for elementIdx, feature := range features {
+		if feature.ID == id {
+			return features[elementIdx].toJSON(propNames), nil
+		}
+	}
+	// not found
+	return "", nil
+
 }
 
 // returns the number of feature for a specific table
@@ -378,6 +384,22 @@ func (cat *CatalogMock) ReplaceTableFeature(ctx context.Context, tableName strin
 	}
 
 	return nil
+}
+
+func (cat *CatalogMock) DeleteTableFeature(ctx context.Context, tableName string, id string) (string, error) {
+
+	features, ok := cat.tableData[tableName]
+	if !ok {
+		return "", errors.New("Table not found")
+	}
+
+	for elementIdx, feature := range features {
+		if feature.ID == id {
+			cat.tableData[tableName] = append(features[:elementIdx], features[(elementIdx+1):]...)
+			return "", nil
+		}
+	}
+	return "", errors.New("Feature not found")
 }
 
 func (cat *CatalogMock) Functions() ([]*Function, error) {

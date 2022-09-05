@@ -21,6 +21,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/CrunchyData/pg_featureserv/internal/api"
@@ -64,6 +65,7 @@ func InitRouter(basePath string) *mux.Router {
 
 	if conf.Configuration.Database.AllowWrite {
 		addRouteWithMethod(router, "/collections/{id}/items", handleCreateCollectionItem, "POST")
+		addRouteWithMethod(router, "/collections/{id}/items/{fid}", handleDeleteCollectionItem, "DELETE")
 
 		addRoute(router, "/collections/{id}/schema", handleCollectionSchemas)
 	}
@@ -363,6 +365,43 @@ func handleCreateCollectionItem(w http.ResponseWriter, r *http.Request) *appErro
 	w.Header().Set("Location", fmt.Sprintf("%scollections/%s/items/%d", urlBase, name, newId))
 	w.WriteHeader(http.StatusCreated)
 	return nil
+}
+
+func handleDeleteCollectionItem(w http.ResponseWriter, r *http.Request) *appError {
+
+	//--- extract request parameters
+	name := getRequestVar(routeVarID, r)
+	fid := getRequestVar(routeVarFeatureID, r)
+
+	//--- check request parameters
+	index, err := strconv.Atoi(fid)
+	if err != nil || index < 0 {
+		return appErrorBadRequest(nil, api.ErrMsgInvalidParameterValue)
+	}
+
+	//--- check query parameters
+	queryValues := r.URL.Query()
+	paramValues := extractSingleArgs(queryValues)
+	if len(paramValues) != 0 {
+		return appErrorMsg(nil, "No parameter allowed", http.StatusBadRequest)
+	}
+
+	//--- check collection availability
+	tbl, err1 := catalogInstance.TableByName(name)
+	if err1 != nil {
+		return appErrorInternal(err1, api.ErrMsgCollectionAccess)
+	}
+	if tbl == nil {
+		return appErrorNotFound(err1, api.ErrMsgCollectionNotFound)
+	}
+
+	_, err2 := catalogInstance.DeleteTableFeature(r.Context(), name, fid)
+	if err2 != nil {
+		return appErrorNotFoundFmt(err2, api.ErrMsgFeatureNotFound, fid)
+	}
+	w.WriteHeader(http.StatusNoContent)
+	return nil
+
 }
 
 func handleCollectionItems(w http.ResponseWriter, r *http.Request) *appError {

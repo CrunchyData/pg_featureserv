@@ -15,6 +15,7 @@ package util
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	"github.com/CrunchyData/pg_featureserv/internal/conf"
@@ -48,40 +49,73 @@ func CreateTestDb() *pgxpool.Pool {
 	dbHost := dbconfig.ConnConfig.Config.Host
 	log.Debugf("Connected as %s to %s @ %s", dbUser, dbName, dbHost)
 
-	// same as featureMock
-	_, errExec := db.Exec(ctx, `
-		DROP TABLE IF EXISTS mock_a CASCADE;
-		CREATE TABLE IF NOT EXISTS public.mock_a (
-			id SERIAL PRIMARY KEY,
-			geometry public.geometry(Point, 4326),
-			prop_a text,
-			prop_b int,
-			prop_c text,
-			prop_d int
-		);
-	`)
-	if errExec != nil {
-		CloseTestDb(db)
-		log.Fatal(errExec)
+	// collections tables
+	tables := []string{"mock_a", "mock_b", "mock_c"}
+	for _, s := range tables {
+		createBytes := []byte(`
+			DROP TABLE IF EXISTS %s CASCADE;
+			CREATE TABLE IF NOT EXISTS public.%s (
+				id SERIAL PRIMARY KEY,
+				geometry public.geometry(Point, 4326),
+				prop_a text,
+				prop_b int,
+				prop_c text,
+				prop_d int
+			);
+		`)
+		createStatement := fmt.Sprintf(string(createBytes), s, s)
+
+		_, errExec := db.Exec(ctx, createStatement)
+		if errExec != nil {
+			CloseTestDb(db)
+			log.Fatal(errExec)
+		}
 	}
 
-	feats := data.MakePointFeatures(data.Extent{Minx: -120, Miny: 40, Maxx: -74, Maxy: 50},
+	// collections features/table records
+	featsa := data.MakePointFeatures(data.Extent{Minx: -120, Miny: 40, Maxx: -74, Maxy: 50},
 		3, 3)
 	b := &pgx.Batch{}
 	sqlStatement := `
 		INSERT INTO public.mock_a (geometry, prop_a, prop_b, prop_c, prop_d)
 		VALUES (ST_GeomFromGeoJSON($1), $2, $3, $4, $5)`
 
-	for _, f := range feats {
+	for _, f := range featsa {
 		geomStr, _ := f.Geom.MarshalJSON()
 		b.Queue(sqlStatement, geomStr, f.PropA, f.PropB, f.PropC, f.PropD)
 	}
-	res := db.SendBatch(ctx, b)
-	if res == nil {
+	resa := db.SendBatch(ctx, b)
+	if resa == nil {
 		CloseTestDb(db)
 		log.Fatal("Injection failed")
 	}
-	res.Close()
+	resa.Close()
+
+	featsb := data.MakePointFeatures(data.Extent{Minx: -75, Miny: 45, Maxx: -74, Maxy: 46},
+		10, 10)
+	for _, f := range featsb {
+		geomStr, _ := f.Geom.MarshalJSON()
+		b.Queue(sqlStatement, geomStr, f.PropA, f.PropB, f.PropC, f.PropD)
+	}
+	resb := db.SendBatch(ctx, b)
+	if resb == nil {
+		CloseTestDb(db)
+		log.Fatal("Injection failed")
+	}
+	resb.Close()
+
+	featsc := data.MakePointFeatures(data.Extent{Minx: -120, Miny: 40, Maxx: -74, Maxy: 60},
+		100, 100)
+	for _, f := range featsc {
+		geomStr, _ := f.Geom.MarshalJSON()
+		b.Queue(sqlStatement, geomStr, f.PropA, f.PropB, f.PropC, f.PropD)
+	}
+	resc := db.SendBatch(ctx, b)
+	if resc == nil {
+		CloseTestDb(db)
+		log.Fatal("Injection failed")
+	}
+	resc.Close()
 
 	log.Debugf("Sample data injected")
 

@@ -86,6 +86,11 @@ func (hTest *HttpTesting) DoRequestStatus(t *testing.T, url string,
 	return hTest.DoRequestMethodStatus(t, "GET", url, nil, nil, statusExpected)
 }
 
+// do an http request to url with DELETE method and an expected status
+func (hTest *HttpTesting) DoDeleteRequestStatus(t *testing.T, url string, statusExpected int) *httptest.ResponseRecorder {
+	return hTest.DoRequestMethodStatus(t, "DELETE", url, nil, nil, statusExpected)
+}
+
 // do an http request to url with a specific method and specific expected status
 func (hTest *HttpTesting) DoRequestMethodStatus(t *testing.T, method string, url string,
 	data []byte, header http.Header, statusExpected int) *httptest.ResponseRecorder {

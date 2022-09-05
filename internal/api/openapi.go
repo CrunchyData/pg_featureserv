@@ -578,6 +578,30 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 						},
 					},
 				},
+				Delete: &openapi3.Operation{
+					OperationID: "deleteCollectionFeature",
+					Parameters: openapi3.Parameters{
+						&paramCollectionID,
+						&paramFeatureID,
+					},
+					Responses: openapi3.Responses{
+						"204": &openapi3.ResponseRef{
+							Value: &openapi3.Response{
+								Description: "No Content",
+							},
+						},
+						"400": &openapi3.ResponseRef{
+							Value: &openapi3.Response{
+								Description: "Malformed feature ID or non suitable query parameters present",
+							},
+						},
+						"404": &openapi3.ResponseRef{
+							Value: &openapi3.Response{
+								Description: "Resource ID not foudn, collection not found, catalog error.",
+							},
+						},
+					},
+				},
 			},
 			apiBase + "functions": &openapi3.PathItem{
 				Summary:     "Functions metadata",

@@ -57,6 +57,9 @@ type Catalog interface {
 	// ReplaceTableFeature replaces a table feature with given id with the new jsonData
 	ReplaceTableFeature(ctx context.Context, tableName string, id string, jsonData []byte) error
 
+	// DeleteTableFeature returns the status code from the delete operation on the feature which ID is provided
+	DeleteTableFeature(ctx context.Context, tableName string, id string) (string, error)
+
 	Functions() ([]*Function, error)
 
 	// FunctionByName returns the function with given name.

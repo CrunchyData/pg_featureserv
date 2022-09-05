@@ -136,6 +136,10 @@ func appErrorInternalFmt(err error, format string, v ...interface{}) *appError {
 	return &appError{err, msg, http.StatusInternalServerError}
 }
 
+func appErrorNotFound(err error, msg string) *appError {
+	return &appError{err, msg, http.StatusNotFound}
+}
+
 func appErrorNotFoundFmt(err error, format string, v string) *appError {
 	msg := fmt.Sprintf(format, v)
 	return &appError{err, msg, http.StatusNotFound}
@@ -254,6 +258,7 @@ func restrict(inMap map[string]string, names []string) map[string]string {
 }
 
 // removeNames removes a list of names from a map (map is modified)
+//
 //nolint:unused
 func removeNames(inMap map[string]string, names []string) {
 	for _, name := range names {
@@ -298,6 +303,7 @@ func writeResponse(w http.ResponseWriter, contype string, encodedContent []byte)
 }
 
 // Sets response 'status', and writes a json-encoded object with property "description" having value "msg".
+//
 //nolint:all
 func writeError(w http.ResponseWriter, code string, msg string, status int) {
 	w.WriteHeader(status)
