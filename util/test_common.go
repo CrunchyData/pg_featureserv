@@ -19,7 +19,30 @@ import (
 	"reflect"
 	"runtime"
 	"testing"
+
+	"github.com/CrunchyData/pg_featureserv/internal/api"
+	"github.com/paulmach/orb/geojson"
 )
+
+// extracted from catalog_db.go
+// TODO should be imported from catalog.go
+type GeojsonFeatureData struct {
+	Type  string                 `json:"type"`
+	ID    string                 `json:"id,omitempty"`
+	Geom  *geojson.Geometry      `json:"geometry"`
+	Props map[string]interface{} `json:"properties"`
+}
+
+// Define a FeatureCollection structure for parsing test data
+// TODO should be move to and imported from catalog.go
+type FeatureCollection struct {
+	Type           string                `json:"type"`
+	Features       []*GeojsonFeatureData `json:"features"`
+	NumberMatched  uint                  `json:"numberMatched,omitempty"`
+	NumberReturned uint                  `json:"numberReturned"`
+	TimeStamp      string                `json:"timeStamp,omitempty"`
+	Links          []*api.Link           `json:"links"`
+}
 
 //---- testing utilities from https://github.com/benbjohnson/testing
 

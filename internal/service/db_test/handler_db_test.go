@@ -16,21 +16,11 @@ import (
 	"github.com/CrunchyData/pg_featureserv/internal/service"
 	"github.com/CrunchyData/pg_featureserv/util"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/paulmach/orb/geojson"
 )
 
 var hTest util.HttpTesting
 var db *pgxpool.Pool
 var cat data.Catalog
-
-// extracted from catalog_db.go
-// TODO should be imported from catalog.go
-type geojsonFeatureData struct {
-	Type  string                 `json:"type"`
-	ID    string                 `json:"id,omitempty"`
-	Geom  *geojson.Geometry      `json:"geometry"`
-	Props map[string]interface{} `json:"properties"`
-}
 
 func TestMain(m *testing.M) {
 	db = util.CreateTestDb()
@@ -50,10 +40,10 @@ func TestProperDbInit(t *testing.T) {
 	util.Equals(t, 2, len(tables), "# table in DB")
 }
 
-func TestTestPropertiesAllFromDb(t *testing.T) {
-	/*rr := hTest.DoRequest(t, "/collections/mock_a/items?limit=2")
+func TestPropertiesAllFromDb(t *testing.T) {
+	rr := hTest.DoRequest(t, "/collections/mock_a/items?limit=2")
 
-	var v FeatureCollection
+	var v util.FeatureCollection
 	errUnMarsh := json.Unmarshal(hTest.ReadBody(rr), &v)
 	util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 
@@ -64,7 +54,7 @@ func TestTestPropertiesAllFromDb(t *testing.T) {
 	util.Equals(t, "propA", v.Features[0].Props["prop_a"], "feature 1 # property A")
 	util.Equals(t, 1.0, v.Features[0].Props["prop_b"], "feature 1 # property B")
 	util.Equals(t, "propC", v.Features[0].Props["prop_c"], "feature 1 # property C")
-	util.Equals(t, 1.0, v.Features[0].Props["prop_d"], "feature 1 # property D")*/
+	util.Equals(t, 1.0, v.Features[0].Props["prop_d"], "feature 1 # property D")
 }
 
 func TestCreateFeatureWithBadGeojsonInputDb(t *testing.T) {
@@ -138,7 +128,7 @@ func checkItem(t *testing.T, id int) {
 	resp := hTest.DoRequest(t, path)
 	body, _ := ioutil.ReadAll(resp.Body)
 
-	var v geojsonFeatureData
+	var v util.GeojsonFeatureData
 	errUnMarsh := json.Unmarshal(body, &v)
 	util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 
