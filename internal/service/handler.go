@@ -74,6 +74,9 @@ func InitRouter(basePath string) *mux.Router {
 	addRouteWithMethod(router, "/collections/{id}/items/{fid}", handlePartialUpdateItem, "PATCH")
 	addRouteWithMethod(router, "/collections/{id}/items/{fid}.{fmt}", handlePartialUpdateItem, "PATCH")
 
+	addRouteWithMethod(router, "/collections/{id}/items/{fid}", handleReplaceItem, "PUT")
+	addRouteWithMethod(router, "/collections/{id}/items/{fid}.{fmt}", handleReplaceItem, "PUT")
+
 	addRoute(router, "/functions", handleFunctions)
 	addRoute(router, "/functions.{fmt}", handleFunctions)
 
@@ -297,6 +300,12 @@ func handleCollectionSchemas(w http.ResponseWriter, r *http.Request) *appError {
 			switch schemaType {
 			case "create":
 				return writeCreateItemSchemaJSON(ctx, w, tbl)
+			case "replace":
+				// The "replace" schema is identical to the "create" schema.
+				// http: //docs.ogc.org/DRAFTS/20-002.html#feature-geojson
+				return writeCreateItemSchemaJSON(ctx, w, tbl)
+			case "update":
+				return writeUpdateItemSchemaJSON(ctx, w, tbl)
 			default:
 				return appErrorBadRequest(nil, fmt.Sprintf("Asked schema type %s not implemented!", schemaType))
 			}
@@ -402,6 +411,14 @@ func writeCreateItemSchemaJSON(ctx context.Context, w http.ResponseWriter, table
 	return writeJSON(w, api.ContentTypeSchemaJSON, createSchema)
 }
 
+func writeUpdateItemSchemaJSON(ctx context.Context, w http.ResponseWriter, table *data.Table) *appError {
+	updateSchema, err := getUpdateItemSchema(ctx, table)
+	if err != nil {
+		return appErrorMsg(err, err.Error(), http.StatusInternalServerError)
+	}
+	return writeJSON(w, api.ContentTypeSchemaPatchJSON, updateSchema)
+}
+
 func getCreateItemSchema(ctx context.Context, table *data.Table) (openapi3.Schema, error) {
 	// Feature schema skeleton
 	var featureInfoSchema openapi3.Schema = openapi3.Schema{
@@ -466,6 +483,67 @@ func getCreateItemSchema(ctx context.Context, table *data.Table) (openapi3.Schem
 				Value: &openapi3.Schema{
 					Type: propType,
 				},
+			}
+		}
+	}
+
+	errVal := featureInfoSchema.Validate(ctx)
+	if errVal != nil {
+		encodedContent, _ := json.Marshal(featureInfoSchema)
+		return featureInfoSchema, fmt.Errorf("schema not valid: %v\n\t%v", errVal, string(encodedContent))
+	}
+
+	return featureInfoSchema, nil
+}
+
+func getUpdateItemSchema(ctx context.Context, table *data.Table) (openapi3.Schema, error) {
+	// Feature schema skeleton
+	var featureInfoSchema openapi3.Schema = openapi3.Schema{
+		Type: "object",
+		Properties: map[string]*openapi3.SchemaRef{
+			"type": {
+				Value: &openapi3.Schema{
+					Type:    "string",
+					Default: "Feature",
+				},
+			},
+			"geometry": {
+				Value: &openapi3.Schema{
+					Items: &openapi3.SchemaRef{
+						Ref: fmt.Sprintf("https://geojson.org/schema/%v.json", table.GeometryType),
+						Value: &openapi3.Schema{
+							Type: "string", // mandatory to validate the schema
+						},
+					},
+				},
+			},
+			"properties": {
+				Value: &openapi3.Schema{},
+			},
+		},
+	}
+	featureInfoSchema.Description = table.Description
+
+	props := featureInfoSchema.Properties["properties"].Value
+	props.Type = "object"
+
+	// update properties by their name and type
+	props.Properties = make(map[string]*openapi3.SchemaRef)
+	for k, v := range table.DbTypes {
+		if k != table.IDColumn {
+			propType := v.Type
+			if api.Db2OpenapiFormatMap[v.Type] != "" {
+				propType = api.Db2OpenapiFormatMap[v.Type]
+			}
+			props.Properties[k] = &openapi3.SchemaRef{
+				Value: openapi3.NewOneOfSchema(
+					&openapi3.Schema{
+						Type: propType,
+					},
+					&openapi3.Schema{
+						Type: "null",
+					},
+				),
 			}
 		}
 	}
@@ -621,7 +699,6 @@ func handlePartialUpdateItem(w http.ResponseWriter, r *http.Request) *appError {
 	return nil
 }
 
-// TODO: DRAFT
 func handleReplaceItem(w http.ResponseWriter, r *http.Request) *appError {
 	// extract request parameters
 	name := getRequestVar(routeVarID, r)
@@ -647,6 +724,19 @@ func handleReplaceItem(w http.ResponseWriter, r *http.Request) *appError {
 	body, errBody := ioutil.ReadAll(r.Body)
 	if errBody != nil || len(body) == 0 {
 		return appErrorInternalFmt(errBody, "Unable to read request body for Collection: %v", name)
+	}
+
+	//--- check if body matches the schema
+	// schema for replace is the same as in create
+	createSchema, errGetSch := getCreateItemSchema(r.Context(), tbl)
+	if errGetSch != nil {
+		return appErrorInternalFmt(errGetSch, errGetSch.Error())
+	}
+	var val interface{}
+	_ = json.Unmarshal(body, &val)
+	errValSch := createSchema.VisitJSON(val)
+	if errValSch != nil {
+		return appErrorBadRequest(errValSch, api.ErrMsgReplaceFeatureNotConform)
 	}
 
 	// perform replace in database

@@ -19,7 +19,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"reflect"
 
 	"strconv"
 	"strings"
@@ -492,33 +491,4 @@ func checkItem(t *testing.T, id int) {
 	util.Equals(t, id, actId, "feature id")
 	util.Equals(t, 4, len(v.Props), "# feature props")
 
-}
-
-// check if item is available and corresponds to json string
-func checkItemEquals(t *testing.T, id int, jsonStr string) {
-	path := fmt.Sprintf("/collections/mock_a/items/%d", id)
-	resp := hTest.DoRequest(t, path)
-	body, _ := ioutil.ReadAll(resp.Body)
-
-	// extracted from catalog_db.go
-	type featureData struct {
-		Type  string                 `json:"type"`
-		ID    string                 `json:"id,omitempty"`
-		Geom  *json.RawMessage       `json:"geometry"`
-		Props map[string]interface{} `json:"properties"`
-	}
-
-	var v featureData
-	errUnMarsh := json.Unmarshal(body, &v)
-	util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
-
-	util.Equals(t, "Feature", v.Type, "feature type")
-	actId, _ := strconv.Atoi(v.ID)
-	util.Equals(t, id, actId, "feature id")
-	util.Equals(t, 4, len(v.Props), "# feature props")
-
-	var v_test featureData
-	errUnMarshTest := json.Unmarshal(body, &v_test)
-	util.Assert(t, errUnMarshTest == nil, fmt.Sprintf("%v", errUnMarshTest))
-	util.Assert(t, reflect.DeepEqual(v, v_test), "Items are not equal")
 }
