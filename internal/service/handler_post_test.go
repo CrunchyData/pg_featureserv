@@ -42,9 +42,21 @@ func TestApiContainsCollectionSchemas(t *testing.T) {
 	util.Assert(t, path != nil, "schema path exists")
 	util.Equals(t, "Provides access to data representation (schema) for any features in specified collection", path.Description, "schema path present")
 	util.Equals(t, "getCollectionSchema", path.Get.OperationID, "schema path get present")
-	util.Equals(t, 2, len(path.Get.Parameters), "schema path get present")
+	util.Equals(t, 2, len(path.Get.Parameters), "# path")
 	util.Assert(t, path.Get.Parameters.GetByInAndName("path", "collectionId") != nil, "collectionId path parameter exists")
 	util.Assert(t, path.Get.Parameters.GetByInAndName("query", "type") != nil, "type query parameter exists")
+}
+
+// checks swagger api contains method PATCH for updating a feaure from a specified collection
+func TestApiContainsMethodPostFeature(t *testing.T) {
+	resp := hTest.DoRequest(t, "/api")
+	body, _ := ioutil.ReadAll(resp.Body)
+
+	var v openapi3.Swagger
+	err := json.Unmarshal(body, &v)
+	util.Assert(t, err == nil, fmt.Sprintf("%v", err))
+
+	util.Equals(t, "createCollectionFeature", v.Paths.Find("/collections/{collectionId}/items").Post.OperationID, "method POST present")
 }
 
 // checks collection schema contains valid data description
