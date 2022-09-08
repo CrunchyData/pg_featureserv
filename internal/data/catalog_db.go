@@ -297,6 +297,10 @@ func (cat *catalogDB) AddTableFeature(ctx context.Context, tableName string, jso
 	return id, nil
 }
 
+func (cat *catalogDB) PartialUpdateTableFeature(ctx context.Context, tableName string, id string, jsonData []byte) (string, error) {
+	panic("catalogDB::PartialUpdateTableFeature unimplemented")
+}
+
 func (cat *catalogDB) refreshTables(force bool) {
 	// TODO: refresh on timed basis?
 	if force || isStartup {

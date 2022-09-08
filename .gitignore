@@ -5,3 +5,5 @@ docs/
 public/
 config/pg_featureserv.toml
 hugo/.hugo_build.lock
+*~
+.vscode/

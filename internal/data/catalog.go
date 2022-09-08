@@ -51,6 +51,11 @@ type Catalog interface {
 	// using the JSON data to create the feature
 	AddTableFeature(ctx context.Context, tableName string, jsonData []byte) (int64, error)
 
+	// PartialUpdateTableFeature returns the JSON text for a table feature with given id
+	// Feature with given id must be updated with given attribute values
+	// It returns an empty string if the table or feature does not exist
+	PartialUpdateTableFeature(ctx context.Context, tableName string, id string, jsonData []byte) (string, error)
+
 	Functions() ([]*Function, error)
 
 	// FunctionByName returns the function with given name.
@@ -120,6 +125,27 @@ type Table struct {
 	DbTypes        map[string]Column
 	JSONTypes      []string
 	ColDesc        []string
+}
+
+// Check the existence of table fields from json data
+func (tbl *Table) CheckTableFields(props map[string]interface{}) (bool, error) {
+	p := props["properties"]
+	if p != nil {
+		props := props["properties"].(map[string]interface{})
+		for k := range props {
+			if !func(s []string, e string) bool {
+				for _, a := range s {
+					if a == e {
+						return true
+					}
+				}
+				return false
+			}(tbl.Columns, k) {
+				return false, fmt.Errorf("Properties not conform with field table: %v", k)
+			}
+		}
+	}
+	return true, nil
 }
 
 // Extent of a table

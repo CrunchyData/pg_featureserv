@@ -32,6 +32,9 @@ const (
 	// ContentTypeSchemaJSON
 	ContentTypeSchemaJSON = "application/schema+json"
 
+	// ContentTypeSchemaPatchJSON
+	ContentTypeSchemaPatchJSON = "application/merge-patch+json"
+
 	// ContentTypeHTML
 	ContentTypeHTML = "text/html"
 

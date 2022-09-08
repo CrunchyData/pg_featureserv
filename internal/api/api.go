@@ -79,6 +79,7 @@ const (
 	ErrMsgCreateFeatureNotConform = "Unable to create new feature in Collection - data does not respect schema: %v"
 	ErrMsgCreateFeatureInCatalog  = "Unable to create new feature in Collection - catalog error: %v"
 	ErrMsgLoadFunctions           = "Unable to access Functions"
+	ErrMsgPartialUpdateFeature    = "Unable to update feature in Collection: %v"
 	ErrMsgFunctionNotFound        = "Function not found: %v"
 	ErrMsgFunctionAccess          = "Unable to access Function: %v"
 	ErrMsgInvalidParameterValue   = "Invalid value for parameter %v: %v"
@@ -282,6 +283,72 @@ var CollectionsInfoSchema openapi3.Schema = openapi3.Schema{
 			},
 		},
 	},
+}
+
+func getFeatureExample() map[string]interface{} {
+	var result map[string]interface{}
+	var jsonStr = `{"type":"Feature","geometry":{"type":"Point","coordinates":[-70.88461956597838,47.807897059236495]},"properties":{"prop_a":"propA","prop_b":1,"prop_c":"propC","prop_d":1}}`
+	err := json.Unmarshal([]byte(jsonStr), &result)
+	if err != nil {
+		return nil
+	}
+	return result
+}
+
+var FeatureSchema openapi3.Schema = openapi3.Schema{
+	Type:     "object",
+	Required: []string{},
+	Properties: map[string]*openapi3.SchemaRef{
+		"id": {
+			Value: &openapi3.Schema{
+				OneOf: []*openapi3.SchemaRef{
+					openapi3.NewSchemaRef("", &openapi3.Schema{
+						Type: "number", Format: "long",
+					}),
+					openapi3.NewSchemaRef("", &openapi3.Schema{
+						Type: "string",
+					}),
+				},
+			},
+		},
+		"type": {
+			Value: &openapi3.Schema{
+				Type:    "string",
+				Default: "Feature",
+			},
+		},
+		"geometry": {
+			Value: &openapi3.Schema{
+				Items: &openapi3.SchemaRef{
+					Value: &openapi3.Schema{
+						Type: "string", // mandatory to validate the schema
+						OneOf: []*openapi3.SchemaRef{
+							openapi3.NewSchemaRef("https://geojson.org/schema/Point.json", &openapi3.Schema{Type: "string"}),
+							openapi3.NewSchemaRef("https://geojson.org/schema/LineString.json", &openapi3.Schema{Type: "string"}),
+							openapi3.NewSchemaRef("https://geojson.org/schema/Polygon.json", &openapi3.Schema{Type: "string"}),
+							openapi3.NewSchemaRef("https://geojson.org/schema/MultiPoint.json", &openapi3.Schema{Type: "string"}),
+							openapi3.NewSchemaRef("https://geojson.org/schema/MultiLineString.json", &openapi3.Schema{Type: "string"}),
+							openapi3.NewSchemaRef("https://geojson.org/schema/MultiPolygon.json", &openapi3.Schema{Type: "string"}),
+						},
+					},
+				},
+			},
+		},
+		"properties": {
+			Value: &openapi3.Schema{
+				Type: "object",
+			},
+		},
+		"bbox": {
+			Value: &openapi3.Schema{
+				Type:     "array",
+				MinItems: 4,
+				MaxItems: openapi3.Uint64Ptr(4),
+				Items:    openapi3.NewSchemaRef("", openapi3.NewFloat64Schema().WithMin(-180).WithMax(180)),
+			},
+		},
+	},
+	Example: getFeatureExample(),
 }
 
 type Parameter struct {

@@ -70,6 +70,8 @@ func InitRouter(basePath string) *mux.Router {
 
 	addRoute(router, "/collections/{id}/items/{fid}", handleItem)
 	addRoute(router, "/collections/{id}/items/{fid}.{fmt}", handleItem)
+	addRouteWithMethod(router, "/collections/{id}/items/{fid}", handlePartialUpdateItem, "PATCH")
+	addRouteWithMethod(router, "/collections/{id}/items/{fid}.{fmt}", handlePartialUpdateItem, "PATCH")
 
 	addRoute(router, "/functions", handleFunctions)
 	addRoute(router, "/functions.{fmt}", handleFunctions)
@@ -303,7 +305,6 @@ func handleCollectionSchemas(w http.ResponseWriter, r *http.Request) *appError {
 			return appErrorBadRequest(nil, fmt.Sprintf("Format %s not implemented!", format))
 		}
 	}
-
 }
 
 func handleCreateCollectionItem(w http.ResponseWriter, r *http.Request) *appError {
@@ -398,7 +399,6 @@ func writeCreateItemSchemaJSON(ctx context.Context, w http.ResponseWriter, table
 		return appErrorMsg(err, err.Error(), http.StatusInternalServerError)
 	}
 	return writeJSON(w, api.ContentTypeSchemaJSON, createSchema)
-
 }
 
 func getCreateItemSchema(ctx context.Context, table *data.Table) (openapi3.Schema, error) {
@@ -560,6 +560,65 @@ func handleItem(w http.ResponseWriter, r *http.Request) *appError {
 	} else {
 		return appErrorInternalFmt(errQuery, api.ErrMsgInvalidQuery)
 	}
+}
+
+func handlePartialUpdateItem(w http.ResponseWriter, r *http.Request) *appError {
+
+	// extract request parameters
+	name := getRequestVar(routeVarID, r)
+	fid := getRequestVar(routeVarFeatureID, r)
+
+	// check query parameters
+	queryValues := r.URL.Query()
+	paramValues := extractSingleArgs(queryValues)
+	if len(paramValues) != 0 {
+		return appErrorMsg(nil, "No parameter allowed", http.StatusBadRequest)
+	}
+
+	// check that collection exists
+	tbl, err1 := catalogInstance.TableByName(name)
+	if err1 != nil {
+		return appErrorInternalFmt(err1, api.ErrMsgCollectionAccess, name)
+	}
+	if tbl == nil {
+		return appErrorNotFoundFmt(err1, api.ErrMsgCollectionNotFound, name)
+	}
+
+	// extract JSON from request body
+	body, errBody := ioutil.ReadAll(r.Body)
+	if errBody != nil || len(body) == 0 {
+		return appErrorInternalFmt(errBody, "Unable to read request body for Collection: %v", name)
+	}
+
+	// check schema
+	var val map[string]interface{}
+	errUnMarsh := json.Unmarshal(body, &val)
+	if errUnMarsh != nil {
+		return appErrorInternalFmt(errUnMarsh, "Json not conform")
+	}
+
+	errSchema := api.FeatureSchema.VisitJSONObject(val)
+	if errSchema != nil {
+		return appErrorInternalFmt(errSchema, "Data not respect schema: %v", name)
+	}
+
+	check, errChck := tbl.CheckTableFields(val)
+	if !check && errChck != nil {
+		return appErrorInternalFmt(errChck, "validation error")
+	}
+
+	// perform update in database
+	feature, err := catalogInstance.PartialUpdateTableFeature(r.Context(), name, fid, body)
+	if err != nil {
+		return appErrorInternalFmt(err, api.ErrMsgPartialUpdateFeature, name)
+	}
+	if feature == "" {
+		return appErrorNotFoundFmt(nil, api.ErrMsgFeatureNotFound, fid)
+	}
+
+	encodedContent := []byte(feature)
+	writeResponse(w, api.ContentTypeGeoJSON, encodedContent)
+	return nil
 }
 
 func writeItemHTML(w http.ResponseWriter, tbl *data.Table, name string, fid string, query string, urlBase string) *appError {

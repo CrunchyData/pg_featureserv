@@ -277,6 +277,51 @@ func (cat *CatalogMock) AddTableFeature(ctx context.Context, tableName string, j
 	return maxId + 1, nil
 }
 
+func (cat *CatalogMock) PartialUpdateTableFeature(ctx context.Context, tableName string, id string, jsonData []byte) (string, error) {
+
+	var schemaObject geojsonFeatureData
+	err1 := json.Unmarshal(jsonData, &schemaObject)
+	if err1 != nil {
+		return "", err1
+	}
+
+	index, err2 := strconv.Atoi(id)
+	if err2 != nil {
+		return "", nil
+	}
+
+	oldFeature := cat.tableData[tableName][index-1]
+
+	// update values if exist into json !
+	if schemaObject.Geom != nil {
+		oldFeature.Geom = schemaObject.Geom
+	}
+
+	if schemaObject.Props["prop_a"] != nil {
+		oldFeature.PropA = schemaObject.Props["prop_a"].(string)
+	}
+
+	if schemaObject.Props["prop_b"] != nil {
+		oldFeature.PropB = int(schemaObject.Props["prop_b"].(float64))
+	}
+
+	if schemaObject.Props["prop_c"] != nil {
+		oldFeature.PropC = schemaObject.Props["prop_c"].(string)
+	}
+
+	if schemaObject.Props["prop_d"] != nil {
+		oldFeature.PropD = int(schemaObject.Props["prop_d"].(float64))
+	}
+
+	propNames := cat.TableDefs[0].Columns
+	jsonStr := oldFeature.toJSON(propNames)
+	if jsonStr == "" {
+		return "", fmt.Errorf("Error marshalling feature into JSON:: %v", tableName)
+	}
+
+	return jsonStr, nil
+}
+
 func (cat *CatalogMock) Functions() ([]*Function, error) {
 	return cat.FunctionDefs, nil
 }
