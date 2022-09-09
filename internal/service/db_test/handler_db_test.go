@@ -124,6 +124,52 @@ func TestCreateFeatureDb(t *testing.T) {
 	checkItem(t, maxIdAfter)
 }
 
+func TestReplaceFeatureSuccessDb(t *testing.T) {
+	path := "/collections/mock_a/items/1"
+	var header = make(http.Header)
+	header.Add("Accept", api.ContentTypeSchemaPatchJSON)
+
+	jsonStr := `{
+		"type": "Feature",
+		"id": "1",
+		"geometry": {
+			"type": "Point",
+			"coordinates": [
+			-120,
+			40
+			]
+		},
+		"properties": {
+			"prop_a": "propA...",
+			"prop_b": 1,
+			"prop_c": "propC...",
+			"prop_d": 1
+		}
+	}`
+
+	resp := hTest.DoRequestMethodStatus(t, "PUT", path, []byte(jsonStr), header, http.StatusOK)
+	body, _ := ioutil.ReadAll(resp.Body)
+
+	fmt.Println(string(body))
+
+	var jsonData map[string]interface{}
+	err := json.Unmarshal(body, &jsonData)
+	util.Assert(t, err == nil, fmt.Sprintf("%v", err))
+
+	util.Equals(t, "1", jsonData["id"].(string), "feature ID")
+	util.Equals(t, "Feature", jsonData["type"].(string), "feature Type")
+	props := jsonData["properties"].(map[string]interface{})
+	util.Equals(t, "propA...", props["prop_a"].(string), "feature value a")
+	util.Equals(t, 1, int(props["prop_b"].(float64)), "feature value b")
+	util.Equals(t, "propC...", props["prop_c"].(string), "feature value c")
+	util.Equals(t, 1, int(props["prop_d"].(float64)), "feature value d")
+	geom := jsonData["geometry"].(map[string]interface{})
+	util.Equals(t, "Point", geom["type"].(string), "feature Type")
+	coordinate := geom["coordinates"].([]interface{})
+	util.Equals(t, -120, int(coordinate[0].(float64)), "feature latitude")
+	util.Equals(t, 40, int(coordinate[1].(float64)), "feature longitude")
+}
+
 // check if item is available and is not empty
 // copy from service/handler_test.go
 func checkItem(t *testing.T, id int) {
