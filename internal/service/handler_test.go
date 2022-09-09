@@ -490,5 +490,4 @@ func checkItem(t *testing.T, id int) {
 	actId, _ := strconv.Atoi(v.ID)
 	util.Equals(t, id, actId, "feature id")
 	util.Equals(t, 4, len(v.Props), "# feature props")
-
 }

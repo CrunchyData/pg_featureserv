@@ -298,11 +298,9 @@ func handleCollectionSchemas(w http.ResponseWriter, r *http.Request) *appError {
 	case api.FormatSchemaJSON:
 		{
 			switch schemaType {
-			case "create":
-				return writeCreateItemSchemaJSON(ctx, w, tbl)
-			case "replace":
+			case "create", "replace":
 				// The "replace" schema is identical to the "create" schema.
-				// http: //docs.ogc.org/DRAFTS/20-002.html#feature-geojson
+				// http://docs.ogc.org/DRAFTS/20-002.html#feature-geojson
 				return writeCreateItemSchemaJSON(ctx, w, tbl)
 			case "update":
 				return writeUpdateItemSchemaJSON(ctx, w, tbl)
