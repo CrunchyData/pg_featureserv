@@ -4,7 +4,7 @@ This template is for Crunchy Data employees to use as a reference when creating 
 
 We use [Hugo](https://gohugo.io/getting-started/installing/) to generate docs pages.
 
-> Use version [< 0.60](https://github.com/gohugoio/hugo/releases). Crunchy docs currently build with Hugo 0.55.6.
+> Use version [<= 0.102](https://github.com/gohugoio/hugo/releases). Crunchy docs currently build with Hugo 0.102.3.
 
 ## How to use
 

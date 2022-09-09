@@ -16,8 +16,19 @@ Builds of the latest code:
 * [Linux](https://postgisftw.s3.amazonaws.com/pg_featureserv_latest_linux.zip)
 * [Windows](https://postgisftw.s3.amazonaws.com/pg_featureserv_latest_windows.zip)
 * [Mac OSX](https://postgisftw.s3.amazonaws.com/pg_featureserv_latest_macos.zip)
+* [Docker](https://hub.docker.com/r/pramsey/pg_featureserv)
 
 Unzip the file, copy the `pg_featureserv` binary wherever you wish, or use it in place. If you move the binary, remember to move the `assets/` directory to the same location, or start the server using the `AssetsDir` configuration option.
+
+To run the build to verify it:
+
+* Set the `DATABASE_URL` environment variable to the database you want to connect to, and run the binary.
+  `export DATABASE_URL=postgres://username:password@host/dbname`
+* Start the server:
+  `./pg_featureserv`
+* Open the service home page in a browser:
+  `http:/localhost:9000/home.html`
+
 
 ### B. Run container
 
@@ -31,23 +42,61 @@ When you run the container, provide the database connection information in the `
 docker run -e DATABASE_URL=postgres://username:password@host/dbname -p 9000:9000 pramsey/pg_featureserv
 ```
 
+Then open the service home page in a browser: `http:/localhost:9000/home.html`
+
+
 ### C. Build from source
 
-If not already installed, install the [Go software development environment](https://golang.org/doc/install). Make sure that the [`GOPATH` environment variable](https://github.com/golang/go/wiki/SettingGOPATH) is also set.
+`pg_featureserv` is developed under Go 1.13.  It may also work with earlier versions.
 
-The application can downloaded and built with the following commands:
+In the following, replace version `<VERSION>` with the `pg_featureserv` version are building against.
 
-```sh
-mkdir -p $GOPATH/src/github.com/CrunchyData
-cd $GOPATH/src/github.com/CrunchyData
-git clone git@github.com:CrunchyData/pg_featureserv.git
-cd pg_featureserv
-go build
-```
+### Without a Go environment
 
-To run the build to verify it, set the `DATABASE_URL` environment variable to the database you want to connect to, and run the binary.
+Without `go` installed, you can build `pg_featureserv` in a docker image:
 
-```sh
-export DATABASE_URL=postgres://username:password@host/dbname
-$GOPATH/bin/pg_featureserv
+* Download or clone this repository into `$GOPATH/src/github.com/CrunchyData/pg_featureserv`
+* Run the following command in `pg_featureserv/`:
+
+  ```bash
+  make APPVERSION=<VERSION> clean build-in-docker
+  ```
+
+To run the build to verify it:
+
+* Set the `DATABASE_URL` environment variable to the database you want to connect to, and run the binary.
+  `export DATABASE_URL=postgres://username:password@host/dbname`
+* Start the server:
+  `./pg_featureserv`
+* Open the service home page in a browser:
+  `http:/localhost:9000/home.html`
+
+### In Go environment
+
+* Ensure the Go compiler is installed. If not already installed, install the [Go software development environment](https://golang.org/doc/install). Make sure that the [`GOPATH` environment variable](https://github.com/golang/go/wiki/SettingGOPATH) is also set.
+* Download or clone this repository into `$GOPATH/src/github.com/CrunchyData/pg_featureserv`
+* To build the executable, run the following commands:
+
+  ```bash
+  cd $GOPATH/src/github.com/CrunchyData/pg_featureserv/
+  go build
+  ```
+
+* This creates a `pg_featureserv` executable in the application directory
+* (Optional) Run the unit tests using `make test`
+
+To run the build to verify it:
+
+* Set the `DATABASE_URL` environment variable to the database you want to connect to, and run the binary.
+  `export DATABASE_URL=postgres://username:password@host/dbname`
+* Start the server:
+  `./pg_featureserv`
+* Open the service home page in a browser:
+  `http:/localhost:9000/home.html`
+
+
+### D. Build the docker image of `pg_featureserv`
+
+```bash
+make APPVERSION=<VERSION> clean docker
 ```

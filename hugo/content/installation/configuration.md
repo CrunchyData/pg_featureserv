@@ -39,6 +39,7 @@ if not provided in the environment variable `DATABASE_URL`.
 To set the database connection the environment variable `DATABASE_URL`
 can be used with a
 Postgres [connection string](https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNSTRING):
+
 ```bash
 export DATABASE_URL="host=localhost user=postgres"
 ```
@@ -46,6 +47,7 @@ export DATABASE_URL="host=localhost user=postgres"
 Other parameters in the configuration file can be over-ridden in the environment.
 Prepend the upper-cased parameter name with `PGFS_section_` to set the value.
 For example, to change the HTTP port and service title:
+
 ```bash
 export PGFS_SERVER_HTTPPORT=8889
 export PGFS_METADATA_TITLE="My PGFS"
@@ -154,6 +156,19 @@ If the `TlsServerCertificateFile` and `TlsServerPrivateKeyFile`
 are specified then HTTPS support will be enabled,
 at the port specified by `HttpsPort`.
 
+For testing purposes you can generate a **self-signed key/cert pair** using `openssl`:
+
+```bash
+openssl req  -nodes -new -x509  -keyout server.key -out server.crt
+```
+
+These are set in the configuration file:
+
+```toml
+TlsServerCertificateFile = "/path/server.crt"
+TlsServerPrivateKeyFile = "/path/server.key"
+```
+
 #### UrlBase
 
 The Base URL is the URL endpoint at which the service is advertised.
@@ -165,7 +180,8 @@ The `UrlBase` parameter specifies a value for the Base URL. This accomodates run
 The provided URL should not have a trailing slash.
 
 ##### Example
-```
+
+```toml
 UrlBase = https://my-server.org/features
 ```
 
@@ -179,7 +195,8 @@ The BasePath allows an user to change the endpoint where pg_featureserv is serve
 If `BasePath` is not set, all traffic is served from the root of the website `localhost:9000/`.
 
 ##### Example
-```
+
+```toml
 BasePath = "/services/pg_featureserv"
 ```
 

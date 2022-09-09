@@ -10,18 +10,37 @@ to access metadata about as well as data from
 the PostGIS objects it publishes.
 This section discusses general aspects of the API.
 
+## OpenAPI
+
+The service API is described by an
+[OpenAPI](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md) specification.
+This is available as a JSON document at the path `/api`.
+
+The service provides an interactive user interface for
+the API at `/api.html`. On this page, you can view the service paths and parameters, and the schemas for the responses. It allows you to try out the API as well.
+
 ## OGC API - Features
 
 The service implements a broad subset of the
 [OGC API - Features](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html) standard. It implements the following paths defined by the standard:
 
 * `/` - landing page
+* `/index,html` - Landing page (HTML)
+* `/index.json` - Landing page (JSON)
 * `/conformance` - links to conformance resources
 * `/api` - API specification OpenAPI document
 * `/collections` - list of feature collections
+* `/collections.html` - Collections UI
 * `/collections/{id}` - metadata for a feature collection
 * `/collections/{id}/items` - data set of features from a feature collection
+* `/collections/{id}/items.html` - Features from a single feature collection (Map UI)
 * `/collections/{id}/items/{fid}` - data for a specific feature
+* `/functions` - Functions (JSON)
+* `/functions.html` - Functions UI
+* `/functions/{name}` - Function metadata
+* `/functions/{name}.html` - Function UI
+* `/functions/{name}/items` - Features from a function (JSON)
+* `/functions/{name}/items.html` - Features from a function (Map UI)
 
 The standard defines various query parameters for certain paths.
 Many of these are provided by the service, although some are not yet implemented.
@@ -43,15 +62,6 @@ A structured link includes the following properties:
 * `href` - the URI for the link
 * `type` - the format of the linked resource
 * `title` - a title for the linked resource
-
-## OpenAPI
-
-The service API is described by an
-[OpenAPI](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md) specification.
-This is available as a JSON document at the path `/api`.
-
-The service provides an interactive user interface for
-the API at `/api.html`. On this page, you can view the service paths and parameters, and the schemas for the responses. It allows you to try out the API as well.
 
 ## CORS
 

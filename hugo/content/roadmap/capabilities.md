@@ -1,4 +1,9 @@
-# `pg-featureserv` Functionality
+---
+title: "Capabilities"
+date:
+draft: false
+weight: 55
+---
 
 This is a list of current and planned functionality.
 It includes [*OGC API - Features*](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html) core requirements (although some of them are not on the current development roadmap).
@@ -17,6 +22,7 @@ It includes [*OGC API - Features*](http://docs.opengeospatial.org/is/17-069r3/17
 - [x] `/conformance` - OAF Conformance endpoint
 
 ### Resources
+
 - [x] `/` landing page
 - [x] `/collections`
 - [x] `/collections/id`
@@ -27,10 +33,12 @@ It includes [*OGC API - Features*](http://docs.opengeospatial.org/is/17-069r3/17
 - [x] `/functions/id/items`
 
 ### Resource Metadata
+
 - [x] `/collections/id` JSON includes property names/types
 - [x] `/functions/id` JSON includes parameter names/types/defaults and property names/types
 
 ### Query parameters - Standard
+
 - [x] `limit=n`
 - [x] `offset=n`
 - [x] `crs=srid`
@@ -48,6 +56,7 @@ It includes [*OGC API - Features*](http://docs.opengeospatial.org/is/17-069r3/17
 - [ ] `filter-crs=srid`
 
 ### Query parameters - Extension
+
 - [x] `precision` to set output precision of GeoJSON coordinates
   - `precision=n`
 - [x] `transform` to specify geometry transformations
@@ -57,10 +66,12 @@ It includes [*OGC API - Features*](http://docs.opengeospatial.org/is/17-069r3/17
 - [ ] `f` parameter for formats?  (e.g. `f=json`, `f=html`)
 
 ### Query parameters - Functions
+
 - [x] function arguments
   - `name=value`
 
 ### CQL expressions
+
 - [x] property names
 - [x] character literals
 - [x] numeric literals
@@ -86,6 +97,7 @@ It includes [*OGC API - Features*](http://docs.opengeospatial.org/is/17-069r3/17
 - [ ] functions
 
 ### Output formats
+
 - [x] GeoJSON
 - [x] JSON for metadata
 - [x] JSON for non-geometry functions
@@ -93,9 +105,11 @@ It includes [*OGC API - Features*](http://docs.opengeospatial.org/is/17-069r3/17
 - [ ] `prev` link
 
 ### Transactions
+
 - [ ] Support POST, PUT, PATCH, DELETE...  TBD
 
 ## User Interface (HTML)
+
 - [x] `/home.html` landing page
 - [x] metadata for collection
 - [x] map display of collection
@@ -106,6 +120,7 @@ It includes [*OGC API - Features*](http://docs.opengeospatial.org/is/17-069r3/17
 - [ ] text display for non-geometry functions (`items` page)
 
 ### Map UI
+
 - [x] map display for features (`items` page)
 - [x] map display for geometry functions (`items` page)
 - [x] map panel showing features attributes
@@ -121,12 +136,14 @@ It includes [*OGC API - Features*](http://docs.opengeospatial.org/is/17-069r3/17
 - [ ] PostGIS 3.0 `ST_AsGeoJSON` record
 
 ### Data Types
+
 - [x] common scalar types: text, int, float, numeric
 - [x] Arrays of text, int, float, numeric
 - [x] JSON
 - [x] Other types converted to text representation
 
 ### Tables / Views
+
 - [x] table column schema
 - [x] support tables with no primary key
 - [x] support views (with PK as `fid` or missing)
@@ -136,6 +153,7 @@ It includes [*OGC API - Features*](http://docs.opengeospatial.org/is/17-069r3/17
 - [X] include/exclude published schemas and tables via configuration
 
 ### Functions
+
 - [x] support functions returning geometry
 - [x] support functions returning attribute-only data
 - [x] support geometry functions with `id` output field
@@ -151,6 +169,7 @@ It includes [*OGC API - Features*](http://docs.opengeospatial.org/is/17-069r3/17
 - [x] enforce request timeouts
 
 ### Configuration
+
 - [x] read config from file
 - [ ] log levels
 - [x] DB pool parameters
@@ -158,6 +177,7 @@ It includes [*OGC API - Features*](http://docs.opengeospatial.org/is/17-069r3/17
 - [x] whitelist for transformation functions (default: none)
 
 ### Security
+
 - [ ] Authentication - TBD
 - [ ] OpenID - TBD
 - [x] Authorization via database role & grants

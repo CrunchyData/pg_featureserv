@@ -17,13 +17,15 @@ The database connection information can be provided in an environment variable
 It can also be provided in the configuration file `DbConnection` parameter.
 
 ### Linux or OSX
+
 ```sh
 export DATABASE_URL=postgresql://username:password@host/dbname
 ./pg_featureserv
 ```
 
 ### Windows
-```
+
+```bat
 SET DATABASE_URL=postgresql://username:password@host/dbname
 pg_featureserv.exe
 ```
