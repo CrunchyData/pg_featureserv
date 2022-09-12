@@ -37,7 +37,7 @@ func TestApiContainsCollectionSchemas(t *testing.T) {
 	errUnMarsh := json.Unmarshal(body, &v)
 	util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 
-	util.Equals(t, 11, len(v.Paths), "# api paths")
+	util.Assert(t, len(v.Paths) > 10, "# api paths")
 	path := v.Paths.Find("/collections/{collectionId}/schema")
 	util.Assert(t, path != nil, "schema path exists")
 	util.Equals(t, "Provides access to data representation (schema) for any features in specified collection", path.Description, "schema path present")
@@ -56,7 +56,9 @@ func TestApiContainsMethodPostFeature(t *testing.T) {
 	err := json.Unmarshal(body, &v)
 	util.Assert(t, err == nil, fmt.Sprintf("%v", err))
 
-	util.Equals(t, "createCollectionFeature", v.Paths.Find("/collections/{collectionId}/items").Post.OperationID, "method POST present")
+	path := v.Paths.Find("/collections/{collectionId}/items")
+	util.Assert(t, path != nil, "collection path exists")
+	util.Equals(t, "createCollectionFeature", path.Post.OperationID, "method POST present")
 }
 
 // checks collection schema contains valid data description
