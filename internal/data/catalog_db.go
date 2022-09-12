@@ -297,7 +297,7 @@ func (cat *catalogDB) AddTableFeature(ctx context.Context, tableName string, jso
 	return id, nil
 }
 
-func (cat *catalogDB) PartialUpdateTableFeature(ctx context.Context, tableName string, id string, jsonData []byte) (string, error) {
+func (cat *catalogDB) PartialUpdateTableFeature(ctx context.Context, tableName string, id string, jsonData []byte) error {
 	panic("catalogDB::PartialUpdateTableFeature unimplemented")
 }
 

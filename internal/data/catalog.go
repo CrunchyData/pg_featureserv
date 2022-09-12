@@ -51,10 +51,8 @@ type Catalog interface {
 	// using the JSON data to create the feature
 	AddTableFeature(ctx context.Context, tableName string, jsonData []byte) (int64, error)
 
-	// PartialUpdateTableFeature returns the JSON text for a table feature with given id
-	// Feature with given id must be updated with given attribute values
-	// It returns an empty string if the table or feature does not exist
-	PartialUpdateTableFeature(ctx context.Context, tableName string, id string, jsonData []byte) (string, error)
+	// PartialUpdateTableFeature updates a table feature with given id with the JSON data
+	PartialUpdateTableFeature(ctx context.Context, tableName string, id string, jsonData []byte) error
 
 	// ReplaceTableFeature replaces a table feature with given id with the new jsonData
 	ReplaceTableFeature(ctx context.Context, tableName string, id string, jsonData []byte) error

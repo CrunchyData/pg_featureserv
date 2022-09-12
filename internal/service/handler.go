@@ -684,7 +684,7 @@ func handlePartialUpdateItem(w http.ResponseWriter, r *http.Request) *appError {
 	}
 
 	// perform update in database
-	_, err := catalogInstance.PartialUpdateTableFeature(r.Context(), name, fid, body)
+	err := catalogInstance.PartialUpdateTableFeature(r.Context(), name, fid, body)
 	if err != nil {
 		return appErrorInternalFmt(err, api.ErrMsgPartialUpdateFeature, name)
 	}
