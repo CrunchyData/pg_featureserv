@@ -684,16 +684,12 @@ func handlePartialUpdateItem(w http.ResponseWriter, r *http.Request) *appError {
 	}
 
 	// perform update in database
-	feature, err := catalogInstance.PartialUpdateTableFeature(r.Context(), name, fid, body)
+	_, err := catalogInstance.PartialUpdateTableFeature(r.Context(), name, fid, body)
 	if err != nil {
 		return appErrorInternalFmt(err, api.ErrMsgPartialUpdateFeature, name)
 	}
-	if feature == "" {
-		return appErrorNotFoundFmt(nil, api.ErrMsgFeatureNotFound, fid)
-	}
 
-	encodedContent := []byte(feature)
-	writeResponse(w, api.ContentTypeGeoJSON, encodedContent)
+	w.WriteHeader(http.StatusNoContent)
 	return nil
 }
 
@@ -738,16 +734,12 @@ func handleReplaceItem(w http.ResponseWriter, r *http.Request) *appError {
 	}
 
 	// perform replace in database
-	feature, err2 := catalogInstance.ReplaceTableFeature(r.Context(), name, fid, body)
+	err2 := catalogInstance.ReplaceTableFeature(r.Context(), name, fid, body)
 	if err2 != nil {
 		return appErrorInternalFmt(err2, api.ErrMsgReplaceFeature, name)
 	}
-	if len(feature) == 0 {
-		return appErrorNotFoundFmt(nil, api.ErrMsgFeatureNotFound, fid)
-	}
 
-	encodedContent := []byte(feature)
-	writeResponse(w, api.ContentTypeGeoJSON, encodedContent)
+	w.WriteHeader(http.StatusNoContent)
 	return nil
 }
 

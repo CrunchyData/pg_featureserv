@@ -89,7 +89,7 @@ const (
 	ErrMsgNoDataRead               = "No data read from: %v"
 	ErrMsgRequestTimeout           = "Maximum time exceeded.  Request cancelled."
 	ErrMsgReplaceFeature           = "Unable to replace feature in Collection: %v"
-	ErrMsgReplaceFeatureNotConform = "Unable to replace new feature in Collection - data does not respect schema"
+	ErrMsgReplaceFeatureNotConform = "Unable to replace feature in Collection - data does not respect schema"
 )
 
 const (

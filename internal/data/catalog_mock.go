@@ -322,16 +322,16 @@ func (cat *CatalogMock) PartialUpdateTableFeature(ctx context.Context, tableName
 	return jsonStr, nil
 }
 
-func (cat *CatalogMock) ReplaceTableFeature(ctx context.Context, tableName string, id string, jsonData []byte) (string, error) {
+func (cat *CatalogMock) ReplaceTableFeature(ctx context.Context, tableName string, id string, jsonData []byte) error {
 	var schemaObject geojsonFeatureData
 	err1 := json.Unmarshal(jsonData, &schemaObject)
 	if err1 != nil {
-		return "", err1
+		return err1
 	}
 
 	index, err2 := strconv.Atoi(id)
 	if err2 != nil {
-		return "", nil
+		return nil
 	}
 
 	oldFeature := cat.tableData[tableName][index-1]
@@ -339,19 +339,19 @@ func (cat *CatalogMock) ReplaceTableFeature(ctx context.Context, tableName strin
 	// update values into json
 	// all required values should exist sinc it's replace and schema has been checked at this point
 	if schemaObject.Geom == nil {
-		return "", fmt.Errorf("Error missing geometry:: %v", tableName)
+		return fmt.Errorf("Error missing geometry:: %v", tableName)
 	}
 	oldFeature.Geom = schemaObject.Geom
 
 	if schemaObject.Props["prop_a"] == nil {
 		// fails because required property
-		return "", fmt.Errorf("Error missing property:: %v", tableName)
+		return fmt.Errorf("Error missing property:: %v", tableName)
 	}
 	oldFeature.PropA = schemaObject.Props["prop_a"].(string)
 
 	if schemaObject.Props["prop_b"] == nil {
 		// fails because required property
-		return "", fmt.Errorf("Error missing property:: %v", tableName)
+		return fmt.Errorf("Error missing property:: %v", tableName)
 	}
 	oldFeature.PropB = int(schemaObject.Props["prop_b"].(float64))
 
@@ -374,10 +374,10 @@ func (cat *CatalogMock) ReplaceTableFeature(ctx context.Context, tableName strin
 	propNames := cat.TableDefs[0].Columns
 	jsonStr := oldFeature.toJSON(propNames)
 	if jsonStr == "" {
-		return "", fmt.Errorf("Error marshalling feature into JSON:: %v", tableName)
+		return fmt.Errorf("Error marshalling feature into JSON:: %v", tableName)
 	}
 
-	return jsonStr, nil
+	return nil
 }
 
 func (cat *CatalogMock) Functions() ([]*Function, error) {

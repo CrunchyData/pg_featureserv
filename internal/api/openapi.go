@@ -550,16 +550,7 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 					OperationID: "replaceCollectionFeature",
 					Parameters: openapi3.Parameters{
 						&paramCollectionID,
-						&openapi3.ParameterRef{
-							Value: &openapi3.Parameter{
-								Name:            "featureId",
-								Description:     "Id of feature in collection to retrieve data for.",
-								In:              "path",
-								Required:        true,
-								Schema:          &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
-								AllowEmptyValue: false,
-							},
-						},
+						&paramFeatureID,
 						&paramProperties,
 						&paramTransform,
 						&paramCrs,
@@ -575,19 +566,6 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 						},
 					},
 					Responses: openapi3.Responses{
-						"200": &openapi3.ResponseRef{
-							Value: &openapi3.Response{
-								Description: "GeoJSON Feature document containing feature data",
-								/*
-									// TODO: create schema for result?
-									Content: openapi3.NewContentWithJSONSchemaRef(
-										&openapi3.SchemaRef{
-											Ref: "http://geojson.org/schema/Feature.json",
-										},
-									),
-								*/
-							},
-						},
 						"204": &openapi3.ResponseRef{
 							Value: &openapi3.Response{
 								Description: "No Content: replacement feature is same as existing feature",

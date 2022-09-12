@@ -343,23 +343,14 @@ func (cat *catalogDB) ReplaceTableFeature(ctx context.Context, tableName string,
 	geomJson, _ := schemaObject.Geom.MarshalJSON()
 	values = append(values, geomJson)
 
-	// RETURNING ST_AsGeoJson(t.*, 'tbl.GeometryColumn') returns the id colum into the properties of
-	// the feature (feature.properties.id instead of feature.id)
 	sqlStatement := fmt.Sprintf(`
 		UPDATE %s AS t
 		SET %s
-		WHERE %s=%s
-		RETURNING ST_AsGeoJson(t.*, '%s')`,
-		tbl.ID, colValueStr, tbl.IDColumn, id, tbl.GeometryColumn)
-
-	var jsonStr string = ""
-	err = cat.dbconn.QueryRow(ctx, sqlStatement, values...).Scan(&jsonStr)
-	if err != nil {
-		return err
-	}
+		WHERE %s=%s`,
+		tbl.ID, colValueStr, tbl.IDColumn, id)
 
 	err = cat.dbconn.QueryRow(ctx, sqlStatement, values...).Scan()
-	if err != nil && err != pgx.ErrNoRows {
+	if err != nil {
 		return err
 	}
 

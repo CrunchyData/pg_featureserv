@@ -147,7 +147,9 @@ func TestReplaceFeatureSuccessDb(t *testing.T) {
 		}
 	}`
 
-	resp := hTest.DoRequestMethodStatus(t, "PUT", path, []byte(jsonStr), header, http.StatusOK)
+	hTest.DoRequestMethodStatus(t, "PUT", path, []byte(jsonStr), header, http.StatusNoContent)
+
+	resp := hTest.DoRequestMethodStatus(t, "GET", path, []byte(""), header, http.StatusOK)
 	body, _ := ioutil.ReadAll(resp.Body)
 
 	fmt.Println(string(body))

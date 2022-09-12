@@ -79,7 +79,8 @@ func TestSuccessAllUpdateFeature(t *testing.T) {
 		}
 	}`
 
-	resp := hTest.DoRequestMethodStatus(t, "PATCH", path, []byte(jsonStr), header, http.StatusOK)
+	hTest.DoRequestMethodStatus(t, "PATCH", path, []byte(jsonStr), header, http.StatusNoContent)
+	resp := hTest.DoRequestMethodStatus(t, "GET", path, []byte(""), header, http.StatusOK)
 	body, _ := ioutil.ReadAll(resp.Body)
 
 	fmt.Println(string(body))
@@ -124,7 +125,8 @@ func TestSuccessPartialUpdateFeature(t *testing.T) {
 		}
 	}`
 
-	resp := hTest.DoRequestMethodStatus(t, "PATCH", path, []byte(jsonStr), header, http.StatusOK)
+	hTest.DoRequestMethodStatus(t, "PATCH", path, []byte(jsonStr), header, http.StatusNoContent)
+	resp := hTest.DoRequestMethodStatus(t, "GET", path, []byte(""), header, http.StatusOK)
 	body, _ := ioutil.ReadAll(resp.Body)
 
 	fmt.Println(string(body))
@@ -161,7 +163,8 @@ func TestSuccessdOnlyPropUpdateFeature(t *testing.T) {
 		}
 	}`
 
-	resp := hTest.DoRequestMethodStatus(t, "PATCH", path, []byte(jsonStr), header, http.StatusOK)
+	hTest.DoRequestMethodStatus(t, "PATCH", path, []byte(jsonStr), header, http.StatusNoContent)
+	resp := hTest.DoRequestMethodStatus(t, "GET", path, []byte(""), header, http.StatusOK)
 	body, _ := ioutil.ReadAll(resp.Body)
 
 	fmt.Println(string(body))
@@ -196,7 +199,8 @@ func TestSuccessdOnlyGeomUpdateFeature(t *testing.T) {
 		}
 	}`
 
-	resp := hTest.DoRequestMethodStatus(t, "PATCH", path, []byte(jsonStr), header, http.StatusOK)
+	hTest.DoRequestMethodStatus(t, "PATCH", path, []byte(jsonStr), header, http.StatusNoContent)
+	resp := hTest.DoRequestMethodStatus(t, "GET", path, []byte(""), header, http.StatusOK)
 	body, _ := ioutil.ReadAll(resp.Body)
 
 	fmt.Println(string(body))

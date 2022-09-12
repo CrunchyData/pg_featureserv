@@ -56,10 +56,8 @@ type Catalog interface {
 	// It returns an empty string if the table or feature does not exist
 	PartialUpdateTableFeature(ctx context.Context, tableName string, id string, jsonData []byte) (string, error)
 
-	// ReplaceTableFeature returns the JSON text for a table feature with given id
-	// Feature with given id must be replaced with given feature
-	// It returns an empty string if the table or feature does not exist
-	ReplaceTableFeature(ctx context.Context, tableName string, id string, jsonData []byte) (string, error)
+	// ReplaceTableFeature replaces a table feature with given id with the new jsonData
+	ReplaceTableFeature(ctx context.Context, tableName string, id string, jsonData []byte) error
 
 	Functions() ([]*Function, error)
 

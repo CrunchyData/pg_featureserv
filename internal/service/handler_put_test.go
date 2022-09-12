@@ -36,7 +36,6 @@ func TestApiContainsMethodPut(t *testing.T) {
 	err := json.Unmarshal(body, &v)
 	util.Assert(t, err == nil, fmt.Sprintf("%v", err))
 
-	util.Equals(t, 11, len(v.Paths), "# api paths")
 	util.Equals(t, "Provides access to a single feature identitfied by {featureId} from the specified collection", v.Paths.Find("/collections/{collectionId}/items/{featureId}").Description, "feature path present")
 	util.Equals(t, "replaceCollectionFeature", v.Paths.Find("/collections/{collectionId}/items/{featureId}").Put.OperationID, "method PUT present")
 }
@@ -83,7 +82,9 @@ func TestReplaceFeatureSuccess(t *testing.T) {
 		}
 	}`
 
-	resp := hTest.DoRequestMethodStatus(t, "PUT", path, []byte(jsonStr), header, http.StatusOK)
+	hTest.DoRequestMethodStatus(t, "PUT", path, []byte(jsonStr), header, http.StatusNoContent)
+
+	resp := hTest.DoRequestMethodStatus(t, "GET", path, []byte(""), header, http.StatusOK)
 	body, _ := ioutil.ReadAll(resp.Body)
 
 	fmt.Println(string(body))
@@ -128,7 +129,9 @@ func TestReplaceFeatureRequiredPropertiesSuccess(t *testing.T) {
 		}
 	}`
 
-	resp := hTest.DoRequestMethodStatus(t, "PUT", path, []byte(jsonStr), header, http.StatusOK)
+	hTest.DoRequestMethodStatus(t, "PUT", path, []byte(jsonStr), header, http.StatusNoContent)
+
+	resp := hTest.DoRequestMethodStatus(t, "GET", path, []byte(""), header, http.StatusOK)
 	body, _ := ioutil.ReadAll(resp.Body)
 
 	var jsonData map[string]interface{}
