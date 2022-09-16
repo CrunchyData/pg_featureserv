@@ -554,6 +554,16 @@ var conformance = Conformance{
 		"http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/oas30",
 		"http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/collections",
 		"http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/simple-query",
+		"http://www.opengis.net/spec/ogcapi-features-2/1.0/conf/crs",
+		"http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter",
+		"http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/features-filter",
+		"http://www.opengis.net/spec/cql2/1.0/conf/basic-cql2",
+		"http://www.opengis.net/spec/cql2/1.0/conf/basic-spatial-operators",
+		"http://www.opengis.net/spec/cql2/1.0/conf/spatial-operators",
+		"http://www.opengis.net/spec/cql2/1.0/conf/temporal-operators",
+		"http://www.opengis.net/spec/cql2/1.0/conf/arithmetic",
+		"http://www.opengis.net/spec/ogcapi-features-4/1.0/conf/create-replace-delete",
+		"http://www.opengis.net/spec/ogcapi-features-4/1.0/conf/update",
 	},
 }
 
