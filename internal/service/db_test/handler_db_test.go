@@ -40,7 +40,7 @@ func TestMain(m *testing.M) {
 
 func TestProperDbInit(t *testing.T) {
 	tables, _ := cat.Tables()
-	util.Equals(t, 2, len(tables), "# table in DB")
+	util.Equals(t, 2, len(tables), "# tables in DB")
 }
 
 func TestPropertiesAllFromDb(t *testing.T) {
@@ -172,9 +172,58 @@ func TestReplaceFeatureSuccessDb(t *testing.T) {
 	util.Equals(t, 40, int(coordinate[1].(float64)), "feature longitude")
 }
 
+func TestPartialUpdateFeatureDb(t *testing.T) {
+	path := "/collections/mock_a/items/2"
+	var header = make(http.Header)
+	header.Add("Content-Type", api.ContentTypeSchemaPatchJSON)
+
+	jsonStr := `{
+		"type": "Feature",
+		"id": "2",
+		"geometry": {
+			"type": "Point",
+			"coordinates": [
+			-120,
+			40
+			]
+		},
+		"properties": {
+			"prop_a": "propA...",
+			"prop_b": 2
+		}
+	}`
+
+	resp := hTest.DoRequestMethodStatus(t, "PATCH", path, []byte(jsonStr), header, http.StatusNoContent)
+	loc := resp.Header().Get("Location")
+
+	util.Assert(t, len(loc) > 1, "Header location must not be empty")
+	util.Equals(t, fmt.Sprintf("http://test/collections/mock_a/items/%d", 2), loc,
+		"Header location must contain valid data")
+
+	// check if it can be read
+	feature := checkItem(t, 2)
+	var jsonData map[string]interface{}
+	errUnMarsh := json.Unmarshal(feature, &jsonData)
+	util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
+
+	util.Equals(t, "2", jsonData["id"].(string), "feature ID")
+	util.Equals(t, "Feature", jsonData["type"].(string), "feature Type")
+	props := jsonData["properties"].(map[string]interface{})
+	util.Equals(t, "propA...", props["prop_a"].(string), "feature value a")
+	util.Equals(t, 2, int(props["prop_b"].(float64)), "feature value b")
+	util.Equals(t, "propC", props["prop_c"].(string), "feature value c")
+	util.Equals(t, 2, int(props["prop_d"].(float64)), "feature value d")
+	geom := jsonData["geometry"].(map[string]interface{})
+	util.Equals(t, "Point", geom["type"].(string), "feature Type")
+	coordinate := geom["coordinates"].([]interface{})
+	util.Equals(t, -120, int(coordinate[0].(float64)), "feature latitude")
+	util.Equals(t, 40, int(coordinate[1].(float64)), "feature longitude")
+
+}
+
 // check if item is available and is not empty
 // copy from service/handler_test.go
-func checkItem(t *testing.T, id int) {
+func checkItem(t *testing.T, id int) []byte {
 	path := fmt.Sprintf("/collections/mock_a/items/%d", id)
 	resp := hTest.DoRequest(t, path)
 	body, _ := ioutil.ReadAll(resp.Body)
@@ -187,4 +236,6 @@ func checkItem(t *testing.T, id int) {
 	actId, _ := strconv.Atoi(v.ID)
 	util.Equals(t, id, actId, "feature id")
 	util.Equals(t, 4, len(v.Props), "# feature props")
+
+	return body
 }

@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"reflect"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -297,8 +298,77 @@ func (cat *catalogDB) AddTableFeature(ctx context.Context, tableName string, jso
 	return id, nil
 }
 
-func (cat *catalogDB) PartialUpdateTableFeature(ctx context.Context, tableName string, id string, jsonData []byte) error {
-	panic("catalogDB::PartialUpdateTableFeature unimplemented")
+func (cat *catalogDB) PartialUpdateTableFeature(ctx context.Context, tableName string, id string, jsonData []byte) (int64, error) {
+
+	idx, errInt := strconv.ParseInt(id, 10, 64)
+	if errInt != nil {
+		return -9999, errInt
+	}
+
+	tbl, errTbl := cat.TableByName(tableName)
+	if errTbl != nil {
+		return -9999, errTbl
+	}
+
+	var schemaObject geojsonFeatureData
+	errJson := json.Unmarshal(jsonData, &schemaObject)
+	if errJson != nil {
+		return -9999, errJson
+	}
+
+	var columnStr string
+	var placementStr string
+	var values []interface{}
+
+	var i = 0
+	for c, t := range tbl.DbTypes {
+		if c == tbl.IDColumn {
+			continue // ignore id column
+		}
+		if schemaObject.Props[c] == nil {
+			continue // ignore empty data
+		}
+
+		i++
+
+		columnStr += c
+		columnStr += ", "
+		placementStr += fmt.Sprintf("$%d", i)
+		placementStr += ", "
+
+		if t.Type == "int4" {
+			values = append(values, int(schemaObject.Props[c].(float64)))
+		} else {
+			values = append(values, schemaObject.Props[c])
+		}
+	}
+
+	columnStr = strings.TrimSuffix(columnStr, ", ")
+	placementStr = strings.TrimSuffix(placementStr, ", ")
+
+	if schemaObject.Geom != nil {
+		i++
+		columnStr += ", " + tbl.GeometryColumn
+		placementStr += fmt.Sprintf(", ST_GeomFromGeoJSON($%d)", i)
+		geomJson, _ := schemaObject.Geom.MarshalJSON()
+		values = append(values, geomJson)
+	}
+
+	sqlStatement := fmt.Sprintf(`
+		UPDATE %s
+		SET ( %s ) = ( %s )
+		WHERE id = %s
+		RETURNING %s
+	`, tbl.ID, columnStr, placementStr, id, tbl.IDColumn)
+
+	row := cat.dbconn.QueryRow(ctx, sqlStatement, values...)
+
+	errQuery := row.Scan(&idx)
+	if errQuery != nil {
+		return -9999, errQuery
+	}
+
+	return idx, nil
 }
 
 func (cat *catalogDB) ReplaceTableFeature(ctx context.Context, tableName string, id string, jsonData []byte) error {

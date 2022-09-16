@@ -469,7 +469,7 @@ func checkFunction(t *testing.T, fun *data.Function) {
 }
 
 // check if item is available and is not empty
-func checkItem(t *testing.T, id int) {
+func checkItem(t *testing.T, id int) []byte {
 	path := fmt.Sprintf("/collections/mock_a/items/%d", id)
 	resp := hTest.DoRequest(t, path)
 	body, _ := ioutil.ReadAll(resp.Body)
@@ -490,4 +490,6 @@ func checkItem(t *testing.T, id int) {
 	actId, _ := strconv.Atoi(v.ID)
 	util.Equals(t, id, actId, "feature id")
 	util.Equals(t, 4, len(v.Props), "# feature props")
+
+	return body
 }

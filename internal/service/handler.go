@@ -640,6 +640,8 @@ func handleItem(w http.ResponseWriter, r *http.Request) *appError {
 }
 
 func handlePartialUpdateItem(w http.ResponseWriter, r *http.Request) *appError {
+	urlBase := serveURLBase(r)
+
 	// extract request parameters
 	name := getRequestVar(routeVarID, r)
 	fid := getRequestVar(routeVarFeatureID, r)
@@ -684,12 +686,14 @@ func handlePartialUpdateItem(w http.ResponseWriter, r *http.Request) *appError {
 	}
 
 	// perform update in database
-	err := catalogInstance.PartialUpdateTableFeature(r.Context(), name, fid, body)
+	id, err := catalogInstance.PartialUpdateTableFeature(r.Context(), name, fid, body)
 	if err != nil {
 		return appErrorInternalFmt(err, api.ErrMsgPartialUpdateFeature, name)
 	}
 
+	w.Header().Set("Location", fmt.Sprintf("%scollections/%s/items/%d", urlBase, name, id))
 	w.WriteHeader(http.StatusNoContent)
+
 	return nil
 }
 

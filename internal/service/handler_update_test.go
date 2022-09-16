@@ -79,15 +79,19 @@ func TestSuccessAllUpdateFeature(t *testing.T) {
 		}
 	}`
 
-	hTest.DoRequestMethodStatus(t, "PATCH", path, []byte(jsonStr), header, http.StatusNoContent)
-	resp := hTest.DoRequestMethodStatus(t, "GET", path, []byte(""), header, http.StatusOK)
-	body, _ := ioutil.ReadAll(resp.Body)
+	resp := hTest.DoRequestMethodStatus(t, "PATCH", path, []byte(jsonStr), header, http.StatusNoContent)
 
-	fmt.Println(string(body))
+	loc := resp.Header().Get("Location")
 
+	util.Assert(t, len(loc) > 1, "Header location must not be empty")
+	util.Equals(t, fmt.Sprintf("http://test/collections/mock_a/items/%d", 1), loc,
+		"Header location must contain valid data")
+
+	// check if it can be read
+	feature := checkItem(t, 1)
 	var jsonData map[string]interface{}
-	err := json.Unmarshal(body, &jsonData)
-	util.Assert(t, err == nil, fmt.Sprintf("%v", err))
+	errUnMarsh := json.Unmarshal(feature, &jsonData)
+	util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 
 	util.Equals(t, "1", jsonData["id"].(string), "feature ID")
 	util.Equals(t, "Feature", jsonData["type"].(string), "feature Type")
@@ -125,15 +129,18 @@ func TestSuccessPartialUpdateFeature(t *testing.T) {
 		}
 	}`
 
-	hTest.DoRequestMethodStatus(t, "PATCH", path, []byte(jsonStr), header, http.StatusNoContent)
-	resp := hTest.DoRequestMethodStatus(t, "GET", path, []byte(""), header, http.StatusOK)
-	body, _ := ioutil.ReadAll(resp.Body)
+	resp := hTest.DoRequestMethodStatus(t, "PATCH", path, []byte(jsonStr), header, http.StatusNoContent)
+	loc := resp.Header().Get("Location")
 
-	fmt.Println(string(body))
+	util.Assert(t, len(loc) > 1, "Header location must not be empty")
+	util.Equals(t, fmt.Sprintf("http://test/collections/mock_a/items/%d", 2), loc,
+		"Header location must contain valid data")
 
+	// check if it can be read
+	feature := checkItem(t, 2)
 	var jsonData map[string]interface{}
-	err := json.Unmarshal(body, &jsonData)
-	util.Assert(t, err == nil, fmt.Sprintf("%v", err))
+	errUnMarsh := json.Unmarshal(feature, &jsonData)
+	util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 
 	util.Equals(t, "2", jsonData["id"].(string), "feature ID")
 	util.Equals(t, "Feature", jsonData["type"].(string), "feature Type")
@@ -163,15 +170,18 @@ func TestSuccessdOnlyPropUpdateFeature(t *testing.T) {
 		}
 	}`
 
-	hTest.DoRequestMethodStatus(t, "PATCH", path, []byte(jsonStr), header, http.StatusNoContent)
-	resp := hTest.DoRequestMethodStatus(t, "GET", path, []byte(""), header, http.StatusOK)
-	body, _ := ioutil.ReadAll(resp.Body)
+	resp := hTest.DoRequestMethodStatus(t, "PATCH", path, []byte(jsonStr), header, http.StatusNoContent)
+	loc := resp.Header().Get("Location")
 
-	fmt.Println(string(body))
+	util.Assert(t, len(loc) > 1, "Header location must not be empty")
+	util.Equals(t, fmt.Sprintf("http://test/collections/mock_a/items/%d", 3), loc,
+		"Header location must contain valid data")
 
+	// check if it can be read
+	feature := checkItem(t, 3)
 	var jsonData map[string]interface{}
-	err := json.Unmarshal(body, &jsonData)
-	util.Assert(t, err == nil, fmt.Sprintf("%v", err))
+	errUnMarsh := json.Unmarshal(feature, &jsonData)
+	util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 
 	util.Equals(t, "3", jsonData["id"].(string), "feature ID")
 	util.Equals(t, "Feature", jsonData["type"].(string), "feature Type")
@@ -199,15 +209,18 @@ func TestSuccessdOnlyGeomUpdateFeature(t *testing.T) {
 		}
 	}`
 
-	hTest.DoRequestMethodStatus(t, "PATCH", path, []byte(jsonStr), header, http.StatusNoContent)
-	resp := hTest.DoRequestMethodStatus(t, "GET", path, []byte(""), header, http.StatusOK)
-	body, _ := ioutil.ReadAll(resp.Body)
+	resp := hTest.DoRequestMethodStatus(t, "PATCH", path, []byte(jsonStr), header, http.StatusNoContent)
+	loc := resp.Header().Get("Location")
 
-	fmt.Println(string(body))
+	util.Assert(t, len(loc) > 1, "Header location must not be empty")
+	util.Equals(t, fmt.Sprintf("http://test/collections/mock_a/items/%d", 4), loc,
+		"Header location must contain valid data")
 
+	// check if it can be read
+	feature := checkItem(t, 4)
 	var jsonData map[string]interface{}
-	err := json.Unmarshal(body, &jsonData)
-	util.Assert(t, err == nil, fmt.Sprintf("%v", err))
+	errUnMarsh := json.Unmarshal(feature, &jsonData)
+	util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 
 	util.Equals(t, "4", jsonData["id"].(string), "feature ID")
 	util.Equals(t, "Feature", jsonData["type"].(string), "feature Type")
