@@ -147,3 +147,33 @@ A list of links provide URLs for accessing:
 * `self` - the feature collection metadata
 * `alternate` - the feature collection metadata as an HTML view
 * `items` - the data items returned by querying the feature collection
+
+## Modify collection feature
+
+You can create, replace, patch or delete a feature of a collection.
+
+### Create feature
+
+To create a feature you need to provide a valid JSON document containing all the data of the feature to create.
+
+The JSON document must match the JSON schema provided by the path `/collections/{coll-name}/schema?type=create`. Once the JSON document you can send it to the collection by using the `POST` HTTP method with the path `/collections/{coll-name}/items`.
+
+#### *Example*
+
+Using `curl` tool, you will have this type of request with your JSON document saved locally as `data.json` file:
+
+```bash
+curl -X POST "http://localhost:9000/collections/e.admin_0_countries/items" \
+     -H "accept: */*" \
+     -H "Content-Type: application/json" \
+     -d "@data.json"
+```
+
+You should receive a 201 HTTP response with in the header the url of the newly created feature like:
+
+```raw
+access-control-allow-origin: *  
+content-encoding: gzip  
+content-length: 23  
+location: http://localhost:9000/collections/e.admin_0_countries/items/10  
+```

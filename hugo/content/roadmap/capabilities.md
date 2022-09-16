@@ -106,7 +106,7 @@ It includes [*OGC API - Features*](http://docs.opengeospatial.org/is/17-069r3/17
 
 ### Transactions
 
-- [ ] Support POST, PUT, PATCH, DELETE...  TBD
+- [X] Support POST, PUT, PATCH, DELETE
 
 ## User Interface (HTML)
 
@@ -132,8 +132,8 @@ It includes [*OGC API - Features*](http://docs.opengeospatial.org/is/17-069r3/17
 
 ## Database
 
-- [x] PostGIS 2.x `AsGeoJSON` geometry with attribute encoding
-- [ ] PostGIS 3.0 `ST_AsGeoJSON` record
+- [ ] PostGIS 2.x `AsGeoJSON` geometry with attribute encoding
+- [x] PostGIS 3.0 `ST_AsGeoJSON` record
 
 ### Data Types
 

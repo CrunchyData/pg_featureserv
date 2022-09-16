@@ -23,3 +23,4 @@ weight: 60
 * [**DRAFT** *OGC API - Features - Part 3: Filtering*](http://docs.ogc.org/DRAFTS/19-079r1.html)
 * [**DRAFT** *Common Query Language (CQL2)*](https://docs.ogc.org/DRAFTS/21-065.html)
 * [*GeoJSON*](https://www.rfc-editor.org/rfc/rfc7946.txt)
+* [**DRAFT** *OGC API - Features - Part 4: Create, Replace, Update and Delete*](http://docs.ogc.org/DRAFTS/20-002.html)

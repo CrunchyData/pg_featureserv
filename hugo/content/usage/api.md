@@ -85,8 +85,14 @@ These include:
 
 ## Request methods
 
-Currently the service provides only Read-Only access to resources.
-The only HTTP method supported is `GET`.
+Currently the service supports the following HTTP methods:
+
+* `POST`: on specific collection, creates a new feature
+* `PUT`: on specific feature, replace the feature
+* `PATCH`: on specific feature, update partially the feature
+* `DELETE`: on specific feature, deelte the feature
+
+Other Rest paths only support `GET` HTTP method.
 
 ## Response formats
 
@@ -123,6 +129,8 @@ The HTTP protocol defines a standard set of status codes returned by responses.
 |  Code  |  Meaning  |
 |-------------|-----------|
 | `200 OK` | The request has succeeded. |
+| `201 Created` | a new object has been created. |
+| `204 Modified` | The request has succeeded with the modification. |
 | `400 Bad Request` | The server could not understand the request due to invalid syntax. |
 | `404 Not Found` | The server can not find the requested resource. |
 | `500 Internal Server Error` | The server has encountered a situation it is unable to handle. |

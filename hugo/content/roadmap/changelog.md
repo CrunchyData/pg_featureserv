@@ -5,6 +5,23 @@ draft: false
 weight: 5
 ---
 
+## Version 1.4
+*Released: TBD*
+
+### New Features
+
+* Support for POST/PUT/PATCH/DELETE transactions
+
+### Improvements
+
+* Rework documentation
+* improve CI tests
+
+### Bug Fixes
+
+* Fix minor bugs via staticchecker
+
+
 ## Version 1.3
 *Released: TBD*
 
