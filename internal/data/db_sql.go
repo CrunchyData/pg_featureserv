@@ -21,8 +21,6 @@ import (
  limitations under the License.
 */
 
-const forceTextTSVECTOR = "tsvector"
-
 const sqlTables = `SELECT
 	Format('%s.%s', n.nspname, c.relname) AS id,
 	n.nspname AS schema,
@@ -163,7 +161,7 @@ func sqlColListFromColumnMap(names []string, dbtypes map[string]Column, addLeadi
 }
 
 // sqlColListFromPGTypeMap creates a comma-separated column list, or blank if no columns
-func sqlColListFromStringMap(names []string, dbtypes map[string]string, addLeadingComma bool) string {
+func sqlColListFromStringMap(names []string, dbtypes map[string]PGType, addLeadingComma bool) string {
 	if len(names) == 0 {
 		return ""
 	}
@@ -181,13 +179,13 @@ func sqlColListFromStringMap(names []string, dbtypes map[string]string, addLeadi
 }
 
 // makeSQLColExpr casts a column to text if type is unknown to PGX
-func sqlColExpr(name string, dbtype string) string {
+func sqlColExpr(name string, dbtype PGType) string {
 
 	name = strconv.Quote(name)
 
 	// TODO: make this more data-driven / configurable
 	switch dbtype {
-	case forceTextTSVECTOR:
+	case PGTypeTSVECTOR:
 		return fmt.Sprintf("%s::text", name)
 	}
 

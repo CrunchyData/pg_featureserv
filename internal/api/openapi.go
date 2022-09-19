@@ -442,7 +442,6 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 					OperationID: "createCollectionFeature",
 					Parameters: openapi3.Parameters{
 						&paramCollectionID,
-						&paramFeatureID,
 						// TODO keep it for the next evolution
 						// &paramCrs,
 					},
