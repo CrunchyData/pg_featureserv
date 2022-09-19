@@ -40,7 +40,7 @@ func TestMain(m *testing.M) {
 
 func TestProperDbInit(t *testing.T) {
 	tables, _ := cat.Tables()
-	util.Equals(t, 2, len(tables), "# tables in DB")
+	util.Equals(t, 4, len(tables), "# tables in DB")
 }
 
 func TestPropertiesAllFromDb(t *testing.T) {
@@ -86,7 +86,7 @@ func TestCreateFeatureDb(t *testing.T) {
 
 	//--- retrieve max feature id before insert
 	var features []string
-	params := data.QueryParam{Limit: 100, Offset: 0, Crs: 4326}
+	params := data.QueryParam{Limit: 100000, Offset: 0, Crs: 4326}
 	features, _ = cat.TableFeatures(context.Background(), "mock_a", &params)
 	maxIdBefore := len(features)
 
@@ -218,6 +218,26 @@ func TestPartialUpdateFeatureDb(t *testing.T) {
 	coordinate := geom["coordinates"].([]interface{})
 	util.Equals(t, -120, int(coordinate[0].(float64)), "feature latitude")
 	util.Equals(t, 40, int(coordinate[1].(float64)), "feature longitude")
+
+}
+
+func TestDeleteFeatureDb(t *testing.T) {
+
+	//--- retrieve max feature id before delete
+	var features []string
+	params := data.QueryParam{Limit: 100000, Offset: 0, Crs: 4326}
+	features, _ = cat.TableFeatures(context.Background(), "mock_b", &params)
+
+	featuresNumbersBefore := len(features)
+
+	// -- do the request call but we have to force the catalogInstance to db during this operation
+	hTest.DoDeleteRequestStatus(t, "/collections/mock_b/items/1", http.StatusNoContent)
+
+	//--- retrieve max feature id after delete
+	features, _ = cat.TableFeatures(context.Background(), "mock_b", &params)
+	featuresNumbersAfter := len(features)
+
+	util.Assert(t, featuresNumbersBefore-1 == featuresNumbersAfter, "# feature still in db/not deleted")
 
 }
 

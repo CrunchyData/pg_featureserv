@@ -236,6 +236,8 @@ func (cat *CatalogMock) TableFeature(ctx context.Context, name string, id string
 		return "", nil
 	}
 
+	index--
+
 	// TODO: return not found if index out of range
 	if index < 0 || index >= len(features) {
 		return "", nil

@@ -436,7 +436,8 @@ func (cat *catalogDB) DeleteTableFeature(ctx context.Context, tableName string, 
 
 	var id int64 = -1
 	err := cat.dbconn.QueryRow(ctx, sqlStatement).Scan(&id)
-	if err != nil {
+
+	if err != nil && err != pgx.ErrNoRows {
 		return "", err
 	}
 

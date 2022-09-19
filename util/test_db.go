@@ -50,19 +50,31 @@ func CreateTestDb() *pgxpool.Pool {
 	log.Debugf("Connected as %s to %s @ %s", dbUser, dbName, dbHost)
 
 	// collections tables
-	tables := []string{"mock_a", "mock_b", "mock_c"}
-	for _, s := range tables {
-		createBytes := []byte(`
-			DROP TABLE IF EXISTS %s CASCADE;
-			CREATE TABLE IF NOT EXISTS public.%s (
-				id SERIAL PRIMARY KEY,
-				geometry public.geometry(Point, 4326),
-				prop_a text,
-				prop_b int,
-				prop_c text,
-				prop_d int
-			);
-		`)
+	// tables := []string{"mock_a", "mock_b", "mock_c"}
+	type tableContent struct {
+		extent data.Extent
+		nx     int
+		ny     int
+	}
+	tablesAndExtents := map[string]tableContent{
+		"mock_a": {data.Extent{Minx: -120, Miny: 40, Maxx: -74, Maxy: 50}, 3, 3},
+		"mock_b": {data.Extent{Minx: -75, Miny: 45, Maxx: -74, Maxy: 46}, 10, 10},
+		"mock_c": {data.Extent{Minx: -120, Miny: 40, Maxx: -74, Maxy: 60}, 100, 100},
+	}
+
+	createBytes := []byte(`
+		DROP TABLE IF EXISTS %s CASCADE;
+		CREATE TABLE IF NOT EXISTS public.%s (
+			id SERIAL PRIMARY KEY,
+			geometry public.geometry(Point, 4326),
+			prop_a text,
+			prop_b int,
+			prop_c text,
+			prop_d int
+		);
+	`)
+	for s := range tablesAndExtents {
+
 		createStatement := fmt.Sprintf(string(createBytes), s, s)
 
 		_, errExec := db.Exec(ctx, createStatement)
@@ -73,49 +85,27 @@ func CreateTestDb() *pgxpool.Pool {
 	}
 
 	// collections features/table records
-	featsa := data.MakePointFeatures(data.Extent{Minx: -120, Miny: 40, Maxx: -74, Maxy: 50},
-		3, 3)
 	b := &pgx.Batch{}
-	sqlStatement := `
-		INSERT INTO public.mock_a (geometry, prop_a, prop_b, prop_c, prop_d)
-		VALUES (ST_GeomFromGeoJSON($1), $2, $3, $4, $5)`
 
-	for _, f := range featsa {
-		geomStr, _ := f.Geom.MarshalJSON()
-		b.Queue(sqlStatement, geomStr, f.PropA, f.PropB, f.PropC, f.PropD)
-	}
-	resa := db.SendBatch(ctx, b)
-	if resa == nil {
-		CloseTestDb(db)
-		log.Fatal("Injection failed")
-	}
-	resa.Close()
+	insertBytes := []byte(`
+		INSERT INTO public.%s (geometry, prop_a, prop_b, prop_c, prop_d)
+		VALUES (ST_GeomFromGeoJSON($1), $2, $3, $4, $5)
+	`)
+	for tableName, tableElements := range tablesAndExtents {
+		insertStatement := fmt.Sprintf(string(insertBytes), tableName)
+		featuresMock := data.MakePointFeatures(tableElements.extent, tableElements.nx, tableElements.ny)
 
-	featsb := data.MakePointFeatures(data.Extent{Minx: -75, Miny: 45, Maxx: -74, Maxy: 46},
-		10, 10)
-	for _, f := range featsb {
-		geomStr, _ := f.Geom.MarshalJSON()
-		b.Queue(sqlStatement, geomStr, f.PropA, f.PropB, f.PropC, f.PropD)
+		for _, f := range featuresMock {
+			geomStr, _ := f.Geom.MarshalJSON()
+			b.Queue(insertStatement, geomStr, f.PropA, f.PropB, f.PropC, f.PropD)
+		}
+		res := db.SendBatch(ctx, b)
+		if res == nil {
+			CloseTestDb(db)
+			log.Fatal("Injection failed")
+		}
+		res.Close()
 	}
-	resb := db.SendBatch(ctx, b)
-	if resb == nil {
-		CloseTestDb(db)
-		log.Fatal("Injection failed")
-	}
-	resb.Close()
-
-	featsc := data.MakePointFeatures(data.Extent{Minx: -120, Miny: 40, Maxx: -74, Maxy: 60},
-		100, 100)
-	for _, f := range featsc {
-		geomStr, _ := f.Geom.MarshalJSON()
-		b.Queue(sqlStatement, geomStr, f.PropA, f.PropB, f.PropC, f.PropD)
-	}
-	resc := db.SendBatch(ctx, b)
-	if resc == nil {
-		CloseTestDb(db)
-		log.Fatal("Injection failed")
-	}
-	resc.Close()
 
 	log.Debugf("Sample data injected")
 

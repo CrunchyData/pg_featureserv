@@ -136,10 +136,6 @@ func appErrorInternalFmt(err error, format string, v ...interface{}) *appError {
 	return &appError{err, msg, http.StatusInternalServerError}
 }
 
-func appErrorNotFound(err error, msg string) *appError {
-	return &appError{err, msg, http.StatusNotFound}
-}
-
 func appErrorNotFoundFmt(err error, format string, v string) *appError {
 	msg := fmt.Sprintf(format, v)
 	return &appError{err, msg, http.StatusNotFound}
