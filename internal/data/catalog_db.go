@@ -420,7 +420,7 @@ func (cat *catalogDB) ReplaceTableFeature(ctx context.Context, tableName string,
 		tbl.ID, colValueStr, tbl.IDColumn, id)
 
 	err = cat.dbconn.QueryRow(ctx, sqlStatement, values...).Scan()
-	if err != nil {
+	if err != nil && err != pgx.ErrNoRows {
 		return err
 	}
 
