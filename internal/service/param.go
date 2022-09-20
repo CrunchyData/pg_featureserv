@@ -26,11 +26,30 @@ import (
 	"github.com/CrunchyData/pg_featureserv/internal/data"
 )
 
-func parseRequestParams(r *http.Request) (api.RequestParam, error) {
+type NameValMap map[string]string
+
+// RequestParam holds the parameters for a request
+type RequestParam struct {
+	Crs           int
+	Limit         int
+	Offset        int
+	Bbox          *api.Extent
+	BboxCrs       int
+	Properties    []string
+	Filter        string
+	FilterCrs     int
+	GroupBy       []string
+	SortBy        []api.Sorting
+	Precision     int
+	TransformFuns []api.TransformFunction
+	Values        NameValMap
+}
+
+func parseRequestParams(r *http.Request) (RequestParam, error) {
 	queryValues := r.URL.Query()
 	paramValues := extractSingleArgs(queryValues)
 
-	param := api.RequestParam{
+	param := RequestParam{
 		Crs:       data.SRID_4326,
 		Limit:     conf.Configuration.Paging.LimitDefault,
 		Offset:    0,
@@ -129,7 +148,7 @@ func parseRequestParams(r *http.Request) (api.RequestParam, error) {
 	return param, nil
 }
 
-func extractSingleArgs(queryArgs url.Values) api.NameValMap {
+func extractSingleArgs(queryArgs url.Values) NameValMap {
 	vals := make(map[string]string)
 	for keyRaw := range queryArgs {
 		queryval := queryArgs.Get(keyRaw)
@@ -139,11 +158,11 @@ func extractSingleArgs(queryArgs url.Values) api.NameValMap {
 	return vals
 }
 
-func parseString(values api.NameValMap, key string) string {
+func parseString(values NameValMap, key string) string {
 	return strings.TrimSpace(values[key])
 }
 
-func parseInt(values api.NameValMap, key string, minVal int, maxVal int, defaultVal int) (int, error) {
+func parseInt(values NameValMap, key string, minVal int, maxVal int, defaultVal int) (int, error) {
 	valStr := values[key]
 	// key not present or missing value
 	if len(valStr) < 1 {
@@ -162,7 +181,7 @@ func parseInt(values api.NameValMap, key string, minVal int, maxVal int, default
 	return val, nil
 }
 
-func parseLimit(values api.NameValMap) (int, error) {
+func parseLimit(values NameValMap) (int, error) {
 	val := values[api.ParamLimit]
 	if len(val) < 1 {
 		return conf.Configuration.Paging.LimitDefault, nil
@@ -181,7 +200,7 @@ func parseLimit(values api.NameValMap) (int, error) {
 parseBbox parses the bbox query parameter, if present, or nll if not
 This has the format bbox=minLon,minLat,maxLon,maxLat.
 */
-func parseBbox(values api.NameValMap) (*data.Extent, error) {
+func parseBbox(values NameValMap) (*api.Extent, error) {
 	val := values[api.ParamBbox]
 	if len(val) < 1 {
 		return nil, nil
@@ -210,14 +229,14 @@ func parseBbox(values api.NameValMap) (*data.Extent, error) {
 	if isErr {
 		return nil, fmt.Errorf(api.ErrMsgInvalidParameterValue, api.ParamBbox, val)
 	}
-	var bbox = data.Extent{Minx: minLon, Miny: minLat, Maxx: maxLon, Maxy: maxLat}
+	var bbox = api.Extent{Minx: minLon, Miny: minLat, Maxx: maxLon, Maxy: maxLat}
 	return &bbox, nil
 }
 
 // parseProperties extracts an array of rawo property names to be included
 // returns nil if no properties parameter was specified
 // returns[] if properties is present but with no args
-func parseProperties(values api.NameValMap) ([]string, error) {
+func parseProperties(values NameValMap) ([]string, error) {
 	val, ok := values[api.ParamProperties]
 	// no properties param => nil
 	if !ok {
@@ -232,7 +251,7 @@ func parseProperties(values api.NameValMap) ([]string, error) {
 	return namesRaw, nil
 }
 
-func parseGroupBy(values api.NameValMap) ([]string, error) {
+func parseGroupBy(values NameValMap) ([]string, error) {
 	val, ok := values[api.ParamGroupBy]
 	// no properties param => nil
 	if !ok {
@@ -249,8 +268,8 @@ func parseGroupBy(values api.NameValMap) ([]string, error) {
 }
 
 // parseSortBy determines an Sorting array
-func parseSortBy(values api.NameValMap) ([]data.Sorting, error) {
-	var sorting []data.Sorting
+func parseSortBy(values NameValMap) ([]api.Sorting, error) {
+	var sorting []api.Sorting
 	val := values[api.ParamSortBy]
 	if len(val) < 1 {
 		return sorting, nil
@@ -267,13 +286,13 @@ func parseSortBy(values api.NameValMap) ([]data.Sorting, error) {
 		name = strings.TrimSpace(name[1:])
 		isDesc = true
 	}
-	sorting = append(sorting, data.Sorting{Name: name, IsDesc: isDesc})
+	sorting = append(sorting, api.Sorting{Name: name, IsDesc: isDesc})
 	return sorting, nil
 }
 
 // parseOrderBy determines an order by array (DEPRECATED)
-func parseOrderBy(values api.NameValMap) ([]data.Sorting, error) {
-	var orderBy []data.Sorting
+func parseOrderBy(values NameValMap) ([]api.Sorting, error) {
+	var orderBy []api.Sorting
 	val := values[api.ParamOrderBy]
 	if len(val) < 1 {
 		return orderBy, nil
@@ -290,7 +309,7 @@ func parseOrderBy(values api.NameValMap) ([]data.Sorting, error) {
 			return nil, err
 		}
 	}
-	orderBy = append(orderBy, data.Sorting{Name: name, IsDesc: isDesc})
+	orderBy = append(orderBy, api.Sorting{Name: name, IsDesc: isDesc})
 	return orderBy, nil
 }
 
@@ -371,14 +390,14 @@ func actualFunctionName(name string) string {
 	return ""
 }
 
-func parseTransform(values api.NameValMap) ([]data.TransformFunction, error) {
+func parseTransform(values NameValMap) ([]api.TransformFunction, error) {
 	val := values[api.ParamTransform]
 	if len(val) < 1 {
 		return nil, nil
 	}
 	funDefs := strings.Split(val, transformFunSep)
 
-	funList := make([]data.TransformFunction, 0)
+	funList := make([]api.TransformFunction, 0)
 	for _, fun := range funDefs {
 		tf := parseTransformFun(fun)
 		actualName := actualFunctionName(tf.Name)
@@ -394,18 +413,18 @@ func parseTransform(values api.NameValMap) ([]data.TransformFunction, error) {
 	return funList, nil
 }
 
-func parseTransformFun(def string) data.TransformFunction {
+func parseTransformFun(def string) api.TransformFunction {
 	// check for function parameter
 	atoms := strings.Split(def, transformParamSep)
 	name := atoms[0]
 	args := atoms[1:]
 	// TODO: harden this by checking arg is a valid number
 	// TODO: have whitelist for function names?
-	return data.TransformFunction{Name: name, Arg: args}
+	return api.TransformFunction{Name: name, Arg: args}
 }
 
 // parseFilter creates a filter list from applicable query parameters
-func parseFilter(paramMap map[string]string, colNameMap map[string]data.Column) []*data.PropertyFilter {
+func parseFilter(paramMap map[string]string, colNameMap map[string]api.Column) []*data.PropertyFilter {
 	var conds []*data.PropertyFilter
 	for name, val := range paramMap {
 		//log.Debugf("testing request param %v", name)
@@ -422,7 +441,7 @@ func parseFilter(paramMap map[string]string, colNameMap map[string]data.Column) 
 }
 
 // createQueryParams applies any cross-parameter logic
-func createQueryParams(param *api.RequestParam, colNames []string, sourceSRID int) (*data.QueryParam, error) {
+func createQueryParams(param *RequestParam, colNames []string, sourceSRID int) (*data.QueryParam, error) {
 	query := data.QueryParam{
 		Crs:           param.Crs,
 		Limit:         param.Limit,
@@ -440,7 +459,7 @@ func createQueryParams(param *api.RequestParam, colNames []string, sourceSRID in
 		cols = param.GroupBy
 		// ensure a aggregating transform is set to avoid error
 		if len(param.TransformFuns) == 0 {
-			query.TransformFuns = []data.TransformFunction{
+			query.TransformFuns = []api.TransformFunction{
 				{
 					Name: "st_collect",
 				},

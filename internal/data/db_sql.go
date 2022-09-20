@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/CrunchyData/pg_featureserv/internal/api"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -113,20 +114,20 @@ func quotedList(names []string) string {
 const sqlFmtExtentEst = `SELECT ST_XMin(ext.geom) AS xmin, ST_YMin(ext.geom) AS ymin, ST_XMax(ext.geom) AS xmax, ST_YMax(ext.geom) AS ymax
 FROM ( SELECT ST_Transform(ST_SetSRID(ST_EstimatedExtent('%s', '%s', '%s'), %d), 4326) AS geom ) AS ext;`
 
-func sqlExtentEstimated(tbl *Table) string {
+func sqlExtentEstimated(tbl *api.Table) string {
 	return fmt.Sprintf(sqlFmtExtentEst, tbl.Schema, tbl.Table, tbl.GeometryColumn, tbl.Srid)
 }
 
 const sqlFmtExtentExact = `SELECT ST_XMin(ext.geom) AS xmin, ST_YMin(ext.geom) AS ymin, ST_XMax(ext.geom) AS xmax, ST_YMax(ext.geom) AS ymax
 FROM (SELECT coalesce( ST_Transform(ST_SetSRID(ST_Extent("%s"), %d), 4326),	ST_MakeEnvelope(-180, -90, 180, 90, 4326)) AS geom FROM "%s"."%s" ) AS ext;`
 
-func sqlExtentExact(tbl *Table) string {
+func sqlExtentExact(tbl *api.Table) string {
 	return fmt.Sprintf(sqlFmtExtentExact, tbl.GeometryColumn, tbl.Srid, tbl.Schema, tbl.Table)
 }
 
 const sqlFmtFeatures = "SELECT %v %v FROM \"%s\".\"%s\" %v %v %v %s;"
 
-func sqlFeatures(tbl *Table, param *QueryParam) (string, []interface{}) {
+func sqlFeatures(tbl *api.Table, param *QueryParam) (string, []interface{}) {
 	geomCol := sqlGeomCol(tbl.GeometryColumn, tbl.Srid, param)
 
 	propCols := sqlColListFromColumnMap(param.Columns, tbl.DbTypes, true)
@@ -143,7 +144,7 @@ func sqlFeatures(tbl *Table, param *QueryParam) (string, []interface{}) {
 
 // sqlColList creates a comma-separated column list, or blank if no columns
 // If addLeadingComma is true, a leading comma is added, for use when the target SQL has columns defined before
-func sqlColListFromColumnMap(names []string, dbtypes map[string]Column, addLeadingComma bool) string {
+func sqlColListFromColumnMap(names []string, dbtypes map[string]api.Column, addLeadingComma bool) string {
 	if len(names) == 0 {
 		return ""
 	}
@@ -161,7 +162,7 @@ func sqlColListFromColumnMap(names []string, dbtypes map[string]Column, addLeadi
 }
 
 // sqlColListFromPGTypeMap creates a comma-separated column list, or blank if no columns
-func sqlColListFromStringMap(names []string, dbtypes map[string]PGType, addLeadingComma bool) string {
+func sqlColListFromStringMap(names []string, dbtypes map[string]api.PGType, addLeadingComma bool) string {
 	if len(names) == 0 {
 		return ""
 	}
@@ -179,20 +180,20 @@ func sqlColListFromStringMap(names []string, dbtypes map[string]PGType, addLeadi
 }
 
 // makeSQLColExpr casts a column to text if type is unknown to PGX
-func sqlColExpr(name string, dbtype PGType) string {
+func sqlColExpr(name string, dbtype api.PGType) string {
 
 	name = strconv.Quote(name)
 
 	// TODO: make this more data-driven / configurable
 	switch dbtype {
-	case PGTypeTSVECTOR:
+	case api.PGTypeTSVECTOR:
 		return fmt.Sprintf("%s::text", name)
 	}
 
 	// for properties that will be treated as a string in the JSON response,
 	// cast to text.  This allows displaying data types that pgx
 	// does not support out of the box, as long as it can be cast to text.
-	if toJSONTypeFromPG(dbtype) == JSONTypeString {
+	if dbtype.ToJSONType() == api.JSONTypeString {
 		return fmt.Sprintf("%s::text", name)
 	}
 
@@ -201,7 +202,7 @@ func sqlColExpr(name string, dbtype PGType) string {
 
 const sqlFmtFeature = "SELECT %v %v FROM \"%s\".\"%s\" WHERE \"%v\" = $1 LIMIT 1"
 
-func sqlFeature(tbl *Table, param *QueryParam) string {
+func sqlFeature(tbl *api.Table, param *QueryParam) string {
 	geomCol := sqlGeomCol(tbl.GeometryColumn, tbl.Srid, param)
 
 	propCols := sqlColListFromColumnMap(param.Columns, tbl.DbTypes, true)
@@ -250,7 +251,7 @@ func sqlAttrFilter(filterConds []*PropertyFilter) (string, []interface{}) {
 const sqlFmtBBoxTransformFilter = ` ST_Intersects("%v", ST_Transform( ST_MakeEnvelope(%v, %v, %v, %v, %v), %v)) `
 const sqlFmtBBoxGeoFilter = ` ST_Intersects("%v", ST_MakeEnvelope(%v, %v, %v, %v, %v)) `
 
-func sqlBBoxFilter(geomCol string, srcSRID int, bbox *Extent, bboxSRID int) string {
+func sqlBBoxFilter(geomCol string, srcSRID int, bbox *api.Extent, bboxSRID int) string {
 	if bbox == nil {
 		return ""
 	}
@@ -292,7 +293,7 @@ func sqlPrecisionArg(precision int) string {
 
 const sqlFmtOrderBy = `ORDER BY "%v" %v`
 
-func sqlOrderBy(ordering []Sorting) string {
+func sqlOrderBy(ordering []api.Sorting) string {
 	if len(ordering) <= 0 {
 		return ""
 	}
@@ -331,19 +332,19 @@ func sqlLimitOffset(limit int, offset int) string {
 	return sqlLim + sqlOff
 }
 
-func applyTransform(funs []TransformFunction, expr string) string {
+func applyTransform(funs []api.TransformFunction, expr string) string {
 	if funs == nil {
 		return expr
 	}
 	for _, fun := range funs {
-		expr = fun.apply(expr)
+		expr = fun.Apply(expr)
 	}
 	return expr
 }
 
 const sqlFmtGeomFunction = "SELECT %s %s FROM \"%s\".\"%s\"( %v ) %v %v %s;"
 
-func sqlGeomFunction(fn *Function, args map[string]string, propCols []string, param *QueryParam) (string, []interface{}) {
+func sqlGeomFunction(fn *api.Function, args map[string]string, propCols []string, param *QueryParam) (string, []interface{}) {
 	sqlArgs, argVals := sqlFunctionArgs(fn, args)
 	sqlGeomCol := sqlGeomCol(fn.GeometryColumn, SRID_UNKNOWN, param)
 	sqlPropCols := sqlColListFromStringMap(propCols, fn.Types, true)
@@ -359,7 +360,7 @@ func sqlGeomFunction(fn *Function, args map[string]string, propCols []string, pa
 
 const sqlFmtFunction = "SELECT %v FROM \"%s\".\"%s\"( %v ) %v %v %s;"
 
-func sqlFunction(fn *Function, args map[string]string, propCols []string, param *QueryParam) (string, []interface{}) {
+func sqlFunction(fn *api.Function, args map[string]string, propCols []string, param *QueryParam) (string, []interface{}) {
 	sqlArgs, argVals := sqlFunctionArgs(fn, args)
 	sqlPropCols := sqlColListFromStringMap(propCols, fn.Types, false)
 	cqlFilter := sqlCqlFilter(param.FilterSql)
@@ -370,7 +371,7 @@ func sqlFunction(fn *Function, args map[string]string, propCols []string, param 
 	return sql, argVals
 }
 
-func sqlFunctionArgs(fn *Function, argValues map[string]string) (string, []interface{}) {
+func sqlFunctionArgs(fn *api.Function, argValues map[string]string) (string, []interface{}) {
 	var vals []interface{}
 	var argItems []string
 	i := 1

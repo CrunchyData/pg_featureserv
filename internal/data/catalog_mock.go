@@ -20,15 +20,16 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/CrunchyData/pg_featureserv/internal/api"
 	orb "github.com/paulmach/orb"
 	"github.com/paulmach/orb/geojson"
 	log "github.com/sirupsen/logrus"
 )
 
 type CatalogMock struct {
-	TableDefs    []*Table
+	TableDefs    []*api.Table
 	tableData    map[string][]*featureMock
-	FunctionDefs []*Function
+	FunctionDefs []*api.Function
 }
 
 var instance CatalogMock
@@ -44,20 +45,20 @@ func CatMockInstance() *CatalogMock {
 func newCatalogMock() CatalogMock {
 	// must be in synch with featureMock type
 	propNames := []string{"prop_a", "prop_b", "prop_c", "prop_d"}
-	types := map[string]Column{
+	types := map[string]api.Column{
 		"prop_a": {Index: 0, Type: "text", IsRequired: true},
 		"prop_b": {Index: 1, Type: "int", IsRequired: true},
 		"prop_c": {Index: 2, Type: "text", IsRequired: false},
 		"prop_d": {Index: 3, Type: "int", IsRequired: false},
 	}
-	jtypes := []JSONType{JSONTypeString, JSONTypeNumber, JSONTypeString, JSONTypeNumber}
+	jtypes := []api.JSONType{api.JSONTypeString, api.JSONTypeNumber, api.JSONTypeString, api.JSONTypeNumber}
 	colDesc := []string{"Property A", "Property B", "Property C", "Property D"}
 
-	layerA := &Table{
+	layerA := &api.Table{
 		ID:           "mock_a",
 		Title:        "Mock A",
 		Description:  "This dataset contains mock data about A (9 points)",
-		Extent:       Extent{Minx: -120, Miny: 40, Maxx: -74, Maxy: 50},
+		Extent:       api.Extent{Minx: -120, Miny: 40, Maxx: -74, Maxy: 50},
 		Srid:         4326,
 		GeometryType: "Point",
 		Columns:      propNames,
@@ -66,11 +67,11 @@ func newCatalogMock() CatalogMock {
 		ColDesc:      colDesc,
 	}
 
-	layerB := &Table{
+	layerB := &api.Table{
 		ID:           "mock_b",
 		Title:        "Mock B",
 		Description:  "This dataset contains mock data about B (100 points)",
-		Extent:       Extent{Minx: -75, Miny: 45, Maxx: -74, Maxy: 46},
+		Extent:       api.Extent{Minx: -75, Miny: 45, Maxx: -74, Maxy: 46},
 		Srid:         4326,
 		GeometryType: "Point",
 		Columns:      propNames,
@@ -79,11 +80,11 @@ func newCatalogMock() CatalogMock {
 		ColDesc:      colDesc,
 	}
 
-	layerC := &Table{
+	layerC := &api.Table{
 		ID:           "mock_c",
 		Title:        "Mock C",
 		Description:  "This dataset contains mock data about C (10000 points)",
-		Extent:       Extent{Minx: -120, Miny: 40, Maxx: -74, Maxy: 60},
+		Extent:       api.Extent{Minx: -120, Miny: 40, Maxx: -74, Maxy: 60},
 		Srid:         4326,
 		GeometryType: "Point",
 		Columns:      propNames,
@@ -97,79 +98,79 @@ func newCatalogMock() CatalogMock {
 	tableData["mock_b"] = MakePointFeatures(layerB.Extent, 10, 10)
 	tableData["mock_c"] = MakePointFeatures(layerC.Extent, 100, 100)
 
-	var tables []*Table
+	var tables []*api.Table
 	tables = append(tables, layerA)
 	tables = append(tables, layerB)
 	tables = append(tables, layerC)
 
-	funA := &Function{
+	funA := &api.Function{
 		ID:          "fun_a",
 		Schema:      "postgisftw",
 		Name:        "fun_a",
 		Description: "Function A",
 		InNames:     []string{"in_param1"},
 		InDbTypes:   []string{"text"},
-		InTypeMap: map[string]PGType{
-			"in_param1": PGTypeText,
+		InTypeMap: map[string]api.PGType{
+			"in_param1": api.PGTypeText,
 		},
 		InDefaults:   []string{"aa"},
 		NumNoDefault: 0,
 		OutNames:     []string{"out_param1"},
 		OutDbTypes:   []string{"text"},
-		OutJSONTypes: []JSONType{JSONTypeString},
-		Types: map[string]PGType{
-			"in_param1": PGTypeText,
+		OutJSONTypes: []api.JSONType{api.JSONTypeString},
+		Types: map[string]api.PGType{
+			"in_param1": api.PGTypeText,
 		},
 		GeometryColumn: "",
 		IDColumn:       "",
 	}
-	funB := &Function{
+	funB := &api.Function{
 		ID:          "fun_b",
 		Schema:      "postgisftw",
 		Name:        "fun_b",
 		Description: "Function B",
 		InNames:     []string{"in_param1"},
 		InDbTypes:   []string{"int"},
-		InTypeMap: map[string]PGType{
-			"in_param1": PGTypeInt,
+		InTypeMap: map[string]api.PGType{
+			"in_param1": api.PGTypeInt,
 		},
 		InDefaults:   []string{"999"},
 		NumNoDefault: 0,
 		OutNames:     []string{"out_geom", "out_id", "out_param1"},
 		OutDbTypes:   []string{"geometry", "int", "text"},
-		OutJSONTypes: []JSONType{JSONTypeGeometry, JSONTypeNumber, JSONTypeString},
-		Types: map[string]PGType{
-			"in_param1":  PGTypeInt,
-			"out_geom":   PGTypeGeometry,
-			"out_id":     PGTypeInt,
-			"out_param1": PGTypeText,
+		OutJSONTypes: []api.JSONType{api.JSONTypeGeometry, api.JSONTypeNumber, api.JSONTypeString},
+		Types: map[string]api.PGType{
+			"in_param1":  api.PGTypeInt,
+			"out_geom":   api.PGTypeGeometry,
+			"out_id":     api.PGTypeInt,
+			"out_param1": api.PGTypeText,
 		},
 		GeometryColumn: "",
 		IDColumn:       "",
 	}
-	funNoParam := &Function{
+	funNoParam := &api.Function{
 		ID:           "fun_noparam",
 		Schema:       "postgisftw",
 		Name:         "fun_noparam",
 		Description:  "Function with no parameters",
 		InNames:      []string{},
 		InDbTypes:    []string{},
-		InTypeMap:    map[string]PGType{},
+		InTypeMap:    map[string]api.PGType{},
 		InDefaults:   []string{},
 		NumNoDefault: 0,
 		OutNames:     []string{"out_geom", "out_id", "out_param1"},
 		OutDbTypes:   []string{"geometry", "int", "text"},
-		OutJSONTypes: []JSONType{JSONTypeGeometry, JSONTypeNumber, JSONTypeString},
-		Types: map[string]PGType{
-			"in_param1":  PGTypeInt,
-			"out_geom":   PGTypeGeometry,
-			"out_id":     PGTypeInt,
-			"out_param1": PGTypeText,
+		OutJSONTypes: []api.JSONType{api.JSONTypeGeometry, api.JSONTypeNumber, api.JSONTypeString},
+		Types: map[string]api.PGType{
+			"in_param1":  api.PGTypeInt,
+			"out_geom":   api.PGTypeGeometry,
+			"out_id":     api.PGTypeInt,
+			"out_param1": api.PGTypeText,
 		},
 		GeometryColumn: "",
 		IDColumn:       "",
 	}
-	funDefs := []*Function{
+	funDefs := []*api.Function{
 		funA,
 		funB,
 		funNoParam,
@@ -190,7 +191,7 @@ func (cat *CatalogMock) Close() {
 	// this is a no-op
 }
 
-func (cat *CatalogMock) Tables() ([]*Table, error) {
+func (cat *CatalogMock) Tables() ([]*api.Table, error) {
 	return cat.TableDefs, nil
 }
 
@@ -198,7 +199,7 @@ func (cat *CatalogMock) TableReload(name string) {
 	// no-op for mock data
 }
 
-func (cat *CatalogMock) TableByName(name string) (*Table, error) {
+func (cat *CatalogMock) TableByName(name string) (*api.Table, error) {
 	for _, lyr := range cat.TableDefs {
 		if lyr.ID == name {
 			return lyr, nil
@@ -266,7 +267,7 @@ func (cat *CatalogMock) TableSize(tableName string) int64 {
 func (cat *CatalogMock) AddTableFeature(ctx context.Context, tableName string, jsonData []byte) (int64, error) {
 	var newFeature featureMock
 
-	var schemaObject geojsonFeatureData
+	var schemaObject api.GeojsonFeatureData
 	err := json.Unmarshal(jsonData, &schemaObject)
 	if err != nil {
 		return 0, err
@@ -287,7 +288,7 @@ func (cat *CatalogMock) AddTableFeature(ctx context.Context, tableName string, j
 
 func (cat *CatalogMock) PartialUpdateTableFeature(ctx context.Context, tableName string, id string, jsonData []byte) (int64, error) {
 
-	var schemaObject geojsonFeatureData
+	var schemaObject api.GeojsonFeatureData
 	err1 := json.Unmarshal(jsonData, &schemaObject)
 	if err1 != nil {
 		return 0, err1
@@ -331,7 +332,7 @@ func (cat *CatalogMock) PartialUpdateTableFeature(ctx context.Context, tableName
 }
 
 func (cat *CatalogMock) ReplaceTableFeature(ctx context.Context, tableName string, id string, jsonData []byte) error {
-	var schemaObject geojsonFeatureData
+	var schemaObject api.GeojsonFeatureData
 	err1 := json.Unmarshal(jsonData, &schemaObject)
 	if err1 != nil {
 		return err1
@@ -404,11 +405,11 @@ func (cat *CatalogMock) DeleteTableFeature(ctx context.Context, tableName string
 	return "", errors.New("Feature not found")
 }
 
-func (cat *CatalogMock) Functions() ([]*Function, error) {
+func (cat *CatalogMock) Functions() ([]*api.Function, error) {
 	return cat.FunctionDefs, nil
 }
 
-func (cat *CatalogMock) FunctionByName(name string) (*Function, error) {
+func (cat *CatalogMock) FunctionByName(name string) (*api.Function, error) {
 	for _, fn := range cat.FunctionDefs {
 		if fn.Schema+"."+fn.ID == name {
 			return fn, nil
@@ -433,7 +434,7 @@ func MakeFeatureMockPointAsJSON(id int, x float64, y float64, columns []string) 
 	return feat.toJSON(columns)
 }
 
-func MakePointFeatures(extent Extent, nx int, ny int) []*featureMock {
+func MakePointFeatures(extent api.Extent, nx int, ny int) []*featureMock {
 	basex := extent.Minx
 	basey := extent.Miny
 	dx := (extent.Maxx - extent.Minx) / float64(nx)
@@ -475,7 +476,7 @@ func makeFeatureMockPoint(id int, x float64, y float64) *featureMock {
 
 func (fm *featureMock) toJSON(propNames []string) string {
 	props := fm.extractProperties(propNames)
-	return makeGeojsonFeatureJSON(fm.ID, *fm.Geom, props)
+	return api.MakeGeojsonFeatureJSON(fm.ID, *fm.Geom, props)
 }
 
 func (fm *featureMock) extractProperties(propNames []string) map[string]interface{} {

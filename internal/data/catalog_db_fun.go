@@ -16,8 +16,10 @@ package data
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
+	"github.com/CrunchyData/pg_featureserv/internal/api"
 	"github.com/CrunchyData/pg_featureserv/internal/conf"
 	"github.com/jackc/pgtype"
 	"github.com/jackc/pgx/v4"
@@ -30,12 +32,12 @@ const FunctionIDColumnName = "id"
 
 const SchemaPostGISFTW = "postgisftw"
 
-func (cat *catalogDB) Functions() ([]*Function, error) {
+func (cat *catalogDB) Functions() ([]*api.Function, error) {
 	cat.refreshFunctions(true)
 	return cat.functions, nil
 }
 
-func (cat *catalogDB) FunctionByName(name string) (*Function, error) {
+func (cat *catalogDB) FunctionByName(name string) (*api.Function, error) {
 	cat.refreshFunctions(false)
 	fn, ok := cat.functionMap[name]
 	if !ok {
@@ -56,15 +58,15 @@ func (cat *catalogDB) loadFunctions() {
 	cat.functions, cat.functionMap = readFunctionDefs(cat.dbconn, conf.Configuration.Database.FunctionIncludes)
 }
 
-func readFunctionDefs(db *pgxpool.Pool, funSchemas []string) ([]*Function, map[string]*Function) {
+func readFunctionDefs(db *pgxpool.Pool, funSchemas []string) ([]*api.Function, map[string]*api.Function) {
 	sql := sqlFunctions(funSchemas)
 	log.Debugf("Load function catalog:\n%v", sql)
 	rows, err := db.Query(context.Background(), sql)
 	if err != nil {
 		log.Fatal(err)
 	}
-	var functions []*Function
-	functionMap := make(map[string]*Function)
+	var functions []*api.Function
+	functionMap := make(map[string]*api.Function)
 	for rows.Next() {
 		fn := scanFunctionDef(rows)
 		// TODO: for now only show geometry functions
@@ -81,7 +83,7 @@ func readFunctionDefs(db *pgxpool.Pool, funSchemas []string) ([]*Function, map[s
 	return functions, functionMap
 }
 
-func scanFunctionDef(rows pgx.Rows) *Function {
+func scanFunctionDef(rows pgx.Rows) *api.Function {
 	var (
 		id, schema, name, description                              string
 		inNamesTA, inTypesTA, inDefaultsTA, outNamesTA, outTypesTA pgtype.TextArray
@@ -100,12 +102,12 @@ func scanFunctionDef(rows pgx.Rows) *Function {
 	inDefaults := extendLeft(inDefaultsDB, len(inNames))
 	outNames := toArray(outNamesTA)
 	outTypes := toArray(outTypesTA)
-	outJSONTypes := toJSONTypeFromPGArray(outTypes)
+	outJSONTypes := api.ToJSONTypeFromPGArray(outTypes)
 
-	inTypeMap := make(map[string]PGType)
+	inTypeMap := make(map[string]api.PGType)
 	addTypes(inTypeMap, inNames, inTypes)
 
-	datatypes := make(map[string]PGType)
+	datatypes := make(map[string]api.PGType)
 	addTypes(datatypes, inNames, inTypes)
 	addTypes(datatypes, outNames, outTypes)
 
@@ -116,7 +118,7 @@ func scanFunctionDef(rows pgx.Rows) *Function {
 
 	geomCol := geometryColumn(outNames, datatypes)
 
-	funDef := Function{
+	funDef := api.Function{
 		ID:             id,
 		Schema:         schema,
 		Name:           name,
@@ -135,15 +137,16 @@ func scanFunctionDef(rows pgx.Rows) *Function {
 	//fmt.Printf("DEBUG: Function definitions: %v\n", funDef)
 	return &funDef
 }
-func addTypes(typeMap map[string]PGType, names []string, types []string) {
+
+func addTypes(typeMap map[string]api.PGType, names []string, types []string) {
 	for i, name := range names {
-		typeMap[name] = PGType(types[i])
+		typeMap[name] = api.PGType(types[i])
 	}
 }
-func geometryColumn(names []string, types map[string]PGType) string {
+func geometryColumn(names []string, types map[string]api.PGType) string {
 	// TODO: extract from outNames, outTypes
 	for _, name := range names {
-		if types[name] == PGTypeGeometry {
+		if types[name] == api.PGTypeGeometry {
 			return name
 		}
 	}
@@ -219,7 +222,7 @@ func (cat *catalogDB) FunctionData(ctx context.Context, name string, args map[st
 // inputArgs extracts function arguments from any provided in the query parameters
 // Arg values are stored as strings, and relies on Postgres to convert
 // to the actual types required by the function
-func checkArgsValid(fn *Function, args map[string]string) error {
+func checkArgsValid(fn *api.Function, args map[string]string) error {
 	for argName := range args {
 		if _, ok := fn.InTypeMap[argName]; !ok {
 			return fmt.Errorf("'%v' is not a parameter of function '%v'", argName, fn.ID)
@@ -284,4 +287,13 @@ func scanDataRow(rows pgx.Rows, hasID bool, propNames []string) map[string]inter
 	//fmt.Println(geom)
 	props := extractProperties(vals, -1, 0, propNames)
 	return props
+}
+
+// Creates a fully qualified function id.
+// adds default postgisftw schema if name arg has no schema
+func FunctionQualifiedId(name string) string {
+	if strings.Contains(name, ".") {
+		return name
+	}
+	return SchemaPostGISFTW + "." + name
 }

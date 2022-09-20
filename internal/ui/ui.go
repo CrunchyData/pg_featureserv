@@ -17,8 +17,8 @@ import (
 	"bytes"
 	"html/template"
 
+	"github.com/CrunchyData/pg_featureserv/internal/api"
 	"github.com/CrunchyData/pg_featureserv/internal/conf"
-	"github.com/CrunchyData/pg_featureserv/internal/data"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -40,9 +40,9 @@ type PageData struct {
 	URLJSON         string
 	Group           string
 	Title           string
-	Table           *data.Table
+	Table           *api.Table
 	IDColumn        string
-	Function        *data.Function
+	Function        *api.Function
 	FeatureID       string
 	ShowFeatureLink bool
 }

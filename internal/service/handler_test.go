@@ -135,7 +135,7 @@ func TestCollectionItem(t *testing.T) {
 func TestFilterB(t *testing.T) {
 	rr := hTest.DoRequest(t, "/collections/mock_a/items?prop_b=1")
 
-	var v util.FeatureCollection
+	var v api.FeatureCollection
 	errUnMarsh := json.Unmarshal(hTest.ReadBody(rr), &v)
 	util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 
@@ -145,7 +145,7 @@ func TestFilterB(t *testing.T) {
 func TestFilterD(t *testing.T) {
 	rr := hTest.DoRequest(t, "/collections/mock_c/items?prop_d=1")
 
-	var v util.FeatureCollection
+	var v api.FeatureCollection
 	errUnMarsh := json.Unmarshal(hTest.ReadBody(rr), &v)
 	util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 
@@ -155,7 +155,7 @@ func TestFilterD(t *testing.T) {
 func TestFilterBD(t *testing.T) {
 	rr := hTest.DoRequest(t, "/collections/mock_c/items?prop_b=2&prop_d=2")
 
-	var v util.FeatureCollection
+	var v api.FeatureCollection
 	errUnMarsh := json.Unmarshal(hTest.ReadBody(rr), &v)
 	util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 
@@ -165,7 +165,7 @@ func TestFilterBD(t *testing.T) {
 func TestFilterBDNone(t *testing.T) {
 	rr := hTest.DoRequest(t, "/collections/mock_c/items?prop_b=1&prop_d=2")
 
-	var v util.FeatureCollection
+	var v api.FeatureCollection
 	errUnMarsh := json.Unmarshal(hTest.ReadBody(rr), &v)
 	util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 
@@ -175,7 +175,7 @@ func TestFilterBDNone(t *testing.T) {
 func TestSortBy(t *testing.T) {
 	rr := hTest.DoRequest(t, "/collections/mock_a/items?sortby=prop_b")
 
-	var v util.FeatureCollection
+	var v api.FeatureCollection
 	errUnMarsh := json.Unmarshal(hTest.ReadBody(rr), &v)
 	util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 
@@ -185,7 +185,7 @@ func TestSortBy(t *testing.T) {
 func TestSortByDesc(t *testing.T) {
 	rr := hTest.DoRequest(t, "/collections/mock_a/items?sortby=-prop_b")
 
-	var v util.FeatureCollection
+	var v api.FeatureCollection
 	errUnMarsh := json.Unmarshal(hTest.ReadBody(rr), &v)
 	util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 
@@ -195,7 +195,7 @@ func TestSortByDesc(t *testing.T) {
 func TestSortByAsc(t *testing.T) {
 	rr := hTest.DoRequest(t, "/collections/mock_a/items?sortby=+prop_b")
 
-	var v util.FeatureCollection
+	var v api.FeatureCollection
 	errUnMarsh := json.Unmarshal(hTest.ReadBody(rr), &v)
 	util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 
@@ -205,7 +205,7 @@ func TestSortByAsc(t *testing.T) {
 func TestLimit(t *testing.T) {
 	rr := hTest.DoRequest(t, "/collections/mock_a/items?limit=3")
 
-	var v util.FeatureCollection
+	var v api.FeatureCollection
 	errUnMarsh := json.Unmarshal(hTest.ReadBody(rr), &v)
 	util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 
@@ -218,7 +218,7 @@ func TestLimit(t *testing.T) {
 func TestLimitZero(t *testing.T) {
 	rr := hTest.DoRequest(t, "/collections/mock_a/items?limit=0")
 
-	var v util.FeatureCollection
+	var v api.FeatureCollection
 	errUnMarsh := json.Unmarshal(hTest.ReadBody(rr), &v)
 	util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 
@@ -233,7 +233,7 @@ func TestLimitInvalid(t *testing.T) {
 func TestQueryParamCase(t *testing.T) {
 	rr := hTest.DoRequest(t, "/collections/mock_a/items?LIMIT=2&Offset=4")
 
-	var v util.FeatureCollection
+	var v api.FeatureCollection
 	errUnMarsh := json.Unmarshal(hTest.ReadBody(rr), &v)
 	util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 
@@ -245,7 +245,7 @@ func TestQueryParamCase(t *testing.T) {
 func TestOffset(t *testing.T) {
 	rr := hTest.DoRequest(t, "/collections/mock_a/items?limit=2&offset=4")
 
-	var v util.FeatureCollection
+	var v api.FeatureCollection
 	errUnMarsh := json.Unmarshal(hTest.ReadBody(rr), &v)
 	util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 
@@ -288,7 +288,7 @@ func TestProperties(t *testing.T) {
 	// - non-existing names are ignored
 	rr := hTest.DoRequest(t, "/collections/mock_a/items?limit=2&properties=PROP_A,prop_C,prop_a,not_prop")
 
-	var v util.FeatureCollection
+	var v api.FeatureCollection
 	errUnMarsh := json.Unmarshal(hTest.ReadBody(rr), &v)
 	util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 
@@ -302,7 +302,7 @@ func TestProperties(t *testing.T) {
 func TestPropertiesAll(t *testing.T) {
 	rr := hTest.DoRequest(t, "/collections/mock_a/items?limit=2")
 
-	var v util.FeatureCollection
+	var v api.FeatureCollection
 	errUnMarsh := json.Unmarshal(hTest.ReadBody(rr), &v)
 	util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 
@@ -415,7 +415,7 @@ func checkLink(tb testing.TB, link *api.Link, rel string, conType string, href s
 	util.Equals(tb, href, link.Href, "Link href")
 }
 
-func checkFunctionSummary(tb testing.TB, v *api.FunctionSummary, fun *data.Function) {
+func checkFunctionSummary(tb testing.TB, v *api.FunctionSummary, fun *api.Function) {
 	util.Equals(tb, fun.Name, v.Name, "Function name")
 	util.Equals(tb, fun.Description, v.Description, "Function description")
 
@@ -430,7 +430,7 @@ func checkFunctionSummary(tb testing.TB, v *api.FunctionSummary, fun *data.Funct
 	}
 	checkLink(tb, v.Links[2], api.RelItems, itemsType, hTest.UrlBase+pathItems)
 }
-func checkFunction(t *testing.T, fun *data.Function) {
+func checkFunction(t *testing.T, fun *api.Function) {
 	path := "/functions/" + fun.ID
 	resp := hTest.DoRequest(t, path)
 	body, _ := ioutil.ReadAll(resp.Body)

@@ -16,11 +16,12 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/CrunchyData/pg_featureserv/internal/conf"
-	"github.com/CrunchyData/pg_featureserv/internal/data"
-	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/paulmach/orb/geojson"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -29,23 +30,7 @@ const (
 	TagItems       = "items"
 	TagConformance = "conformance"
 	TagAPI         = "api"
-
-	TagFunctions = "functions"
-
-	ParamCrs        = "crs"
-	ParamLimit      = "limit"
-	ParamOffset     = "offset"
-	ParamBbox       = "bbox"
-	ParamBboxCrs    = "bbox-crs"
-	ParamFilter     = "filter"
-	ParamFilterCrs  = "filter-crs"
-	ParamGroupBy    = "groupby"
-	ParamOrderBy    = "orderby"
-	ParamPrecision  = "precision"
-	ParamProperties = "properties"
-	ParamSortBy     = "sortby"
-	ParamTransform  = "transform"
-	ParamType       = "type"
+	TagFunctions   = "functions"
 
 	OrderByDirSep = ":"
 	OrderByDirD   = "d"
@@ -60,12 +45,12 @@ const (
 	RelFunctions   = "functions"
 	RelItems       = "items"
 
-	TitleFeatuuresGeoJSON = "Features as GeoJSON"
-	TitleDataJSON         = "Data as JSON"
-	TitleMetadata         = "Metadata"
-	TitleDocument         = "This document"
-	TitleAsJSON           = " as JSON"
-	TitleAsHTML           = " as HTML"
+	TitleFeaturesGeoJSON = "Features as GeoJSON"
+	TitleDataJSON        = "Data as JSON"
+	TitleMetadata        = "Metadata"
+	TitleDocument        = "This document"
+	TitleAsJSON          = " as JSON"
+	TitleAsHTML          = " as HTML"
 
 	GeoJSONFeatureCollection = "FeatureCollection"
 )
@@ -92,11 +77,27 @@ const (
 	ErrMsgReplaceFeatureNotConform = "Unable to replace feature in Collection - data does not respect schema"
 )
 
+// ==================================================
+// ================== ParamReserved ==================
+
 const (
-	ErrCodeCollectionNotFound = "CollectionNotFound"
-	ErrCodeFeatureNotFound    = "FeatureNotFound"
+	ParamCrs        = "crs"
+	ParamLimit      = "limit"
+	ParamOffset     = "offset"
+	ParamBbox       = "bbox"
+	ParamBboxCrs    = "bbox-crs"
+	ParamFilter     = "filter"
+	ParamFilterCrs  = "filter-crs"
+	ParamGroupBy    = "groupby"
+	ParamOrderBy    = "orderby"
+	ParamPrecision  = "precision"
+	ParamProperties = "properties"
+	ParamSortBy     = "sortby"
+	ParamTransform  = "transform"
+	ParamType       = "type"
 )
 
+// known query parameter name
 var ParamReservedNames = []string{
 	ParamCrs,
 	ParamLimit,
@@ -127,6 +128,9 @@ func IsParameterReservedName(name string) bool {
 	return ok
 }
 
+// =======================================================
+// =================== RootInfo ==========================
+
 // RootInfo content at root
 type RootInfo struct {
 	Title       string  `json:"title"`
@@ -134,26 +138,15 @@ type RootInfo struct {
 	Links       []*Link `json:"links"`
 }
 
-var RootInfoSchema openapi3.Schema = openapi3.Schema{
-	Type:     "object",
-	Required: []string{"links"},
-	Properties: map[string]*openapi3.SchemaRef{
-		"title": {Value: &openapi3.Schema{
-			Type:        "string",
-			Description: "Title of this feature service",
-		}},
-		"description": {Value: &openapi3.Schema{
-			Type:        "string",
-			Description: "Description of this feature service",
-		}},
-		"links": {
-			Value: &openapi3.Schema{
-				Type:  "array",
-				Items: &openapi3.SchemaRef{Value: &LinkSchema},
-			},
-		},
-	},
+func NewRootInfo(conf *conf.Config) *RootInfo {
+	root := &RootInfo{}
+	root.Title = conf.Metadata.Title
+	root.Description = conf.Metadata.Description
+	return root
 }
+
+// =======================================================
+// =================== Link ==============================
 
 // Link for links
 type Link struct {
@@ -163,201 +156,66 @@ type Link struct {
 	Title string `json:"title"`
 }
 
-var LinkSchema openapi3.Schema = openapi3.Schema{
-	Description: "Describes links to other resources",
-	Type:        "object",
-	Required:    []string{"href"},
-	Properties: map[string]*openapi3.SchemaRef{
-		"href":     {Value: &openapi3.Schema{Type: "string", Description: "URL for the link"}},
-		"rel":      {Value: &openapi3.Schema{Type: "string"}},
-		"type":     {Value: &openapi3.Schema{Type: "string"}},
-		"hreflang": {Value: &openapi3.Schema{Type: "string"}},
-		"title":    {Value: &openapi3.Schema{Type: "string"}},
-	},
+func NewLink(href string, rel string, conType string, title string) *Link {
+	return &Link{
+		Href:  href,
+		Rel:   rel,
+		Type:  conType,
+		Title: title,
+	}
 }
 
-var PropertySchema openapi3.Schema = openapi3.Schema{
-	Description: "A data property of a collection or function result",
-	Type:        "object",
-	Required:    []string{"name", "type"},
-	Properties: map[string]*openapi3.SchemaRef{
-		"name":        {Value: &openapi3.Schema{Type: "string"}},
-		"type":        {Value: &openapi3.Schema{Type: "string"}},
-		"description": {Value: &openapi3.Schema{Type: "string"}},
-	},
+// =======================================================
+// =======================================================
+
+// Extent of a table
+type Extent struct {
+	Minx, Miny, Maxx, Maxy float64
 }
 
-var ParameterSchema openapi3.Schema = openapi3.Schema{
-	Description: "A parameter of a function",
-	Type:        "object",
-	Required:    []string{"name", "type"},
-	Properties: map[string]*openapi3.SchemaRef{
-		"name":    {Value: &openapi3.Schema{Type: "string"}},
-		"type":    {Value: &openapi3.Schema{Type: "string"}},
-		"default": {Value: &openapi3.Schema{Type: "string"}},
-	},
+type Sorting struct {
+	Name   string
+	IsDesc bool // false = ASC (default), true = DESC
 }
 
-// Bbox for extent
+// =======================================================
+// ================== TransformFunction ==================
+
+// TransformFunction denotes a geometry function with arguments
+type TransformFunction struct {
+	Name string
+	Arg  []string
+}
+
+func (fun *TransformFunction) Apply(expr string) string {
+	if fun.Name == "" {
+		return expr
+	}
+	if len(fun.Arg) == 0 {
+		return fmt.Sprintf("%v( %v )", fun.Name, expr)
+	}
+	args := strings.Join(fun.Arg, ",")
+	return fmt.Sprintf("%v( %v, %v )", fun.Name, expr, args)
+}
+
+// ===============================================
+// ================== Collection ==================
+
+// OAPIF Bbox for extent
 type Bbox struct {
 	Crs    string    `json:"crs"`
 	Extent []float64 `json:"bbox"`
 }
 
 // Extent OAPIF Extent structure (partial)
-type Extent struct {
+type CollectionExtent struct {
 	Spatial *Bbox `json:"spatial"`
-}
-
-// --- @See https://raw.githubusercontent.com/opengeospatial/WFS_FES/master/core/openapi/schemas/bbox.yaml
-//	for bbox schema
-
-var BboxSchema openapi3.Schema = openapi3.Schema{
-	Type:     "object",
-	Required: []string{"bbox"},
-	Properties: map[string]*openapi3.SchemaRef{
-		"crs": {
-			// TODO: This is supposed to have an enum & default based on: http://www.opengis.net/def/crs/OGC/1.3/CRS84
-			Value: openapi3.NewStringSchema(),
-		},
-		"bbox": {
-			Value: &openapi3.Schema{
-				Type:     "array",
-				MinItems: 4,
-				MaxItems: openapi3.Uint64Ptr(4),
-				Items:    openapi3.NewSchemaRef("", openapi3.NewFloat64Schema().WithMin(-180).WithMax(180)),
-			},
-		},
-	},
-}
-
-var ExtentSchema openapi3.Schema = openapi3.Schema{
-	Type:     "object",
-	Required: []string{"extent"},
-	Properties: map[string]*openapi3.SchemaRef{
-		"spatial": {Value: &BboxSchema},
-	},
-}
-
-type NameValMap map[string]string
-
-// RequestParam holds the parameters for a request
-type RequestParam struct {
-	Crs           int
-	Limit         int
-	Offset        int
-	Bbox          *data.Extent
-	BboxCrs       int
-	Properties    []string
-	Filter        string
-	FilterCrs     int
-	GroupBy       []string
-	SortBy        []data.Sorting
-	Precision     int
-	TransformFuns []data.TransformFunction
-	Values        NameValMap
 }
 
 // CollectionsInfo for all collections
 type CollectionsInfo struct {
 	Links       []*Link           `json:"links"`
 	Collections []*CollectionInfo `json:"collections"`
-}
-
-var CollectionsInfoSchema openapi3.Schema = openapi3.Schema{
-	Type:     "object",
-	Required: []string{"links", "collections"},
-	Properties: map[string]*openapi3.SchemaRef{
-		"links": {
-			Value: &openapi3.Schema{
-				Type: "array",
-				Items: &openapi3.SchemaRef{
-					Value: &LinkSchema,
-				},
-			},
-		},
-		"collections": {
-			Value: &openapi3.Schema{
-				Type: "array",
-				Items: &openapi3.SchemaRef{
-					Value: &CollectionInfoSchema,
-				},
-			},
-		},
-	},
-}
-
-func getFeatureExample() map[string]interface{} {
-	var result map[string]interface{}
-	var jsonStr = `{"type":"Feature","geometry":{"type":"Point","coordinates":[-70.88461956597838,47.807897059236495]},"properties":{"prop_a":"propA","prop_b":1,"prop_c":"propC","prop_d":1}}`
-	err := json.Unmarshal([]byte(jsonStr), &result)
-	if err != nil {
-		return nil
-	}
-	return result
-}
-
-var FeatureSchema openapi3.Schema = openapi3.Schema{
-	Type:     "object",
-	Required: []string{},
-	Properties: map[string]*openapi3.SchemaRef{
-		"id": {
-			Value: &openapi3.Schema{
-				OneOf: []*openapi3.SchemaRef{
-					openapi3.NewSchemaRef("", &openapi3.Schema{
-						Type: "number", Format: "long",
-					}),
-					openapi3.NewSchemaRef("", &openapi3.Schema{
-						Type: "string",
-					}),
-				},
-			},
-		},
-		"type": {
-			Value: &openapi3.Schema{
-				Type:    "string",
-				Default: "Feature",
-			},
-		},
-		"geometry": {
-			Value: &openapi3.Schema{
-				Items: &openapi3.SchemaRef{
-					Value: &openapi3.Schema{
-						Type: "string", // mandatory to validate the schema
-						OneOf: []*openapi3.SchemaRef{
-							openapi3.NewSchemaRef("https://geojson.org/schema/Point.json", &openapi3.Schema{Type: "string"}),
-							openapi3.NewSchemaRef("https://geojson.org/schema/LineString.json", &openapi3.Schema{Type: "string"}),
-							openapi3.NewSchemaRef("https://geojson.org/schema/Polygon.json", &openapi3.Schema{Type: "string"}),
-							openapi3.NewSchemaRef("https://geojson.org/schema/MultiPoint.json", &openapi3.Schema{Type: "string"}),
-							openapi3.NewSchemaRef("https://geojson.org/schema/MultiLineString.json", &openapi3.Schema{Type: "string"}),
-							openapi3.NewSchemaRef("https://geojson.org/schema/MultiPolygon.json", &openapi3.Schema{Type: "string"}),
-						},
-					},
-				},
-			},
-		},
-		"properties": {
-			Value: &openapi3.Schema{
-				Type: "object",
-			},
-		},
-		"bbox": {
-			Value: &openapi3.Schema{
-				Type:     "array",
-				MinItems: 4,
-				MaxItems: openapi3.Uint64Ptr(4),
-				Items:    openapi3.NewSchemaRef("", openapi3.NewFloat64Schema().WithMin(-180).WithMax(180)),
-			},
-		},
-	},
-	Example: getFeatureExample(),
-}
-
-type Parameter struct {
-	Name        string `json:"name"`
-	Type        string `json:"type"`
-	Description string `json:"description"`
-	Default     string `json:"default,omitempty"`
 }
 
 type Property struct {
@@ -368,12 +226,12 @@ type Property struct {
 
 // CollectionInfo for a collection
 type CollectionInfo struct {
-	Name         string   `json:"id"`
-	Title        string   `json:"title,omitempty"`
-	Description  string   `json:"description,omitempty"`
-	Extent       *Extent  `json:"extent,omitempty"`
-	Crs          []string `json:"crs,omitempty"`
-	GeometryType *string  `json:"geometrytype,omitempty"`
+	Name         string            `json:"id"`
+	Title        string            `json:"title,omitempty"`
+	Description  string            `json:"description,omitempty"`
+	Extent       *CollectionExtent `json:"extent,omitempty"`
+	Crs          []string          `json:"crs,omitempty"`
+	GeometryType *string           `json:"geometrytype,omitempty"`
 
 	// these are omitempty so they don't show in summary metadata
 	Properties []*Property `json:"properties,omitempty"`
@@ -386,34 +244,17 @@ type CollectionInfo struct {
 	URLItemsJSON    string `json:"-"`
 }
 
-var CollectionInfoSchema openapi3.Schema = openapi3.Schema{
-	Type:     "object",
-	Required: []string{"id", "links"},
-	Properties: map[string]*openapi3.SchemaRef{
-		"id":          {Value: &openapi3.Schema{Type: "string"}},
-		"title":       {Value: &openapi3.Schema{Type: "string"}},
-		"description": {Value: &openapi3.Schema{Type: "string"}},
-		"extent":      {Value: &ExtentSchema},
-		"crs": {Value: &openapi3.Schema{
-			Type: "array",
-			Items: &openapi3.SchemaRef{
-				Value: &openapi3.Schema{Type: "string"},
-			},
-		},
-		},
-		"geometrytype": {Value: &openapi3.Schema{Type: "string"}},
-		"properties": {Value: &openapi3.Schema{
-			Type:  "array",
-			Items: &openapi3.SchemaRef{Value: &PropertySchema},
-		},
-		},
-		"links": {Value: &openapi3.Schema{
-			Type:  "array",
-			Items: &openapi3.SchemaRef{Value: &LinkSchema},
-		},
-		},
-	},
+func NewCollectionsInfo(tables []*Table) *CollectionsInfo {
+	csDoc := CollectionsInfo{Links: []*Link{}, Collections: []*CollectionInfo{}}
+	for _, tbl := range tables {
+		collDoc := tbl.NewCollectionInfo()
+		csDoc.Collections = append(csDoc.Collections, collDoc)
+	}
+	return &csDoc
 }
+
+// =============================================
+// ================== Feature ==================
 
 // FeatureCollection info
 type FeatureCollectionRaw struct {
@@ -425,120 +266,67 @@ type FeatureCollectionRaw struct {
 	Links          []*Link            `json:"links"`
 }
 
-// FunctionsInfo is the API metadata for all functions
-type FunctionsInfo struct {
-	Links     []*Link            `json:"links"`
-	Functions []*FunctionSummary `json:"functions"`
+// Generic representation of Db data
+type GeojsonFeatureData struct {
+	Type  string                 `json:"type"`
+	ID    string                 `json:"id,omitempty"`
+	Geom  *geojson.Geometry      `json:"geometry"`
+	Props map[string]interface{} `json:"properties"`
 }
 
-var FunctionsInfoSchema openapi3.Schema = openapi3.Schema{
-	Type:     "object",
-	Required: []string{"links", "functions"},
-	Properties: map[string]*openapi3.SchemaRef{
-		"links": {
-			Value: &openapi3.Schema{
-				Type:  "array",
-				Items: &openapi3.SchemaRef{Value: &LinkSchema},
-			},
-		},
-		"functions": {
-			Value: &openapi3.Schema{
-				Type:  "array",
-				Items: &openapi3.SchemaRef{Value: &FunctionSummarySchema},
-			},
-		},
-	},
+// Define a FeatureCollection structure for parsing test data
+type FeatureCollection struct {
+	Type           string                `json:"type"`
+	Features       []*GeojsonFeatureData `json:"features"`
+	NumberMatched  uint                  `json:"numberMatched,omitempty"`
+	NumberReturned uint                  `json:"numberReturned"`
+	TimeStamp      string                `json:"timeStamp,omitempty"`
+	Links          []*Link               `json:"links"`
 }
 
-// FunctionSummary contains a restricted set of function metadata for use in list display and JSON
-// This allows not including parameters and properties in list metadata,
-// but ensuring those keys are always present in full metadata JSON.
-// Note: Collections do not follow same pattern because their list JSON metadata
-// is supposed to contain all properties, and they are always expected to have attribute properties
-type FunctionSummary struct {
-	Name        string  `json:"id"`
-	Description string  `json:"description,omitempty"`
-	Links       []*Link `json:"links"`
-
-	//--- additional data used during processing
-	Function *data.Function `json:"-"`
-	// used for HTML response only
-	URLMetadataHTML string `json:"-"`
-	URLMetadataJSON string `json:"-"`
-	URLItemsHTML    string `json:"-"`
-	URLItemsJSON    string `json:"-"`
+func MakeGeojsonFeatureJSON(id string, geom geojson.Geometry, props map[string]interface{}) string {
+	featData := GeojsonFeatureData{
+		Type:  "Feature",
+		ID:    id,
+		Geom:  &geom,
+		Props: props,
+	}
+	json, err := json.Marshal(featData)
+	if err != nil {
+		log.Errorf("Error marshalling feature into JSON: %v", err)
+		return ""
+	}
+	jsonStr := string(json)
+	//fmt.Println(jsonStr)
+	return jsonStr
 }
 
-var FunctionSummarySchema openapi3.Schema = openapi3.Schema{
-	Type:     "object",
-	Required: []string{"id", "links"},
-	Properties: map[string]*openapi3.SchemaRef{
-		"id":          {Value: &openapi3.Schema{Type: "string"}},
-		"description": {Value: &openapi3.Schema{Type: "string"}},
-		"links": {Value: &openapi3.Schema{
-			Type:  "array",
-			Items: &openapi3.SchemaRef{Value: &LinkSchema},
-		},
-		},
-	},
+func NewFeatureCollectionInfo(featureJSON []string) *FeatureCollectionRaw {
+	ts := time.Now().Format(time.RFC3339)
+	doc := FeatureCollectionRaw{
+		Type:           GeoJSONFeatureCollection,
+		Features:       toRaw(featureJSON),
+		NumberMatched:  0,
+		NumberReturned: uint(len(featureJSON)),
+		TimeStamp:      ts,
+	}
+	return &doc
 }
 
-// FunctionInfo is the API metadata for a function
-type FunctionInfo struct {
-	Name        string `json:"id"`
-	Description string `json:"description,omitempty"`
-
-	// these properties are always present but may be empty arrays
-	Parameters []*Parameter `json:"parameters"`
-	Properties []*Property  `json:"properties"`
-
-	Links []*Link `json:"links"`
-
-	//--- additional data used during processing
-	Function *data.Function `json:"-"`
+func toRaw(jsonStr []string) []*json.RawMessage {
+	raw := make([]*json.RawMessage, len(jsonStr))
+	for i, f := range jsonStr {
+		fRaw := json.RawMessage(f)
+		raw[i] = &fRaw
+	}
+	return raw
 }
 
-var FunctionInfoSchema openapi3.Schema = openapi3.Schema{
-	Type:     "object",
-	Required: []string{"id", "links"},
-	Properties: map[string]*openapi3.SchemaRef{
-		"id":          {Value: &openapi3.Schema{Type: "string"}},
-		"description": {Value: &openapi3.Schema{Type: "string"}},
-		"parameters": {Value: &openapi3.Schema{
-			Type:  "array",
-			Items: &openapi3.SchemaRef{Value: &ParameterSchema},
-		},
-		},
-		"properties": {Value: &openapi3.Schema{
-			Type:  "array",
-			Items: &openapi3.SchemaRef{Value: &PropertySchema},
-		},
-		},
-		"links": {Value: &openapi3.Schema{
-			Type:  "array",
-			Items: &openapi3.SchemaRef{Value: &LinkSchema},
-		},
-		},
-	},
-}
+// =================================================
+// ================== Conformance ==================
 
 type Conformance struct {
 	ConformsTo []string `json:"conformsTo"`
-}
-
-var ConformanceSchema openapi3.Schema = openapi3.Schema{
-	Type:     "object",
-	Required: []string{"conformsTo"},
-	Properties: map[string]*openapi3.SchemaRef{
-		"conformsTo": {
-			Value: &openapi3.Schema{
-				Type: "array",
-				Items: &openapi3.SchemaRef{
-					Value: &openapi3.Schema{Type: "string"},
-				},
-			},
-		},
-	},
 }
 
 var conformance = Conformance{
@@ -567,140 +355,12 @@ var conformance = Conformance{
 	},
 }
 
-func toBbox(cc *data.Table) *Bbox {
-	// extent bbox is always in 4326 for now
-	crs := "http://www.opengis.net/def/crs/EPSG/0/4326"
-	return &Bbox{
-		Crs:    crs,
-		Extent: []float64{cc.Extent.Minx, cc.Extent.Miny, cc.Extent.Maxx, cc.Extent.Maxy},
-	}
-}
-
-func NewLink(href string, rel string, conType string, title string) *Link {
-	return &Link{
-		Href:  href,
-		Rel:   rel,
-		Type:  conType,
-		Title: title,
-	}
-}
-
-func NewRootInfo(conf *conf.Config) *RootInfo {
-	root := &RootInfo{}
-	root.Title = conf.Metadata.Title
-	root.Description = conf.Metadata.Description
-	return root
-}
-
-func NewCollectionsInfo(tables []*data.Table) *CollectionsInfo {
-	csDoc := CollectionsInfo{Links: []*Link{}, Collections: []*CollectionInfo{}}
-	for _, lyr := range tables {
-		collDoc := NewCollectionInfo(lyr)
-		csDoc.Collections = append(csDoc.Collections, collDoc)
-	}
-	return &csDoc
-}
-
-func NewCollectionInfo(tbl *data.Table) *CollectionInfo {
-	doc := CollectionInfo{
-		Name:        tbl.ID,
-		Title:       tbl.Title,
-		Description: tbl.Description,
-		Extent: &Extent{
-			Spatial: toBbox(tbl),
-		},
-	}
-	return &doc
-}
-
-func TableProperties(tbl *data.Table) []*Property {
-	props := make([]*Property, len(tbl.Columns))
-	for i, name := range tbl.Columns {
-		props[i] = &Property{
-			Name:        name,
-			Type:        string(tbl.JSONTypes[i]),
-			Description: tbl.ColDesc[i],
-		}
-	}
-	return props
-}
-
-func NewFeatureCollectionInfo(featureJSON []string) *FeatureCollectionRaw {
-	ts := time.Now().Format(time.RFC3339)
-	doc := FeatureCollectionRaw{
-		Type:           GeoJSONFeatureCollection,
-		Features:       toRaw(featureJSON),
-		NumberMatched:  0,
-		NumberReturned: uint(len(featureJSON)),
-		TimeStamp:      ts,
-	}
-	return &doc
-}
-
-func NewFunctionsInfo(fns []*data.Function) *FunctionsInfo {
-	fnsDoc := FunctionsInfo{Links: []*Link{}, Functions: []*FunctionSummary{}}
-	for _, fn := range fns {
-		fnDoc := NewFunctionSummary(fn)
-		fnsDoc.Functions = append(fnsDoc.Functions, fnDoc)
-	}
-	return &fnsDoc
-}
-
-func NewFunctionSummary(fn *data.Function) *FunctionSummary {
-	info := FunctionSummary{
-		Name:        fn.ID,
-		Description: fn.Description,
-		Function:    fn,
-	}
-	return &info
-}
-
-func NewFunctionInfo(fn *data.Function) *FunctionInfo {
-	info := FunctionInfo{
-		Name:        fn.ID,
-		Description: fn.Description,
-		Function:    fn,
-	}
-	return &info
-}
-
-func FunctionParameters(fn *data.Function) []*Parameter {
-	params := make([]*Parameter, len(fn.InNames))
-	for i, name := range fn.InNames {
-		params[i] = &Parameter{
-			Name: name,
-			Type: fn.InDbTypes[i],
-			// no description available from db catalog
-			Default: fn.InDefaults[i],
-		}
-	}
-	return params
-}
-
-func FunctionProperties(fn *data.Function) []*Property {
-	props := make([]*Property, len(fn.OutNames))
-	for i, name := range fn.OutNames {
-		props[i] = &Property{
-			Name: name,
-			Type: string(fn.OutJSONTypes[i]),
-			// no description available from db catalog
-		}
-	}
-	return props
-}
-
 func GetConformance() *Conformance {
 	return &conformance
 }
 
-func toRaw(jsonStr []string) []*json.RawMessage {
-	raw := make([]*json.RawMessage, len(jsonStr))
-	for i, f := range jsonStr {
-		fRaw := json.RawMessage(f)
-		raw[i] = &fRaw
-	}
-	return raw
-}
+// =================================================
+// ================== Path helper ==================
 
 func PathCollection(name string) string {
 	return fmt.Sprintf("%v/%v", TagCollections, name)
@@ -720,12 +380,4 @@ func PathFunctionItems(name string) string {
 
 func PathItem(name string, fid string) string {
 	return fmt.Sprintf("%v/%v/%v/%v", TagCollections, name, TagItems, fid)
-}
-
-var Db2OpenapiFormatMap = map[data.PGType]string{
-	data.PGTypeBool:   "boolean",
-	data.PGTypeInt:    "integer",
-	data.PGTypeInt4:   "integer",
-	data.PGTypeBigInt: "int64",
-	data.PGTypeText:   "string",
 }

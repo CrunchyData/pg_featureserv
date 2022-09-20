@@ -23,6 +23,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/CrunchyData/pg_featureserv/internal/api"
 	"github.com/CrunchyData/pg_featureserv/internal/conf"
 	"github.com/jackc/pgtype"
 	"github.com/jackc/pgx/v4"
@@ -32,50 +33,14 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type PGType string
-type JSONType string
-
-// Constants
-const (
-	JSONTypeString       JSONType = "string"
-	JSONTypeNumber       JSONType = "number"
-	JSONTypeBoolean      JSONType = "boolean"
-	JSONTypeJSON         JSONType = "json"
-	JSONTypeDate         JSONType = "date"
-	JSONTypeGeometry     JSONType = "geometry"
-	JSONTypeBooleanArray JSONType = "boolean[]"
-	JSONTypeStringArray  JSONType = "string[]"
-	JSONTypeNumberArray  JSONType = "number[]"
-
-	PGTypeBool        PGType = "bool"
-	PGTypeBoolArray   PGType = "_bool"
-	PGTypeInt         PGType = "int"
-	PGTypeIntArray    PGType = "_int"
-	PGTypeInt4        PGType = "int4"
-	PGTypeInt4Array   PGType = "_int4"
-	PGTypeBigInt      PGType = "bigint"
-	PGTypeBigIntArray PGType = "_bigint"
-	PGTypeFloat4      PGType = "float4"
-	PGTypeFloat4Array PGType = "_float4"
-	PGTypeFloat8      PGType = "float8"
-	PGTypeFloat8Array PGType = "_float8"
-	PGTypeNumeric     PGType = "numeric"
-	PGTypeDate        PGType = "date"
-	PGTypeJSON        PGType = "json"
-	PGTypeGeometry    PGType = "geometry"
-	PGTypeText        PGType = "text"
-	PGTypeTextArray   PGType = "_text"
-	PGTypeTSVECTOR    PGType = "tsvector"
-)
-
 type catalogDB struct {
 	dbconn        *pgxpool.Pool
 	tableIncludes map[string]string
 	tableExcludes map[string]string
-	tables        []*Table
-	tableMap      map[string]*Table
-	functions     []*Function
-	functionMap   map[string]*Function
+	tables        []*api.Table
+	tableMap      map[string]*api.Table
+	functions     []*api.Function
+	functionMap   map[string]*api.Function
 }
 
 var isStartup bool
@@ -169,7 +134,7 @@ func (cat *catalogDB) Close() {
 	cat.dbconn.Close()
 }
 
-func (cat *catalogDB) Tables() ([]*Table, error) {
+func (cat *catalogDB) Tables() ([]*api.Table, error) {
 	cat.refreshTables(true)
 	return cat.tables, nil
 }
@@ -189,7 +154,7 @@ func (cat *catalogDB) TableReload(name string) {
 	}
 }
 
-func (cat *catalogDB) loadExtent(sql string, tbl *Table) bool {
+func (cat *catalogDB) loadExtent(sql string, tbl *api.Table) bool {
 	var (
 		xmin pgtype.Float8
 		xmax pgtype.Float8
@@ -212,7 +177,7 @@ func (cat *catalogDB) loadExtent(sql string, tbl *Table) bool {
 	return true
 }
 
-func (cat *catalogDB) TableByName(name string) (*Table, error) {
+func (cat *catalogDB) TableByName(name string) (*api.Table, error) {
 	cat.refreshTables(false)
 	tbl, ok := cat.tableMap[name]
 	if !ok {
@@ -261,7 +226,7 @@ func (cat *catalogDB) TableFeature(ctx context.Context, name string, id string, 
 }
 
 func (cat *catalogDB) AddTableFeature(ctx context.Context, tableName string, jsonData []byte) (int64, error) {
-	var schemaObject geojsonFeatureData
+	var schemaObject api.GeojsonFeatureData
 	err := json.Unmarshal(jsonData, &schemaObject)
 	if err != nil {
 		return -9999, err
@@ -329,7 +294,7 @@ func (cat *catalogDB) PartialUpdateTableFeature(ctx context.Context, tableName s
 		return -9999, errTbl
 	}
 
-	var schemaObject geojsonFeatureData
+	var schemaObject api.GeojsonFeatureData
 	errJson := json.Unmarshal(jsonData, &schemaObject)
 	if errJson != nil {
 		return -9999, errJson
@@ -391,7 +356,7 @@ func (cat *catalogDB) PartialUpdateTableFeature(ctx context.Context, tableName s
 }
 
 func (cat *catalogDB) ReplaceTableFeature(ctx context.Context, tableName string, id string, jsonData []byte) error {
-	var schemaObject geojsonFeatureData
+	var schemaObject api.GeojsonFeatureData
 	err := json.Unmarshal(jsonData, &schemaObject)
 	if err != nil {
 		return err
@@ -476,9 +441,9 @@ func (cat *catalogDB) loadTables() {
 	cat.tables = tablesSorted(cat.tableMap)
 }
 
-func tablesSorted(tableMap map[string]*Table) []*Table {
+func tablesSorted(tableMap map[string]*api.Table) []*api.Table {
 	// TODO: use database order instead of sorting here
-	var lsort []*Table
+	var lsort []*api.Table
 	for key := range tableMap {
 		lsort = append(lsort, tableMap[key])
 	}
@@ -488,13 +453,13 @@ func tablesSorted(tableMap map[string]*Table) []*Table {
 	return lsort
 }
 
-func (cat *catalogDB) readTables(db *pgxpool.Pool) map[string]*Table {
+func (cat *catalogDB) readTables(db *pgxpool.Pool) map[string]*api.Table {
 	log.Debugf("Load table catalog:\n%v", sqlTables)
 	rows, err := db.Query(context.Background(), sqlTables)
 	if err != nil {
 		log.Fatal(err)
 	}
-	tables := make(map[string]*Table)
+	tables := make(map[string]*api.Table)
 	for rows.Next() {
 		tbl := scanTable(rows)
 		if cat.isIncluded(tbl) {
@@ -509,7 +474,7 @@ func (cat *catalogDB) readTables(db *pgxpool.Pool) map[string]*Table {
 	return tables
 }
 
-func (cat *catalogDB) isIncluded(tbl *Table) bool {
+func (cat *catalogDB) isIncluded(tbl *api.Table) bool {
 	//--- if no includes defined, always include
 	isIncluded := true
 	if len(cat.tableIncludes) > 0 {
@@ -522,7 +487,7 @@ func (cat *catalogDB) isIncluded(tbl *Table) bool {
 	return isIncluded && !isExcluded
 }
 
-func isMatchSchemaTable(tbl *Table, list map[string]string) bool {
+func isMatchSchemaTable(tbl *api.Table, list map[string]string) bool {
 	schemaLow := strings.ToLower(tbl.Schema)
 	if _, ok := list[schemaLow]; ok {
 		return true
@@ -534,7 +499,7 @@ func isMatchSchemaTable(tbl *Table, list map[string]string) bool {
 	return false
 }
 
-func scanTable(rows pgx.Rows) *Table {
+func scanTable(rows pgx.Rows) *api.Table {
 	var (
 		id, schema, table, description, geometryCol string
 		srid                                        int
@@ -568,18 +533,18 @@ func scanTable(rows pgx.Rows) *Table {
 
 	// Since Go map order is random, list columns in array
 	columns := make([]string, arrLen)
-	jsontypes := make([]JSONType, arrLen)
-	datatypes := make(map[string]Column)
+	jsontypes := make([]api.JSONType, arrLen)
+	datatypes := make(map[string]api.Column)
 	colDesc := make([]string, arrLen)
 
 	for i := arrStart; i < arrLen; i++ {
 		elmPos := i * elmLen
 		name := props.Elements[elmPos].String
-		datatype := PGType(props.Elements[elmPos+1].String)
+		datatype := api.PGType(props.Elements[elmPos+1].String)
 		columns[i] = name
 		// TODO must find a way to compute IsRequired
-		datatypes[name] = Column{Index: i, Type: datatype, IsRequired: true}
-		jsontypes[i] = toJSONTypeFromPG(datatype)
+		datatypes[name] = api.Column{Index: i, Type: datatype, IsRequired: true}
+		jsontypes[i] = datatype.ToJSONType()
 		colDesc[i] = props.Elements[elmPos+2].String
 	}
 
@@ -590,7 +555,7 @@ func scanTable(rows pgx.Rows) *Table {
 		description = fmt.Sprintf("Data for table %v", id)
 	}
 
-	return &Table{
+	return &api.Table{
 		ID:             id,
 		Schema:         schema,
 		Table:          table,
@@ -678,12 +643,12 @@ func scanFeature(rows pgx.Rows, idColIndex int, propNames []string) string {
 			var g geojson.Geometry
 			err := g.UnmarshalJSON([]byte(vals[0].(string)))
 			if err == nil {
-				return makeGeojsonFeatureJSON(id, g, props)
+				return api.MakeGeojsonFeatureJSON(id, g, props)
 			} else {
 				return makeFeatureJSON(id, vals[0].(string), props)
 			}
 		} else {
-			return makeGeojsonFeatureJSON(id, vals[0].(geojson.Geometry), props)
+			return api.MakeGeojsonFeatureJSON(id, vals[0].(geojson.Geometry), props)
 		}
 	} else {
 		return makeFeatureJSON(id, "", props)
@@ -755,41 +720,6 @@ func toJSONValue(value interface{}) interface{} {
 	return value
 }
 
-func toJSONTypeFromPGArray(pgTypes []string) []JSONType {
-	jsonTypes := make([]JSONType, len(pgTypes))
-	for i, pgType := range pgTypes {
-		jsonTypes[i] = toJSONTypeFromPG(PGType(pgType))
-	}
-	return jsonTypes
-}
-
-func toJSONTypeFromPG(pgType PGType) JSONType {
-	//fmt.Printf("toJSONTypeFromPG: %v\n", pgType)
-	switch pgType {
-	case PGTypeNumeric, PGTypeInt, PGTypeInt4, PGTypeBigInt, PGTypeFloat4, PGTypeFloat8:
-		return JSONTypeNumber
-	case PGTypeIntArray, PGTypeInt4Array, PGTypeBigIntArray, PGTypeFloat4Array, PGTypeFloat8Array:
-		return JSONTypeNumberArray
-	case PGTypeBool:
-		return JSONTypeBoolean
-	case PGTypeBoolArray:
-		return JSONTypeBooleanArray
-	case PGTypeJSON:
-		return JSONTypeJSON
-	case PGTypeTextArray:
-		return JSONTypeStringArray
-	case PGTypeDate:
-		return JSONTypeDate
-		// hack to allow displaying geometry type
-	case PGTypeGeometry:
-		return JSONTypeGeometry
-		// default is string
-		// this forces conversion to text in SQL query
-	default:
-		return JSONTypeString
-	}
-}
-
 type featureData struct {
 	Type  string                 `json:"type"`
 	ID    string                 `json:"id,omitempty"`
@@ -808,32 +738,6 @@ func makeFeatureJSON(id string, geom string, props map[string]interface{}) strin
 		Type:  "Feature",
 		ID:    id,
 		Geom:  &geomRaw,
-		Props: props,
-	}
-	json, err := json.Marshal(featData)
-	if err != nil {
-		log.Errorf("Error marshalling feature into JSON: %v", err)
-		return ""
-	}
-	jsonStr := string(json)
-	//fmt.Println(jsonStr)
-	return jsonStr
-}
-
-// TODO should be exported in catalog.go
-type geojsonFeatureData struct {
-	Type  string                 `json:"type"`
-	ID    string                 `json:"id,omitempty"`
-	Geom  *geojson.Geometry      `json:"geometry"`
-	Props map[string]interface{} `json:"properties"`
-}
-
-// TODO should be exported in catalog.go
-func makeGeojsonFeatureJSON(id string, geom geojson.Geometry, props map[string]interface{}) string {
-	featData := geojsonFeatureData{
-		Type:  "Feature",
-		ID:    id,
-		Geom:  &geom,
 		Props: props,
 	}
 	json, err := json.Marshal(featData)

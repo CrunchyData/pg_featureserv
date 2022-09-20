@@ -2,8 +2,8 @@ package data
 
 import (
 	"context"
-	"fmt"
-	"strings"
+
+	"github.com/CrunchyData/pg_featureserv/internal/api"
 )
 
 /*
@@ -30,11 +30,11 @@ const (
 type Catalog interface {
 	SetIncludeExclude(includeList []string, excludeList []string)
 
-	Tables() ([]*Table, error)
+	Tables() ([]*api.Table, error)
 
 	// TableByName returns the table with given name.
 	// It returns nil if the table does not exist
-	TableByName(name string) (*Table, error)
+	TableByName(name string) (*api.Table, error)
 
 	// TableReload reloads volatile table data
 	TableReload(name string)
@@ -60,28 +60,17 @@ type Catalog interface {
 	// DeleteTableFeature returns the status code from the delete operation on the feature which ID is provided
 	DeleteTableFeature(ctx context.Context, tableName string, id string) (string, error)
 
-	Functions() ([]*Function, error)
+	Functions() ([]*api.Function, error)
 
 	// FunctionByName returns the function with given name.
 	// It returns nil if the function does not exist
-	FunctionByName(name string) (*Function, error)
+	FunctionByName(name string) (*api.Function, error)
 
 	FunctionFeatures(ctx context.Context, name string, args map[string]string, param *QueryParam) ([]string, error)
 
 	FunctionData(ctx context.Context, name string, args map[string]string, param *QueryParam) ([]map[string]interface{}, error)
 
 	Close()
-}
-
-// TransformFunction denotes a geometry function with arguments
-type TransformFunction struct {
-	Name string
-	Arg  []string
-}
-
-type Sorting struct {
-	Name   string
-	IsDesc bool // false = ASC (default), true = DESC
 }
 
 type PropertyFilter struct {
@@ -94,113 +83,14 @@ type QueryParam struct {
 	Crs       int
 	Limit     int
 	Offset    int
-	Bbox      *Extent
+	Bbox      *api.Extent
 	BboxCrs   int
 	FilterSql string
 	Filter    []*PropertyFilter
 	// Columns is the list of columns to return
 	Columns       []string
 	GroupBy       []string
-	SortBy        []Sorting
+	SortBy        []api.Sorting
 	Precision     int
-	TransformFuns []TransformFunction
-}
-
-// Column holds metadata for column objects
-type Column struct {
-	Index      int
-	Type       PGType
-	IsRequired bool
-}
-
-// Table holds metadata for table/view objects
-type Table struct {
-	ID             string
-	Schema         string
-	Table          string
-	Title          string
-	Description    string
-	GeometryType   string
-	GeometryColumn string
-	IDColumn       string
-	Srid           int
-	Extent         Extent
-	Columns        []string
-	DbTypes        map[string]Column
-	JSONTypes      []JSONType
-	ColDesc        []string
-}
-
-// Check the existence of table fields from json data
-func (tbl *Table) CheckTableFields(props map[string]interface{}) (bool, error) {
-	p := props["properties"]
-	if p != nil {
-		props := props["properties"].(map[string]interface{})
-		for k := range props {
-			if !func(s []string, e string) bool {
-				for _, a := range s {
-					if a == e {
-						return true
-					}
-				}
-				return false
-			}(tbl.Columns, k) {
-				return false, fmt.Errorf("Properties not conform with field table: %v", k)
-			}
-		}
-	}
-	return true, nil
-}
-
-// Extent of a table
-type Extent struct {
-	Minx, Miny, Maxx, Maxy float64
-}
-
-// Function tbd
-type Function struct {
-	ID             string
-	Schema         string
-	Name           string
-	Description    string
-	InNames        []string
-	InDbTypes      []string
-	InTypeMap      map[string]PGType
-	InDefaults     []string
-	NumNoDefault   int
-	OutNames       []string
-	OutDbTypes     []string
-	OutJSONTypes   []JSONType
-	Types          map[string]PGType
-	GeometryColumn string
-	IDColumn       string
-}
-
-func (fun *Function) IsGeometryFunction() bool {
-	for _, typ := range fun.OutDbTypes {
-		if typ == "geometry" {
-			return true
-		}
-	}
-	return false
-}
-
-func (fun *TransformFunction) apply(expr string) string {
-	if fun.Name == "" {
-		return expr
-	}
-	if len(fun.Arg) == 0 {
-		return fmt.Sprintf("%v( %v )", fun.Name, expr)
-	}
-	args := strings.Join(fun.Arg, ",")
-	return fmt.Sprintf("%v( %v, %v )", fun.Name, expr, args)
-}
-
-// Creates a fully qualified function id.
-// adds default postgisftw schema if name arg has no schema
-func FunctionQualifiedId(name string) string {
-	if strings.Contains(name, ".") {
-		return name
-	}
-	return SchemaPostGISFTW + "." + name
+	TransformFuns []api.TransformFunction
 }

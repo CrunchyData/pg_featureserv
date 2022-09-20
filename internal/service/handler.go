@@ -234,7 +234,7 @@ func linksCollection(name string, urlBase string, isSummary bool) []*api.Link {
 		Href:  linkItemsJSON,
 		Rel:   api.RelItems,
 		Type:  api.ContentTypeGeoJSON,
-		Title: api.TitleFeatuuresGeoJSON})
+		Title: api.TitleFeaturesGeoJSON})
 
 	return links
 }
@@ -250,9 +250,9 @@ func handleCollection(w http.ResponseWriter, r *http.Request) *appError {
 		return appErrorNotFoundFmt(err, api.ErrMsgCollectionNotFound, name)
 	}
 	catalogInstance.TableReload(name)
-	content := api.NewCollectionInfo(tbl)
+	content := tbl.NewCollectionInfo()
 	content.GeometryType = &tbl.GeometryType
-	content.Properties = api.TableProperties(tbl)
+	content.Properties = tbl.TableProperties()
 
 	// --- encoding
 	switch format {
@@ -440,7 +440,7 @@ func handleCollectionItems(w http.ResponseWriter, r *http.Request) *appError {
 	return nil
 }
 
-func writeCreateItemSchemaJSON(ctx context.Context, w http.ResponseWriter, table *data.Table) *appError {
+func writeCreateItemSchemaJSON(ctx context.Context, w http.ResponseWriter, table *api.Table) *appError {
 	createSchema, err := getCreateItemSchema(ctx, table)
 	if err != nil {
 		return appErrorMsg(err, err.Error(), http.StatusInternalServerError)
@@ -448,7 +448,7 @@ func writeCreateItemSchemaJSON(ctx context.Context, w http.ResponseWriter, table
 	return writeJSON(w, api.ContentTypeSchemaJSON, createSchema)
 }
 
-func writeUpdateItemSchemaJSON(ctx context.Context, w http.ResponseWriter, table *data.Table) *appError {
+func writeUpdateItemSchemaJSON(ctx context.Context, w http.ResponseWriter, table *api.Table) *appError {
 	updateSchema, err := getUpdateItemSchema(ctx, table)
 	if err != nil {
 		return appErrorMsg(err, err.Error(), http.StatusInternalServerError)
@@ -456,7 +456,7 @@ func writeUpdateItemSchemaJSON(ctx context.Context, w http.ResponseWriter, table
 	return writeJSON(w, api.ContentTypeSchemaPatchJSON, updateSchema)
 }
 
-func getCreateItemSchema(ctx context.Context, table *data.Table) (openapi3.Schema, error) {
+func getCreateItemSchema(ctx context.Context, table *api.Table) (openapi3.Schema, error) {
 	// Feature schema skeleton
 	var featureInfoSchema openapi3.Schema = openapi3.Schema{
 		Type:     "object",
@@ -513,8 +513,8 @@ func getCreateItemSchema(ctx context.Context, table *data.Table) (openapi3.Schem
 	for k, v := range table.DbTypes {
 		if k != table.IDColumn {
 			propType := string(v.Type)
-			if api.Db2OpenapiFormatMap[v.Type] != "" {
-				propType = api.Db2OpenapiFormatMap[v.Type]
+			if v.Type.ToOpenApiType() != "" {
+				propType = v.Type.ToOpenApiType()
 			}
 			props.Properties[k] = &openapi3.SchemaRef{
 				Value: &openapi3.Schema{
@@ -533,7 +533,7 @@ func getCreateItemSchema(ctx context.Context, table *data.Table) (openapi3.Schem
 	return featureInfoSchema, nil
 }
 
-func getUpdateItemSchema(ctx context.Context, table *data.Table) (openapi3.Schema, error) {
+func getUpdateItemSchema(ctx context.Context, table *api.Table) (openapi3.Schema, error) {
 	// Feature schema skeleton
 	var featureInfoSchema openapi3.Schema = openapi3.Schema{
 		Type: "object",
@@ -569,8 +569,8 @@ func getUpdateItemSchema(ctx context.Context, table *data.Table) (openapi3.Schem
 	for k, v := range table.DbTypes {
 		if k != table.IDColumn {
 			propType := string(v.Type)
-			if api.Db2OpenapiFormatMap[v.Type] != "" {
-				propType = api.Db2OpenapiFormatMap[v.Type]
+			if v.Type.ToOpenApiType() != "" {
+				propType = v.Type.ToOpenApiType()
 			}
 			props.Properties[k] = &openapi3.SchemaRef{
 				Value: openapi3.NewOneOfSchema(
@@ -594,7 +594,7 @@ func getUpdateItemSchema(ctx context.Context, table *data.Table) (openapi3.Schem
 	return featureInfoSchema, nil
 }
 
-func writeItemsHTML(w http.ResponseWriter, tbl *data.Table, name string, query string, urlBase string) *appError {
+func writeItemsHTML(w http.ResponseWriter, tbl *api.Table, name string, query string, urlBase string) *appError {
 
 	pathItems := api.PathCollectionItems(name)
 	// --- encoding
@@ -786,7 +786,7 @@ func handleReplaceItem(w http.ResponseWriter, r *http.Request) *appError {
 	return nil
 }
 
-func writeItemHTML(w http.ResponseWriter, tbl *data.Table, name string, fid string, query string, urlBase string) *appError {
+func writeItemHTML(w http.ResponseWriter, tbl *api.Table, name string, fid string, query string, urlBase string) *appError {
 	//--- query data for request
 
 	pathItems := api.PathCollectionItems(name)
@@ -937,7 +937,7 @@ func linksFunction(id string, urlBase string, isSummary bool, isGeomFun bool) []
 	dataTitle := api.TitleDataJSON
 	conType := api.ContentTypeJSON
 	if isGeomFun {
-		dataTitle = api.TitleFeatuuresGeoJSON
+		dataTitle = api.TitleFeaturesGeoJSON
 		conType = api.ContentTypeGeoJSON
 	}
 
@@ -960,10 +960,10 @@ func handleFunction(w http.ResponseWriter, r *http.Request) *appError {
 	if fn == nil && err == nil {
 		return appErrorNotFoundFmt(err, api.ErrMsgFunctionNotFound, name)
 	}
-	content := api.NewFunctionInfo(fn)
+	content := fn.NewFunctionInfo()
 	isGeomFun := fn.IsGeometryFunction()
-	content.Parameters = api.FunctionParameters(fn)
-	content.Properties = api.FunctionProperties(fn)
+	content.Parameters = fn.FunctionParameters()
+	content.Properties = fn.FunctionProperties()
 
 	// --- encoding
 	switch format {

@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/CrunchyData/pg_featureserv/internal/api"
 	"github.com/CrunchyData/pg_featureserv/internal/conf"
 	"github.com/CrunchyData/pg_featureserv/internal/data"
 	"github.com/jackc/pgx/v4"
@@ -49,17 +50,26 @@ func CreateTestDb() *pgxpool.Pool {
 	dbHost := dbconfig.ConnConfig.Config.Host
 	log.Debugf("Connected as %s to %s @ %s", dbUser, dbName, dbHost)
 
+	insertSimpleDataset(db)
+
+	log.Debugf("Sample data injected")
+
+	return db
+}
+
+func insertSimpleDataset(db *pgxpool.Pool) {
+	ctx := context.Background()
 	// collections tables
 	// tables := []string{"mock_a", "mock_b", "mock_c"}
 	type tableContent struct {
-		extent data.Extent
+		extent api.Extent
 		nx     int
 		ny     int
 	}
 	tablesAndExtents := map[string]tableContent{
-		"mock_a": {data.Extent{Minx: -120, Miny: 40, Maxx: -74, Maxy: 50}, 3, 3},
-		"mock_b": {data.Extent{Minx: -75, Miny: 45, Maxx: -74, Maxy: 46}, 10, 10},
-		"mock_c": {data.Extent{Minx: -120, Miny: 40, Maxx: -74, Maxy: 60}, 100, 100},
+		"mock_a": {api.Extent{Minx: -120, Miny: 40, Maxx: -74, Maxy: 50}, 3, 3},
+		"mock_b": {api.Extent{Minx: -75, Miny: 45, Maxx: -74, Maxy: 46}, 10, 10},
+		"mock_c": {api.Extent{Minx: -120, Miny: 40, Maxx: -74, Maxy: 60}, 100, 100},
 	}
 
 	createBytes := []byte(`
@@ -104,12 +114,14 @@ func CreateTestDb() *pgxpool.Pool {
 			CloseTestDb(db)
 			log.Fatal("Injection failed")
 		}
-		res.Close()
+		resClose := res.Close()
+		if resClose != nil {
+			CloseTestDb(db)
+			log.Fatal(fmt.Sprintf("Injection failed: %v", resClose.Error()))
+		}
 	}
 
 	log.Debugf("Sample data injected")
-
-	return db
 }
 
 func CloseTestDb(db *pgxpool.Pool) {

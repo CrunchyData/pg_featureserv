@@ -22,6 +22,115 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+var RootInfoSchema openapi3.Schema = openapi3.Schema{
+	Type:     "object",
+	Required: []string{"links"},
+	Properties: map[string]*openapi3.SchemaRef{
+		"title": {Value: &openapi3.Schema{
+			Type:        "string",
+			Description: "Title of this feature service",
+		}},
+		"description": {Value: &openapi3.Schema{
+			Type:        "string",
+			Description: "Description of this feature service",
+		}},
+		"links": {
+			Value: &openapi3.Schema{
+				Type:  "array",
+				Items: &openapi3.SchemaRef{Value: &LinkSchema},
+			},
+		},
+	},
+}
+
+var LinkSchema openapi3.Schema = openapi3.Schema{
+	Description: "Describes links to other resources",
+	Type:        "object",
+	Required:    []string{"href"},
+	Properties: map[string]*openapi3.SchemaRef{
+		"href":     {Value: &openapi3.Schema{Type: "string", Description: "URL for the link"}},
+		"rel":      {Value: &openapi3.Schema{Type: "string"}},
+		"type":     {Value: &openapi3.Schema{Type: "string"}},
+		"hreflang": {Value: &openapi3.Schema{Type: "string"}},
+		"title":    {Value: &openapi3.Schema{Type: "string"}},
+	},
+}
+
+var PropertySchema openapi3.Schema = openapi3.Schema{
+	Description: "A data property of a collection or function result",
+	Type:        "object",
+	Required:    []string{"name", "type"},
+	Properties: map[string]*openapi3.SchemaRef{
+		"name":        {Value: &openapi3.Schema{Type: "string"}},
+		"type":        {Value: &openapi3.Schema{Type: "string"}},
+		"description": {Value: &openapi3.Schema{Type: "string"}},
+	},
+}
+
+var ParameterSchema openapi3.Schema = openapi3.Schema{
+	Description: "A parameter of a function",
+	Type:        "object",
+	Required:    []string{"name", "type"},
+	Properties: map[string]*openapi3.SchemaRef{
+		"name":    {Value: &openapi3.Schema{Type: "string"}},
+		"type":    {Value: &openapi3.Schema{Type: "string"}},
+		"default": {Value: &openapi3.Schema{Type: "string"}},
+	},
+}
+
+// --- @See https://raw.githubusercontent.com/opengeospatial/WFS_FES/master/core/openapi/schemas/bbox.yaml
+//	for bbox schema
+
+var BboxSchema openapi3.Schema = openapi3.Schema{
+	Type:     "object",
+	Required: []string{"bbox"},
+	Properties: map[string]*openapi3.SchemaRef{
+		"crs": {
+			// TODO: This is supposed to have an enum & default based on: http://www.opengis.net/def/crs/OGC/1.3/CRS84
+			Value: openapi3.NewStringSchema(),
+		},
+		"bbox": {
+			Value: &openapi3.Schema{
+				Type:     "array",
+				MinItems: 4,
+				MaxItems: openapi3.Uint64Ptr(4),
+				Items:    openapi3.NewSchemaRef("", openapi3.NewFloat64Schema().WithMin(-180).WithMax(180)),
+			},
+		},
+	},
+}
+
+var ExtentSchema openapi3.Schema = openapi3.Schema{
+	Type:     "object",
+	Required: []string{"extent"},
+	Properties: map[string]*openapi3.SchemaRef{
+		"spatial": {Value: &BboxSchema},
+	},
+}
+
+var CollectionsInfoSchema openapi3.Schema = openapi3.Schema{
+	Type:     "object",
+	Required: []string{"links", "collections"},
+	Properties: map[string]*openapi3.SchemaRef{
+		"links": {
+			Value: &openapi3.Schema{
+				Type: "array",
+				Items: &openapi3.SchemaRef{
+					Value: &LinkSchema,
+				},
+			},
+		},
+		"collections": {
+			Value: &openapi3.Schema{
+				Type: "array",
+				Items: &openapi3.SchemaRef{
+					Value: &CollectionInfoSchema,
+				},
+			},
+		},
+	},
+}
+
 func getFeatureExample() map[string]interface{} {
 	var result map[string]interface{}
 	var jsonStr = `{"type":"Feature","geometry":{"type":"Point","coordinates":[-70.88461956597838,47.807897059236495]},"properties":{"prop_a":"propA","prop_b":1,"prop_c":"propC","prop_d":1}}`
@@ -56,14 +165,18 @@ var FeatureSchema openapi3.Schema = openapi3.Schema{
 		},
 		"geometry": {
 			Value: &openapi3.Schema{
-				Type: "string", // mandatory to validate the schema
-				OneOf: []*openapi3.SchemaRef{
-					openapi3.NewSchemaRef("https://geojson.org/schema/Point.json", &openapi3.Schema{Type: "string"}),
-					openapi3.NewSchemaRef("https://geojson.org/schema/LineString.json", &openapi3.Schema{Type: "string"}),
-					openapi3.NewSchemaRef("https://geojson.org/schema/Polygon.json", &openapi3.Schema{Type: "string"}),
-					openapi3.NewSchemaRef("https://geojson.org/schema/MultiPoint.json", &openapi3.Schema{Type: "string"}),
-					openapi3.NewSchemaRef("https://geojson.org/schema/MultiLineString.json", &openapi3.Schema{Type: "string"}),
-					openapi3.NewSchemaRef("https://geojson.org/schema/MultiPolygon.json", &openapi3.Schema{Type: "string"}),
+				Items: &openapi3.SchemaRef{
+					Value: &openapi3.Schema{
+						Type: "string", // mandatory to validate the schema
+						OneOf: []*openapi3.SchemaRef{
+							openapi3.NewSchemaRef("https://geojson.org/schema/Point.json", &openapi3.Schema{Type: "string"}),
+							openapi3.NewSchemaRef("https://geojson.org/schema/LineString.json", &openapi3.Schema{Type: "string"}),
+							openapi3.NewSchemaRef("https://geojson.org/schema/Polygon.json", &openapi3.Schema{Type: "string"}),
+							openapi3.NewSchemaRef("https://geojson.org/schema/MultiPoint.json", &openapi3.Schema{Type: "string"}),
+							openapi3.NewSchemaRef("https://geojson.org/schema/MultiLineString.json", &openapi3.Schema{Type: "string"}),
+							openapi3.NewSchemaRef("https://geojson.org/schema/MultiPolygon.json", &openapi3.Schema{Type: "string"}),
+						},
+					},
 				},
 			},
 		},
@@ -82,6 +195,107 @@ var FeatureSchema openapi3.Schema = openapi3.Schema{
 		},
 	},
 	Example: getFeatureExample(),
+}
+
+var CollectionInfoSchema openapi3.Schema = openapi3.Schema{
+	Type:     "object",
+	Required: []string{"id", "links"},
+	Properties: map[string]*openapi3.SchemaRef{
+		"id":          {Value: &openapi3.Schema{Type: "string"}},
+		"title":       {Value: &openapi3.Schema{Type: "string"}},
+		"description": {Value: &openapi3.Schema{Type: "string"}},
+		"extent":      {Value: &ExtentSchema},
+		"crs": {Value: &openapi3.Schema{
+			Type: "array",
+			Items: &openapi3.SchemaRef{
+				Value: &openapi3.Schema{Type: "string"},
+			},
+		},
+		},
+		"geometrytype": {Value: &openapi3.Schema{Type: "string"}},
+		"properties": {Value: &openapi3.Schema{
+			Type:  "array",
+			Items: &openapi3.SchemaRef{Value: &PropertySchema},
+		},
+		},
+		"links": {Value: &openapi3.Schema{
+			Type:  "array",
+			Items: &openapi3.SchemaRef{Value: &LinkSchema},
+		},
+		},
+	},
+}
+
+var FunctionsInfoSchema openapi3.Schema = openapi3.Schema{
+	Type:     "object",
+	Required: []string{"links", "functions"},
+	Properties: map[string]*openapi3.SchemaRef{
+		"links": {
+			Value: &openapi3.Schema{
+				Type:  "array",
+				Items: &openapi3.SchemaRef{Value: &LinkSchema},
+			},
+		},
+		"functions": {
+			Value: &openapi3.Schema{
+				Type:  "array",
+				Items: &openapi3.SchemaRef{Value: &FunctionSummarySchema},
+			},
+		},
+	},
+}
+
+var FunctionSummarySchema openapi3.Schema = openapi3.Schema{
+	Type:     "object",
+	Required: []string{"id", "links"},
+	Properties: map[string]*openapi3.SchemaRef{
+		"id":          {Value: &openapi3.Schema{Type: "string"}},
+		"description": {Value: &openapi3.Schema{Type: "string"}},
+		"links": {Value: &openapi3.Schema{
+			Type:  "array",
+			Items: &openapi3.SchemaRef{Value: &LinkSchema},
+		},
+		},
+	},
+}
+
+var FunctionInfoSchema openapi3.Schema = openapi3.Schema{
+	Type:     "object",
+	Required: []string{"id", "links"},
+	Properties: map[string]*openapi3.SchemaRef{
+		"id":          {Value: &openapi3.Schema{Type: "string"}},
+		"description": {Value: &openapi3.Schema{Type: "string"}},
+		"parameters": {Value: &openapi3.Schema{
+			Type:  "array",
+			Items: &openapi3.SchemaRef{Value: &ParameterSchema},
+		},
+		},
+		"properties": {Value: &openapi3.Schema{
+			Type:  "array",
+			Items: &openapi3.SchemaRef{Value: &PropertySchema},
+		},
+		},
+		"links": {Value: &openapi3.Schema{
+			Type:  "array",
+			Items: &openapi3.SchemaRef{Value: &LinkSchema},
+		},
+		},
+	},
+}
+
+var ConformanceSchema openapi3.Schema = openapi3.Schema{
+	Type:     "object",
+	Required: []string{"conformsTo"},
+	Properties: map[string]*openapi3.SchemaRef{
+		"conformsTo": {
+			Value: &openapi3.Schema{
+				Type: "array",
+				Items: &openapi3.SchemaRef{
+					Value: &openapi3.Schema{Type: "string"},
+				},
+			},
+		},
+	},
 }
 
 // GetOpenAPIContent returns a Swagger OpenAPI structure
