@@ -185,11 +185,6 @@ func sqlColExpr(name string, dbtype api.PGType) string {
 	name = strconv.Quote(name)
 
 	// TODO: make this more data-driven / configurable
-	switch dbtype {
-	case api.PGTypeTSVECTOR:
-		return fmt.Sprintf("%s::text", name)
-	}
-
 	// for properties that will be treated as a string in the JSON response,
 	// cast to text.  This allows displaying data types that pgx
 	// does not support out of the box, as long as it can be cast to text.

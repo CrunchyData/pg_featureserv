@@ -1,5 +1,11 @@
 package api
 
+import (
+	"time"
+
+	"github.com/getkin/kin-openapi/openapi3"
+)
+
 /*
  Copyright 2022 Crunchy Data Solutions, Inc.
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,6 +46,8 @@ const (
 	PGTypeIntArray    PGType = "_int"
 	PGTypeInt4        PGType = "int4"
 	PGTypeInt4Array   PGType = "_int4"
+	PGTypeInt8        PGType = "int8"
+	PGTypeInt8Array   PGType = "_int8"
 	PGTypeBigInt      PGType = "bigint"
 	PGTypeBigIntArray PGType = "_bigint"
 	PGTypeFloat4      PGType = "float4"
@@ -55,12 +63,13 @@ const (
 	PGTypeTSVECTOR    PGType = "tsvector"
 )
 
+// returns JSONType matching PGType
 func (dbType PGType) ToJSONType() JSONType {
 	//fmt.Printf("ToJSONType: %v\n", pgType)
 	switch dbType {
-	case PGTypeNumeric, PGTypeInt, PGTypeInt4, PGTypeBigInt, PGTypeFloat4, PGTypeFloat8:
+	case PGTypeNumeric, PGTypeInt, PGTypeInt4, PGTypeInt8, PGTypeBigInt, PGTypeFloat4, PGTypeFloat8:
 		return JSONTypeNumber
-	case PGTypeIntArray, PGTypeInt4Array, PGTypeBigIntArray, PGTypeFloat4Array, PGTypeFloat8Array:
+	case PGTypeIntArray, PGTypeInt4Array, PGTypeInt8Array, PGTypeBigIntArray, PGTypeFloat4Array, PGTypeFloat8Array:
 		return JSONTypeNumberArray
 	case PGTypeBool:
 		return JSONTypeBoolean
@@ -82,22 +91,131 @@ func (dbType PGType) ToJSONType() JSONType {
 	}
 }
 
-func (dbType PGType) ToOpenApiType() string {
+// creates openapi schema type according to PGType
+func (dbType PGType) ToOpenApiSchema() *openapi3.Schema {
 	//fmt.Printf("ToOpenApiType: %v\n", pgType)
 	switch dbType {
 	case PGTypeBool:
-		return "boolean"
-	case PGTypeInt:
-		return "integer"
-	case PGTypeInt4:
-		return "integer"
-	case PGTypeBigInt:
-		return "int64"
+		return &openapi3.Schema{Type: "boolean"}
+
+	case PGTypeInt, PGTypeInt4, PGTypeInt8, PGTypeBigInt:
+		return &openapi3.Schema{Type: "integer"}
+
+	case PGTypeFloat4, PGTypeFloat8:
+		return &openapi3.Schema{Type: "number"}
+
 	case PGTypeText:
-		return "string"
+		return &openapi3.Schema{Type: "string"}
+
+	case PGTypeDate:
+		return &openapi3.Schema{Type: "string"}
+
+	case PGTypeGeometry, PGTypeJSON:
+		return &openapi3.Schema{Type: "object"}
+
+	case PGTypeIntArray, PGTypeInt4Array, PGTypeInt8Array, PGTypeBigIntArray, PGTypeFloat4Array, PGTypeFloat8Array, PGTypeTextArray, PGTypeBoolArray:
+		var subPropType string
+
+		switch dbType {
+		case PGTypeBoolArray:
+			subPropType = "boolean"
+		case PGTypeIntArray, PGTypeInt4Array, PGTypeInt8Array, PGTypeBigIntArray:
+			subPropType = "integer"
+		case PGTypeFloat4Array, PGTypeFloat8Array:
+			subPropType = "number"
+		case PGTypeTextArray:
+			subPropType = "string"
+		default:
+			subPropType = string(dbType)
+		}
+
+		return &openapi3.Schema{
+			Type: "array",
+			Items: &openapi3.SchemaRef{
+				Value: &openapi3.Schema{
+					Type: subPropType,
+				},
+			},
+		}
+
 	default:
-		return ""
+		return &openapi3.Schema{Type: string(dbType)}
 	}
+}
+
+// converts json marshalled interface to valid object according to PGType
+func (dbType PGType) ParseJSONInterface(val interface{}) (interface{}, error) {
+	var convVal interface{}
+
+	switch dbType {
+	case PGTypeInt4:
+		convVal = int32(val.(float64))
+
+	case PGTypeInt8, PGTypeBigInt:
+		convVal = int64(val.(float64))
+
+	case PGTypeFloat4:
+		convVal = float32(val.(float64))
+
+	case PGTypeFloat8, PGTypeNumeric:
+		convVal = val.(float64)
+
+	case PGTypeText, PGTypeTSVECTOR:
+		convVal = val.(string)
+
+	case PGTypeDate:
+		var err error
+		convVal, err = time.Parse(time.RFC3339, val.(string))
+		if err != nil {
+			return -9999, err
+		}
+
+	// TODO: find a solution to avoid code duplicates
+	case PGTypeBoolArray:
+		arrI := val.([]interface{})
+		convArr := make([]bool, len(arrI))
+		for i, v := range arrI {
+			convArr[i] = v.(bool)
+		}
+		convVal = convArr
+
+	case PGTypeInt4Array:
+		arrI := val.([]interface{})
+		convArr := make([]int32, len(arrI))
+		for i, v := range arrI {
+			convArr[i] = int32(v.(float64))
+		}
+		convVal = convArr
+
+	case PGTypeInt8Array, PGTypeBigIntArray:
+		arrI := val.([]interface{})
+		convArr := make([]int64, len(arrI))
+		for i, v := range arrI {
+			convArr[i] = int64(v.(float64))
+		}
+		convVal = convArr
+
+	case PGTypeFloat4Array:
+		arrI := val.([]interface{})
+		convArr := make([]float32, len(arrI))
+		for i, v := range arrI {
+			convArr[i] = float32(v.(float64))
+		}
+		convVal = convArr
+
+	case PGTypeFloat8Array:
+		arrI := val.([]interface{})
+		convArr := make([]float64, len(arrI))
+		for i, v := range arrI {
+			convArr[i] = v.(float64)
+		}
+		convVal = convArr
+
+	default:
+		convVal = val
+	}
+
+	return convVal, nil
 }
 
 func ToJSONTypeFromPGArray(pgTypes []string) []JSONType {

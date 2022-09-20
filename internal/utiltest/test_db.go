@@ -20,12 +20,16 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strconv"
+	"time"
 
 	"github.com/CrunchyData/pg_featureserv/internal/api"
 	"github.com/CrunchyData/pg_featureserv/internal/conf"
 	"github.com/CrunchyData/pg_featureserv/internal/data"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/paulmach/orb"
+	"github.com/paulmach/orb/geojson"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -54,6 +58,7 @@ func CreateTestDb() *pgxpool.Pool {
 	log.Debugf("Connected as %s to %s @ %s", dbUser, dbName, dbHost)
 
 	insertSimpleDataset(db)
+	insertComplexDataset(db)
 
 	log.Debugf("Sample data injected")
 
@@ -123,17 +128,93 @@ func insertSimpleDataset(db *pgxpool.Pool) {
 			log.Fatal(fmt.Sprintf("Injection failed: %v", resClose.Error()))
 		}
 	}
+}
 
-	log.Debugf("Sample data injected")
+func MakeGeojsonFeatureMockPoint(id int, x float64, y float64) *api.GeojsonFeatureData {
+
+	geom := geojson.NewGeometry(orb.Point{x, y})
+	idstr := strconv.Itoa(id)
+	props := make(map[string]interface{})
+	props["prop_t"] = idstr
+	props["prop_i"] = id
+	props["prop_l"] = int64(id)
+	props["prop_f"] = float64(id)
+	props["prop_r"] = float32(id)
+	props["prop_b"] = []bool{id%2 == 0, id%2 == 1}
+	props["prop_d"] = time.Now()
+	props["prop_j"] = api.Sorting{Name: idstr, IsDesc: id%2 == 1}
+
+	feat := api.GeojsonFeatureData{Type: "Feature", ID: idstr, Geom: geom, Props: props}
+
+	return &feat
+}
+
+func insertComplexDataset(db *pgxpool.Pool) {
+	ctx := context.Background()
+	// NOT same as featureMock
+	_, errExec := db.Exec(ctx, `
+		DROP TABLE IF EXISTS mock_multi CASCADE;
+		CREATE TABLE IF NOT EXISTS public.mock_multi (
+			id SERIAL PRIMARY KEY,
+			geometry public.geometry(Point, 4326),
+			prop_t text,
+			prop_i int,
+			prop_l bigint,
+			prop_f float8,
+			prop_r real,
+			prop_b bool[],
+			prop_d date,
+			prop_j json
+		);
+		`)
+	if errExec != nil {
+		CloseTestDb(db)
+		log.Fatal(errExec)
+	}
+
+	n := 5.0
+	features := make([]*api.GeojsonFeatureData, int((n*2)*(n*2)))
+	id := 1
+	for ix := -n; ix < n; ix++ {
+		for iy := -n; iy < n; iy++ {
+			feat := MakeGeojsonFeatureMockPoint(id, ix, iy)
+			features[id-1] = feat
+			id++
+		}
+	}
+
+	b := &pgx.Batch{}
+	sqlStatement := `
+		INSERT INTO public.mock_multi (geometry, prop_t, prop_i, prop_l, prop_f, prop_r, prop_b, prop_d, prop_j)
+		VALUES (ST_GeomFromGeoJSON($1), $2, $3, $4, $5, $6, $7, $8, $9)`
+
+	for _, f := range features {
+		geomStr, _ := f.Geom.MarshalJSON()
+		b.Queue(sqlStatement, geomStr, f.Props["prop_t"], f.Props["prop_i"], f.Props["prop_l"], f.Props["prop_f"], f.Props["prop_r"], f.Props["prop_b"], f.Props["prop_d"], f.Props["prop_j"])
+	}
+	res := db.SendBatch(ctx, b)
+	if res == nil {
+		CloseTestDb(db)
+		log.Fatal("Injection failed")
+	}
+	resClose := res.Close()
+	if resClose != nil {
+		CloseTestDb(db)
+		log.Fatal(fmt.Sprintf("Injection failed: %v", resClose.Error()))
+	}
 }
 
 func CloseTestDb(db *pgxpool.Pool) {
-	log.Debugf("Sample db will be cleared...")
-	_, errExec := db.Exec(context.Background(), "DROP TABLE IF EXISTS public.mock_a CASCADE;")
+	log.Debugf("Sample dbs will be cleared...")
+	var sql string
+	for _, t := range []string{"mock_a", "mock_b", "mock_c", "mock_multi"} {
+		sql = fmt.Sprintf("%s DROP TABLE IF EXISTS public.%s CASCADE;", sql, t)
+	}
+	_, errExec := db.Exec(context.Background(), sql)
 	if errExec != nil {
-		log.Warnf("Failed to drop sample db! ")
+		log.Warnf("Failed to drop sample dbs! ")
 		log.Warnf(errExec.Error())
 	}
 	db.Close()
-	log.Debugf("Sample db cleared!")
+	log.Debugf("Sample dbs cleared!")
 }

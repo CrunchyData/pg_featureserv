@@ -474,15 +474,7 @@ func checkItem(t *testing.T, id int) []byte {
 	resp := hTest.DoRequest(t, path)
 	body, _ := ioutil.ReadAll(resp.Body)
 
-	// extracted from catalog_db.go
-	type featureData struct {
-		Type  string                 `json:"type"`
-		ID    string                 `json:"id,omitempty"`
-		Geom  *json.RawMessage       `json:"geometry"`
-		Props map[string]interface{} `json:"properties"`
-	}
-
-	var v featureData
+	var v api.GeojsonFeatureData
 	errUnMarsh := json.Unmarshal(body, &v)
 	util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 

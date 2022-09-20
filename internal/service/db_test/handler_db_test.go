@@ -27,8 +27,8 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
 	"testing"
+	"time"
 
 	"github.com/CrunchyData/pg_featureserv/internal/api"
 	"github.com/CrunchyData/pg_featureserv/internal/conf"
@@ -59,10 +59,10 @@ func TestMain(m *testing.M) {
 
 func TestProperDbInit(t *testing.T) {
 	tables, _ := cat.Tables()
-	util.Equals(t, 4, len(tables), "# tables in DB")
+	util.Equals(t, 5, len(tables), "# tables in DB")
 }
 
-func TestPropertiesAllFromDb(t *testing.T) {
+func TestPropertiesAllFromDbSimpleTable(t *testing.T) {
 	rr := hTest.DoRequest(t, "/collections/mock_a/items?limit=2")
 
 	var v api.FeatureCollection
@@ -79,68 +79,35 @@ func TestPropertiesAllFromDb(t *testing.T) {
 	util.Equals(t, 1.0, v.Features[0].Props["prop_d"], "feature 1 # property D")
 }
 
-func TestCreateFeatureWithBadGeojsonInputDb(t *testing.T) {
-	var header = make(http.Header)
-	header.Add("Content-Type", "application/geo+json")
+func TestPropertiesAllFromDbComplexTable(t *testing.T) {
+	rr := hTest.DoRequest(t, "/collections/mock_multi/items?limit=5")
 
-	jsonStr := `[{
-		"id": 101,
-		"name": "Test",
-		"email": "test@test.com"
-	      }, {
-		"id": 102,
-		"name": "Sample",
-		"email": "sample@test.com"
-	    }]`
+	var v api.FeatureCollection
+	errUnMarsh := json.Unmarshal(hTest.ReadBody(rr), &v)
+	util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 
-	rr := hTest.DoRequestMethodStatus(t, "POST", "/collections/mock_a/items", []byte(jsonStr), header, http.StatusInternalServerError)
+	// Note that JSON numbers are read as float64
+	util.Equals(t, 5, len(v.Features), "# features")
+	util.Equals(t, 8, len(v.Features[0].Props), "feature 1 # properties")
 
-	util.Equals(t, http.StatusInternalServerError, rr.Code, "Should have failed")
-	util.Assert(t, strings.Index(rr.Body.String(), fmt.Sprintf(api.ErrMsgCreateFeatureNotConform+"\n", "mock_a")) == 0, "Should have failed with not conform")
-}
+	util.Equals(t, "1", v.Features[0].Props["prop_t"].(string), "feature 1 # property text")
 
-func TestCreateFeatureDb(t *testing.T) {
-	var header = make(http.Header)
-	header.Add("Content-Type", "application/geo+json")
+	tbl, _ := cat.TableByName("mock_multi")
+	params := data.QueryParam{Limit: 100000, Offset: 0, Crs: 4326, Columns: tbl.Columns}
+	features, _ := cat.TableFeatures(context.Background(), "mock_multi", &params)
 
-	//--- retrieve max feature id before insert
-	var features []*api.GeojsonFeatureData
-	params := data.QueryParam{Limit: 100000, Offset: 0, Crs: 4326}
-	features, _ = cat.TableFeatures(context.Background(), "mock_a", &params)
-	maxIdBefore := len(features)
+	util.Equals(t, "1", features[0].Props["prop_t"].(string), "feature 1 # property text")
+	util.Equals(t, int32(1), features[0].Props["prop_i"].(int32), "feature 1 # property int")
+	util.Equals(t, int64(1), features[0].Props["prop_l"].(int64), "feature 1 # property long")
+	util.Equals(t, float64(1.0), features[0].Props["prop_f"].(float64), "feature 1 # property float64")
+	util.Equals(t, float32(1.0), features[0].Props["prop_r"].(float32), "feature 1 # property float32")
+	util.Equals(t, []bool{false, true}, features[0].Props["prop_b"].([]bool), "feature 1 # property bool")
+	util.Assert(t, time.Now().After(features[0].Props["prop_d"].(time.Time)), "feature 1 # property date")
 
-	//--- generate json from new object
-	tables, _ := cat.Tables()
-	var cols []string
-	for _, t := range tables {
-		if t.ID == "public.mock_a" {
-			for _, c := range t.Columns {
-				if c != "id" {
-					cols = append(cols, c)
-				}
-			}
-			break
-		}
-	}
-	jsonStr := data.MakeFeatureMockPointAsJSON(99, 12, 34, cols)
-	fmt.Println(jsonStr)
-
-	// -- do the request call but we have to force the catalogInstance to db during this operation
-	rr := hTest.DoPostRequest(t, "/collections/mock_a/items", []byte(jsonStr), header)
-
-	loc := rr.Header().Get("Location")
-
-	//--- retrieve max feature id after insert
-	features, _ = cat.TableFeatures(context.Background(), "mock_a", &params)
-	maxIdAfter := len(features)
-
-	util.Assert(t, maxIdAfter > maxIdBefore, "# feature in db")
-	util.Assert(t, len(loc) > 1, "Header location must not be empty")
-	util.Equals(t, fmt.Sprintf("http://test/collections/mock_a/items/%d", maxIdAfter), loc,
-		"Header location must contain valid data")
-
-	// check if it can be read
-	checkItem(t, maxIdAfter)
+	expectJson := map[string]interface{}{
+		"Name":   features[0].Props["prop_t"].(string),
+		"IsDesc": features[0].Props["prop_i"].(int32)%2 == 1}
+	util.Equals(t, expectJson, features[0].Props["prop_j"], "feature 1 # property json")
 }
 
 func TestReplaceFeatureSuccessDb(t *testing.T) {
@@ -220,7 +187,7 @@ func TestPartialUpdateFeatureDb(t *testing.T) {
 		"Header location must contain valid data")
 
 	// check if it can be read
-	feature := checkItem(t, 2)
+	feature := checkItem(t, "mock_a", 2)
 	var jsonData map[string]interface{}
 	errUnMarsh := json.Unmarshal(feature, &jsonData)
 	util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
@@ -262,8 +229,8 @@ func TestDeleteFeatureDb(t *testing.T) {
 
 // check if item is available and is not empty
 // copy from service/handler_test.go
-func checkItem(t *testing.T, id int) []byte {
-	path := fmt.Sprintf("/collections/mock_a/items/%d", id)
+func checkItem(t *testing.T, tableName string, id int) []byte {
+	path := fmt.Sprintf("/collections/%v/items/%d", tableName, id)
 	resp := hTest.DoRequest(t, path)
 	body, _ := ioutil.ReadAll(resp.Body)
 
@@ -272,9 +239,12 @@ func checkItem(t *testing.T, id int) []byte {
 	util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 
 	util.Equals(t, "Feature", v.Type, "feature type")
+
 	actId, _ := strconv.Atoi(v.ID)
 	util.Equals(t, id, actId, "feature id")
-	util.Equals(t, 4, len(v.Props), "# feature props")
+
+	tbl, _ := service.CatalogInstance().TableByName(tableName)
+	util.Equals(t, len(tbl.Columns)-1, len(v.Props), "# feature props")
 
 	return body
 }

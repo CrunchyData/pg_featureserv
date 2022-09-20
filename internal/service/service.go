@@ -102,6 +102,11 @@ func SetCatalogInstance(catalog data.Catalog) {
 	catalogInstance = catalog
 }
 
+// Get catalog instance
+func CatalogInstance() data.Catalog {
+	return catalogInstance
+}
+
 // Serve starts the web service
 func Serve(catalog data.Catalog) {
 	confServ := conf.Configuration.Server
