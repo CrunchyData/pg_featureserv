@@ -18,7 +18,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/CrunchyData/pg_featureserv/util"
+	util "github.com/CrunchyData/pg_featureserv/internal/utiltest"
 )
 
 func TestDebug(t *testing.T) {

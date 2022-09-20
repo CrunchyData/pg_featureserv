@@ -27,7 +27,7 @@ import (
 	"github.com/CrunchyData/pg_featureserv/internal/api"
 	"github.com/CrunchyData/pg_featureserv/internal/conf"
 	"github.com/CrunchyData/pg_featureserv/internal/data"
-	"github.com/CrunchyData/pg_featureserv/util"
+	util "github.com/CrunchyData/pg_featureserv/internal/utiltest"
 )
 
 var hTest util.HttpTesting
