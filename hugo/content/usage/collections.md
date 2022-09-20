@@ -177,3 +177,20 @@ content-encoding: gzip
 content-length: 23  
 location: http://localhost:9000/collections/e.admin_0_countries/items/10  
 ```
+
+### Delete feature
+
+To delete a feature you need to provide the id from the feature to delete while using the DELETE method.
+
+The path looks like the following :
+`/collections/{coll-name}/items/{id}`
+`{coll-name}` is the schema qualified name of the database table or view backing the feature collection
+`{id}` is the feature ID to delete
+
+#### *Example*
+
+```bash
+curl -X DELETE http://localhost:9000/collections/ne.admin_0_countries/items/10
+```
+
+You should receive a 204 HTTP response code when operation is successful.

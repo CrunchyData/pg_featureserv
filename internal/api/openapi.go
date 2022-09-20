@@ -591,12 +591,12 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 						},
 						"400": &openapi3.ResponseRef{
 							Value: &openapi3.Response{
-								Description: "Malformed feature ID or non suitable query parameters present",
+								Description: "Malformed feature ID or unsuitable query parameters",
 							},
 						},
 						"404": &openapi3.ResponseRef{
 							Value: &openapi3.Response{
-								Description: "Resource ID not foudn, collection not found, catalog error.",
+								Description: "Resource ID not found, collection not found, catalog error.",
 							},
 						},
 					},
