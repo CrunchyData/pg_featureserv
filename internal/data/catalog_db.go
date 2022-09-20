@@ -32,21 +32,40 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+type PGType string
+type JSONType string
+
 // Constants
 const (
-	JSONTypeString       = "string"
-	JSONTypeNumber       = "number"
-	JSONTypeBoolean      = "boolean"
-	JSONTypeJSON         = "json"
-	JSONTypeBooleanArray = "boolean[]"
-	JSONTypeStringArray  = "string[]"
-	JSONTypeNumberArray  = "number[]"
+	JSONTypeString       JSONType = "string"
+	JSONTypeNumber       JSONType = "number"
+	JSONTypeBoolean      JSONType = "boolean"
+	JSONTypeJSON         JSONType = "json"
+	JSONTypeDate         JSONType = "date"
+	JSONTypeGeometry     JSONType = "geometry"
+	JSONTypeBooleanArray JSONType = "boolean[]"
+	JSONTypeStringArray  JSONType = "string[]"
+	JSONTypeNumberArray  JSONType = "number[]"
 
-	PGTypeBool      = "bool"
-	PGTypeNumeric   = "numeric"
-	PGTypeJSON      = "json"
-	PGTypeGeometry  = "geometry"
-	PGTypeTextArray = "_text"
+	PGTypeBool        PGType = "bool"
+	PGTypeBoolArray   PGType = "_bool"
+	PGTypeInt         PGType = "int"
+	PGTypeIntArray    PGType = "_int"
+	PGTypeInt4        PGType = "int4"
+	PGTypeInt4Array   PGType = "_int4"
+	PGTypeBigInt      PGType = "bigint"
+	PGTypeBigIntArray PGType = "_bigint"
+	PGTypeFloat4      PGType = "float4"
+	PGTypeFloat4Array PGType = "_float4"
+	PGTypeFloat8      PGType = "float8"
+	PGTypeFloat8Array PGType = "_float8"
+	PGTypeNumeric     PGType = "numeric"
+	PGTypeDate        PGType = "date"
+	PGTypeJSON        PGType = "json"
+	PGTypeGeometry    PGType = "geometry"
+	PGTypeText        PGType = "text"
+	PGTypeTextArray   PGType = "_text"
+	PGTypeTSVECTOR    PGType = "tsvector"
 )
 
 type catalogDB struct {
@@ -549,14 +568,14 @@ func scanTable(rows pgx.Rows) *Table {
 
 	// Since Go map order is random, list columns in array
 	columns := make([]string, arrLen)
-	jsontypes := make([]string, arrLen)
+	jsontypes := make([]JSONType, arrLen)
 	datatypes := make(map[string]Column)
 	colDesc := make([]string, arrLen)
 
 	for i := arrStart; i < arrLen; i++ {
 		elmPos := i * elmLen
 		name := props.Elements[elmPos].String
-		datatype := props.Elements[elmPos+1].String
+		datatype := PGType(props.Elements[elmPos+1].String)
 		columns[i] = name
 		// TODO must find a way to compute IsRequired
 		datatypes[name] = Column{Index: i, Type: datatype, IsRequired: true}
@@ -656,7 +675,13 @@ func scanFeature(rows pgx.Rows, idColIndex int, propNames []string) string {
 	//--- convert NULL to an empty string
 	if vals[0] != nil {
 		if "string" == reflect.TypeOf(vals[0]).String() {
-			return makeFeatureJSON(id, vals[0].(string), props)
+			var g geojson.Geometry
+			err := g.UnmarshalJSON([]byte(vals[0].(string)))
+			if err == nil {
+				return makeGeojsonFeatureJSON(id, g, props)
+			} else {
+				return makeFeatureJSON(id, vals[0].(string), props)
+			}
 		} else {
 			return makeGeojsonFeatureJSON(id, vals[0].(geojson.Geometry), props)
 		}
@@ -730,41 +755,39 @@ func toJSONValue(value interface{}) interface{} {
 	return value
 }
 
-func toJSONTypeFromPGArray(pgTypes []string) []string {
-	jsonTypes := make([]string, len(pgTypes))
+func toJSONTypeFromPGArray(pgTypes []string) []JSONType {
+	jsonTypes := make([]JSONType, len(pgTypes))
 	for i, pgType := range pgTypes {
-		jsonTypes[i] = toJSONTypeFromPG(pgType)
+		jsonTypes[i] = toJSONTypeFromPG(PGType(pgType))
 	}
 	return jsonTypes
 }
 
-func toJSONTypeFromPG(pgType string) string {
+func toJSONTypeFromPG(pgType PGType) JSONType {
 	//fmt.Printf("toJSONTypeFromPG: %v\n", pgType)
-	if strings.HasPrefix(pgType, "int") || strings.HasPrefix(pgType, "float") {
-		return JSONTypeNumber
-	}
-	if strings.HasPrefix(pgType, "_int") || strings.HasPrefix(pgType, "_float") {
-		return JSONTypeNumberArray
-	}
-	if strings.HasPrefix(pgType, "_bool") {
-		return JSONTypeBooleanArray
-	}
 	switch pgType {
-	case PGTypeNumeric:
+	case PGTypeNumeric, PGTypeInt, PGTypeInt4, PGTypeBigInt, PGTypeFloat4, PGTypeFloat8:
 		return JSONTypeNumber
+	case PGTypeIntArray, PGTypeInt4Array, PGTypeBigIntArray, PGTypeFloat4Array, PGTypeFloat8Array:
+		return JSONTypeNumberArray
 	case PGTypeBool:
 		return JSONTypeBoolean
+	case PGTypeBoolArray:
+		return JSONTypeBooleanArray
 	case PGTypeJSON:
 		return JSONTypeJSON
 	case PGTypeTextArray:
 		return JSONTypeStringArray
-	// hack to allow displaying geometry type
+	case PGTypeDate:
+		return JSONTypeDate
+		// hack to allow displaying geometry type
 	case PGTypeGeometry:
-		return PGTypeGeometry
+		return JSONTypeGeometry
+		// default is string
+		// this forces conversion to text in SQL query
+	default:
+		return JSONTypeString
 	}
-	// default is string
-	// this forces conversion to text in SQL query
-	return JSONTypeString
 }
 
 type featureData struct {

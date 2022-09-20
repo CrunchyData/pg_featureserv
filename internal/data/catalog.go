@@ -109,7 +109,7 @@ type QueryParam struct {
 // Column holds metadata for column objects
 type Column struct {
 	Index      int
-	Type       string
+	Type       PGType
 	IsRequired bool
 }
 
@@ -127,7 +127,7 @@ type Table struct {
 	Extent         Extent
 	Columns        []string
 	DbTypes        map[string]Column
-	JSONTypes      []string
+	JSONTypes      []JSONType
 	ColDesc        []string
 }
 
@@ -165,13 +165,13 @@ type Function struct {
 	Description    string
 	InNames        []string
 	InDbTypes      []string
-	InTypeMap      map[string]string
+	InTypeMap      map[string]PGType
 	InDefaults     []string
 	NumNoDefault   int
 	OutNames       []string
 	OutDbTypes     []string
-	OutJSONTypes   []string
-	Types          map[string]string
+	OutJSONTypes   []JSONType
+	Types          map[string]PGType
 	GeometryColumn string
 	IDColumn       string
 }

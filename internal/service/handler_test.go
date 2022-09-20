@@ -104,7 +104,7 @@ func TestCollectionResponse(t *testing.T) {
 	util.Equals(t, len(tbl.Columns), len(v.Properties), "Properties len")
 	for i := 0; i < len(v.Properties); i++ {
 		util.Equals(t, tbl.Columns[i], v.Properties[i].Name, "Properties[].Name")
-		util.Equals(t, tbl.JSONTypes[i], v.Properties[i].Type, "Properties[].Type")
+		util.Equals(t, string(tbl.JSONTypes[i]), v.Properties[i].Type, "Properties[].Type")
 		util.Equals(t, tbl.ColDesc[i], v.Properties[i].Description, "Properties[].Description")
 	}
 
@@ -455,7 +455,7 @@ func checkFunction(t *testing.T, fun *data.Function) {
 	util.Equals(t, len(fun.OutNames), len(v.Properties), "Properties len")
 	for i := 0; i < len(v.Properties); i++ {
 		util.Equals(t, fun.OutNames[i], v.Properties[i].Name, "Properties[].Name")
-		util.Equals(t, fun.OutJSONTypes[i], v.Properties[i].Type, "Properties[].Type")
+		util.Equals(t, string(fun.OutJSONTypes[i]), v.Properties[i].Type, "Properties[].Type")
 	}
 
 	//--- check links

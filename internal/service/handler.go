@@ -512,7 +512,7 @@ func getCreateItemSchema(ctx context.Context, table *data.Table) (openapi3.Schem
 	props.Properties = make(map[string]*openapi3.SchemaRef)
 	for k, v := range table.DbTypes {
 		if k != table.IDColumn {
-			propType := v.Type
+			propType := string(v.Type)
 			if api.Db2OpenapiFormatMap[v.Type] != "" {
 				propType = api.Db2OpenapiFormatMap[v.Type]
 			}
@@ -568,7 +568,7 @@ func getUpdateItemSchema(ctx context.Context, table *data.Table) (openapi3.Schem
 	props.Properties = make(map[string]*openapi3.SchemaRef)
 	for k, v := range table.DbTypes {
 		if k != table.IDColumn {
-			propType := v.Type
+			propType := string(v.Type)
 			if api.Db2OpenapiFormatMap[v.Type] != "" {
 				propType = api.Db2OpenapiFormatMap[v.Type]
 			}

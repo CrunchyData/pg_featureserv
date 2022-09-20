@@ -618,7 +618,7 @@ func TableProperties(tbl *data.Table) []*Property {
 	for i, name := range tbl.Columns {
 		props[i] = &Property{
 			Name:        name,
-			Type:        tbl.JSONTypes[i],
+			Type:        string(tbl.JSONTypes[i]),
 			Description: tbl.ColDesc[i],
 		}
 	}
@@ -682,7 +682,7 @@ func FunctionProperties(fn *data.Function) []*Property {
 	for i, name := range fn.OutNames {
 		props[i] = &Property{
 			Name: name,
-			Type: fn.OutJSONTypes[i],
+			Type: string(fn.OutJSONTypes[i]),
 			// no description available from db catalog
 		}
 	}
@@ -722,9 +722,10 @@ func PathItem(name string, fid string) string {
 	return fmt.Sprintf("%v/%v/%v/%v", TagCollections, name, TagItems, fid)
 }
 
-var Db2OpenapiFormatMap = map[string]string{
-	"int":  "integer",
-	"int4": "integer",
-	"long": "int64",
-	"text": "string",
+var Db2OpenapiFormatMap = map[data.PGType]string{
+	data.PGTypeBool:   "boolean",
+	data.PGTypeInt:    "integer",
+	data.PGTypeInt4:   "integer",
+	data.PGTypeBigInt: "int64",
+	data.PGTypeText:   "string",
 }

@@ -50,7 +50,7 @@ func newCatalogMock() CatalogMock {
 		"prop_c": {Index: 2, Type: "text", IsRequired: false},
 		"prop_d": {Index: 3, Type: "int", IsRequired: false},
 	}
-	jtypes := []string{"string", "number", "string", "number"}
+	jtypes := []JSONType{JSONTypeString, JSONTypeNumber, JSONTypeString, JSONTypeNumber}
 	colDesc := []string{"Property A", "Property B", "Property C", "Property D"}
 
 	layerA := &Table{
@@ -109,16 +109,16 @@ func newCatalogMock() CatalogMock {
 		Description: "Function A",
 		InNames:     []string{"in_param1"},
 		InDbTypes:   []string{"text"},
-		InTypeMap: map[string]string{
-			"in_param1": "text",
+		InTypeMap: map[string]PGType{
+			"in_param1": PGTypeText,
 		},
 		InDefaults:   []string{"aa"},
 		NumNoDefault: 0,
 		OutNames:     []string{"out_param1"},
 		OutDbTypes:   []string{"text"},
-		OutJSONTypes: []string{"string"},
-		Types: map[string]string{
-			"in_param1": "text",
+		OutJSONTypes: []JSONType{JSONTypeString},
+		Types: map[string]PGType{
+			"in_param1": PGTypeText,
 		},
 		GeometryColumn: "",
 		IDColumn:       "",
@@ -130,19 +130,19 @@ func newCatalogMock() CatalogMock {
 		Description: "Function B",
 		InNames:     []string{"in_param1"},
 		InDbTypes:   []string{"int"},
-		InTypeMap: map[string]string{
-			"in_param1": "int",
+		InTypeMap: map[string]PGType{
+			"in_param1": PGTypeInt,
 		},
 		InDefaults:   []string{"999"},
 		NumNoDefault: 0,
 		OutNames:     []string{"out_geom", "out_id", "out_param1"},
 		OutDbTypes:   []string{"geometry", "int", "text"},
-		OutJSONTypes: []string{"geometry", "int", "string"},
-		Types: map[string]string{
-			"in_param1":  "int",
-			"out_geom":   "geometry",
-			"out_id":     "int",
-			"out_param1": "text",
+		OutJSONTypes: []JSONType{JSONTypeGeometry, JSONTypeNumber, JSONTypeString},
+		Types: map[string]PGType{
+			"in_param1":  PGTypeInt,
+			"out_geom":   PGTypeGeometry,
+			"out_id":     PGTypeInt,
+			"out_param1": PGTypeText,
 		},
 		GeometryColumn: "",
 		IDColumn:       "",
@@ -154,17 +154,17 @@ func newCatalogMock() CatalogMock {
 		Description:  "Function with no parameters",
 		InNames:      []string{},
 		InDbTypes:    []string{},
-		InTypeMap:    map[string]string{},
+		InTypeMap:    map[string]PGType{},
 		InDefaults:   []string{},
 		NumNoDefault: 0,
 		OutNames:     []string{"out_geom", "out_id", "out_param1"},
 		OutDbTypes:   []string{"geometry", "int", "text"},
-		OutJSONTypes: []string{"geometry", "int", "string"},
-		Types: map[string]string{
-			"in_param1":  "int",
-			"out_geom":   "geometry",
-			"out_id":     "int",
-			"out_param1": "text",
+		OutJSONTypes: []JSONType{JSONTypeGeometry, JSONTypeNumber, JSONTypeString},
+		Types: map[string]PGType{
+			"in_param1":  PGTypeInt,
+			"out_geom":   PGTypeGeometry,
+			"out_id":     PGTypeInt,
+			"out_param1": PGTypeText,
 		},
 		GeometryColumn: "",
 		IDColumn:       "",
