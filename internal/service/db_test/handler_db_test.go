@@ -85,7 +85,7 @@ func TestCreateFeatureDb(t *testing.T) {
 	header.Add("Content-Type", "application/geo+json")
 
 	//--- retrieve max feature id before insert
-	var features []string
+	var features []*api.GeojsonFeatureData
 	params := data.QueryParam{Limit: 100000, Offset: 0, Crs: 4326}
 	features, _ = cat.TableFeatures(context.Background(), "mock_a", &params)
 	maxIdBefore := len(features)
@@ -224,7 +224,7 @@ func TestPartialUpdateFeatureDb(t *testing.T) {
 func TestDeleteFeatureDb(t *testing.T) {
 
 	//--- retrieve max feature id before delete
-	var features []string
+	var features []*api.GeojsonFeatureData
 	params := data.QueryParam{Limit: 100000, Offset: 0, Crs: 4326}
 	features, _ = cat.TableFeatures(context.Background(), "mock_b", &params)
 

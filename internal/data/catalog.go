@@ -41,11 +41,11 @@ type Catalog interface {
 
 	// TableFeatures returns an array of the JSON for the features in a table
 	// It returns nil if the table does not exist
-	TableFeatures(ctx context.Context, name string, param *QueryParam) ([]string, error)
+	TableFeatures(ctx context.Context, name string, param *QueryParam) ([]*api.GeojsonFeatureData, error)
 
 	// TableFeature returns the JSON text for a table feature with given id
 	// It returns an empty string if the table or feature does not exist
-	TableFeature(ctx context.Context, name string, id string, param *QueryParam) (string, error)
+	TableFeature(ctx context.Context, name string, id string, param *QueryParam) (*api.GeojsonFeatureData, error)
 
 	// AddTableFeature returns the id of the new feature created in the table tableName
 	// using the JSON data to create the feature
@@ -66,7 +66,7 @@ type Catalog interface {
 	// It returns nil if the function does not exist
 	FunctionByName(name string) (*api.Function, error)
 
-	FunctionFeatures(ctx context.Context, name string, args map[string]string, param *QueryParam) ([]string, error)
+	FunctionFeatures(ctx context.Context, name string, args map[string]string, param *QueryParam) ([]*api.GeojsonFeatureData, error)
 
 	FunctionData(ctx context.Context, name string, args map[string]string, param *QueryParam) ([]map[string]interface{}, error)
 

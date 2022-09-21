@@ -190,7 +190,7 @@ func (cat *catalogDB) TableByName(name string) (*api.Table, error) {
 	return tbl, nil
 }
 
-func (cat *catalogDB) TableFeatures(ctx context.Context, name string, param *QueryParam) ([]string, error) {
+func (cat *catalogDB) TableFeatures(ctx context.Context, name string, param *QueryParam) ([]*api.GeojsonFeatureData, error) {
 	tbl, err := cat.TableByName(name)
 	if err != nil || tbl == nil {
 		return nil, err
@@ -204,10 +204,10 @@ func (cat *catalogDB) TableFeatures(ctx context.Context, name string, param *Que
 	return features, err
 }
 
-func (cat *catalogDB) TableFeature(ctx context.Context, name string, id string, param *QueryParam) (string, error) {
+func (cat *catalogDB) TableFeature(ctx context.Context, name string, id string, param *QueryParam) (*api.GeojsonFeatureData, error) {
 	tbl, err := cat.TableByName(name)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	cols := param.Columns
 	sql := sqlFeature(tbl, param)
@@ -220,7 +220,7 @@ func (cat *catalogDB) TableFeature(ctx context.Context, name string, id string, 
 	features, err := readFeaturesWithArgs(ctx, cat.dbconn, sql, argValues, idColIndex, cols)
 
 	if len(features) == 0 {
-		return "", err
+		return nil, err
 	}
 	return features[0], nil
 }
@@ -575,11 +575,11 @@ func scanTable(rows pgx.Rows) *api.Table {
 //=================================================
 
 //nolint:unused
-func readFeatures(ctx context.Context, db *pgxpool.Pool, sql string, idColIndex int, propCols []string) ([]string, error) {
+func readFeatures(ctx context.Context, db *pgxpool.Pool, sql string, idColIndex int, propCols []string) ([]*api.GeojsonFeatureData, error) {
 	return readFeaturesWithArgs(ctx, db, sql, nil, idColIndex, propCols)
 }
 
-func readFeaturesWithArgs(ctx context.Context, db *pgxpool.Pool, sql string, args []interface{}, idColIndex int, propCols []string) ([]string, error) {
+func readFeaturesWithArgs(ctx context.Context, db *pgxpool.Pool, sql string, args []interface{}, idColIndex int, propCols []string) ([]*api.GeojsonFeatureData, error) {
 	start := time.Now()
 	rows, err := db.Query(ctx, sql, args...)
 	if err != nil {
@@ -596,11 +596,14 @@ func readFeaturesWithArgs(ctx context.Context, db *pgxpool.Pool, sql string, arg
 	return data, nil
 }
 
-func scanFeatures(ctx context.Context, rows pgx.Rows, idColIndex int, propCols []string) ([]string, error) {
+func scanFeatures(ctx context.Context, rows pgx.Rows, idColIndex int, propCols []string) ([]*api.GeojsonFeatureData, error) {
 	// init features array to empty (not nil)
-	var features []string = []string{}
+	var features []*api.GeojsonFeatureData = []*api.GeojsonFeatureData{}
 	for rows.Next() {
-		feature := scanFeature(rows, idColIndex, propCols)
+		feature, err := scanFeature(rows, idColIndex, propCols)
+		if err != nil {
+			return nil, err
+		}
 		//log.Println(feature)
 		features = append(features, feature)
 	}
@@ -619,13 +622,13 @@ func scanFeatures(ctx context.Context, rows pgx.Rows, idColIndex int, propCols [
 	return features, nil
 }
 
-func scanFeature(rows pgx.Rows, idColIndex int, propNames []string) string {
+func scanFeature(rows pgx.Rows, idColIndex int, propNames []string) (*api.GeojsonFeatureData, error) {
 	var id string
 
 	vals, err := rows.Values()
 	if err != nil {
 		log.Warnf("Error scanning row for Feature: %v", err)
-		return ""
+		return nil, err
 	}
 	//fmt.Println(vals)
 
@@ -642,16 +645,16 @@ func scanFeature(rows pgx.Rows, idColIndex int, propNames []string) string {
 		if "string" == reflect.TypeOf(vals[0]).String() {
 			var g geojson.Geometry
 			err := g.UnmarshalJSON([]byte(vals[0].(string)))
-			if err == nil {
-				return api.MakeGeojsonFeatureJSON(id, g, props)
-			} else {
-				return makeFeatureJSON(id, vals[0].(string), props)
+			if err != nil {
+				return nil, err
 			}
+			return api.MakeGeojsonFeature(id, g, props), nil
 		} else {
-			return api.MakeGeojsonFeatureJSON(id, vals[0].(geojson.Geometry), props)
+			return api.MakeGeojsonFeature(id, vals[0].(geojson.Geometry), props), nil
 		}
 	} else {
-		return makeFeatureJSON(id, "", props)
+		var g geojson.Geometry
+		return api.MakeGeojsonFeature(id, g, props), nil
 	}
 }
 
@@ -718,36 +721,6 @@ func toJSONValue(value interface{}) interface{} {
 	// for now all other values are returned  as is
 	// this is only safe if the values are text!
 	return value
-}
-
-type featureData struct {
-	Type  string                 `json:"type"`
-	ID    string                 `json:"id,omitempty"`
-	Geom  *json.RawMessage       `json:"geometry"`
-	Props map[string]interface{} `json:"properties"`
-}
-
-func makeFeatureJSON(id string, geom string, props map[string]interface{}) string {
-	//--- convert empty geom string to JSON null
-	var geomRaw json.RawMessage
-	if geom != "" {
-		geomRaw = json.RawMessage(geom)
-	}
-
-	featData := featureData{
-		Type:  "Feature",
-		ID:    id,
-		Geom:  &geomRaw,
-		Props: props,
-	}
-	json, err := json.Marshal(featData)
-	if err != nil {
-		log.Errorf("Error marshalling feature into JSON: %v", err)
-		return ""
-	}
-	jsonStr := string(json)
-	//fmt.Println(jsonStr)
-	return jsonStr
 }
 
 // indexOfName finds the index of a name in an array of names

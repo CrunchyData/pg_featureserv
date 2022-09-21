@@ -107,7 +107,7 @@ func insertSimpleDataset(db *pgxpool.Pool) {
 
 		for _, f := range featuresMock {
 			geomStr, _ := f.Geom.MarshalJSON()
-			b.Queue(insertStatement, geomStr, f.PropA, f.PropB, f.PropC, f.PropD)
+			b.Queue(insertStatement, geomStr, f.Props["prop_a"], f.Props["prop_b"], f.Props["prop_c"], f.Props["prop_d"])
 		}
 		res := db.SendBatch(ctx, b)
 		if res == nil {

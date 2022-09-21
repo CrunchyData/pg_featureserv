@@ -812,7 +812,7 @@ func writeItemJSON(ctx context.Context, w http.ResponseWriter, name string, fid 
 	if err != nil {
 		return appErrorInternalFmt(err, api.ErrMsgDataReadError, name)
 	}
-	if len(feature) == 0 {
+	if feature == nil {
 		return appErrorNotFoundFmt(nil, api.ErrMsgFeatureNotFound, fid)
 	}
 
@@ -820,7 +820,11 @@ func writeItemJSON(ctx context.Context, w http.ResponseWriter, name string, fid 
 	//content := feature
 	// for now can't add links to feature JSON
 	//content.Links = linksItems(name, urlBase, api.FormatJSON)
-	encodedContent := []byte(feature)
+	encodedContent, err := json.Marshal(feature)
+	if err != nil {
+		return appErrorInternalFmt(err, api.ErrMsgMarshallingJSON, name, feature.ID)
+	}
+
 	writeResponse(w, api.ContentTypeGeoJSON, encodedContent)
 	return nil
 }

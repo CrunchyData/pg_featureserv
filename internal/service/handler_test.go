@@ -118,7 +118,7 @@ func TestCollectionItemsResponse(t *testing.T) {
 	resp := hTest.DoRequest(t, path)
 	body, _ := ioutil.ReadAll(resp.Body)
 
-	var v api.FeatureCollectionRaw
+	var v api.FeatureCollection
 	errUnMarsh := json.Unmarshal(body, &v)
 	util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 

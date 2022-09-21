@@ -75,6 +75,7 @@ const (
 	ErrMsgRequestTimeout           = "Maximum time exceeded.  Request cancelled."
 	ErrMsgReplaceFeature           = "Unable to replace feature in Collection: %v"
 	ErrMsgReplaceFeatureNotConform = "Unable to replace feature in Collection - data does not respect schema"
+	ErrMsgMarshallingJSON          = "Error marshalling into JSON (table: %v, id: %v)"
 )
 
 // ==================================================
@@ -256,16 +257,6 @@ func NewCollectionsInfo(tables []*Table) *CollectionsInfo {
 // =============================================
 // ================== Feature ==================
 
-// FeatureCollection info
-type FeatureCollectionRaw struct {
-	Type           string             `json:"type"`
-	Features       []*json.RawMessage `json:"features"`
-	NumberMatched  uint               `json:"numberMatched,omitempty"`
-	NumberReturned uint               `json:"numberReturned"`
-	TimeStamp      string             `json:"timeStamp,omitempty"`
-	Links          []*Link            `json:"links"`
-}
-
 // Generic representation of Db data
 type GeojsonFeatureData struct {
 	Type  string                 `json:"type"`
@@ -285,12 +276,7 @@ type FeatureCollection struct {
 }
 
 func MakeGeojsonFeatureJSON(id string, geom geojson.Geometry, props map[string]interface{}) string {
-	featData := GeojsonFeatureData{
-		Type:  "Feature",
-		ID:    id,
-		Geom:  &geom,
-		Props: props,
-	}
+	featData := MakeGeojsonFeature(id, geom, props)
 	json, err := json.Marshal(featData)
 	if err != nil {
 		log.Errorf("Error marshalling feature into JSON: %v", err)
@@ -301,25 +287,26 @@ func MakeGeojsonFeatureJSON(id string, geom geojson.Geometry, props map[string]i
 	return jsonStr
 }
 
-func NewFeatureCollectionInfo(featureJSON []string) *FeatureCollectionRaw {
+func MakeGeojsonFeature(id string, geom geojson.Geometry, props map[string]interface{}) *GeojsonFeatureData {
+	featData := GeojsonFeatureData{
+		Type:  "Feature",
+		ID:    id,
+		Geom:  &geom,
+		Props: props,
+	}
+	return &featData
+}
+
+func NewFeatureCollectionInfo(features []*GeojsonFeatureData) *FeatureCollection {
 	ts := time.Now().Format(time.RFC3339)
-	doc := FeatureCollectionRaw{
+	doc := FeatureCollection{
 		Type:           GeoJSONFeatureCollection,
-		Features:       toRaw(featureJSON),
+		Features:       features,
 		NumberMatched:  0,
-		NumberReturned: uint(len(featureJSON)),
+		NumberReturned: uint(len(features)),
 		TimeStamp:      ts,
 	}
 	return &doc
-}
-
-func toRaw(jsonStr []string) []*json.RawMessage {
-	raw := make([]*json.RawMessage, len(jsonStr))
-	for i, f := range jsonStr {
-		fRaw := json.RawMessage(f)
-		raw[i] = &fRaw
-	}
-	return raw
 }
 
 // =================================================

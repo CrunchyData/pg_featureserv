@@ -183,7 +183,7 @@ func extendLeft(arr []string, size int) []string {
 	return arr2
 }
 
-func (cat *catalogDB) FunctionFeatures(ctx context.Context, name string, args map[string]string, param *QueryParam) ([]string, error) {
+func (cat *catalogDB) FunctionFeatures(ctx context.Context, name string, args map[string]string, param *QueryParam) ([]*api.GeojsonFeatureData, error) {
 	fn, err := cat.FunctionByName(name)
 	if err != nil || fn == nil {
 		return nil, err

@@ -209,7 +209,7 @@ func (cat *CatalogMock) TableByName(name string) (*api.Table, error) {
 	return nil, nil
 }
 
-func (cat *CatalogMock) TableFeatures(ctx context.Context, name string, param *QueryParam) ([]string, error) {
+func (cat *CatalogMock) TableFeatures(ctx context.Context, name string, param *QueryParam) ([]*api.GeojsonFeatureData, error) {
 	features, ok := cat.tableData[name]
 	if !ok {
 		// table not found - indicated by nil value returned
@@ -222,26 +222,30 @@ func (cat *CatalogMock) TableFeatures(ctx context.Context, name string, param *Q
 	if len(param.Columns) > 0 {
 		propNames = param.Columns
 	}
-	return featuresToJSON(featuresLim, propNames), nil
+	featureClones := make([]*api.GeojsonFeatureData, len(featuresLim))
+	for i, f := range featuresLim {
+		featureClones[i] = f.newPropsFilteredFeature(propNames)
+	}
+	return featureClones, nil
 }
 
-func (cat *CatalogMock) TableFeature(ctx context.Context, name string, id string, param *QueryParam) (string, error) {
+func (cat *CatalogMock) TableFeature(ctx context.Context, name string, id string, param *QueryParam) (*api.GeojsonFeatureData, error) {
 	features, ok := cat.tableData[name]
 	if !ok {
 		// table not found - indicated by empty value returned
-		return "", nil
+		return nil, nil
 	}
 	index, err := strconv.Atoi(id)
 	if err != nil {
 		// a malformed int is treated as feature not found
-		return "", nil
+		return nil, nil
 	}
 
 	index--
 
 	// TODO: return not found if index out of range
 	if index < 0 || index >= len(features) {
-		return "", nil
+		return nil, nil
 	}
 	// handle empty property list
 	propNames := cat.TableDefs[0].Columns
@@ -251,11 +255,11 @@ func (cat *CatalogMock) TableFeature(ctx context.Context, name string, id string
 
 	for elementIdx, feature := range features {
 		if feature.ID == id {
-			return features[elementIdx].toJSON(propNames), nil
+			return features[elementIdx].newPropsFilteredFeature(propNames), nil
 		}
 	}
 	// not found
-	return "", nil
+	return nil, nil
 
 }
 
@@ -275,12 +279,14 @@ func (cat *CatalogMock) AddTableFeature(ctx context.Context, tableName string, j
 
 	maxId := cat.TableSize(tableName)
 
+	newFeature.Type = "Feature"
 	newFeature.ID = fmt.Sprintf("%d", maxId+1)
 	newFeature.Geom = schemaObject.Geom
-	newFeature.PropA = schemaObject.Props["prop_a"].(string)
-	newFeature.PropB = int(schemaObject.Props["prop_b"].(float64))
-	newFeature.PropC = schemaObject.Props["prop_c"].(string)
-	newFeature.PropD = int(schemaObject.Props["prop_d"].(float64))
+	newFeature.Props = make(map[string]interface{})
+	newFeature.Props["prop_a"] = schemaObject.Props["prop_a"].(string)
+	newFeature.Props["prop_b"] = int(schemaObject.Props["prop_b"].(float64))
+	newFeature.Props["prop_c"] = schemaObject.Props["prop_c"].(string)
+	newFeature.Props["prop_d"] = int(schemaObject.Props["prop_d"].(float64))
 
 	cat.tableData[tableName] = append(cat.tableData[tableName], &newFeature)
 	return maxId + 1, nil
@@ -307,19 +313,19 @@ func (cat *CatalogMock) PartialUpdateTableFeature(ctx context.Context, tableName
 	}
 
 	if schemaObject.Props["prop_a"] != nil {
-		oldFeature.PropA = schemaObject.Props["prop_a"].(string)
+		oldFeature.Props["prop_a"] = schemaObject.Props["prop_a"].(string)
 	}
 
 	if schemaObject.Props["prop_b"] != nil {
-		oldFeature.PropB = int(schemaObject.Props["prop_b"].(float64))
+		oldFeature.Props["prop_b"] = int(schemaObject.Props["prop_b"].(float64))
 	}
 
 	if schemaObject.Props["prop_c"] != nil {
-		oldFeature.PropC = schemaObject.Props["prop_c"].(string)
+		oldFeature.Props["prop_c"] = schemaObject.Props["prop_c"].(string)
 	}
 
 	if schemaObject.Props["prop_d"] != nil {
-		oldFeature.PropD = int(schemaObject.Props["prop_d"].(float64))
+		oldFeature.Props["prop_d"] = int(schemaObject.Props["prop_d"].(float64))
 	}
 
 	propNames := cat.TableDefs[0].Columns
@@ -356,28 +362,28 @@ func (cat *CatalogMock) ReplaceTableFeature(ctx context.Context, tableName strin
 		// fails because required property
 		return fmt.Errorf("Error missing property:: %v", tableName)
 	}
-	oldFeature.PropA = schemaObject.Props["prop_a"].(string)
+	oldFeature.Props["prop_a"] = schemaObject.Props["prop_a"].(string)
 
 	if schemaObject.Props["prop_b"] == nil {
 		// fails because required property
 		return fmt.Errorf("Error missing property:: %v", tableName)
 	}
-	oldFeature.PropB = int(schemaObject.Props["prop_b"].(float64))
+	oldFeature.Props["prop_b"] = int(schemaObject.Props["prop_b"].(float64))
 
 	// property not required and should be replaced by default value if not in replace body
 	if schemaObject.Props["prop_c"] != nil {
-		oldFeature.PropC = schemaObject.Props["prop_c"].(string)
+		oldFeature.Props["prop_c"] = schemaObject.Props["prop_c"].(string)
 	} else {
 		// TODO: Quelle est la valeur par défaut des champs non requis ???
-		oldFeature.PropC = ""
+		oldFeature.Props["prop_c"] = ""
 	}
 
 	// property not required and should be replaced by default value if not in replace body
 	if schemaObject.Props["prop_d"] != nil {
-		oldFeature.PropD = int(schemaObject.Props["prop_d"].(float64))
+		oldFeature.Props["prop_d"] = int(schemaObject.Props["prop_d"].(float64))
 	} else {
 		// TODO: Quelle est la valeur par défaut des champs non requis ???
-		oldFeature.PropD = 0
+		oldFeature.Props["prop_d"] = 0
 	}
 
 	propNames := cat.TableDefs[0].Columns
@@ -419,7 +425,7 @@ func (cat *CatalogMock) FunctionByName(name string) (*api.Function, error) {
 	return nil, nil
 }
 
-func (cat *CatalogMock) FunctionFeatures(ctx context.Context, name string, args map[string]string, param *QueryParam) ([]string, error) {
+func (cat *CatalogMock) FunctionFeatures(ctx context.Context, name string, args map[string]string, param *QueryParam) ([]*api.GeojsonFeatureData, error) {
 	// TODO:
 	return nil, nil
 }
@@ -458,19 +464,21 @@ func MakePointFeatures(extent api.Extent, nx int, ny int) []*featureMock {
 }
 
 type featureMock struct {
-	ID    string            `json:"ID"`
-	Geom  *geojson.Geometry `json:"geometry"`
-	PropA string            `json:"prop_a"`
-	PropB int               `json:"prop_b"`
-	PropC string            `json:"prop_c"`
-	PropD int               `json:"prop_d"`
+	api.GeojsonFeatureData
 }
 
 func makeFeatureMockPoint(id int, x float64, y float64) *featureMock {
 	geom := geojson.NewGeometry(orb.Point{x, y})
 
 	idstr := strconv.Itoa(id)
-	feat := featureMock{idstr, geom, "propA", id, "propC", id % 10}
+	feat := featureMock{
+		GeojsonFeatureData: api.GeojsonFeatureData{
+			Type:  "Feature",
+			ID:    idstr,
+			Geom:  geom,
+			Props: map[string]interface{}{"prop_a": "propA", "prop_b": id, "prop_c": "propC", "prop_d": id % 10},
+		},
+	}
 	return &feat
 }
 
@@ -493,40 +501,46 @@ func (fm *featureMock) extractProperties(propNames []string) map[string]interfac
 }
 
 func (fm *featureMock) getProperty(name string) (interface{}, error) {
-	if name == "prop_a" {
-		return fm.PropA, nil
-	}
-	if name == "prop_b" {
-		return fm.PropB, nil
-	}
-	if name == "prop_c" {
-		return fm.PropC, nil
-	}
-	if name == "prop_d" {
-		return fm.PropD, nil
+	if name == "prop_a" || name == "prop_b" || name == "prop_c" || name == "prop_d" {
+		return fm.Props[name], nil
 	}
 	return nil, fmt.Errorf("Unknown property: %v", name)
 }
 
-func doFilter(features []*featureMock, filter []*PropertyFilter) []*featureMock {
-	var result []*featureMock
-	for _, feat := range features {
-		if isFilterMatches(feat, filter) {
-			result = append(result, feat)
-		}
+func (fm *featureMock) newPropsFilteredFeature(props []string) *api.GeojsonFeatureData {
+	f := api.GeojsonFeatureData{
+		Type:  fm.Type,
+		ID:    fm.ID,
+		Geom:  fm.Geom,
+		Props: map[string]interface{}{},
 	}
-	return result
+
+	for _, p := range props {
+		f.Props[p] = fm.Props[p]
+	}
+
+	return &f
 }
 
-func isFilterMatches(feature *featureMock, filter []*PropertyFilter) bool {
+func (fm *featureMock) isFilterMatches(filter []*PropertyFilter) bool {
 	for _, cond := range filter {
-		val, _ := feature.getProperty(cond.Name)
+		val, _ := fm.getProperty(cond.Name)
 		valStr := fmt.Sprintf("%v", val)
 		if cond.Value != valStr {
 			return false
 		}
 	}
 	return true
+}
+
+func doFilter(features []*featureMock, filter []*PropertyFilter) []*featureMock {
+	var result []*featureMock
+	for _, feat := range features {
+		if feat.isFilterMatches(filter) {
+			result = append(result, feat)
+		}
+	}
+	return result
 }
 
 func doLimit(features []*featureMock, limit int, offset int) []*featureMock {
@@ -541,13 +555,4 @@ func doLimit(features []*featureMock, limit int, offset int) []*featureMock {
 		}
 	}
 	return features[start:end]
-}
-
-func featuresToJSON(features []*featureMock, propNames []string) []string {
-	n := len(features)
-	featJSON := make([]string, n)
-	for i := 0; i < n; i++ {
-		featJSON[i] = features[i].toJSON(propNames)
-	}
-	return featJSON
 }
