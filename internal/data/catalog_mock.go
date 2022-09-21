@@ -393,20 +393,20 @@ func (cat *CatalogMock) ReplaceTableFeature(ctx context.Context, tableName strin
 	return nil
 }
 
-func (cat *CatalogMock) DeleteTableFeature(ctx context.Context, tableName string, id string) (string, error) {
+func (cat *CatalogMock) DeleteTableFeature(ctx context.Context, tableName string, id string) error {
 
 	features, ok := cat.tableData[tableName]
 	if !ok {
-		return "", errors.New("Table not found")
+		return errors.New("Table not found")
 	}
 
 	for elementIdx, feature := range features {
 		if feature.ID == id {
 			cat.tableData[tableName] = append(features[:elementIdx], features[(elementIdx+1):]...)
-			return "", nil
+			return nil
 		}
 	}
-	return "", errors.New("Feature not found")
+	return errors.New("Feature not found")
 }
 
 func (cat *CatalogMock) Functions() ([]*api.Function, error) {

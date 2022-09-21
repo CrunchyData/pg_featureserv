@@ -411,7 +411,7 @@ func (cat *catalogDB) ReplaceTableFeature(ctx context.Context, tableName string,
 	return nil
 }
 
-func (cat *catalogDB) DeleteTableFeature(ctx context.Context, tableName string, fid string) (string, error) {
+func (cat *catalogDB) DeleteTableFeature(ctx context.Context, tableName string, fid string) error {
 
 	sqlStatement := fmt.Sprintf(`
 		DELETE FROM %s
@@ -422,10 +422,10 @@ func (cat *catalogDB) DeleteTableFeature(ctx context.Context, tableName string, 
 	err := cat.dbconn.QueryRow(ctx, sqlStatement).Scan(&id)
 
 	if err != nil && err != pgx.ErrNoRows {
-		return "", err
+		return err
 	}
 
-	return "", nil
+	return nil
 }
 
 func (cat *catalogDB) refreshTables(force bool) {

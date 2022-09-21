@@ -395,7 +395,7 @@ func handleDeleteCollectionItem(w http.ResponseWriter, r *http.Request) *appErro
 		return appErrorNotFoundFmt(err1, api.ErrMsgCollectionNotFound, name)
 	}
 
-	_, err2 := catalogInstance.DeleteTableFeature(r.Context(), name, fid)
+	err2 := catalogInstance.DeleteTableFeature(r.Context(), name, fid)
 	if err2 != nil {
 		return appErrorNotFoundFmt(err2, api.ErrMsgFeatureNotFound, fid)
 	}
