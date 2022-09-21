@@ -178,6 +178,52 @@ content-length: 23
 location: http://localhost:9000/collections/e.admin_0_countries/items/10  
 ```
 
+### Update Feature
+
+To update a feature you need to provide a valid JSON document containing the data and the id of the feature to update.
+
+The JSON document must match the JSON schema provided by the path `/collections/{collectionId}/schema?type=update`. Once the JSON document you can send it to the collection by using the `PATCH` HTTP method with the path `/collections/{collectionId}/items/{featureId}` with given feature id.
+
+#### *Example*
+
+Using `curl` tool, you will have this type of request with your JSON document saved locally as `data.json` file, and `10` is the feature ID to update from collection name `e.admin_0_countries` :
+
+```bash
+curl -X PATCH "http://localhost:9000/collections/e.admin_0_countries/items/10" \
+     -H "accept: */*" \
+     -H "Content-Type: application/merge-patch+json" \
+     -d "@data.json"
+```
+
+*Example of data* :
+
+```json
+{
+  "type":"Feature",
+  "geometry":{
+    "type":"Point",
+    "coordinates":[
+      -70.88461956597838,
+      47.807897059236495
+    ]
+  },
+  "properties":{
+    "prop_a":"propA",
+    "prop_b":1,
+    "prop_c":"propC",
+    "prop_d":1
+  }
+}
+```
+
+You should receive a 204 HTTP response with in the header the url of the newly update feature like:
+
+```raw
+access-control-allow-origin: *  
+content-encoding: gzip  
+location: http://localhost:9000/collections/e.admin_0_countries/items/10  
+```
+
 ### Delete feature
 
 To delete a feature you need to provide the id from the feature to delete while using the DELETE method.

@@ -538,9 +538,14 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 						},
 					},
 					Responses: openapi3.Responses{
-						"200": &openapi3.ResponseRef{
+						"204": &openapi3.ResponseRef{
 							Value: &openapi3.Response{
-								Description: "GeoJSON Feature document containing feature data",
+								Description: "No Content : feature updated",
+							},
+						},
+						"404": &openapi3.ResponseRef{
+							Value: &openapi3.Response{
+								Description: "Resource not found",
 							},
 						},
 					},
