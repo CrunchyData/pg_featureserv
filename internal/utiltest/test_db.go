@@ -103,7 +103,7 @@ func insertSimpleDataset(db *pgxpool.Pool) {
 	`)
 	for tableName, tableElements := range tablesAndExtents {
 		insertStatement := fmt.Sprintf(string(insertBytes), tableName)
-		featuresMock := data.MakePointFeatures(tableElements.extent, tableElements.nx, tableElements.ny)
+		featuresMock := data.MakeFeaturesMockPoint(tableElements.extent, tableElements.nx, tableElements.ny)
 
 		for _, f := range featuresMock {
 			geomStr, _ := f.Geom.MarshalJSON()
