@@ -1,7 +1,7 @@
 package data
 
 /*
- Copyright 2019 Crunchy Data Solutions, Inc.
+ Copyright 2022 Crunchy Data Solutions, Inc.
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
@@ -11,6 +11,12 @@ package data
  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  See the License for the specific language governing permissions and
  limitations under the License.
+
+ Date     : October 2022
+ Authors  : Benoit De Mezzo (benoit dot de dot mezzo at oslandia dot com)
+        	Amaury Zarzelli (amaury dot zarzelli at ign dot fr)
+			Jean-philippe Bazonnais (jean-philippe dot bazonnais at ign dot fr)
+			Nicolas Revelant (nicolas dot revelant at ign dot fr)
 */
 
 import (
@@ -18,9 +24,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"hash/fnv"
 	"strconv"
+	"time"
 
 	"github.com/CrunchyData/pg_featureserv/internal/api"
+
 	log "github.com/sirupsen/logrus"
 )
 
@@ -28,6 +37,7 @@ type CatalogMock struct {
 	TableDefs    []*api.Table
 	tableData    map[string][]*featureMock
 	FunctionDefs []*api.Function
+	cache        Cacher
 }
 
 var instance CatalogMock
@@ -173,14 +183,18 @@ func newCatalogMock() CatalogMock {
 		funB,
 		funNoParam,
 	}
+	cache := makeCache()
 	catMock := CatalogMock{
 		TableDefs:    tables,
 		tableData:    tableData,
 		FunctionDefs: funDefs,
+		cache:        cache,
 	}
 
 	return catMock
 }
+
+// -------------------------------------------------
 
 func (cat *CatalogMock) SetIncludeExclude(includeList []string, excludeList []string) {
 }
@@ -241,7 +255,7 @@ func (cat *CatalogMock) TableFeature(ctx context.Context, name string, id string
 
 	index--
 
-	// TODO: return not found if index out of range
+	// return not found if index out of range
 	if index < 0 || index >= len(features) {
 		return nil, nil
 	}
@@ -253,9 +267,15 @@ func (cat *CatalogMock) TableFeature(ctx context.Context, name string, id string
 
 	for elementIdx, feature := range features {
 		if feature.ID == id {
-			return features[elementIdx].newPropsFilteredFeature(propNames), nil
+
+			feature_data := features[elementIdx].newPropsFilteredFeature(propNames)
+			weakEtag := feature.WeakEtag
+			feature_data.WeakEtag = weakEtag
+			cat.cache.AddWeakEtag(weakEtag, map[string]interface{}{"lastModified": time.Now().String()})
+			return feature_data, nil
 		}
 	}
+
 	// not found
 	return nil, nil
 
@@ -285,6 +305,14 @@ func (cat *CatalogMock) AddTableFeature(ctx context.Context, tableName string, j
 	newFeature.Props["prop_b"] = int(schemaObject.Props["prop_b"].(float64))
 	newFeature.Props["prop_c"] = schemaObject.Props["prop_c"].(string)
 	newFeature.Props["prop_d"] = int(schemaObject.Props["prop_d"].(float64))
+
+	sum := fnv.New32a()
+	encodedContent, _ := json.Marshal(schemaObject.Geom)
+	sum.Write(encodedContent)
+	weakEtag := fmt.Sprint(sum.Sum32())
+	newFeature.WeakEtag = weakEtag
+
+	cat.cache.AddWeakEtag(weakEtag, map[string]interface{}{"lastModified": time.Now().String()})
 
 	cat.tableData[tableName] = append(cat.tableData[tableName], &newFeature)
 	return maxId + 1, nil
@@ -405,6 +433,19 @@ func (cat *CatalogMock) DeleteTableFeature(ctx context.Context, tableName string
 		}
 	}
 	return errors.New("Feature not found")
+}
+
+func (cat *CatalogMock) CheckStrongEtags(etagsList []string) (bool, error) {
+	for _, strongEtag := range etagsList {
+		found, err := cat.cache.ContainsWeakEtag(strongEtag)
+		if err != nil {
+			return false, err
+		}
+		if found {
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 func (cat *CatalogMock) Functions() ([]*api.Function, error) {

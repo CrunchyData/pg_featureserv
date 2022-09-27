@@ -17,7 +17,9 @@ package data
 */
 
 import (
+	"encoding/json"
 	"fmt"
+	"hash/fnv"
 	"strconv"
 
 	"github.com/CrunchyData/pg_featureserv/internal/api"
@@ -33,13 +35,23 @@ type featureMock struct {
 func makeFeatureMockPoint(id int, x float64, y float64) *featureMock {
 	geom := geojson.NewGeometry(orb.Point{x, y})
 
+	sum := fnv.New32a()
+	encodedContent, _ := json.Marshal(geom)
+	sum.Write(encodedContent)
+	weakEtag := fmt.Sprint(sum.Sum32())
+
+	httpDateString := api.GetCurrentHttpDate() // Last modified value
+
 	idstr := strconv.Itoa(id)
+
 	feat := featureMock{
 		GeojsonFeatureData: api.GeojsonFeatureData{
-			Type:  "Feature",
-			ID:    idstr,
-			Geom:  geom,
-			Props: map[string]interface{}{"prop_a": "propA", "prop_b": id, "prop_c": "propC", "prop_d": id % 10},
+			Type:             "Feature",
+			ID:               idstr,
+			Geom:             geom,
+			Props:            map[string]interface{}{"prop_a": "propA", "prop_b": id, "prop_c": "propC", "prop_d": id % 10},
+			WeakEtag:         weakEtag,
+			LastModifiedDate: httpDateString,
 		},
 	}
 	return &feat
@@ -47,7 +59,7 @@ func makeFeatureMockPoint(id int, x float64, y float64) *featureMock {
 
 func (fm *featureMock) toJSON(propNames []string) string {
 	props := fm.extractProperties(propNames)
-	return api.MakeGeojsonFeatureJSON(fm.ID, *fm.Geom, props)
+	return api.MakeGeojsonFeatureJSON(fm.ID, *fm.Geom, props, fm.WeakEtag, fm.LastModifiedDate)
 }
 
 func (fm *featureMock) extractProperties(propNames []string) map[string]interface{} {

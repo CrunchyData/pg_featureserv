@@ -1,7 +1,7 @@
 package service
 
 /*
- Copyright 2019 Crunchy Data Solutions, Inc.
+ Copyright 2022 Crunchy Data Solutions, Inc.
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
@@ -11,11 +11,18 @@ package service
  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  See the License for the specific language governing permissions and
  limitations under the License.
+
+ Date     : October 2022
+ Authors  : Benoit De Mezzo (benoit dot de dot mezzo at oslandia dot com)
+        	Amaury Zarzelli (amaury dot zarzelli at ign dot fr)
+			Jean-philippe Bazonnais (jean-philippe dot bazonnais at ign dot fr)
+			Nicolas Revelant (nicolas dot revelant at ign dot fr)
 */
 
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -33,8 +40,9 @@ import (
 )
 
 const (
-	routeVarID        = "id"
-	routeVarFeatureID = "fid"
+	routeVarID         = "id"
+	routeVarFeatureID  = "fid"
+	routeVarStrongEtag = "etag"
 )
 
 func InitRouter(basePath string) *mux.Router {
@@ -47,6 +55,8 @@ func InitRouter(basePath string) *mux.Router {
 	addRoute(router, "/home{.fmt}", handleRoot)
 	// consistent with pg_tileserv
 	addRoute(router, "/index{.fmt}", handleRoot)
+
+	addRoute(router, "/etags/decodestrong/{etag}", handleDecodeStrongEtag)
 
 	addRoute(router, "/api", handleAPI)
 	addRoute(router, "/api.{fmt}", handleAPI)
@@ -165,6 +175,24 @@ func linkAlt(urlBase string, path string, desc string) *api.Link {
 		Rel:   api.RelAlt,
 		Type:  api.ContentTypeHTML,
 		Title: desc + api.TitleAsHTML}
+}
+
+func handleDecodeStrongEtag(w http.ResponseWriter, r *http.Request) *appError {
+	//--- extract request parameters
+	etag := getRequestVar(routeVarStrongEtag, r)
+	decodedEtag, err := api.DecodeStrongEtag(etag)
+	if err != nil {
+		return appErrorBadRequest(err, "Malformed etag")
+	}
+
+	//--- assemble response
+	encodedContent, err := json.Marshal(decodedEtag)
+	if err != nil {
+		return appErrorInternal(err, api.ErrMsgMarshallingJSONEtag, decodedEtag)
+	}
+
+	writeResponse(w, api.ContentTypeJSON, encodedContent)
+	return nil
 }
 
 func handleCollections(w http.ResponseWriter, r *http.Request) *appError {
@@ -607,7 +635,6 @@ func linksItems(name string, urlBase string) []*api.Link {
 }
 
 func handleItem(w http.ResponseWriter, r *http.Request) *appError {
-	// TODO: determine content from request header?
 	format := api.RequestedFormat(r)
 	urlBase := serveURLBase(r)
 
@@ -618,6 +645,28 @@ func handleItem(w http.ResponseWriter, r *http.Request) *appError {
 	reqParam, err := parseRequestParams(r)
 	if err != nil {
 		return appErrorBadRequest(err, err.Error())
+	}
+
+	// "If-Match" header
+	// TODO
+	// r.Header.Get("If-Match") ?
+
+	// "If-None-Match" header
+	ifNoneMatch := r.Header.Get("If-None-Match")
+	if ifNoneMatch != "" {
+		// TODO :
+		// - *
+
+		eTagsList := strings.Split(ifNoneMatch, ",")
+
+		notModified, err := catalogInstance.CheckStrongEtags(eTagsList)
+		if err != nil {
+			return appErrorBadRequest(err, "Malformed etags are considered as not found in cache")
+		}
+		if notModified {
+			w.WriteHeader(http.StatusNotModified) // weak etag detected into the catalog cache
+			return nil
+		}
 	}
 
 	tbl, err1 := catalogInstance.TableByName(name)
@@ -631,9 +680,12 @@ func handleItem(w http.ResponseWriter, r *http.Request) *appError {
 
 	if errQuery == nil {
 		ctx := r.Context()
+
+		crs := reqParam.Crs // default "4326"
+
 		switch format {
 		case api.FormatJSON:
-			return writeItemJSON(ctx, w, name, fid, param, urlBase)
+			return writeItemJSON(ctx, w, name, fid, param, urlBase, crs)
 		case api.FormatHTML:
 			return writeItemHTML(w, tbl, name, fid, query, urlBase)
 		default:
@@ -750,8 +802,8 @@ func handleReplaceItem(w http.ResponseWriter, r *http.Request) *appError {
 }
 
 func writeItemHTML(w http.ResponseWriter, tbl *api.Table, name string, fid string, query string, urlBase string) *appError {
-	//--- query data for request
 
+	//--- query data for request
 	pathItems := api.PathCollectionItems(name)
 	// --- encoding
 	context := ui.NewPageData()
@@ -769,24 +821,29 @@ func writeItemHTML(w http.ResponseWriter, tbl *api.Table, name string, fid strin
 	return writeHTML(w, nil, context, ui.PageItem())
 }
 
-func writeItemJSON(ctx context.Context, w http.ResponseWriter, name string, fid string, param *data.QueryParam, urlBase string) *appError {
+func writeItemJSON(ctx context.Context, w http.ResponseWriter, tableName string, fid string, param *data.QueryParam, urlBase string, crs int) *appError {
 	//--- query data for request
-	feature, err := catalogInstance.TableFeature(ctx, name, fid, param)
+	feature, err := catalogInstance.TableFeature(ctx, tableName, fid, param)
 	if err != nil {
-		return appErrorInternal(err, api.ErrMsgDataReadError, name)
+		return appErrorInternal(err, api.ErrMsgDataReadError, tableName)
 	}
 	if feature == nil {
 		return appErrorNotFound(nil, api.ErrMsgFeatureNotFound, fid)
 	}
 
-	//--- assemble resonse
+	//--- assemble response
 	//content := feature
 	// for now can't add links to feature JSON
 	//content.Links = linksItems(name, urlBase, api.FormatJSON)
 	encodedContent, err := json.Marshal(feature)
 	if err != nil {
-		return appErrorInternal(err, api.ErrMsgMarshallingJSON, name, feature.ID)
+		return appErrorInternal(err, api.ErrMsgMarshallingJSON, tableName, feature.ID)
 	}
+
+	strongEtag := fmt.Sprintf(`"%s-%d-%s-%s"`, tableName, crs, "json", feature.WeakEtag)
+	encodedStrongEtag := base64.StdEncoding.EncodeToString([]byte(strongEtag))
+	w.Header().Set("Etag", encodedStrongEtag)
+	w.Header().Set("Last-Modified", feature.LastModifiedDate)
 
 	writeResponse(w, api.ContentTypeGeoJSON, encodedContent)
 	return nil

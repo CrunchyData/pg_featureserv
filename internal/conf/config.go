@@ -1,7 +1,7 @@
 package conf
 
 /*
- Copyright 2019 Crunchy Data Solutions, Inc.
+ Copyright 2022 Crunchy Data Solutions, Inc.
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
@@ -11,11 +11,15 @@ package conf
  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  See the License for the specific language governing permissions and
  limitations under the License.
+
+ Date     : October 2022
+ Authors  : Nicolas Revelant (nicolas dot revelant at ign dot fr)
 */
 
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -46,6 +50,8 @@ func setDefaultConfig() {
 	viper.SetDefault("Database.FunctionIncludes", []string{"postgisftw"})
 	viper.SetDefault("Database.AllowWrite", false)
 
+	viper.SetDefault("Cache.MapSize", 400000)
+	viper.SetDefault("Cache.IsActive", true)
 	viper.SetDefault("Paging.LimitDefault", 10)
 	viper.SetDefault("Paging.LimitMax", 1000)
 
@@ -61,6 +67,7 @@ type Config struct {
 	Paging   Paging
 	Metadata Metadata
 	Database Database
+	Cache    Cache
 	Website  Website
 }
 
@@ -96,6 +103,12 @@ type Database struct {
 	TableExcludes         []string
 	FunctionIncludes      []string
 	AllowWrite            bool
+}
+
+// Cache config
+type Cache struct {
+	MapSize  int
+	IsActive bool
 }
 
 // Metadata config
@@ -164,6 +177,42 @@ func InitConfig(configFilename string, isDebug bool) {
 		dbconnSrc = "environment variable " + AppConfig.EnvDBURL
 	}
 	log.Infof("Using database connection info from %v", dbconnSrc)
+
+	// Cache activation
+	cacheActivated := Configuration.Cache.IsActive
+	cacheActivationSrc := "config file"
+
+	value, present := os.LookupEnv(AppConfig.EnvCache)
+	if present {
+		cacheActivationEnvValue, err := strconv.ParseBool(value)
+		if err != nil {
+			log.Fatal(fmt.Errorf("fatal error reading env variable: %v", err))
+		}
+		cacheActivated = cacheActivationEnvValue
+		Configuration.Cache.IsActive = cacheActivationEnvValue
+		cacheActivationSrc = fmt.Sprintf("environment variable %s", AppConfig.EnvCache)
+	}
+
+	cacheActivationStatus := ""
+	if cacheActivated {
+		cacheActivationStatus = "active"
+	} else {
+		cacheActivationStatus = "disabled"
+	}
+	log.Infof("Etag cache mode set from %s (%s)", cacheActivationSrc, cacheActivationStatus)
+
+	// Cache size configuration
+	if cacheActivated {
+		cacheSizeSrc := "config file"
+		if cacheSizeInput, err := strconv.Atoi(os.Getenv(AppConfig.EnvCacheSize)); cacheSizeInput != 0 {
+			if err != nil {
+				log.Fatal(fmt.Errorf("fatal error reading env variable: %v", err))
+			}
+			Configuration.Cache.MapSize = cacheSizeInput
+			cacheSizeSrc = "environment variable"
+		}
+		log.Infof("Using etag cache size set from %s (%d entries)", cacheSizeSrc, Configuration.Cache.MapSize)
+	}
 
 	// sanitize the configuration
 	Configuration.Server.BasePath = strings.TrimRight(Configuration.Server.BasePath, "/")

@@ -1,11 +1,5 @@
 package api
 
-import (
-	"time"
-
-	"github.com/getkin/kin-openapi/openapi3"
-)
-
 /*
  Copyright 2022 Crunchy Data Solutions, Inc.
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,6 +15,12 @@ import (
  Date     : September 2022
  Authors  : Benoit De Mezzo (benoit dot de dot mezzo at oslandia dot com)
 */
+
+import (
+	"time"
+
+	"github.com/getkin/kin-openapi/openapi3"
+)
 
 type PGType string
 type JSONType string

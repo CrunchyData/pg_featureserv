@@ -12,7 +12,7 @@ package db_test
  See the License for the specific language governing permissions and
  limitations under the License.
 
- Date     : Octobre 2022
+ Date     : October 2022
  Authors  : Jean-philippe Bazonnais (jean-philippe dot bazonnais at ign dot fr)
 */
 

@@ -17,6 +17,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 )
 
 const (
@@ -84,7 +85,6 @@ func RequestedFormat(r *http.Request) string {
 	}
 	// Use Accept header if present
 	hdrAccept := r.Header.Get("Accept")
-	//fmt.Println("Accept:" + hdrAccept)
 	if strings.Contains(hdrAccept, ContentTypeSchemaJSON) {
 		return FormatSchemaJSON
 	}
@@ -124,4 +124,15 @@ func URLQuery(url *url.URL) string {
 	}
 	query := uri[qloc+1:]
 	return query
+}
+
+// Returns the current Http Date as a string
+func GetCurrentHttpDate() string {
+
+	// The date format here conforms to HTTP Date, always in GMT time zone like "Wed, 21 Oct 2015 07:28:00 GMT"
+	// -> https://www.rfc-editor.org/rfc/rfc7231#section-7.1.1.1
+	location, _ := time.LoadLocation("GMT")
+	currentTime := time.Now().In(location)
+
+	return currentTime.Format(time.RFC1123)
 }

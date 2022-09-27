@@ -1,7 +1,7 @@
-package conf
+package data
 
 /*
- Copyright 2019 Crunchy Data Solutions, Inc.
+ Copyright 2022 Crunchy Data Solutions, Inc.
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
@@ -16,25 +16,22 @@ package conf
  Authors  : Nicolas Revelant (nicolas dot revelant at ign dot fr)
 */
 
-var setVersion string = "1.3"
-
-// AppConfiguration is the set of global application configuration constants.
-type AppConfiguration struct {
-	// AppName name of the software
-	Name string
-	// AppVersion version number of the software
-	Version      string
-	EnvDBURL     string
-	EnvCache     string
-	EnvCacheSize string
-	EnvPrefix    string
+type CacheDisabled struct {
+	// no-ope
 }
 
-var AppConfig = AppConfiguration{
-	Name:         "pg_featureserv",
-	Version:      setVersion,
-	EnvDBURL:     "DATABASE_URL",
-	EnvCache:     "PGFS_CACHE",
-	EnvCacheSize: "PGFS_CACHESIZE",
-	EnvPrefix:    "PGFS",
+func (cache CacheDisabled) ContainsWeakEtag(strongEtag string) (bool, error) {
+	return false, nil
+}
+
+func (cache CacheDisabled) AddWeakEtag(weakEtag string, etag interface{}) bool {
+	return false
+}
+
+func (cache CacheDisabled) ToString() string {
+	return ""
+}
+
+func (cache CacheDisabled) IsCacheActive() bool {
+	return false
 }

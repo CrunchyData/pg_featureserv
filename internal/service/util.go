@@ -1,7 +1,7 @@
 package service
 
 /*
- Copyright 2019 Crunchy Data Solutions, Inc.
+ Copyright 2022 Crunchy Data Solutions, Inc.
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
@@ -11,6 +11,12 @@ package service
  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  See the License for the specific language governing permissions and
  limitations under the License.
+
+ Date     : September 2022
+ Authors  : Benoit De Mezzo (benoit dot de dot mezzo at oslandia dot com)
+        	Amaury Zarzelli (amaury dot zarzelli at ign dot fr)
+			Jean-philippe Bazonnais (jean-philippe dot bazonnais at ign dot fr)
+			Nicolas Revelant (nicolas dot revelant at ign dot fr)
 */
 
 import (

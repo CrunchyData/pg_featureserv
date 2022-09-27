@@ -1,7 +1,7 @@
 package data
 
 /*
- Copyright 2019 Crunchy Data Solutions, Inc.
+ Copyright 2022 Crunchy Data Solutions, Inc.
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
@@ -11,6 +11,12 @@ package data
  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  See the License for the specific language governing permissions and
  limitations under the License.
+
+ Date     : October 2022
+ Authors  : Benoit De Mezzo (benoit dot de dot mezzo at oslandia dot com)
+        	Amaury Zarzelli (amaury dot zarzelli at ign dot fr)
+			Jean-philippe Bazonnais (jean-philippe dot bazonnais at ign dot fr)
+			Nicolas Revelant (nicolas dot revelant at ign dot fr)
 */
 
 import (
@@ -41,6 +47,7 @@ type catalogDB struct {
 	tableMap      map[string]*api.Table
 	functions     []*api.Function
 	functionMap   map[string]*api.Function
+	cache         Cacher
 }
 
 var isStartup bool
@@ -62,10 +69,23 @@ func CatDBInstance() Catalog {
 
 func newCatalogDB() catalogDB {
 	conn := dbConnect()
+	cache := makeCache()
 	cat := catalogDB{
 		dbconn: conn,
+		cache:  cache,
 	}
 	return cat
+}
+
+// etags cache
+func makeCache() Cacher {
+	activated := conf.Configuration.Cache.IsActive
+	if activated {
+		cache_size := conf.Configuration.Cache.MapSize
+		return CacheNaive{make(map[string]interface{}, cache_size)}
+	} else {
+		return CacheDisabled{}
+	}
 }
 
 func dbConnect() *pgxpool.Pool {
@@ -199,8 +219,7 @@ func (cat *catalogDB) TableFeatures(ctx context.Context, name string, param *Que
 	sql, argValues := sqlFeatures(tbl, param)
 	log.Debug("Features query: " + sql)
 	idColIndex := indexOfName(cols, tbl.IDColumn)
-
-	features, err := readFeaturesWithArgs(ctx, cat.dbconn, sql, argValues, idColIndex, cols)
+	features, err := readFeaturesWithArgs(ctx, cat.dbconn, sql, argValues, idColIndex, cols, cat.cache)
 	return features, err
 }
 
@@ -212,16 +231,18 @@ func (cat *catalogDB) TableFeature(ctx context.Context, name string, id string, 
 	cols := param.Columns
 	sql := sqlFeature(tbl, param)
 	log.Debug("Feature query: " + sql)
+
 	idColIndex := indexOfName(cols, tbl.IDColumn)
 
 	//--- Add a SQL arg for the feature ID
 	argValues := make([]interface{}, 0)
 	argValues = append(argValues, id)
-	features, err := readFeaturesWithArgs(ctx, cat.dbconn, sql, argValues, idColIndex, cols)
+	features, err := readFeaturesWithArgs(ctx, cat.dbconn, sql, argValues, idColIndex, cols, cat.cache)
 
 	if len(features) == 0 {
 		return nil, err
 	}
+
 	return features[0], nil
 }
 
@@ -502,6 +523,19 @@ func (cat *catalogDB) isIncluded(tbl *api.Table) bool {
 	return isIncluded && !isExcluded
 }
 
+func (cat *catalogDB) CheckStrongEtags(etagsList []string) (bool, error) {
+	for _, strongEtag := range etagsList {
+		found, err := cat.cache.ContainsWeakEtag(strongEtag)
+		if err != nil {
+			return false, err
+		}
+		if found {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
 func isMatchSchemaTable(tbl *api.Table, list map[string]string) bool {
 	schemaLow := strings.ToLower(tbl.Schema)
 	if _, ok := list[schemaLow]; ok {
@@ -590,11 +624,11 @@ func scanTable(rows pgx.Rows) *api.Table {
 //=================================================
 
 //nolint:unused
-func readFeatures(ctx context.Context, db *pgxpool.Pool, sql string, idColIndex int, propCols []string) ([]*api.GeojsonFeatureData, error) {
-	return readFeaturesWithArgs(ctx, db, sql, nil, idColIndex, propCols)
+func readFeatures(ctx context.Context, db *pgxpool.Pool, sql string, idColIndex int, propCols []string, cache Cacher) ([]*api.GeojsonFeatureData, error) {
+	return readFeaturesWithArgs(ctx, db, sql, nil, idColIndex, propCols, cache)
 }
 
-func readFeaturesWithArgs(ctx context.Context, db *pgxpool.Pool, sql string, args []interface{}, idColIndex int, propCols []string) ([]*api.GeojsonFeatureData, error) {
+func readFeaturesWithArgs(ctx context.Context, db *pgxpool.Pool, sql string, args []interface{}, idColIndex int, propCols []string, cache Cacher) ([]*api.GeojsonFeatureData, error) {
 	start := time.Now()
 	rows, err := db.Query(ctx, sql, args...)
 	if err != nil {
@@ -602,8 +636,7 @@ func readFeaturesWithArgs(ctx context.Context, db *pgxpool.Pool, sql string, arg
 		return nil, err
 	}
 	defer rows.Close()
-
-	data, err := scanFeatures(ctx, rows, idColIndex, propCols)
+	data, err := scanFeatures(ctx, rows, idColIndex, propCols, cache)
 	if err != nil {
 		return data, err
 	}
@@ -611,15 +644,14 @@ func readFeaturesWithArgs(ctx context.Context, db *pgxpool.Pool, sql string, arg
 	return data, nil
 }
 
-func scanFeatures(ctx context.Context, rows pgx.Rows, idColIndex int, propCols []string) ([]*api.GeojsonFeatureData, error) {
+func scanFeatures(ctx context.Context, rows pgx.Rows, idColIndex int, propCols []string, cache Cacher) ([]*api.GeojsonFeatureData, error) {
 	// init features array to empty (not nil)
 	var features []*api.GeojsonFeatureData = []*api.GeojsonFeatureData{}
 	for rows.Next() {
-		feature, err := scanFeature(rows, idColIndex, propCols)
+		feature, err := scanFeature(rows, idColIndex, propCols, cache)
 		if err != nil {
 			return nil, err
 		}
-		//log.Println(feature)
 		features = append(features, feature)
 	}
 	// context check done outside rows loop,
@@ -637,7 +669,7 @@ func scanFeatures(ctx context.Context, rows pgx.Rows, idColIndex int, propCols [
 	return features, nil
 }
 
-func scanFeature(rows pgx.Rows, idColIndex int, propNames []string) (*api.GeojsonFeatureData, error) {
+func scanFeature(rows pgx.Rows, idColIndex int, propNames []string, cache Cacher) (*api.GeojsonFeatureData, error) {
 	var id string
 
 	vals, err := rows.Values()
@@ -645,9 +677,18 @@ func scanFeature(rows pgx.Rows, idColIndex int, propNames []string) (*api.Geojso
 		log.Warnf("Error scanning row for Feature: %v", err)
 		return nil, err
 	}
-	//fmt.Println(vals)
 
-	propOffset := 1
+	weakEtag := fmt.Sprint(vals[1]) // Weak etag value
+
+	httpDateString := api.GetCurrentHttpDate() // Last modified value
+
+	// Add feature reference to the etags cache
+	cache.AddWeakEtag(weakEtag, map[string]interface{}{"last-modified": httpDateString})
+
+	// val[0] = geometry column
+	// val[1] = etag
+	// -> properties columns start at 3rd index
+	propOffset := 2
 	if idColIndex >= 0 {
 		id = fmt.Sprintf("%v", vals[idColIndex+propOffset])
 	}
@@ -663,13 +704,13 @@ func scanFeature(rows pgx.Rows, idColIndex int, propNames []string) (*api.Geojso
 			if err != nil {
 				return nil, err
 			}
-			return api.MakeGeojsonFeature(id, g, props), nil
+			return api.MakeGeojsonFeature(id, g, props, weakEtag, httpDateString), nil
 		} else {
-			return api.MakeGeojsonFeature(id, vals[0].(geojson.Geometry), props), nil
+			return api.MakeGeojsonFeature(id, vals[0].(geojson.Geometry), props, weakEtag, httpDateString), nil
 		}
 	} else {
 		var g geojson.Geometry
-		return api.MakeGeojsonFeature(id, g, props), nil
+		return api.MakeGeojsonFeature(id, g, props, weakEtag, httpDateString), nil
 	}
 }
 
@@ -680,8 +721,9 @@ func extractProperties(vals []interface{}, idColIndex int, propOffset int, propN
 			continue
 		}
 		// offset vals index by 2 to skip geom, id
+		// val := vals[i+propOffset]
 		props[name] = toJSONValue(vals[i+propOffset])
-		//fmt.Printf("%v: %v\n", name, val)
+		// fmt.Printf("%v: %v\n", name, val)
 	}
 	return props
 }

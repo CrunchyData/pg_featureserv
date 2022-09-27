@@ -78,6 +78,7 @@ const (
 	ErrMsgReplaceFeature                 = "Unable to replace feature in Collection: %v"
 	ErrMsgReplaceFeatureNotConform       = "Unable to replace feature in Collection - data does not respect schema"
 	ErrMsgMarshallingJSON                = "Error marshalling into JSON (table: %v, id: %v)"
+	ErrMsgMarshallingJSONEtag            = "Error marshalling into JSON: %v"
 	ErrMsgNoParameters                   = "No parameter allowed"
 )
 
@@ -262,10 +263,12 @@ func NewCollectionsInfo(tables []*Table) *CollectionsInfo {
 
 // Generic representation of Db data
 type GeojsonFeatureData struct {
-	Type  string                 `json:"type"`
-	ID    string                 `json:"id,omitempty"`
-	Geom  *geojson.Geometry      `json:"geometry"`
-	Props map[string]interface{} `json:"properties"`
+	Type             string                 `json:"type"`
+	ID               string                 `json:"id,omitempty"`
+	Geom             *geojson.Geometry      `json:"geometry"`
+	Props            map[string]interface{} `json:"properties"`
+	WeakEtag         string                 `json:"-"`
+	LastModifiedDate string                 `json:"-"`
 }
 
 // Define a FeatureCollection structure for parsing test data
@@ -278,24 +281,27 @@ type FeatureCollection struct {
 	Links          []*Link               `json:"links"`
 }
 
-func MakeGeojsonFeatureJSON(id string, geom geojson.Geometry, props map[string]interface{}) string {
-	featData := MakeGeojsonFeature(id, geom, props)
+func MakeGeojsonFeatureJSON(id string, geom geojson.Geometry, props map[string]interface{}, weakEtag string, lastModifiedDate string) string {
+
+	featData := MakeGeojsonFeature(id, geom, props, weakEtag, lastModifiedDate)
 	json, err := json.Marshal(featData)
 	if err != nil {
 		log.Errorf("Error marshalling feature into JSON: %v", err)
 		return ""
 	}
 	jsonStr := string(json)
-	//fmt.Println(jsonStr)
 	return jsonStr
 }
 
-func MakeGeojsonFeature(id string, geom geojson.Geometry, props map[string]interface{}) *GeojsonFeatureData {
+func MakeGeojsonFeature(id string, geom geojson.Geometry, props map[string]interface{}, weakEtag string, lastModifiedHttpDate string) *GeojsonFeatureData {
+
 	featData := GeojsonFeatureData{
-		Type:  "Feature",
-		ID:    id,
-		Geom:  &geom,
-		Props: props,
+		Type:             "Feature",
+		ID:               id,
+		Geom:             &geom,
+		Props:            props,
+		WeakEtag:         weakEtag,
+		LastModifiedDate: lastModifiedHttpDate,
 	}
 	return &featData
 }

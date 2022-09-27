@@ -134,6 +134,18 @@ var CollectionsInfoSchema openapi3.Schema = openapi3.Schema{
 	},
 }
 
+var StrongEtagSchema openapi3.Schema = openapi3.Schema{
+	Description: "A strong etag content",
+	Type:        "object",
+	Required:    []string{"collection", "srid", "format", "weaketag"},
+	Properties: map[string]*openapi3.SchemaRef{
+		"collection": {Value: &openapi3.Schema{Type: "string"}},
+		"srid":       {Value: &openapi3.Schema{Type: "integer"}},
+		"format":     {Value: &openapi3.Schema{Type: "string"}},
+		"weaketag":   {Value: &openapi3.Schema{Type: "string"}},
+	},
+}
+
 func getFeatureExample() map[string]interface{} {
 	var result map[string]interface{}
 	var jsonStr = `{"type":"Feature","geometry":{"type":"Point","coordinates":[-70.88461956597838,47.807897059236495]},"properties":{"prop_a":"propA","prop_b":1,"prop_c":"propC","prop_d":1}}`
@@ -510,16 +522,30 @@ func GetOpenAPIContent(urlBase string) *openapi3.T {
 		},
 	}
 
+	paramEncodedStrongEtag := openapi3.ParameterRef{
+		Value: &openapi3.Parameter{
+			Description:     "Encoded strong etag to compute.",
+			Name:            "etag",
+			In:              "path",
+			Required:        true,
+			Schema:          &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+			AllowEmptyValue: false,
+		},
+	}
+
 	rootDesc := "Results for root of API"
 	apiDesc := "openapi content"
 	conformanceDesc := "Results for conformance classes"
 	collectionsDesc := "Results for details about the specified feature collection"
 	collectionMetaDesc := "Results for details about the specified feature collection"
 	collectionFeatureResponseDesc := "GeoJSON Feature Collection document containing data for features"
+	StrongEtagDesc := "Decoded content from the provided strong etag"
 	createItemResponseDesc := "Empty body with location header"
 	createLocationResponseDesc := "Contains a link to access to the new feature data"
 	collectionSchemaResponseDesc := "GeoJSON Feature Collection document containing data schema for specific type"
 	getItemResponseDesc := "GeoJSON Feature document containing feature data"
+	getItemEtagResponseDesc := "Strong etag value associated to the requested feature"
+	getItemDateResponseDesc := "Last modification date for the returned feature (Http date format)"
 	responseHttp204Desc := "No Content : feature updated"
 	responseHttp400Desc := "Malformed feature ID or unsuitable query parameters"
 	responseHttp404Desc := "Resource not found"
@@ -605,6 +631,29 @@ func GetOpenAPIContent(urlBase string) *openapi3.T {
 								Content: openapi3.NewContentWithJSONSchemaRef(
 									&openapi3.SchemaRef{Value: &CollectionsInfoSchema}),
 								Description: &collectionsDesc,
+							},
+						},
+					},
+				},
+			},
+			apiBase + "etags/decodestrong/{etag}": &openapi3.PathItem{
+				Summary:     "Etag decoding tool",
+				Description: "Returns the decoded content from the encoded strong etag provided by the client",
+				Get: &openapi3.Operation{
+					OperationID: "getStrongEtagContent",
+					Parameters: openapi3.Parameters{
+						&paramEncodedStrongEtag},
+					Responses: openapi3.Responses{
+						"200": &openapi3.ResponseRef{
+							Value: &openapi3.Response{
+								Content: openapi3.NewContentWithJSONSchemaRef(
+									&openapi3.SchemaRef{Value: &StrongEtagSchema}),
+								Description: &StrongEtagDesc,
+							},
+						},
+						"400": &openapi3.ResponseRef{
+							Value: &openapi3.Response{
+								Description: &responseHttp400Desc,
 							},
 						},
 					},
@@ -749,14 +798,36 @@ func GetOpenAPIContent(urlBase string) *openapi3.T {
 						"200": &openapi3.ResponseRef{
 							Value: &openapi3.Response{
 								Description: &getItemResponseDesc,
-								/*
-									// TODO: create schema for result?
-									Content: openapi3.NewContentWithJSONSchemaRef(
-										&openapi3.SchemaRef{
-											Ref: "http://geojson.org/schema/Feature.json",
+								Headers: map[string]*openapi3.HeaderRef{
+									"Etag": {
+										Value: &openapi3.Header{
+											Parameter: openapi3.Parameter{
+												Description: getItemEtagResponseDesc,
+												Schema: &openapi3.SchemaRef{
+													Value: openapi3.NewBytesSchema(),
+												},
+											},
 										},
-									),
-								*/
+									},
+									"Last-Modified": {
+										Value: &openapi3.Header{
+											Parameter: openapi3.Parameter{
+												Description: getItemDateResponseDesc,
+												Schema: &openapi3.SchemaRef{
+													Value: openapi3.NewStringSchema(),
+												},
+											},
+										},
+									},
+									/*
+										// TODO: create schema for result?
+										Content: openapi3.NewContentWithJSONSchemaRef(
+											&openapi3.SchemaRef{
+												Ref: "http://geojson.org/schema/Feature.json",
+											},
+										),
+									*/
+								},
 							},
 						},
 					},
