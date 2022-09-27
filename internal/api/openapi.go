@@ -773,12 +773,9 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 						&paramTransform,
 						&paramCrs,
 					},
-					// TODO : schema feature à mettre en place !
-					// https://geojson.org/schema/Feature.json
-					// https://geojson.org/schema/GeoJSON.json
 					RequestBody: &openapi3.RequestBodyRef{
 						Value: &openapi3.RequestBody{
-							Description: "...",
+							Description: "Replace a feature",
 							Required:    true,
 							Content:     openapi3.NewContentWithJSONSchema(&FeatureSchema),
 						},
@@ -786,7 +783,12 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 					Responses: openapi3.Responses{
 						"204": &openapi3.ResponseRef{
 							Value: &openapi3.Response{
-								Description: "No Content: replacement feature is same as existing feature",
+								Description: "No Content: feature replaced succesfully",
+							},
+						},
+						"400": &openapi3.ResponseRef{
+							Value: &openapi3.Response{
+								Description: "Malformed feature ID or unsuitable query parameters",
 							},
 						},
 						"404": &openapi3.ResponseRef{

@@ -172,10 +172,56 @@ curl -X POST "http://localhost:9000/collections/e.admin_0_countries/items" \
 You should receive a 201 HTTP response with in the header the url of the newly created feature like:
 
 ```raw
-access-control-allow-origin: *  
-content-encoding: gzip  
-content-length: 23  
-location: http://localhost:9000/collections/e.admin_0_countries/items/10  
+access-control-allow-origin: *
+content-encoding: gzip
+content-length: 23
+location: http://localhost:9000/collections/e.admin_0_countries/items/10
+```
+
+### Replace Feature
+
+To replace a feature you need to provide a valid JSON document containing the data and the id of the feature to replace.
+
+The JSON document must match the JSON schema provided by the path `/collections/{collectionId}/schema?type=replace`. Once the JSON document you can send it to the collection by using the `PUT` HTTP method with the path `/collections/{collectionId}/items/{featureId}` with given feature id.
+
+#### *Example*
+
+Using `curl` tool, you will have this type of request with your JSON document saved locally as `data.json` file, and `10` is the feature ID to update from collection name `e.admin_0_countries` :
+
+```bash
+curl -X PUT "http://localhost:9000/collections/e.admin_0_countries/items/10" \
+     -H "accept: */*" \
+     -H "Content-Type: application/json" \
+     -d "@data.json"
+```
+
+*Example of data* :
+
+```json
+{
+  "type":"Feature",
+  "geometry":{
+    "type":"Point",
+    "coordinates":[
+      -70.88461956597838,
+      47.807897059236495
+    ]
+  },
+  "properties":{
+    "prop_a":"propA",
+    "prop_b":1,
+    "prop_c":"propC",
+    "prop_d":1
+  }
+}
+```
+
+You should receive a 204 HTTP response with in the header the url of the newly update feature like:
+
+```raw
+access-control-allow-origin: *
+content-encoding: gzip
+location: http://localhost:9000/collections/e.admin_0_countries/items/10
 ```
 
 ### Update Feature
@@ -219,9 +265,9 @@ curl -X PATCH "http://localhost:9000/collections/e.admin_0_countries/items/10" \
 You should receive a 204 HTTP response with in the header the url of the newly update feature like:
 
 ```raw
-access-control-allow-origin: *  
-content-encoding: gzip  
-location: http://localhost:9000/collections/e.admin_0_countries/items/10  
+access-control-allow-origin: *
+content-encoding: gzip
+location: http://localhost:9000/collections/e.admin_0_countries/items/10
 ```
 
 ### Delete feature
