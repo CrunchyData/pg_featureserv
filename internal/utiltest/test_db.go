@@ -84,9 +84,9 @@ func insertSimpleDataset(db *pgxpool.Pool) {
 		DROP TABLE IF EXISTS %s CASCADE;
 		CREATE TABLE IF NOT EXISTS public.%s (
 			id SERIAL PRIMARY KEY,
-			geometry public.geometry(Point, 4326),
-			prop_a text,
-			prop_b int,
+			geometry public.geometry(Point, 4326) NOT NULL,
+			prop_a text NOT NULL,
+			prop_b int NOT NULL,
 			prop_c text,
 			prop_d int
 		);
@@ -152,19 +152,20 @@ func MakeGeojsonFeatureMockPoint(id int, x float64, y float64) *api.GeojsonFeatu
 func insertComplexDataset(db *pgxpool.Pool) {
 	ctx := context.Background()
 	// NOT same as featureMock
+	// TODO: mark all props as required with NOT NULL contraint?
 	_, errExec := db.Exec(ctx, `
 		DROP TABLE IF EXISTS mock_multi CASCADE;
 		CREATE TABLE IF NOT EXISTS public.mock_multi (
 			id SERIAL PRIMARY KEY,
-			geometry public.geometry(Point, 4326),
-			prop_t text,
-			prop_i int,
-			prop_l bigint,
-			prop_f float8,
-			prop_r real,
-			prop_b bool[],
-			prop_d date,
-			prop_j json
+			geometry public.geometry(Point, 4326) NOT NULL,
+			prop_t text NOT NULL,
+			prop_i int NOT NULL,
+			prop_l bigint NOT NULL,
+			prop_f float8 NOT NULL,
+			prop_r real NOT NULL,
+			prop_b bool[] NOT NULL,
+			prop_d date NOT NULL,
+			prop_j json NOT NULL
 		);
 		`)
 	if errExec != nil {

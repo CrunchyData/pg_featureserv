@@ -368,20 +368,18 @@ func (cat *CatalogMock) ReplaceTableFeature(ctx context.Context, tableName strin
 	}
 	oldFeature.Props["prop_b"] = int(schemaObject.Props["prop_b"].(float64))
 
-	// property not required and should be replaced by default value if not in replace body
+	// property not required and should be set to nil (NULL in db)
 	if schemaObject.Props["prop_c"] != nil {
 		oldFeature.Props["prop_c"] = schemaObject.Props["prop_c"].(string)
 	} else {
-		// TODO: Quelle est la valeur par défaut des champs non requis ???
-		oldFeature.Props["prop_c"] = ""
+		delete(oldFeature.Props, "prop_c")
 	}
 
-	// property not required and should be replaced by default value if not in replace body
+	// property not required and should be set to nil (NULL in db)
 	if schemaObject.Props["prop_d"] != nil {
 		oldFeature.Props["prop_d"] = int(schemaObject.Props["prop_d"].(float64))
 	} else {
-		// TODO: Quelle est la valeur par défaut des champs non requis ???
-		oldFeature.Props["prop_d"] = 0
+		delete(oldFeature.Props, "prop_d")
 	}
 
 	propNames := cat.TableDefs[0].Columns

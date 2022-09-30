@@ -370,25 +370,28 @@ func (cat *catalogDB) ReplaceTableFeature(ctx context.Context, tableName string,
 		return err
 	}
 	var i = 0
-	for c, t := range tbl.DbTypes {
-		if c == tbl.IDColumn {
+	for colName, col := range tbl.DbTypes {
+		if colName == tbl.IDColumn {
 			continue // ignore id column
 		}
 
 		i++
-		colValueStr += c
+		colValueStr += colName
 		colValueStr += "="
 		colValueStr += fmt.Sprintf("$%d", i)
-		if t.Type == "int4" {
-			values = append(values, int(schemaObject.Props[c].(float64)))
+		if col.IsRequired || schemaObject.Props[colName] != nil {
+			if col.Type == "int4" {
+				values = append(values, int(schemaObject.Props[colName].(float64)))
+			} else {
+				values = append(values, schemaObject.Props[colName])
+			}
 		} else {
-			values = append(values, schemaObject.Props[c])
+			values = append(values, nil)
 		}
 
 		if i < len(tbl.Columns)-1 {
 			colValueStr += ", "
 		}
-
 	}
 
 	i++
@@ -543,8 +546,8 @@ func scanTable(rows pgx.Rows) *api.Table {
 		name := props.Elements[elmPos].String
 		datatype := api.PGType(props.Elements[elmPos+1].String)
 		columns[i] = name
-		// TODO must find a way to compute IsRequired
-		datatypes[name] = api.Column{Index: i, Type: datatype, IsRequired: true}
+		notNull, _ := strconv.ParseBool(props.Elements[elmPos+4].String)
+		datatypes[name] = api.Column{Index: i, Type: datatype, IsRequired: notNull}
 		jsontypes[i] = datatype.ToJSONType()
 		colDesc[i] = props.Elements[elmPos+2].String
 	}

@@ -147,10 +147,8 @@ func TestReplaceFeatureRequiredPropertiesSuccess(t *testing.T) {
 
 	util.Equals(t, "propA...", props["prop_a"].(string), "feature value a")
 	util.Equals(t, 2, int(props["prop_b"].(float64)), "feature value b")
-	// TODO: Quelle est la valeur par défaut des champs non requis ???
-	util.Equals(t, "", props["prop_c"].(string), "feature value c")
-	// TODO: Quelle est la valeur par défaut des champs non requis ???
-	util.Equals(t, 0, int(props["prop_d"].(float64)), "feature value d")
+	util.Equals(t, nil, props["prop_c"], "feature value c")
+	util.Equals(t, nil, props["prop_d"], "feature value d")
 	geom := jsonData["geometry"].(map[string]interface{})
 	util.Equals(t, "Point", geom["type"].(string), "feature Type")
 	coordinate := geom["coordinates"].([]interface{})
