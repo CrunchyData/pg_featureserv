@@ -27,6 +27,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/CrunchyData/pg_featureserv/internal/api"
@@ -48,6 +49,19 @@ type catalogDB struct {
 	functions     []*api.Function
 	functionMap   map[string]*api.Function
 	cache         Cacher
+	listener      listenerDB
+}
+
+// An eventNotification is a notification sent by the database after a INSERT, UPDATE or DELETE
+// event on the databases included in pg_featureserv. It is populated using the return value of
+// the pl/pgSQL procedure named `sqlNotifyFunction` defined in db_sql.go
+type eventNotification struct {
+	Schema   string                 // schema of the table triggering the event
+	Table    string                 // name of the table triggering the event
+	Action   string                 // action triggering the event (INSERT, UPDATE or DELETE)
+	Old_xmin string                 // xmin of the previous version of the row (`nil` in case of INSERT)
+	New_xmin string                 // xmin of the new version of the row (`nil` in case of INSERT)
+	Data     map[string]interface{} // data contained in the row
 }
 
 var isStartup bool
@@ -70,10 +84,16 @@ func CatDBInstance() Catalog {
 func newCatalogDB() catalogDB {
 	conn := dbConnect()
 	cache := makeCache()
+	var lock = sync.RWMutex{}
+
+	var listener = newListenerDB(conn, cache, &lock)
+
 	cat := catalogDB{
-		dbconn: conn,
-		cache:  cache,
+		dbconn:   conn,
+		cache:    cache,
+		listener: listener,
 	}
+
 	return cat
 }
 
@@ -135,7 +155,7 @@ func dbConfig() *pgxpool.Config {
 	return dbconfig
 }
 
-func (cat *catalogDB) SetIncludeExclude(includeList []string, excludeList []string) {
+func (cat *catalogDB) Initialize(includeList []string, excludeList []string) {
 	//-- include schemas / tables
 	cat.tableIncludes = make(map[string]string)
 	for _, name := range includeList {
@@ -148,10 +168,18 @@ func (cat *catalogDB) SetIncludeExclude(includeList []string, excludeList []stri
 		nameLow := strings.ToLower(name)
 		cat.tableExcludes[nameLow] = nameLow
 	}
+
+	// Init the listener
+	cat.listener.Initialize(cat.tableIncludes, cat.tableExcludes)
 }
 
 func (cat *catalogDB) Close() {
+	cat.listener.Close()
 	cat.dbconn.Close()
+}
+
+func (cat *catalogDB) GetCache() map[string]interface{} {
+	return cat.cache
 }
 
 func (cat *catalogDB) Tables() ([]*api.Table, error) {
@@ -363,7 +391,7 @@ func (cat *catalogDB) PartialUpdateTableFeature(ctx context.Context, tableName s
 	sqlStatement := fmt.Sprintf(`
 		UPDATE %s
 		SET ( %s ) = ( %s )
-		WHERE %s = %s
+		WHERE %s=%s
 		RETURNING %s
 	`, tbl.ID, columnStr, placementStr, tbl.IDColumn, id, tbl.IDColumn)
 
@@ -451,7 +479,7 @@ func (cat *catalogDB) DeleteTableFeature(ctx context.Context, tableName string, 
 
 	sqlStatement := fmt.Sprintf(`
 		DELETE FROM %s
-		WHERE %s = %s`,
+		WHERE %s=%s`,
 		tableName, tbl.IDColumn, fid)
 
 	var id int64 = -1
@@ -498,7 +526,7 @@ func (cat *catalogDB) readTables(db *pgxpool.Pool) map[string]*api.Table {
 	tables := make(map[string]*api.Table)
 	for rows.Next() {
 		tbl := scanTable(rows)
-		if cat.isIncluded(tbl) {
+		if isIncluded(tbl, cat.tableIncludes, cat.tableExcludes) {
 			tables[tbl.ID] = tbl
 		}
 	}
@@ -510,15 +538,15 @@ func (cat *catalogDB) readTables(db *pgxpool.Pool) map[string]*api.Table {
 	return tables
 }
 
-func (cat *catalogDB) isIncluded(tbl *api.Table) bool {
+func isIncluded(tbl *api.Table, tableIncludes map[string]string, tableExcludes map[string]string) bool {
 	//--- if no includes defined, always include
 	isIncluded := true
-	if len(cat.tableIncludes) > 0 {
-		isIncluded = isMatchSchemaTable(tbl, cat.tableIncludes)
+	if len(tableIncludes) > 0 {
+		isIncluded = isMatchSchemaTable(tbl, tableIncludes)
 	}
 	isExcluded := false
-	if len(cat.tableExcludes) > 0 {
-		isExcluded = isMatchSchemaTable(tbl, cat.tableExcludes)
+	if len(tableExcludes) > 0 {
+		isExcluded = isMatchSchemaTable(tbl, tableExcludes)
 	}
 	return isIncluded && !isExcluded
 }

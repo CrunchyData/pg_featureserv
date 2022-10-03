@@ -196,11 +196,16 @@ func newCatalogMock() CatalogMock {
 
 // -------------------------------------------------
 
-func (cat *CatalogMock) SetIncludeExclude(includeList []string, excludeList []string) {
+func (cat *CatalogMock) Initialize(includeList []string, excludeList []string) {
+	// this is a no-op
 }
 
 func (cat *CatalogMock) Close() {
 	// this is a no-op
+}
+
+func (cat *CatalogMock) GetCache() map[string]interface{} {
+	return make(map[string]interface{})
 }
 
 func (cat *CatalogMock) Tables() ([]*api.Table, error) {

@@ -7,6 +7,7 @@ require (
 	github.com/getkin/kin-openapi v0.104.0
 	github.com/gorilla/handlers v1.4.2
 	github.com/gorilla/mux v1.8.0
+	github.com/jackc/pgconn v1.1.0 // indirect
 	github.com/jackc/pgtype v1.0.2
 	github.com/jackc/pgx/v4 v4.1.2
 	github.com/paulmach/orb v0.7.1

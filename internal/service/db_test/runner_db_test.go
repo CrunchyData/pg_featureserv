@@ -63,7 +63,6 @@ func TestMain(m *testing.M) {
 
 // ...
 func TestRunnerHandlerDb(t *testing.T) {
-
 	// initialisation avant l'execution des tests
 	beforeRun()
 
@@ -128,6 +127,16 @@ func TestRunnerHandlerDb(t *testing.T) {
 		test.TestUpdateSimpleFeatureDb()
 		afterEachRun()
 	})
+	t.Run("Listen", func(t *testing.T) {
+		beforeEachRun()
+		test := DbTests{Test: t}
+		// Only starting to listen now because beforeEachRun and afterEachRun break the cache
+		// (too many INSERTs and DELETEs at the same time)
+		cat.Initialize(nil, nil)
+		test.TestCacheSizeIncreaseAfterCreate()
+		test.TestCacheSizeDecreaseAfterDelete()
+		afterEachRun()
+	})
 
 	// nettoyage après execution des tests
 	afterRun()
@@ -142,6 +151,7 @@ func beforeRun() {
 // Run after all tests
 func afterRun() {
 	log.Debug("afterRun")
+	cat.Close()
 	// close Db
 	util.CloseTestDb(db)
 }

@@ -97,7 +97,7 @@ func main() {
 	}
 	includes := conf.Configuration.Database.TableIncludes
 	excludes := conf.Configuration.Database.TableExcludes
-	catalog.SetIncludeExclude(includes, excludes)
+	catalog.Initialize(includes, excludes)
 
 	//-- Start up service
 	service.Initialize()

@@ -14,6 +14,7 @@ package db_test
 
  Date     : October 2022
  Authors  : Jean-philippe Bazonnais (jean-philippe dot bazonnais at ign dot fr)
+        	Amaury Zarzelli (amaury dot zarzelli at ign dot fr)
 */
 
 import (
