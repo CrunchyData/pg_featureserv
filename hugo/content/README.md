@@ -4,8 +4,8 @@ The `content` folder is a collection of Markdown files placed in different subfo
 
 `_index.md` is for the guide's homepage.
 
-A section (subfolder) may also contain multiple subtopics. 
-For example, the *Installation* section has three subtopics: *Requirements* (`05-requirements.md`), *Installation* (`06-installation.md`), and *Deployment* (`07-deployment.md`). On the other hand, the *Learn More* section does not have any subtopics, so it contains only one file (the index file). Each subfolder must have its own index file. 
+A section (subfolder) may also contain multiple subtopics.
+For example, the *Installation* section has three subtopics: *Requirements* (`05-requirements.md`), *Installation* (`06-installation.md`), and *Deployment* (`07-deployment.md`). On the other hand, the *Learn More* section does not have any subtopics, so it contains only one file (the index file). Each subfolder must have its own index file.
 
 ## Adding Content
 
@@ -13,7 +13,7 @@ Each `.md` file will start with a snippet that looks like this:
 ```
 ---
 title: "Page Title"
-date: 
+date:
 draft: false
 weight: 10
 ---
@@ -24,7 +24,7 @@ weight: 10
 
 You should feel free to remove or add new files or subfolders/sections as you see fit.
 
-If you would like to add a new file (i.e. a separate page), make sure to follow the file naming convention: 
+If you would like to add a new file (i.e. a separate page), make sure to follow the file naming convention:
 
 - prefixed with a digit to help you keep track of the order (e.g. `09-`)
 - dashes instead of spaces

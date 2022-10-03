@@ -70,7 +70,7 @@ func RequestedFormat(r *http.Request) string {
 	// Use Accept header if present
 	hdrAccept := r.Header.Get("Accept")
 	//fmt.Println("Accept:" + hdrAccept)
-	if strings.Index(hdrAccept, ContentTypeHTML) >= 0 {
+	if strings.Contains(hdrAccept, ContentTypeHTML) {
 		return FormatHTML
 	}
 	return FormatJSON

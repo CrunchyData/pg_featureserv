@@ -128,7 +128,6 @@ func InitConfig(configFilename string, isDebug bool) {
 	confFile := AppConfig.Name + ".toml"
 	if configFilename != "" {
 		viper.SetConfigFile(configFilename)
-		confFile = configFilename
 	} else {
 		viper.SetConfigName(confFile)
 		viper.SetConfigType("toml")
@@ -139,10 +138,9 @@ func InitConfig(configFilename string, isDebug bool) {
 	err := viper.ReadInConfig() // Find and read the config file
 	if err != nil {
 		_, isConfigFileNotFound := err.(viper.ConfigFileNotFoundError)
-		errrConfRead := fmt.Errorf("Fatal error reading config file: %s", err)
+		errrConfRead := fmt.Errorf("fatal error reading config file: %s", err)
 		isUseDefaultConfig := isConfigFileNotFound && !isExplictConfigFile
 		if isUseDefaultConfig {
-			confFile = "DEFAULT" // let user know config is defaulted
 			log.Debug(errrConfRead)
 		} else {
 			log.Fatal(errrConfRead)
@@ -150,7 +148,10 @@ func InitConfig(configFilename string, isDebug bool) {
 	}
 
 	log.Infof("Using config file: %s", viper.ConfigFileUsed())
-	viper.Unmarshal(&Configuration)
+	errUnM := viper.Unmarshal(&Configuration)
+	if errUnM != nil {
+		log.Fatal(fmt.Errorf("fatal error decoding config file: %v", errUnM))
+	}
 
 	// Read environment variable database configuration
 	// It takes precedence over config file (if any)

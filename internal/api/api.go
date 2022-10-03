@@ -79,7 +79,9 @@ const (
 	ErrMsgFunctionNotFound      = "Function not found: %v"
 	ErrMsgFunctionAccess        = "Unable to access Function: %v"
 	ErrMsgInvalidParameterValue = "Invalid value for parameter %v: %v"
+	ErrMsgInvalidQuery          = "Invalid query parameters"
 	ErrMsgDataReadError         = "Unable to read data from: %v"
+	ErrMsgDataWriteError        = "Unable to write data to: %v"
 	ErrMsgNoDataRead            = "No data read from: %v"
 	ErrMsgRequestTimeout        = "Maximum time exceeded.  Request cancelled."
 )

@@ -137,9 +137,15 @@ func Serve(catalog data.Catalog) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	server.Shutdown(ctx)
+	errConn := server.Shutdown(ctx)
+	if errConn != nil {
+		log.Warnf("Server connection failed to shutdown: %v", errConn.Error())
+	}
 	if isTLSEnabled {
-		serverTLS.Shutdown(ctx)
+		errConnTls := serverTLS.Shutdown(ctx)
+		if errConnTls != nil {
+			log.Warnf("Server TLS connection failed to shutdown: %v", errConnTls.Error())
+		}
 	}
 
 	// abort after waiting long enough for service to shutdown gracefully

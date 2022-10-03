@@ -249,6 +249,7 @@ func restrict(inMap map[string]string, names []string) map[string]string {
 }
 
 // removeNames removes a list of names from a map (map is modified)
+//nolint:unused
 func removeNames(inMap map[string]string, names []string) {
 	for _, name := range names {
 		delete(inMap, name)
@@ -278,17 +279,21 @@ func writeHTML(w http.ResponseWriter, content interface{}, context interface{}, 
 		log.Printf("HTML encoding error: %v", err.Error())
 		return appErrorInternal(err, api.ErrMsgEncoding)
 	}
-	writeResponse(w, api.ContentTypeHTML, encodedContent)
+	return writeResponse(w, api.ContentTypeHTML, encodedContent)
+}
+
+func writeResponse(w http.ResponseWriter, contype string, encodedContent []byte) *appError {
+	w.Header().Set("Content-Type", contype) //api.ContentType(format))
+	w.WriteHeader(http.StatusOK)
+	_, err := w.Write(encodedContent)
+	if err != nil {
+		return appErrorInternal(err, api.ErrMsgDataWriteError)
+	}
 	return nil
 }
 
-func writeResponse(w http.ResponseWriter, contype string, encodedContent []byte) {
-	w.Header().Set("Content-Type", contype) //api.ContentType(format))
-	w.WriteHeader(http.StatusOK)
-	w.Write(encodedContent)
-}
-
 // Sets response 'status', and writes a json-encoded object with property "description" having value "msg".
+//nolint:all
 func writeError(w http.ResponseWriter, code string, msg string, status int) {
 	w.WriteHeader(status)
 
