@@ -19,7 +19,7 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Build
-      run: make build && make build-docker
+      run: make build && make docker
 
     - name: Docker Upload
       env:
