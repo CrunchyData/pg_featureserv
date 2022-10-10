@@ -24,6 +24,7 @@ import (
 	"testing"
 
 	"github.com/CrunchyData/pg_featureserv/internal/api"
+	"github.com/CrunchyData/pg_featureserv/internal/conf"
 	"github.com/CrunchyData/pg_featureserv/internal/data"
 	"github.com/CrunchyData/pg_featureserv/util"
 )
@@ -33,6 +34,8 @@ var hTest util.HttpTesting
 var catalogMock *data.CatalogMock
 
 func TestMain(m *testing.M) {
+	conf.Configuration.Database.AllowWrite = true
+
 	catalogMock = data.CatMockInstance()
 	catalogInstance = catalogMock
 
