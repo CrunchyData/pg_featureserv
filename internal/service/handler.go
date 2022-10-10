@@ -61,9 +61,12 @@ func InitRouter(basePath string) *mux.Router {
 
 	addRoute(router, "/collections/{id}/items", handleCollectionItems)
 	addRoute(router, "/collections/{id}/items.{fmt}", handleCollectionItems)
-	addRouteWithMethod(router, "/collections/{id}/items", handleCreateCollectionItem, "POST")
 
-	addRoute(router, "/collections/{id}/schema", handleCollectionSchemas)
+	if conf.Configuration.Database.AllowWrite {
+		addRouteWithMethod(router, "/collections/{id}/items", handleCreateCollectionItem, "POST")
+
+		addRoute(router, "/collections/{id}/schema", handleCollectionSchemas)
+	}
 
 	addRoute(router, "/collections/{id}/items/{fid}", handleItem)
 	addRoute(router, "/collections/{id}/items/{fid}.{fmt}", handleItem)

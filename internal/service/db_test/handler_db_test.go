@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/CrunchyData/pg_featureserv/internal/api"
+	"github.com/CrunchyData/pg_featureserv/internal/conf"
 	"github.com/CrunchyData/pg_featureserv/internal/data"
 	"github.com/CrunchyData/pg_featureserv/internal/service"
 	"github.com/CrunchyData/pg_featureserv/util"
@@ -23,6 +24,8 @@ var db *pgxpool.Pool
 var cat data.Catalog
 
 func TestMain(m *testing.M) {
+	conf.Configuration.Database.AllowWrite = true
+
 	db = util.CreateTestDb()
 	defer util.CloseTestDb(db)
 
