@@ -469,16 +469,7 @@ func getCreateItemSchema(ctx context.Context, table *api.Table) (openapi3.Schema
 					Default: "Feature",
 				},
 			},
-			"geometry": {
-				Value: &openapi3.Schema{
-					Items: &openapi3.SchemaRef{
-						Ref: fmt.Sprintf("https://geojson.org/schema/%v.json", table.GeometryType),
-						Value: &openapi3.Schema{
-							Type: "string", // mandatory to validate the schema
-						},
-					},
-				},
-			},
+			"geometry": openapi3.NewSchemaRef(fmt.Sprintf("https://geojson.org/schema/%v.json", table.GeometryType), &openapi3.Schema{}),
 			"properties": {
 				Value: &openapi3.Schema{},
 			},
@@ -538,16 +529,7 @@ func getUpdateItemSchema(ctx context.Context, table *api.Table) (openapi3.Schema
 					Default: "Feature",
 				},
 			},
-			"geometry": {
-				Value: &openapi3.Schema{
-					Items: &openapi3.SchemaRef{
-						Ref: fmt.Sprintf("https://geojson.org/schema/%v.json", table.GeometryType),
-						Value: &openapi3.Schema{
-							Type: "string", // mandatory to validate the schema
-						},
-					},
-				},
-			},
+			"geometry": openapi3.NewSchemaRef(fmt.Sprintf("https://geojson.org/schema/%v.json", table.GeometryType), &openapi3.Schema{}),
 			"properties": {
 				Value: &openapi3.Schema{},
 			},
@@ -696,15 +678,15 @@ func handlePartialUpdateItem(w http.ResponseWriter, r *http.Request) *appError {
 	}
 
 	// check schema
-	var val map[string]interface{}
-	errUnMarsh := json.Unmarshal(body, &val)
-	if errUnMarsh != nil {
-		return appErrorInternalFmt(errUnMarsh, "Json not conform")
+	updateSchema, errGetSch := getUpdateItemSchema(r.Context(), tbl)
+	if errGetSch != nil {
+		return appErrorInternalFmt(errGetSch, errGetSch.Error())
 	}
-
-	errSchema := api.FeatureSchema.VisitJSONObject(val)
-	if errSchema != nil {
-		return appErrorInternalFmt(errSchema, "Data not respect schema: %v", name)
+	var val map[string]interface{}
+	_ = json.Unmarshal(body, &val)
+	errValSch := updateSchema.VisitJSON(val)
+	if errValSch != nil {
+		return appErrorInternalFmt(errValSch, api.ErrMsgCreateFeatureNotConform, name)
 	}
 
 	check, errChck := tbl.CheckTableFields(val)

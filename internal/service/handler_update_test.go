@@ -54,7 +54,7 @@ func TestGetCollectionUpdateSchema(t *testing.T) {
 	util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 
 	util.Equals(t, "This dataset contains mock data about A (9 points)", fis.Description, "feature description")
-	util.Equals(t, "https://geojson.org/schema/Point.json", fis.Properties["geometry"].Value.Items.Ref, "feature geometry")
+	util.Equals(t, "https://geojson.org/schema/Point.json", fis.Properties["geometry"].Ref, "feature geometry")
 	util.Equals(t, 0, len(fis.Required), "no required field")
 	util.Equals(t, 2, len(fis.Properties["properties"].Value.Properties["prop_a"].Value.OneOf), "properties have 2 possible values, one is nil")
 }

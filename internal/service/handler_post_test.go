@@ -78,7 +78,7 @@ func TestGetCollectionCreateSchema(t *testing.T) {
 	util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 
 	util.Equals(t, "This dataset contains mock data about A (9 points)", fis.Description, "feature description")
-	util.Equals(t, "https://geojson.org/schema/Point.json", fis.Properties["geometry"].Value.Items.Ref, "feature geometry")
+	util.Equals(t, "https://geojson.org/schema/Point.json", fis.Properties["geometry"].Ref, "feature geometry")
 	util.Equals(t, "prop_a", fis.Properties["properties"].Value.Required[0], "feature required a")
 	util.Equals(t, "prop_b", fis.Properties["properties"].Value.Required[1], "feature required b")
 	util.Equals(t, "Feature", fis.Properties["type"].Value.Default, "feature required b")

@@ -165,18 +165,13 @@ var FeatureSchema openapi3.Schema = openapi3.Schema{
 		},
 		"geometry": {
 			Value: &openapi3.Schema{
-				Items: &openapi3.SchemaRef{
-					Value: &openapi3.Schema{
-						Type: "string", // mandatory to validate the schema
-						OneOf: []*openapi3.SchemaRef{
-							openapi3.NewSchemaRef("https://geojson.org/schema/Point.json", &openapi3.Schema{Type: "string"}),
-							openapi3.NewSchemaRef("https://geojson.org/schema/LineString.json", &openapi3.Schema{Type: "string"}),
-							openapi3.NewSchemaRef("https://geojson.org/schema/Polygon.json", &openapi3.Schema{Type: "string"}),
-							openapi3.NewSchemaRef("https://geojson.org/schema/MultiPoint.json", &openapi3.Schema{Type: "string"}),
-							openapi3.NewSchemaRef("https://geojson.org/schema/MultiLineString.json", &openapi3.Schema{Type: "string"}),
-							openapi3.NewSchemaRef("https://geojson.org/schema/MultiPolygon.json", &openapi3.Schema{Type: "string"}),
-						},
-					},
+				OneOf: []*openapi3.SchemaRef{
+					openapi3.NewSchemaRef("https://geojson.org/schema/Point.json", &openapi3.Schema{}),
+					openapi3.NewSchemaRef("https://geojson.org/schema/LineString.json", &openapi3.Schema{}),
+					openapi3.NewSchemaRef("https://geojson.org/schema/Polygon.json", &openapi3.Schema{}),
+					openapi3.NewSchemaRef("https://geojson.org/schema/MultiPoint.json", &openapi3.Schema{}),
+					openapi3.NewSchemaRef("https://geojson.org/schema/MultiLineString.json", &openapi3.Schema{}),
+					openapi3.NewSchemaRef("https://geojson.org/schema/MultiPolygon.json", &openapi3.Schema{}),
 				},
 			},
 		},
