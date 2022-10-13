@@ -545,12 +545,7 @@ func getUpdateItemSchema(ctx context.Context, table *api.Table) (openapi3.Schema
 	for k, v := range table.DbTypes {
 		if k != table.IDColumn {
 			props.Properties[k] = &openapi3.SchemaRef{
-				Value: openapi3.NewOneOfSchema(
-					v.Type.ToOpenApiSchema(),
-					&openapi3.Schema{
-						Type: "null",
-					},
-				),
+				Value: v.Type.ToOpenApiSchema(),
 			}
 		}
 	}

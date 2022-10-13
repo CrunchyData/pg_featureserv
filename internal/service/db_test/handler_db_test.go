@@ -24,7 +24,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net/http"
 	"os"
 	"strconv"
 	"testing"
@@ -108,122 +107,6 @@ func TestPropertiesAllFromDbComplexTable(t *testing.T) {
 		"Name":   features[0].Props["prop_t"].(string),
 		"IsDesc": features[0].Props["prop_i"].(int32)%2 == 1}
 	util.Equals(t, expectJson, features[0].Props["prop_j"], "feature 1 # property json")
-}
-
-func TestReplaceFeatureSuccessDb(t *testing.T) {
-	path := "/collections/mock_a/items/1"
-	var header = make(http.Header)
-	header.Add("Accept", api.ContentTypeSchemaPatchJSON)
-
-	jsonStr := `{
-		"type": "Feature",
-		"id": "1",
-		"geometry": {
-			"type": "Point",
-			"coordinates": [
-			-120,
-			40
-			]
-		},
-		"properties": {
-			"prop_a": "propA...",
-			"prop_b": 1,
-			"prop_c": "propC..."
-		}
-	}`
-
-	hTest.DoRequestMethodStatus(t, "PUT", path, []byte(jsonStr), header, http.StatusNoContent)
-
-	resp := hTest.DoRequestMethodStatus(t, "GET", path, []byte(""), header, http.StatusOK)
-	body, _ := ioutil.ReadAll(resp.Body)
-
-	fmt.Println(string(body))
-
-	var jsonData map[string]interface{}
-	err := json.Unmarshal(body, &jsonData)
-	util.Assert(t, err == nil, fmt.Sprintf("%v", err))
-
-	util.Equals(t, "1", jsonData["id"].(string), "feature ID")
-	util.Equals(t, "Feature", jsonData["type"].(string), "feature Type")
-	props := jsonData["properties"].(map[string]interface{})
-	util.Equals(t, "propA...", props["prop_a"].(string), "feature value a")
-	util.Equals(t, 1, int(props["prop_b"].(float64)), "feature value b")
-	util.Equals(t, "propC...", props["prop_c"].(string), "feature value c")
-	util.Equals(t, nil, props["prop_d"], "feature value d")
-	geom := jsonData["geometry"].(map[string]interface{})
-	util.Equals(t, "Point", geom["type"].(string), "feature Type")
-	coordinate := geom["coordinates"].([]interface{})
-	util.Equals(t, -120, int(coordinate[0].(float64)), "feature latitude")
-	util.Equals(t, 40, int(coordinate[1].(float64)), "feature longitude")
-}
-
-func TestPartialUpdateFeatureDb(t *testing.T) {
-	path := "/collections/mock_a/items/2"
-	var header = make(http.Header)
-	header.Add("Content-Type", api.ContentTypeSchemaPatchJSON)
-
-	jsonStr := `{
-		"type": "Feature",
-		"id": "2",
-		"geometry": {
-			"type": "Point",
-			"coordinates": [
-			-120,
-			40
-			]
-		},
-		"properties": {
-			"prop_a": "propA...",
-			"prop_b": 2
-		}
-	}`
-
-	resp := hTest.DoRequestMethodStatus(t, "PATCH", path, []byte(jsonStr), header, http.StatusNoContent)
-	loc := resp.Header().Get("Location")
-
-	util.Assert(t, len(loc) > 1, "Header location must not be empty")
-	util.Equals(t, fmt.Sprintf("http://test/collections/mock_a/items/%d", 2), loc,
-		"Header location must contain valid data")
-
-	// check if it can be read
-	feature := checkItem(t, "mock_a", 2)
-	var jsonData map[string]interface{}
-	errUnMarsh := json.Unmarshal(feature, &jsonData)
-	util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
-
-	util.Equals(t, "2", jsonData["id"].(string), "feature ID")
-	util.Equals(t, "Feature", jsonData["type"].(string), "feature Type")
-	props := jsonData["properties"].(map[string]interface{})
-	util.Equals(t, "propA...", props["prop_a"].(string), "feature value a")
-	util.Equals(t, 2, int(props["prop_b"].(float64)), "feature value b")
-	util.Equals(t, "propC", props["prop_c"].(string), "feature value c")
-	util.Equals(t, 2, int(props["prop_d"].(float64)), "feature value d")
-	geom := jsonData["geometry"].(map[string]interface{})
-	util.Equals(t, "Point", geom["type"].(string), "feature Type")
-	coordinate := geom["coordinates"].([]interface{})
-	util.Equals(t, -120, int(coordinate[0].(float64)), "feature latitude")
-	util.Equals(t, 40, int(coordinate[1].(float64)), "feature longitude")
-
-}
-
-func TestDeleteFeatureDb(t *testing.T) {
-
-	//--- retrieve max feature id before delete
-	var features []*api.GeojsonFeatureData
-	params := data.QueryParam{Limit: 100000, Offset: 0, Crs: 4326}
-	features, _ = cat.TableFeatures(context.Background(), "mock_b", &params)
-
-	featuresNumbersBefore := len(features)
-
-	// -- do the request call but we have to force the catalogInstance to db during this operation
-	hTest.DoDeleteRequestStatus(t, "/collections/mock_b/items/1", http.StatusNoContent)
-
-	//--- retrieve max feature id after delete
-	features, _ = cat.TableFeatures(context.Background(), "mock_b", &params)
-	featuresNumbersAfter := len(features)
-
-	util.Assert(t, featuresNumbersBefore-1 == featuresNumbersAfter, "# feature still in db/not deleted")
-
 }
 
 // check if item is available and is not empty

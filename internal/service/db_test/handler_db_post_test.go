@@ -1,20 +1,5 @@
 package db_test
 
-import (
-	"context"
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"net/http"
-	"strings"
-	"testing"
-
-	"github.com/CrunchyData/pg_featureserv/internal/api"
-	"github.com/CrunchyData/pg_featureserv/internal/data"
-	"github.com/CrunchyData/pg_featureserv/internal/util"
-	"github.com/getkin/kin-openapi/openapi3"
-)
-
 /*
  Copyright 2022 Crunchy Data Solutions, Inc.
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,6 +15,21 @@ import (
  Date     : September 2022
  Authors  : Benoit De Mezzo (benoit dot de dot mezzo at oslandia dot com)
 */
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"strings"
+	"testing"
+
+	"github.com/CrunchyData/pg_featureserv/internal/api"
+	"github.com/CrunchyData/pg_featureserv/internal/data"
+	"github.com/CrunchyData/pg_featureserv/internal/util"
+	"github.com/getkin/kin-openapi/openapi3"
+)
 
 func TestCreateSimpleFeatureWithBadGeojsonInputDb(t *testing.T) {
 	var header = make(http.Header)

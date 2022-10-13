@@ -306,26 +306,26 @@ func (cat *catalogDB) PartialUpdateTableFeature(ctx context.Context, tableName s
 	var values []interface{}
 
 	var i = 0
-	for c, t := range tbl.DbTypes {
-		if c == tbl.IDColumn {
+	for colName, col := range tbl.DbTypes {
+		if colName == tbl.IDColumn {
 			continue // ignore id column
 		}
-		if schemaObject.Props[c] == nil {
+		if schemaObject.Props[colName] == nil {
 			continue // ignore empty data
 		}
 
 		i++
 
-		columnStr += c
+		columnStr += colName
 		columnStr += ", "
 		placementStr += fmt.Sprintf("$%d", i)
 		placementStr += ", "
 
-		if t.Type == "int4" {
-			values = append(values, int(schemaObject.Props[c].(float64)))
-		} else {
-			values = append(values, schemaObject.Props[c])
+		convVal, errConv := col.Type.ParseJSONInterface(schemaObject.Props[colName])
+		if errConv != nil {
+			return -9999, errConv
 		}
+		values = append(values, convVal)
 	}
 
 	columnStr = strings.TrimSuffix(columnStr, ", ")
