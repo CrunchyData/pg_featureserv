@@ -35,7 +35,7 @@ func (t *MockTests) TestApiContainsDeleteFeature() {
 		resp := hTest.DoRequest(t, "/api")
 		body, _ := ioutil.ReadAll(resp.Body)
 
-		var v openapi3.Swagger
+		var v openapi3.T
 		errUnMarsh := json.Unmarshal(body, &v)
 		util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 

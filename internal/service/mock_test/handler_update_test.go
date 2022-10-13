@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/CrunchyData/pg_featureserv/internal/api"
@@ -34,7 +35,7 @@ func (t *MockTests) TestApiContainsMethodPatchFeature() {
 		resp := hTest.DoRequest(t, "/api")
 		body, _ := ioutil.ReadAll(resp.Body)
 
-		var v openapi3.Swagger
+		var v openapi3.T
 		err := json.Unmarshal(body, &v)
 		util.Assert(t, err == nil, fmt.Sprintf("%v", err))
 
@@ -57,7 +58,7 @@ func (t *MockTests) TestGetCollectionUpdateSchema() {
 		util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 
 		util.Equals(t, "This dataset contains mock data about A (9 points)", fis.Description, "feature description")
-		util.Equals(t, "https://geojson.org/schema/Point.json", fis.Properties["geometry"].Ref, "feature geometry")
+		util.Equals(t, "GeoJSON Point", fis.Properties["geometry"].Value.Title, "feature geometry")
 		util.Equals(t, 0, len(fis.Required), "no required field")
 	})
 }
@@ -247,6 +248,8 @@ func (t *MockTests) TestUpdateFeaturePartialGeomFailure() {
 
 		// fmt.Println(string(body))
 
-		util.Equals(t, "Unable to update feature in Collection: mock_a\n\tCaused by: geojson: invalid geometry\n", string(body), "feature Error with geometry")
+		util.Assert(t, strings.HasPrefix(string(body),
+			"Unable to patch feature in Collection - data does not respect schema: mock_a\n\tCaused by: Error at \"/geometry/type\": property \"type\" is missing\nSchema:\n"),
+			"feature Error with geometry")
 	})
 }

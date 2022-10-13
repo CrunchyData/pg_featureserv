@@ -15,6 +15,9 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
 	"net/url"
 
 	"github.com/CrunchyData/pg_featureserv/internal/conf"
@@ -141,6 +144,8 @@ func getFeatureExample() map[string]interface{} {
 	return result
 }
 
+var GeojsonSchemaRefs = makeGeojsonSchemaRefs()
+
 var FeatureSchema openapi3.Schema = openapi3.Schema{
 	Type:     "object",
 	Required: []string{},
@@ -166,12 +171,12 @@ var FeatureSchema openapi3.Schema = openapi3.Schema{
 		"geometry": {
 			Value: &openapi3.Schema{
 				OneOf: []*openapi3.SchemaRef{
-					openapi3.NewSchemaRef("https://geojson.org/schema/Point.json", &openapi3.Schema{}),
-					openapi3.NewSchemaRef("https://geojson.org/schema/LineString.json", &openapi3.Schema{}),
-					openapi3.NewSchemaRef("https://geojson.org/schema/Polygon.json", &openapi3.Schema{}),
-					openapi3.NewSchemaRef("https://geojson.org/schema/MultiPoint.json", &openapi3.Schema{}),
-					openapi3.NewSchemaRef("https://geojson.org/schema/MultiLineString.json", &openapi3.Schema{}),
-					openapi3.NewSchemaRef("https://geojson.org/schema/MultiPolygon.json", &openapi3.Schema{}),
+					GeojsonSchemaRefs["Point"],
+					GeojsonSchemaRefs["LineString"],
+					GeojsonSchemaRefs["Polygon"],
+					GeojsonSchemaRefs["MultiPoint"],
+					GeojsonSchemaRefs["MultiLineString"],
+					GeojsonSchemaRefs["MultiPolygon"],
 				},
 			},
 		},
@@ -294,7 +299,7 @@ var ConformanceSchema openapi3.Schema = openapi3.Schema{
 }
 
 // GetOpenAPIContent returns a Swagger OpenAPI structure
-func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
+func GetOpenAPIContent(urlBase string) *openapi3.T {
 
 	apiBase := "/"
 	u, err := url.Parse(urlBase)
@@ -342,7 +347,7 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 			In:          "query",
 			Required:    false,
 			Explode:     openapi3.BoolPtr(false),
-			Example:     "-120,30,-100,49",
+			Example:     []int{-120, 30, -100, 49},
 			Schema: &openapi3.SchemaRef{
 				Value: &openapi3.Schema{
 					Type:     "array",
@@ -403,7 +408,7 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 			In:          "query",
 			Required:    false,
 			Explode:     openapi3.BoolPtr(false),
-			Example:     "a,b,c",
+			Example:     []string{"a", "b", "c"},
 			Schema: &openapi3.SchemaRef{
 				Value: &openapi3.Schema{
 					Type:     "array",
@@ -422,7 +427,8 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 			Required:    false,
 			Explode:     openapi3.BoolPtr(false),
 			Style:       "pipeDelimited",
-			Example:     "Centroid|Buffer,1",
+			// TODO not explicite
+			Example: []string{"Centroid", "Buffer,1"},
 			Schema: &openapi3.SchemaRef{
 				Value: &openapi3.Schema{
 					Type:     "array",
@@ -503,9 +509,27 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 			AllowEmptyValue: false,
 		},
 	}
-	return &openapi3.Swagger{
+
+	rootDesc := "Results for root of API"
+	apiDesc := "openapi content"
+	conformanceDesc := "Results for conformance classes"
+	collectionsDesc := "Results for details about the specified feature collection"
+	collectionMetaDesc := "Results for details about the specified feature collection"
+	collectionFeatureResponseDesc := "GeoJSON Feature Collection document containing data for features"
+	createItemResponseDesc := "Empty body with location header"
+	createLocationResponseDesc := "Contains a link to access to the new feature data"
+	collectionSchemaResponseDesc := "GeoJSON Feature Collection document containing data schema for specific type"
+	getItemResponseDesc := "GeoJSON Feature document containing feature data"
+	responseHttp204Desc := "No Content : feature updated"
+	responseHttp400Desc := "Malformed feature ID or unsuitable query parameters"
+	responseHttp404Desc := "Resource not found"
+	getFunctionsResponseDesc := "Results for details about functions served"
+	getFunctionResponseDesc := "Results for details about the specified function"
+	getFunctionResultResponseDesc := "GeoJSON or JSON document containing function results"
+
+	return &openapi3.T{
 		OpenAPI: "3.0.0",
-		Info: openapi3.Info{
+		Info: &openapi3.Info{
 			Title:       conf.Configuration.Metadata.Title,
 			Description: conf.Configuration.Metadata.Description,
 			Version:     conf.AppConfig.Version,
@@ -531,7 +555,7 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 							Ref: "",
 							Value: &openapi3.Response{
 								Content:     openapi3.NewContentWithJSONSchema(&RootInfoSchema),
-								Description: "Results for root of API",
+								Description: &rootDesc,
 							},
 						},
 					},
@@ -546,7 +570,10 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 					Responses: openapi3.Responses{
 						"200": &openapi3.ResponseRef{
 							// TODO: Find better OpenAPI schema ref?
-							Ref: "https://json-schema.org/draft-07/schema",
+							// not valid with Insomnia: Ref: "https://json-schema.org/draft-07/schema",
+							Value: &openapi3.Response{
+								Description: &apiDesc,
+							},
 						},
 					},
 				},
@@ -561,7 +588,7 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 						"200": &openapi3.ResponseRef{
 							Value: &openapi3.Response{
 								Content:     openapi3.NewContentWithJSONSchema(&ConformanceSchema),
-								Description: "Results for conformance classes",
+								Description: &conformanceDesc,
 							},
 						},
 					},
@@ -577,7 +604,7 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 							Value: &openapi3.Response{
 								Content: openapi3.NewContentWithJSONSchemaRef(
 									&openapi3.SchemaRef{Value: &CollectionsInfoSchema}),
-								Description: "Results for details about the specified feature collection",
+								Description: &collectionsDesc,
 							},
 						},
 					},
@@ -595,7 +622,7 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 							Value: &openapi3.Response{
 								Content: openapi3.NewContentWithJSONSchemaRef(
 									&openapi3.SchemaRef{Value: &CollectionInfoSchema}),
-								Description: "Results for details about the specified feature collection",
+								Description: &collectionMetaDesc,
 							},
 						},
 					},
@@ -634,7 +661,7 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 					Responses: openapi3.Responses{
 						"200": &openapi3.ResponseRef{
 							Value: &openapi3.Response{
-								Description: "GeoJSON Feature Collection document containing data for features",
+								Description: &collectionFeatureResponseDesc,
 								/*
 									// TODO: create schema for result?
 									Content: openapi3.NewContentWithJSONSchemaRef(
@@ -664,11 +691,14 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 					Responses: openapi3.Responses{
 						"201": &openapi3.ResponseRef{
 							Value: &openapi3.Response{
-								Description: "Empty body with location header",
+								Description: &createItemResponseDesc,
 								Headers: map[string]*openapi3.HeaderRef{
 									"location": {
 										Value: &openapi3.Header{
-											Description: "Contains a link to access to the new feature data",
+											Parameter: openapi3.Parameter{
+												Description: createLocationResponseDesc,
+												Schema:      &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+											},
 										},
 									},
 								},
@@ -689,7 +719,7 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 					Responses: openapi3.Responses{
 						"200": &openapi3.ResponseRef{
 							Value: &openapi3.Response{
-								Description: "GeoJSON Feature Collection document containing data schema for specific type",
+								Description: &collectionSchemaResponseDesc,
 								/*
 									// TODO: create schema for result?
 									Content: openapi3.NewContentWithJSONSchemaRef(
@@ -718,7 +748,7 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 					Responses: openapi3.Responses{
 						"200": &openapi3.ResponseRef{
 							Value: &openapi3.Response{
-								Description: "GeoJSON Feature document containing feature data",
+								Description: &getItemResponseDesc,
 								/*
 									// TODO: create schema for result?
 									Content: openapi3.NewContentWithJSONSchemaRef(
@@ -749,12 +779,12 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 					Responses: openapi3.Responses{
 						"204": &openapi3.ResponseRef{
 							Value: &openapi3.Response{
-								Description: "No Content : feature updated",
+								Description: &responseHttp204Desc,
 							},
 						},
 						"404": &openapi3.ResponseRef{
 							Value: &openapi3.Response{
-								Description: "Resource not found",
+								Description: &responseHttp404Desc,
 							},
 						},
 					},
@@ -778,17 +808,17 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 					Responses: openapi3.Responses{
 						"204": &openapi3.ResponseRef{
 							Value: &openapi3.Response{
-								Description: "No Content: feature replaced succesfully",
+								Description: &responseHttp204Desc,
 							},
 						},
 						"400": &openapi3.ResponseRef{
 							Value: &openapi3.Response{
-								Description: "Malformed feature ID or unsuitable query parameters",
+								Description: &responseHttp400Desc,
 							},
 						},
 						"404": &openapi3.ResponseRef{
 							Value: &openapi3.Response{
-								Description: "Target resource not found",
+								Description: &responseHttp404Desc,
 							},
 						},
 					},
@@ -802,17 +832,17 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 					Responses: openapi3.Responses{
 						"204": &openapi3.ResponseRef{
 							Value: &openapi3.Response{
-								Description: "No Content",
+								Description: &responseHttp204Desc,
 							},
 						},
 						"400": &openapi3.ResponseRef{
 							Value: &openapi3.Response{
-								Description: "Malformed feature ID or unsuitable query parameters",
+								Description: &responseHttp400Desc,
 							},
 						},
 						"404": &openapi3.ResponseRef{
 							Value: &openapi3.Response{
-								Description: "Resource ID not found, collection not found, catalog error.",
+								Description: &responseHttp404Desc,
 							},
 						},
 					},
@@ -828,7 +858,7 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 							Value: &openapi3.Response{
 								Content: openapi3.NewContentWithJSONSchemaRef(
 									&openapi3.SchemaRef{Value: &FunctionsInfoSchema}),
-								Description: "Results for details about functions served",
+								Description: &getFunctionsResponseDesc,
 							},
 						},
 					},
@@ -849,7 +879,7 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 									&openapi3.SchemaRef{
 										Value: &FunctionInfoSchema,
 									}),
-								Description: "Results for details about the specified function",
+								Description: &getFunctionResponseDesc,
 							},
 						},
 					},
@@ -889,7 +919,7 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 					Responses: openapi3.Responses{
 						"200": &openapi3.ResponseRef{
 							Value: &openapi3.Response{
-								Description: "GeoJSON or JSON document containing function results",
+								Description: &getFunctionResultResponseDesc,
 								/*
 									Content: openapi3.NewContentWithJSONSchemaRef(
 										&openapi3.SchemaRef{
@@ -904,4 +934,35 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 			},
 		},
 	}
+}
+
+func makeGeojsonSchemaRefs() map[string]*openapi3.SchemaRef {
+	out := make(map[string]*openapi3.SchemaRef)
+
+	cl := http.Client{}
+	for _, g := range []string{"Point", "LineString", "Polygon", "MultiPoint", "MultiLineString", "MultiPolygon"} {
+		httpReq, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("https://geojson.org/schema/%v.json", g), nil)
+		resp, err := cl.Do(httpReq)
+		if err != nil {
+			panic(err.Error())
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode > 399 {
+			panic(fmt.Errorf("error loading: request returned status code %d", resp.StatusCode))
+		}
+		body, _ := ioutil.ReadAll(resp.Body)
+
+		var fis openapi3.Schema
+		errUnMarsh := json.Unmarshal(body, &fis)
+		if errUnMarsh != nil {
+			panic(errUnMarsh.Error())
+		}
+
+		// remove bad keys to get good validation with Insomnia
+		delete(fis.ExtensionProps.Extensions, "$id")
+		delete(fis.ExtensionProps.Extensions, "$schema")
+		out[g] = openapi3.NewSchemaRef("", &fis)
+	}
+
+	return out
 }

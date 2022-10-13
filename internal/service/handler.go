@@ -470,7 +470,7 @@ func getCreateItemSchema(ctx context.Context, table *api.Table) (openapi3.Schema
 					Default: "Feature",
 				},
 			},
-			"geometry": openapi3.NewSchemaRef(fmt.Sprintf("https://geojson.org/schema/%v.json", table.GeometryType), &openapi3.Schema{}),
+			"geometry": api.GeojsonSchemaRefs[table.GeometryType],
 			"properties": {
 				Value: &openapi3.Schema{},
 			},
@@ -530,7 +530,7 @@ func getUpdateItemSchema(ctx context.Context, table *api.Table) (openapi3.Schema
 					Default: "Feature",
 				},
 			},
-			"geometry": openapi3.NewSchemaRef(fmt.Sprintf("https://geojson.org/schema/%v.json", table.GeometryType), &openapi3.Schema{}),
+			"geometry": api.GeojsonSchemaRefs[table.GeometryType],
 			"properties": {
 				Value: &openapi3.Schema{},
 			},
@@ -680,7 +680,7 @@ func handlePartialUpdateItem(w http.ResponseWriter, r *http.Request) *appError {
 	_ = json.Unmarshal(body, &val)
 	errValSch := updateSchema.VisitJSON(val)
 	if errValSch != nil {
-		return appErrorInternalFmt(errValSch, api.ErrMsgCreateFeatureNotConform, name)
+		return appErrorInternalFmt(errValSch, api.ErrMsgPartialUpdateFeatureNotConform, name)
 	}
 
 	check, errChck := tbl.CheckTableFields(val)

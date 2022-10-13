@@ -35,7 +35,7 @@ func (t *MockTests) TestApiContainsMethodPut() {
 		resp := hTest.DoRequest(t, "/api")
 		body, _ := ioutil.ReadAll(resp.Body)
 
-		var v openapi3.Swagger
+		var v openapi3.T
 		err := json.Unmarshal(body, &v)
 		util.Assert(t, err == nil, fmt.Sprintf("%v", err))
 
@@ -58,7 +58,7 @@ func (t *MockTests) TestGetCollectionReplaceSchema() {
 		util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 
 		util.Equals(t, "This dataset contains mock data about A (9 points)", fis.Description, "feature description")
-		util.Equals(t, "https://geojson.org/schema/Point.json", fis.Properties["geometry"].Ref, "feature geometry")
+		util.Equals(t, "GeoJSON Point", fis.Properties["geometry"].Value.Title, "feature geometry")
 		util.Equals(t, "prop_a", fis.Properties["properties"].Value.Required[0], "feature required a")
 		util.Equals(t, "prop_b", fis.Properties["properties"].Value.Required[1], "feature required b")
 		util.Equals(t, "Feature", fis.Properties["type"].Value.Default, "feature required b")

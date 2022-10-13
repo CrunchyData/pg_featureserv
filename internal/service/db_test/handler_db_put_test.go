@@ -91,7 +91,7 @@ func (t *DbTests) TestGetComplexCollectionReplaceSchema() {
 		util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 
 		util.Equals(t, "Data for table public.mock_multi", fis.Description, "feature description")
-		util.Equals(t, "https://geojson.org/schema/Point.json", fis.Properties["geometry"].Ref, "feature geometry")
+		util.Equals(t, "GeoJSON Point", fis.Properties["geometry"].Value.Title, "feature geometry")
 
 		util.Equals(t, "Feature", fis.Properties["type"].Value.Default, "feature type is feature")
 
