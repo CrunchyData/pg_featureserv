@@ -25,9 +25,10 @@ import (
 
 	"github.com/CrunchyData/pg_featureserv/internal/api"
 	util "github.com/CrunchyData/pg_featureserv/internal/utiltest"
+	"github.com/getkin/kin-openapi/openapi3"
 )
 
-func (t *DbTests) TestReplaceFeatureSuccessDb() {
+func (t *DbTests) TestSimpleReplaceFeatureSuccessDb() {
 	t.Test.Run("TestReplaceFeatureSuccessDb", func(t *testing.T) {
 		path := "/collections/mock_a/items/9"
 		var header = make(http.Header)
@@ -73,5 +74,69 @@ func (t *DbTests) TestReplaceFeatureSuccessDb() {
 		coordinate := geom["coordinates"].([]interface{})
 		util.Equals(t, -120, int(coordinate[0].(float64)), "feature latitude")
 		util.Equals(t, 40, int(coordinate[1].(float64)), "feature longitude")
+	})
+}
+
+func (t *DbTests) TestGetComplexCollectionReplaceSchema() {
+	t.Test.Run("TestGetComplexCollectionReplaceSchema", func(t *testing.T) {
+		path := "/collections/mock_multi/schema?type=replace"
+		var header = make(http.Header)
+		header.Add("Accept", api.ContentTypeSchemaJSON)
+
+		resp := hTest.DoRequestMethodStatus(t, "GET", path, nil, header, http.StatusOK)
+		body, _ := ioutil.ReadAll(resp.Body)
+
+		var fis openapi3.Schema
+		errUnMarsh := json.Unmarshal(body, &fis)
+		util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
+
+		util.Equals(t, "Data for table public.mock_multi", fis.Description, "feature description")
+		util.Equals(t, "https://geojson.org/schema/Point.json", fis.Properties["geometry"].Ref, "feature geometry")
+
+		util.Equals(t, "Feature", fis.Properties["type"].Value.Default, "feature type is feature")
+
+		val := fis.Properties["properties"].Value
+		util.Equals(t, "prop_b", val.Required[0], "feature required bool")
+		util.Equals(t, "array", val.Properties["prop_b"].Value.Type, "feature type bool")
+		util.Equals(t, "boolean", val.Properties["prop_b"].Value.Items.Value.Type, "feature array type bool")
+
+		util.Equals(t, "prop_d", val.Required[1], "feature required date")
+		util.Equals(t, "string", val.Properties["prop_d"].Value.Type, "feature type date")
+
+		util.Equals(t, "prop_f", val.Required[2], "feature required float64")
+		util.Equals(t, "number", val.Properties["prop_f"].Value.Type, "feature type float64")
+
+		util.Equals(t, "prop_i", val.Required[3], "feature required int")
+		util.Equals(t, "integer", val.Properties["prop_i"].Value.Type, "feature type int")
+
+		util.Equals(t, "prop_j", val.Required[4], "feature required json")
+		util.Equals(t, "object", val.Properties["prop_j"].Value.Type, "feature type json")
+
+		util.Equals(t, "prop_l", val.Required[5], "feature required long")
+		util.Equals(t, "integer", val.Properties["prop_l"].Value.Type, "feature type long")
+
+		util.Equals(t, "prop_r", val.Required[6], "feature required real")
+		util.Equals(t, "number", val.Properties["prop_r"].Value.Type, "feature type real")
+
+		util.Equals(t, "prop_t", val.Required[7], "feature required text")
+		util.Equals(t, "string", val.Properties["prop_t"].Value.Type, "feature type text")
+	})
+}
+
+func (t *DbTests) TestReplaceComplexFeatureDb() {
+	t.Test.Run("TestReplaceComplexFeatureDb", func(t *testing.T) {
+		path := "/collections/mock_multi/items/100"
+		var header = make(http.Header)
+		header.Add("Content-Type", api.ContentTypeSchemaPatchJSON)
+
+		feat := util.MakeGeojsonFeatureMockPoint(100, -50, 35)
+		jsonObj, err := json.Marshal(feat)
+		util.Assert(t, err == nil, fmt.Sprintf("Error marshalling feature into JSON: %v", err))
+		jsonStr := string(jsonObj)
+
+		_ = hTest.DoRequestMethodStatus(t, "PUT", path, []byte(jsonStr), header, http.StatusNoContent)
+
+		// check if it can be read
+		checkItem(t, "mock_multi", 100)
 	})
 }

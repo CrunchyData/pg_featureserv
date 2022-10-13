@@ -342,7 +342,7 @@ func (cat *CatalogMock) ReplaceTableFeature(ctx context.Context, tableName strin
 		return err1
 	}
 
-	index, err2 := strconv.Atoi(id)
+	index, err2 := strconv.ParseInt(id, 10, 64)
 	if err2 != nil {
 		return nil
 	}

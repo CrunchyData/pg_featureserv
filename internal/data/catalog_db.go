@@ -342,9 +342,9 @@ func (cat *catalogDB) PartialUpdateTableFeature(ctx context.Context, tableName s
 	sqlStatement := fmt.Sprintf(`
 		UPDATE %s
 		SET ( %s ) = ( %s )
-		WHERE id = %s
+		WHERE %s = %s
 		RETURNING %s
-	`, tbl.ID, columnStr, placementStr, id, tbl.IDColumn)
+	`, tbl.ID, columnStr, placementStr, tbl.IDColumn, id, tbl.IDColumn)
 
 	row := cat.dbconn.QueryRow(ctx, sqlStatement, values...)
 
@@ -357,6 +357,12 @@ func (cat *catalogDB) PartialUpdateTableFeature(ctx context.Context, tableName s
 }
 
 func (cat *catalogDB) ReplaceTableFeature(ctx context.Context, tableName string, id string, jsonData []byte) error {
+
+	idx, errInt := strconv.ParseInt(id, 10, 64)
+	if errInt != nil {
+		return errInt
+	}
+
 	var schemaObject api.GeojsonFeatureData
 	err := json.Unmarshal(jsonData, &schemaObject)
 	if err != nil {
@@ -380,11 +386,11 @@ func (cat *catalogDB) ReplaceTableFeature(ctx context.Context, tableName string,
 		colValueStr += "="
 		colValueStr += fmt.Sprintf("$%d", i)
 		if col.IsRequired || schemaObject.Props[colName] != nil {
-			if col.Type == "int4" {
-				values = append(values, int(schemaObject.Props[colName].(float64)))
-			} else {
-				values = append(values, schemaObject.Props[colName])
+			convVal, errConv := col.Type.ParseJSONInterface(schemaObject.Props[colName])
+			if errConv != nil {
+				return errConv
 			}
+			values = append(values, convVal)
 		} else {
 			values = append(values, nil)
 		}
@@ -404,10 +410,11 @@ func (cat *catalogDB) ReplaceTableFeature(ctx context.Context, tableName string,
 	sqlStatement := fmt.Sprintf(`
 		UPDATE %s AS t
 		SET %s
-		WHERE %s=%s`,
-		tbl.ID, colValueStr, tbl.IDColumn, id)
+		WHERE %s=%s
+		RETURNING %s
+		`, tbl.ID, colValueStr, tbl.IDColumn, id, tbl.IDColumn)
 
-	err = cat.dbconn.QueryRow(ctx, sqlStatement, values...).Scan()
+	err = cat.dbconn.QueryRow(ctx, sqlStatement, values...).Scan(&idx)
 	if err != nil && err != pgx.ErrNoRows {
 		return err
 	}
@@ -416,14 +423,18 @@ func (cat *catalogDB) ReplaceTableFeature(ctx context.Context, tableName string,
 }
 
 func (cat *catalogDB) DeleteTableFeature(ctx context.Context, tableName string, fid string) error {
+	tbl, err := cat.TableByName(tableName)
+	if err != nil {
+		return err
+	}
 
 	sqlStatement := fmt.Sprintf(`
 		DELETE FROM %s
-		WHERE id = %s`,
-		tableName, fid)
+		WHERE %s = %s`,
+		tableName, tbl.IDColumn, fid)
 
 	var id int64 = -1
-	err := cat.dbconn.QueryRow(ctx, sqlStatement).Scan(&id)
+	err = cat.dbconn.QueryRow(ctx, sqlStatement).Scan(&id)
 
 	if err != nil && err != pgx.ErrNoRows {
 		return err
