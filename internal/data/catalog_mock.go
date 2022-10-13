@@ -215,8 +215,8 @@ func (cat *CatalogMock) TableFeatures(ctx context.Context, name string, param *Q
 	}
 	featFilt := doFilter(features, param.Filter)
 	featuresLim := doLimit(featFilt, param.Limit, param.Offset)
-	// handle empty property list
-	propNames := cat.TableDefs[0].Columns
+
+	var propNames []string
 	if len(param.Columns) > 0 {
 		propNames = param.Columns
 	}
@@ -245,8 +245,8 @@ func (cat *CatalogMock) TableFeature(ctx context.Context, name string, id string
 	if index < 0 || index >= len(features) {
 		return nil, nil
 	}
-	// handle empty property list
-	propNames := cat.TableDefs[0].Columns
+
+	var propNames []string
 	if len(param.Columns) > 0 {
 		propNames = param.Columns
 	}

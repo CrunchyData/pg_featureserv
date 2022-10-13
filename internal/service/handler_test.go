@@ -132,6 +132,17 @@ func TestCollectionItem(t *testing.T) {
 	checkItem(t, 1)
 }
 
+func TestCollectionItemPropertiesEmpty(t *testing.T) {
+	rr := hTest.DoRequest(t, "/collections/mock_a/items/1?properties=")
+
+	var v api.GeojsonFeatureData
+	errUnMarsh := json.Unmarshal(hTest.ReadBody(rr), &v)
+	util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
+
+	util.Equals(t, "Feature", v.Type, "feature type")
+	util.Equals(t, 0, len(v.Props), "feature # properties")
+}
+
 func TestFilterB(t *testing.T) {
 	rr := hTest.DoRequest(t, "/collections/mock_a/items?prop_b=1")
 
@@ -296,6 +307,17 @@ func TestProperties(t *testing.T) {
 	util.Equals(t, 2, len(v.Features[0].Props), "feature 1 # properties")
 	util.Equals(t, "propA", v.Features[0].Props["prop_a"], "feature 1 # property A")
 	util.Equals(t, "propC", v.Features[0].Props["prop_c"], "feature 1 # property C")
+}
+
+func TestPropertiesEmpty(t *testing.T) {
+	rr := hTest.DoRequest(t, "/collections/mock_a/items?limit=2&properties=")
+
+	var v api.FeatureCollection
+	errUnMarsh := json.Unmarshal(hTest.ReadBody(rr), &v)
+	util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
+
+	util.Equals(t, 2, len(v.Features), "# features")
+	util.Equals(t, 0, len(v.Features[0].Props), "feature 1 # properties")
 }
 
 // TestPropertiesAll tests that no properties parameter returns all props
