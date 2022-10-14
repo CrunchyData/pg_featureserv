@@ -52,7 +52,7 @@ type Catalog interface {
 	AddTableFeature(ctx context.Context, tableName string, jsonData []byte) (int64, error)
 
 	// PartialUpdateTableFeature updates a table feature with given id with the JSON data
-	PartialUpdateTableFeature(ctx context.Context, tableName string, id string, jsonData []byte) (int64, error)
+	PartialUpdateTableFeature(ctx context.Context, tableName string, id string, jsonData []byte) error
 
 	// ReplaceTableFeature replaces a table feature with given id with the new jsonData
 	ReplaceTableFeature(ctx context.Context, tableName string, id string, jsonData []byte) error

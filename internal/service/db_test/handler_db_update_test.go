@@ -50,12 +50,7 @@ func (t *DbTests) TestUpdateSimpleFeatureDb() {
 			}
 		}`
 
-		resp := hTest.DoRequestMethodStatus(t, "PATCH", path, []byte(jsonStr), header, http.StatusNoContent)
-		loc := resp.Header().Get("Location")
-
-		util.Assert(t, len(loc) > 1, "Header location must not be empty")
-		util.Equals(t, fmt.Sprintf("http://test/collections/mock_a/items/%d", 2), loc,
-			"Header location must contain valid data")
+		_ = hTest.DoRequestMethodStatus(t, "PATCH", path, []byte(jsonStr), header, http.StatusNoContent)
 
 		// check if it can be read
 		feature := checkItem(t, "mock_a", 2)
@@ -121,12 +116,7 @@ func (t *DbTests) TestUpdateComplexFeatureDb() {
 		util.Assert(t, err == nil, fmt.Sprintf("Error marshalling feature into JSON: %v", err))
 		jsonStr := string(jsonObj)
 
-		resp := hTest.DoRequestMethodStatus(t, "PATCH", path, []byte(jsonStr), header, http.StatusNoContent)
-		loc := resp.Header().Get("Location")
-
-		util.Assert(t, len(loc) > 1, "Header location must not be empty")
-		util.Equals(t, fmt.Sprintf("http://test/collections/mock_multi/items/%d", 100), loc,
-			"Header location must contain valid data")
+		_ = hTest.DoRequestMethodStatus(t, "PATCH", path, []byte(jsonStr), header, http.StatusNoContent)
 
 		// check if it can be read
 		checkItem(t, "mock_multi", 100)

@@ -283,22 +283,22 @@ func (cat *catalogDB) AddTableFeature(ctx context.Context, tableName string, jso
 	return id, nil
 }
 
-func (cat *catalogDB) PartialUpdateTableFeature(ctx context.Context, tableName string, id string, jsonData []byte) (int64, error) {
+func (cat *catalogDB) PartialUpdateTableFeature(ctx context.Context, tableName string, id string, jsonData []byte) error {
 
 	idx, errInt := strconv.ParseInt(id, 10, 64)
 	if errInt != nil {
-		return -9999, errInt
+		return errInt
 	}
 
 	tbl, errTbl := cat.TableByName(tableName)
 	if errTbl != nil {
-		return -9999, errTbl
+		return errTbl
 	}
 
 	var schemaObject api.GeojsonFeatureData
 	errJson := json.Unmarshal(jsonData, &schemaObject)
 	if errJson != nil {
-		return -9999, errJson
+		return errJson
 	}
 
 	var columnStr string
@@ -323,7 +323,7 @@ func (cat *catalogDB) PartialUpdateTableFeature(ctx context.Context, tableName s
 
 		convVal, errConv := col.Type.ParseJSONInterface(schemaObject.Props[colName])
 		if errConv != nil {
-			return -9999, errConv
+			return errConv
 		}
 		values = append(values, convVal)
 	}
@@ -350,10 +350,10 @@ func (cat *catalogDB) PartialUpdateTableFeature(ctx context.Context, tableName s
 
 	errQuery := row.Scan(&idx)
 	if errQuery != nil {
-		return -9999, errQuery
+		return errQuery
 	}
 
-	return idx, nil
+	return nil
 }
 
 func (cat *catalogDB) ReplaceTableFeature(ctx context.Context, tableName string, id string, jsonData []byte) error {

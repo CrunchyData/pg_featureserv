@@ -290,17 +290,17 @@ func (cat *CatalogMock) AddTableFeature(ctx context.Context, tableName string, j
 	return maxId + 1, nil
 }
 
-func (cat *CatalogMock) PartialUpdateTableFeature(ctx context.Context, tableName string, id string, jsonData []byte) (int64, error) {
+func (cat *CatalogMock) PartialUpdateTableFeature(ctx context.Context, tableName string, id string, jsonData []byte) error {
 
 	var schemaObject api.GeojsonFeatureData
 	err1 := json.Unmarshal(jsonData, &schemaObject)
 	if err1 != nil {
-		return 0, err1
+		return err1
 	}
 
 	index, err2 := strconv.ParseInt(id, 10, 64)
 	if err2 != nil {
-		return 0, err2
+		return err2
 	}
 
 	oldFeature := cat.tableData[tableName][index-1]
@@ -329,10 +329,10 @@ func (cat *CatalogMock) PartialUpdateTableFeature(ctx context.Context, tableName
 	propNames := cat.TableDefs[0].Columns
 	jsonStr := oldFeature.toJSON(propNames)
 	if jsonStr == "" {
-		return 0, fmt.Errorf("Error marshalling feature into JSON:: %v", tableName)
+		return fmt.Errorf("Error marshalling feature into JSON:: %v", tableName)
 	}
 
-	return index, nil
+	return nil
 }
 
 func (cat *CatalogMock) ReplaceTableFeature(ctx context.Context, tableName string, id string, jsonData []byte) error {

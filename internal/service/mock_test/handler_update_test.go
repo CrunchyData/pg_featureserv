@@ -86,13 +86,7 @@ func (t *MockTests) TestUpdateFeatureSuccess() {
 			}
 		}`
 
-		resp := hTest.DoRequestMethodStatus(t, "PATCH", path, []byte(jsonStr), header, http.StatusNoContent)
-
-		loc := resp.Header().Get("Location")
-
-		util.Assert(t, len(loc) > 1, "Header location must not be empty")
-		util.Equals(t, fmt.Sprintf("http://test/collections/mock_a/items/%d", 1), loc,
-			"Header location must contain valid data")
+		_ = hTest.DoRequestMethodStatus(t, "PATCH", path, []byte(jsonStr), header, http.StatusNoContent)
 
 		// check if it can be read
 		feature := checkItem(t, 1)
@@ -138,12 +132,7 @@ func (t *MockTests) TestUpdateFeaturePartialSuccess() {
 			}
 		}`
 
-		resp := hTest.DoRequestMethodStatus(t, "PATCH", path, []byte(jsonStr), header, http.StatusNoContent)
-		loc := resp.Header().Get("Location")
-
-		util.Assert(t, len(loc) > 1, "Header location must not be empty")
-		util.Equals(t, fmt.Sprintf("http://test/collections/mock_a/items/%d", 2), loc,
-			"Header location must contain valid data")
+		_ = hTest.DoRequestMethodStatus(t, "PATCH", path, []byte(jsonStr), header, http.StatusNoContent)
 
 		// check if it can be read
 		feature := checkItem(t, 2)
@@ -181,12 +170,7 @@ func (t *MockTests) TestUpdateFeatureOnlyPropSuccess() {
 			}
 		}`
 
-		resp := hTest.DoRequestMethodStatus(t, "PATCH", path, []byte(jsonStr), header, http.StatusNoContent)
-		loc := resp.Header().Get("Location")
-
-		util.Assert(t, len(loc) > 1, "Header location must not be empty")
-		util.Equals(t, fmt.Sprintf("http://test/collections/mock_a/items/%d", 3), loc,
-			"Header location must contain valid data")
+		_ = hTest.DoRequestMethodStatus(t, "PATCH", path, []byte(jsonStr), header, http.StatusNoContent)
 
 		// check if it can be read
 		feature := checkItem(t, 3)
@@ -222,12 +206,7 @@ func (t *MockTests) TestUpdateFeatureOnlyGeomSuccess() {
 			}
 		}`
 
-		resp := hTest.DoRequestMethodStatus(t, "PATCH", path, []byte(jsonStr), header, http.StatusNoContent)
-		loc := resp.Header().Get("Location")
-
-		util.Assert(t, len(loc) > 1, "Header location must not be empty")
-		util.Equals(t, fmt.Sprintf("http://test/collections/mock_a/items/%d", 4), loc,
-			"Header location must contain valid data")
+		_ = hTest.DoRequestMethodStatus(t, "PATCH", path, []byte(jsonStr), header, http.StatusNoContent)
 
 		// check if it can be read
 		feature := checkItem(t, 4)

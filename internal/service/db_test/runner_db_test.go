@@ -73,7 +73,9 @@ func TestRunnerHandlerDb(t *testing.T) {
 	t.Run("PUT", func(t *testing.T) {
 		beforeEachRun()
 		test := DbTests{Test: t}
-		test.TestReplaceFeatureSuccessDb()
+		test.TestSimpleReplaceFeatureSuccessDb()
+		test.TestGetComplexCollectionReplaceSchema()
+		test.TestReplaceComplexFeatureDb()
 		afterEachRun()
 	})
 	t.Run("POST", func(t *testing.T) {
