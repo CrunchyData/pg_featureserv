@@ -243,7 +243,7 @@ func (t *MockTests) TestUpdateFeaturePartialGeomFailure() {
 			}
 		}`
 
-		resp := hTest.DoRequestMethodStatus(t, "PATCH", path, []byte(jsonStr), header, http.StatusInternalServerError)
+		resp := hTest.DoRequestMethodStatus(t, "PATCH", path, []byte(jsonStr), header, http.StatusBadRequest)
 		body, _ := ioutil.ReadAll(resp.Body)
 
 		// fmt.Println(string(body))

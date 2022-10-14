@@ -46,9 +46,9 @@ func (t *DbTests) TestCreateSimpleFeatureWithBadGeojsonInputDb() {
 			"email": "sample@test.com"
 			}]`
 
-		rr := hTest.DoRequestMethodStatus(t, "POST", "/collections/mock_a/items", []byte(jsonStr), header, http.StatusInternalServerError)
+		rr := hTest.DoRequestMethodStatus(t, "POST", "/collections/mock_a/items", []byte(jsonStr), header, http.StatusBadRequest)
 
-		util.Equals(t, http.StatusInternalServerError, rr.Code, "Should have failed")
+		util.Equals(t, http.StatusBadRequest, rr.Code, "Should have failed")
 		util.Assert(t, strings.Index(rr.Body.String(), fmt.Sprintf(api.ErrMsgCreateFeatureNotConform+"\n", "mock_a")) == 0, "Should have failed with not conform")
 
 	})
@@ -115,7 +115,7 @@ func (t *DbTests) TestGetComplexCollectionCreateSchema() {
 		util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 
 		util.Equals(t, "Data for table public.mock_multi", fis.Description, "feature description")
-        util.Equals(t, "GeoJSON Point", fis.Properties["geometry"].Value.Title, "feature geometry")
+		util.Equals(t, "GeoJSON Point", fis.Properties["geometry"].Value.Title, "feature geometry")
 
 		util.Equals(t, "Feature", fis.Properties["type"].Value.Default, "feature type is feature")
 

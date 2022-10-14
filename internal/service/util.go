@@ -119,25 +119,18 @@ func FatalAfter(delaySec int, msg string) chan struct{} {
 	return chanCancel
 }
 
-func appErrorMsg(err error, msg string, code int) *appError {
-	return &appError{err, msg, code}
-}
-
-func appErrorInternal(err error, msg string) *appError {
-	return &appError{err, msg, http.StatusInternalServerError}
-}
-
-func appErrorBadRequest(err error, msg string) *appError {
-	return &appError{err, msg, http.StatusBadRequest}
-}
-
-func appErrorInternalFmt(err error, format string, v ...interface{}) *appError {
+func appErrorInternal(err error, format string, v ...interface{}) *appError {
 	msg := fmt.Sprintf(format, v...)
 	return &appError{err, msg, http.StatusInternalServerError}
 }
 
-func appErrorNotFoundFmt(err error, format string, v string) *appError {
-	msg := fmt.Sprintf(format, v)
+func appErrorBadRequest(err error, format string, v ...interface{}) *appError {
+	msg := fmt.Sprintf(format, v...)
+	return &appError{err, msg, http.StatusBadRequest}
+}
+
+func appErrorNotFound(err error, format string, v ...interface{}) *appError {
+	msg := fmt.Sprintf(format, v...)
 	return &appError{err, msg, http.StatusNotFound}
 }
 
@@ -293,7 +286,7 @@ func writeResponse(w http.ResponseWriter, contype string, encodedContent []byte)
 	w.WriteHeader(http.StatusOK)
 	_, err := w.Write(encodedContent)
 	if err != nil {
-		return appErrorInternal(err, api.ErrMsgDataWriteError)
+		return appErrorInternal(err, api.ErrMsgDataWriteError, "")
 	}
 	return nil
 }

@@ -104,8 +104,8 @@ func (t *MockTests) TestCreateFeature() {
 		"name": "Sample",
 		"email": "sample@test.com"
 	    }]`
-			rr := hTest.DoRequestMethodStatus(t, "POST", "/collections/mock_a/items", []byte(jsonStr), header, http.StatusInternalServerError)
-			util.Equals(t, http.StatusInternalServerError, rr.Code, "Should have failed")
+			rr := hTest.DoRequestMethodStatus(t, "POST", "/collections/mock_a/items", []byte(jsonStr), header, http.StatusBadRequest)
+			util.Equals(t, http.StatusBadRequest, rr.Code, "Should have failed")
 			util.Assert(t, strings.Index(rr.Body.String(), fmt.Sprintf(api.ErrMsgCreateFeatureNotConform+"\n", "mock_a")) == 0, "Should have failed with not conform")
 		}
 
