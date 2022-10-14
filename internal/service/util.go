@@ -60,7 +60,7 @@ type appHandler func(http.ResponseWriter, *http.Request) *appError
 // See also https://golang.org/pkg/net/http/#Handler
 func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// --- log the request
-	log.Printf("%v %v %v\n", r.RemoteAddr, r.Method, r.URL)
+	log.Debugf("%v %v %v\n", r.RemoteAddr, r.Method, r.URL)
 
 	// signal for normal completion of handler
 	handlerDone := make(chan struct{})

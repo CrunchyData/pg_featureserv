@@ -34,7 +34,7 @@ var instance CatalogMock
 
 // CatMockInstance tbd
 func CatMockInstance() *CatalogMock {
-	log.Printf("Using Test Catalog data")
+	log.Debug("Using Test Catalog data")
 	// TODO: make a singleton
 	instance = newCatalogMock()
 	return &instance

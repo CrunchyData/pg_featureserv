@@ -29,16 +29,18 @@ import (
 )
 
 type HttpTesting struct {
-	UrlBase  string
-	BasePath string
-	Router   *mux.Router
+	UrlBase    string
+	BasePath   string
+	AssetsPath string
+	Router     *mux.Router
 }
 
-func MakeHttpTesting(urlBase string, basePath string, router *mux.Router) HttpTesting {
+func MakeHttpTesting(urlBase string, basePath string, assetsPath string, router *mux.Router) HttpTesting {
 	hTest := HttpTesting{
-		UrlBase:  urlBase,
-		BasePath: basePath,
-		Router:   router,
+		UrlBase:    urlBase,
+		BasePath:   basePath,
+		AssetsPath: assetsPath,
+		Router:     router,
 	}
 	hTest.Setup()
 	return hTest
@@ -51,7 +53,7 @@ func (hTest *HttpTesting) Setup() {
 			HttpPort:   9000,
 			UrlBase:    hTest.UrlBase,
 			BasePath:   hTest.BasePath,
-			AssetsPath: "../../assets",
+			AssetsPath: hTest.AssetsPath,
 			TransformFunctions: []string{
 				"ST_Centroid",
 				"ST_PointOnSurface",

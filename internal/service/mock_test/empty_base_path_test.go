@@ -1,4 +1,4 @@
-package service
+package mock_test
 
 /*
  Copyright 2019 Crunchy Data Solutions, Inc.
@@ -15,21 +15,25 @@ package service
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
+	"github.com/CrunchyData/pg_featureserv/internal/service"
 	util "github.com/CrunchyData/pg_featureserv/internal/utiltest"
 )
 
 func TestRootEmptyBasePath(t *testing.T) {
-	hTestBadPath := util.MakeHttpTesting("http://test", "", InitRouter(""))
-	Initialize()
+
+	hTestBadPath := util.MakeHttpTesting("http://test", "", "../../../assets", service.InitRouter(""))
+	service.Initialize()
 
 	testCases := []string{
 		"/",
 		"/index.html",
 	}
 	for _, tc := range testCases {
-		t.Run(fmt.Sprintf("%s route works with empty base path", tc), func(t *testing.T) {
+		title := fmt.Sprintf("route works with empty base path (%v)", strings.TrimPrefix(tc, "/"))
+		t.Run(title, func(t *testing.T) {
 			resp := hTestBadPath.DoRequest(t, tc)
 			util.Assert(t, resp.Code == 200, "Status must be 200")
 		})

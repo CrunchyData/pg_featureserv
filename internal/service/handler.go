@@ -65,19 +65,20 @@ func InitRouter(basePath string) *mux.Router {
 
 	if conf.Configuration.Database.AllowWrite {
 		addRouteWithMethod(router, "/collections/{id}/items", handleCreateCollectionItem, "POST")
+
 		addRouteWithMethod(router, "/collections/{id}/items/{fid}", handleDeleteCollectionItem, "DELETE")
+
+		addRouteWithMethod(router, "/collections/{id}/items/{fid}", handlePartialUpdateItem, "PATCH")
+		addRouteWithMethod(router, "/collections/{id}/items/{fid}.{fmt}", handlePartialUpdateItem, "PATCH")
+
+		addRouteWithMethod(router, "/collections/{id}/items/{fid}", handleReplaceItem, "PUT")
+		addRouteWithMethod(router, "/collections/{id}/items/{fid}.{fmt}", handleReplaceItem, "PUT")
 
 		addRoute(router, "/collections/{id}/schema", handleCollectionSchemas)
 	}
 
 	addRoute(router, "/collections/{id}/items/{fid}", handleItem)
 	addRoute(router, "/collections/{id}/items/{fid}.{fmt}", handleItem)
-
-	addRouteWithMethod(router, "/collections/{id}/items/{fid}", handlePartialUpdateItem, "PATCH")
-	addRouteWithMethod(router, "/collections/{id}/items/{fid}.{fmt}", handlePartialUpdateItem, "PATCH")
-
-	addRouteWithMethod(router, "/collections/{id}/items/{fid}", handleReplaceItem, "PUT")
-	addRouteWithMethod(router, "/collections/{id}/items/{fid}.{fmt}", handleReplaceItem, "PUT")
 
 	addRoute(router, "/functions", handleFunctions)
 	addRoute(router, "/functions.{fmt}", handleFunctions)

@@ -24,105 +24,111 @@ import (
 	"testing"
 
 	"github.com/CrunchyData/pg_featureserv/internal/api"
-	"github.com/CrunchyData/pg_featureserv/internal/util"
+	util "github.com/CrunchyData/pg_featureserv/internal/utiltest"
 	"github.com/getkin/kin-openapi/openapi3"
 )
 
-func TestGetComplexCollectionUpdateSchema(t *testing.T) {
-	path := "/collections/mock_multi/schema?type=update"
-	var header = make(http.Header)
-	header.Add("Accept", api.ContentTypeSchemaJSON)
+func (t *DbTests) TestUpdateSimpleFeatureDb() {
+	t.Test.Run("TestUpdateSimpleFeatureDb", func(t *testing.T) {
+		path := "/collections/mock_a/items/2"
+		var header = make(http.Header)
+		header.Add("Content-Type", api.ContentTypeSchemaPatchJSON)
 
-	resp := hTest.DoRequestMethodStatus(t, "GET", path, nil, header, http.StatusOK)
-	body, _ := ioutil.ReadAll(resp.Body)
+		jsonStr := `{
+			"type": "Feature",
+			"id": "2",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+				-120,
+				40
+				]
+			},
+			"properties": {
+				"prop_a": "propA...",
+				"prop_b": 2
+			}
+		}`
 
-	var fis openapi3.Schema
-	errUnMarsh := json.Unmarshal(body, &fis)
-	util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
+		resp := hTest.DoRequestMethodStatus(t, "PATCH", path, []byte(jsonStr), header, http.StatusNoContent)
+		loc := resp.Header().Get("Location")
 
-	util.Equals(t, "Data for table public.mock_multi", fis.Description, "feature description")
-	util.Equals(t, "https://geojson.org/schema/Point.json", fis.Properties["geometry"].Ref, "feature geometry")
+		util.Assert(t, len(loc) > 1, "Header location must not be empty")
+		util.Equals(t, fmt.Sprintf("http://test/collections/mock_a/items/%d", 2), loc,
+			"Header location must contain valid data")
 
-	util.Equals(t, "Feature", fis.Properties["type"].Value.Default, "feature type is feature")
+		// check if it can be read
+		feature := checkItem(t, "mock_a", 2)
+		var jsonData map[string]interface{}
+		errUnMarsh := json.Unmarshal(feature, &jsonData)
+		util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 
-	val := fis.Properties["properties"].Value
-	util.Equals(t, 0, len(fis.Required), "no required field")
-	util.Equals(t, "array", val.Properties["prop_b"].Value.Type, "feature type bool")
-	util.Equals(t, "boolean", val.Properties["prop_b"].Value.Items.Value.Type, "feature array type bool")
-	util.Equals(t, "string", val.Properties["prop_d"].Value.Type, "feature type date")
-	util.Equals(t, "number", val.Properties["prop_f"].Value.Type, "feature type float64")
-	util.Equals(t, "integer", val.Properties["prop_i"].Value.Type, "feature type int")
-	util.Equals(t, "object", val.Properties["prop_j"].Value.Type, "feature type json")
-	util.Equals(t, "integer", val.Properties["prop_l"].Value.Type, "feature type long")
-	util.Equals(t, "number", val.Properties["prop_r"].Value.Type, "feature type real")
-	util.Equals(t, "string", val.Properties["prop_t"].Value.Type, "feature type text")
+		util.Equals(t, "2", jsonData["id"].(string), "feature ID")
+		util.Equals(t, "Feature", jsonData["type"].(string), "feature Type")
+		props := jsonData["properties"].(map[string]interface{})
+		util.Equals(t, "propA...", props["prop_a"].(string), "feature value a")
+		util.Equals(t, 2, int(props["prop_b"].(float64)), "feature value b")
+		util.Equals(t, "propC", props["prop_c"].(string), "feature value c")
+		util.Equals(t, 2, int(props["prop_d"].(float64)), "feature value d")
+		geom := jsonData["geometry"].(map[string]interface{})
+		util.Equals(t, "Point", geom["type"].(string), "feature Type")
+		coordinate := geom["coordinates"].([]interface{})
+		util.Equals(t, -120, int(coordinate[0].(float64)), "feature latitude")
+		util.Equals(t, 40, int(coordinate[1].(float64)), "feature longitude")
+	})
 }
 
-func TestUpdateComplexFeatureDb(t *testing.T) {
-	path := "/collections/mock_multi/items/100"
-	var header = make(http.Header)
-	header.Add("Content-Type", api.ContentTypeSchemaPatchJSON)
+func (t *DbTests) TestGetComplexCollectionUpdateSchema() {
+	t.Test.Run("TestGetComplexCollectionUpdateSchema", func(t *testing.T) {
+		path := "/collections/mock_multi/schema?type=update"
+		var header = make(http.Header)
+		header.Add("Accept", api.ContentTypeSchemaJSON)
 
-	feat := util.MakeGeojsonFeatureMockPoint(99999, -50, 35)
-	jsonObj, err := json.Marshal(feat)
-	util.Assert(t, err == nil, fmt.Sprintf("Error marshalling feature into JSON: %v", err))
-	jsonStr := string(jsonObj)
+		resp := hTest.DoRequestMethodStatus(t, "GET", path, nil, header, http.StatusOK)
+		body, _ := ioutil.ReadAll(resp.Body)
 
-	resp := hTest.DoRequestMethodStatus(t, "PATCH", path, []byte(jsonStr), header, http.StatusNoContent)
-	loc := resp.Header().Get("Location")
+		var fis openapi3.Schema
+		errUnMarsh := json.Unmarshal(body, &fis)
+		util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 
-	util.Assert(t, len(loc) > 1, "Header location must not be empty")
-	util.Equals(t, fmt.Sprintf("http://test/collections/mock_multi/items/%d", 100), loc,
-		"Header location must contain valid data")
+		util.Equals(t, "Data for table public.mock_multi", fis.Description, "feature description")
+		util.Equals(t, "https://geojson.org/schema/Point.json", fis.Properties["geometry"].Ref, "feature geometry")
 
-	// check if it can be read
-	checkItem(t, "mock_multi", 100)
+		util.Equals(t, "Feature", fis.Properties["type"].Value.Default, "feature type is feature")
+
+		val := fis.Properties["properties"].Value
+		util.Equals(t, 0, len(fis.Required), "no required field")
+		util.Equals(t, "array", val.Properties["prop_b"].Value.Type, "feature type bool")
+		util.Equals(t, "boolean", val.Properties["prop_b"].Value.Items.Value.Type, "feature array type bool")
+		util.Equals(t, "string", val.Properties["prop_d"].Value.Type, "feature type date")
+		util.Equals(t, "number", val.Properties["prop_f"].Value.Type, "feature type float64")
+		util.Equals(t, "integer", val.Properties["prop_i"].Value.Type, "feature type int")
+		util.Equals(t, "object", val.Properties["prop_j"].Value.Type, "feature type json")
+		util.Equals(t, "integer", val.Properties["prop_l"].Value.Type, "feature type long")
+		util.Equals(t, "number", val.Properties["prop_r"].Value.Type, "feature type real")
+		util.Equals(t, "string", val.Properties["prop_t"].Value.Type, "feature type text")
+	})
 }
 
-func TestUpdateSimpleFeatureDb(t *testing.T) {
-	path := "/collections/mock_a/items/10"
-	var header = make(http.Header)
-	header.Add("Content-Type", api.ContentTypeSchemaPatchJSON)
+func (t *DbTests) TestUpdateComplexFeatureDb() {
+	t.Test.Run("TestUpdateComplexFeatureDb", func(t *testing.T) {
+		path := "/collections/mock_multi/items/100"
+		var header = make(http.Header)
+		header.Add("Content-Type", api.ContentTypeSchemaPatchJSON)
 
-	jsonStr := `{
-		"type": "Feature",
-		"id": "10",
-		"geometry": {
-			"type": "Point",
-			"coordinates": [
-			-120,
-			40
-			]
-		},
-		"properties": {
-			"prop_a": "propA...",
-			"prop_b": 2
-		}
-	}`
+		feat := util.MakeGeojsonFeatureMockPoint(99999, -50, 35)
+		jsonObj, err := json.Marshal(feat)
+		util.Assert(t, err == nil, fmt.Sprintf("Error marshalling feature into JSON: %v", err))
+		jsonStr := string(jsonObj)
 
-	resp := hTest.DoRequestMethodStatus(t, "PATCH", path, []byte(jsonStr), header, http.StatusNoContent)
-	loc := resp.Header().Get("Location")
+		resp := hTest.DoRequestMethodStatus(t, "PATCH", path, []byte(jsonStr), header, http.StatusNoContent)
+		loc := resp.Header().Get("Location")
 
-	util.Assert(t, len(loc) > 1, "Header location must not be empty")
-	util.Equals(t, fmt.Sprintf("http://test/collections/mock_a/items/%d", 10), loc,
-		"Header location must contain valid data")
+		util.Assert(t, len(loc) > 1, "Header location must not be empty")
+		util.Equals(t, fmt.Sprintf("http://test/collections/mock_multi/items/%d", 100), loc,
+			"Header location must contain valid data")
 
-	// check if it can be read
-	feature := checkItem(t, "mock_a", 10)
-	var jsonData map[string]interface{}
-	errUnMarsh := json.Unmarshal(feature, &jsonData)
-	util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
-
-	util.Equals(t, "10", jsonData["id"].(string), "feature ID")
-	util.Equals(t, "Feature", jsonData["type"].(string), "feature Type")
-	props := jsonData["properties"].(map[string]interface{})
-	util.Equals(t, "propA...", props["prop_a"].(string), "feature value a")
-	util.Equals(t, 2, int(props["prop_b"].(float64)), "feature value b")
-	util.Equals(t, "propC", props["prop_c"].(string), "feature value c")
-	util.Equals(t, 1, int(props["prop_d"].(float64)), "feature value d")
-	geom := jsonData["geometry"].(map[string]interface{})
-	util.Equals(t, "Point", geom["type"].(string), "feature Type")
-	coordinate := geom["coordinates"].([]interface{})
-	util.Equals(t, -120, int(coordinate[0].(float64)), "feature latitude")
-	util.Equals(t, 40, int(coordinate[1].(float64)), "feature longitude")
+		// check if it can be read
+		checkItem(t, "mock_multi", 100)
+	})
 }

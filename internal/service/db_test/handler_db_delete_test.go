@@ -23,24 +23,25 @@ import (
 
 	"github.com/CrunchyData/pg_featureserv/internal/api"
 	"github.com/CrunchyData/pg_featureserv/internal/data"
-	"github.com/CrunchyData/pg_featureserv/internal/util"
+	util "github.com/CrunchyData/pg_featureserv/internal/utiltest"
 )
 
-func TestDeleteFeatureDb(t *testing.T) {
+func (t *DbTests) TestDeleteFeatureDb() {
+	t.Test.Run("TestDeleteFeatureDb", func(t *testing.T) {
+		//--- retrieve max feature id before delete
+		var features []*api.GeojsonFeatureData
+		params := data.QueryParam{Limit: 100000, Offset: 0, Crs: 4326}
+		features, _ = cat.TableFeatures(context.Background(), "mock_b", &params)
 
-	//--- retrieve max feature id before delete
-	var features []*api.GeojsonFeatureData
-	params := data.QueryParam{Limit: 100000, Offset: 0, Crs: 4326}
-	features, _ = cat.TableFeatures(context.Background(), "mock_b", &params)
+		featuresNumbersBefore := len(features)
 
-	featuresNumbersBefore := len(features)
+		// -- do the request call but we have to force the catalogInstance to db during this operation
+		hTest.DoDeleteRequestStatus(t, "/collections/mock_b/items/1", http.StatusNoContent)
 
-	// -- do the request call but we have to force the catalogInstance to db during this operation
-	hTest.DoDeleteRequestStatus(t, "/collections/mock_b/items/1", http.StatusNoContent)
+		//--- retrieve max feature id after delete
+		features, _ = cat.TableFeatures(context.Background(), "mock_b", &params)
+		featuresNumbersAfter := len(features)
 
-	//--- retrieve max feature id after delete
-	features, _ = cat.TableFeatures(context.Background(), "mock_b", &params)
-	featuresNumbersAfter := len(features)
-
-	util.Assert(t, featuresNumbersBefore-1 == featuresNumbersAfter, "# feature still in db/not deleted")
+		util.Assert(t, featuresNumbersBefore-1 == featuresNumbersAfter, "# feature still in db/not deleted")
+	})
 }

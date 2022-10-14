@@ -24,15 +24,16 @@ import (
 	"testing"
 
 	"github.com/CrunchyData/pg_featureserv/internal/api"
-	"github.com/CrunchyData/pg_featureserv/internal/util"
+	util "github.com/CrunchyData/pg_featureserv/internal/utiltest"
 )
 
-func TestReplaceFeatureSuccessDb(t *testing.T) {
-	path := "/collections/mock_a/items/9"
-	var header = make(http.Header)
-	header.Add("Accept", api.ContentTypeSchemaPatchJSON)
+func (t *DbTests) TestReplaceFeatureSuccessDb() {
+	t.Test.Run("TestReplaceFeatureSuccessDb", func(t *testing.T) {
+		path := "/collections/mock_a/items/9"
+		var header = make(http.Header)
+		header.Add("Accept", api.ContentTypeSchemaPatchJSON)
 
-	jsonStr := `{
+		jsonStr := `{
 		"type": "Feature",
 		"id": "9",
 		"geometry": {
@@ -49,27 +50,28 @@ func TestReplaceFeatureSuccessDb(t *testing.T) {
 		}
 	}`
 
-	hTest.DoRequestMethodStatus(t, "PUT", path, []byte(jsonStr), header, http.StatusNoContent)
+		hTest.DoRequestMethodStatus(t, "PUT", path, []byte(jsonStr), header, http.StatusNoContent)
 
-	resp := hTest.DoRequestMethodStatus(t, "GET", path, []byte(""), header, http.StatusOK)
-	body, _ := ioutil.ReadAll(resp.Body)
+		resp := hTest.DoRequestMethodStatus(t, "GET", path, []byte(""), header, http.StatusOK)
+		body, _ := ioutil.ReadAll(resp.Body)
 
-	fmt.Println(string(body))
+		// fmt.Println(string(body))
 
-	var jsonData map[string]interface{}
-	err := json.Unmarshal(body, &jsonData)
-	util.Assert(t, err == nil, fmt.Sprintf("%v", err))
+		var jsonData map[string]interface{}
+		err := json.Unmarshal(body, &jsonData)
+		util.Assert(t, err == nil, fmt.Sprintf("%v", err))
 
-	util.Equals(t, "9", jsonData["id"].(string), "feature ID")
-	util.Equals(t, "Feature", jsonData["type"].(string), "feature Type")
-	props := jsonData["properties"].(map[string]interface{})
-	util.Equals(t, "propA...", props["prop_a"].(string), "feature value a")
-	util.Equals(t, 1, int(props["prop_b"].(float64)), "feature value b")
-	util.Equals(t, "propC...", props["prop_c"].(string), "feature value c")
-	util.Equals(t, nil, props["prop_d"], "feature value d")
-	geom := jsonData["geometry"].(map[string]interface{})
-	util.Equals(t, "Point", geom["type"].(string), "feature Type")
-	coordinate := geom["coordinates"].([]interface{})
-	util.Equals(t, -120, int(coordinate[0].(float64)), "feature latitude")
-	util.Equals(t, 40, int(coordinate[1].(float64)), "feature longitude")
+		util.Equals(t, "9", jsonData["id"].(string), "feature ID")
+		util.Equals(t, "Feature", jsonData["type"].(string), "feature Type")
+		props := jsonData["properties"].(map[string]interface{})
+		util.Equals(t, "propA...", props["prop_a"].(string), "feature value a")
+		util.Equals(t, 1, int(props["prop_b"].(float64)), "feature value b")
+		util.Equals(t, "propC...", props["prop_c"].(string), "feature value c")
+		util.Equals(t, nil, props["prop_d"], "feature value d")
+		geom := jsonData["geometry"].(map[string]interface{})
+		util.Equals(t, "Point", geom["type"].(string), "feature Type")
+		coordinate := geom["coordinates"].([]interface{})
+		util.Equals(t, -120, int(coordinate[0].(float64)), "feature latitude")
+		util.Equals(t, 40, int(coordinate[1].(float64)), "feature longitude")
+	})
 }

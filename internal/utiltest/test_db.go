@@ -57,15 +57,15 @@ func CreateTestDb() *pgxpool.Pool {
 	dbHost := dbconfig.ConnConfig.Config.Host
 	log.Debugf("Connected as %s to %s @ %s", dbUser, dbName, dbHost)
 
-	insertSimpleDataset(db)
-	insertComplexDataset(db)
+	InsertSimpleDataset(db)
+	InsertComplexDataset(db)
 
 	log.Debugf("Sample data injected")
 
 	return db
 }
 
-func insertSimpleDataset(db *pgxpool.Pool) {
+func InsertSimpleDataset(db *pgxpool.Pool) {
 	ctx := context.Background()
 	// collections tables
 	// tables := []string{"mock_a", "mock_b", "mock_c"}
@@ -149,7 +149,7 @@ func MakeGeojsonFeatureMockPoint(id int, x float64, y float64) *api.GeojsonFeatu
 	return &feat
 }
 
-func insertComplexDataset(db *pgxpool.Pool) {
+func InsertComplexDataset(db *pgxpool.Pool) {
 	ctx := context.Background()
 	// NOT same as featureMock
 	// TODO: mark all props as required with NOT NULL contraint?

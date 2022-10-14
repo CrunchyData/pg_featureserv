@@ -83,16 +83,47 @@ To run the build to verify it:
   ```
 
 * This creates a `pg_featureserv` executable in the application directory
-* (Optional) Run the unit tests using `make test`
 
-To run the build to verify it:
+* (Optional) To run the unit tests, use the following command :
 
-* Set the `DATABASE_URL` environment variable to the database you want to connect to, and run the binary.
-  `export DATABASE_URL=postgres://username:password@host/dbname`
-* Start the server:
-  `./pg_featureserv`
-* Open the service home page in a browser:
-  `http:/localhost:9000/home.html`
+  ```bash
+  # all tests
+  go test ./...
+  # OR
+  make test
+  ```
+
+  Or, to run only CRUD-like tests in mock mode :
+
+  ```bash
+  # all CRUD tests (mock mode)
+  go test -run ^TestRunnerHandlerMock$ github.com/CrunchyData/pg_featureserv/internal/service/mock_test
+  ```
+
+  ```bash
+  # a group of CRUD tests (mock mode)
+  go test -run ^TestRunnerHandlerMock/DELETE$ github.com/CrunchyData/pg_featureserv/internal/service/mock_test
+  ```
+
+  ```bash
+  # an unique CRUD test (mock mode)
+  go test -run ^TestRunnerHandlerMock/DELETE/TestDeleteExistingFeature$ github.com/CrunchyData/pg_featureserv/internal/service/mock_test
+  ```
+
+  It's also possible to run the tests on a database :
+
+  ```bash
+  # all CRUD tests (db mode)
+  go test -run ^TestRunnerHandlerDb$ github.com/CrunchyData/pg_featureserv/internal/service/db_test
+  ```
+* To run the build to verify it:
+
+  * Set the `DATABASE_URL` environment variable to the database you want to connect to, and run the binary.
+    `export DATABASE_URL=postgres://username:password@host/dbname`
+  * Start the server:
+    `./pg_featureserv`
+  * Open the service home page in a browser:
+    `http:/localhost:9000/home.html`
 
 
 ### D. Build the docker image of `pg_featureserv`
