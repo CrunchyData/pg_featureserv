@@ -343,7 +343,7 @@ func handleCreateCollectionItem(w http.ResponseWriter, r *http.Request) *appErro
 	//--- json body
 	bodyContent, errBody := ioutil.ReadAll(r.Body)
 	if errBody != nil || len(bodyContent) == 0 {
-		return appErrorInternal(errBody, "Unable to read request body for Collection: %v", name)
+		return appErrorInternal(errBody, api.ErrMsgCollectionRequestBodyRead, name)
 	}
 
 	//--- check if body matches the schema
@@ -668,7 +668,7 @@ func handlePartialUpdateItem(w http.ResponseWriter, r *http.Request) *appError {
 	// extract JSON from request body
 	body, errBody := ioutil.ReadAll(r.Body)
 	if errBody != nil || len(body) == 0 {
-		return appErrorInternal(errBody, "Unable to read request body for Collection: %v", name)
+		return appErrorInternal(errBody, api.ErrMsgCollectionRequestBodyRead, name)
 	}
 
 	// check schema
@@ -723,7 +723,7 @@ func handleReplaceItem(w http.ResponseWriter, r *http.Request) *appError {
 	// extract JSON from request body
 	body, errBody := ioutil.ReadAll(r.Body)
 	if errBody != nil || len(body) == 0 {
-		return appErrorInternal(errBody, "Unable to read request body for Collection: %v", name)
+		return appErrorInternal(errBody, api.ErrMsgCollectionRequestBodyRead, name)
 	}
 
 	//--- check if body matches the schema

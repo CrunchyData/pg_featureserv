@@ -60,6 +60,7 @@ const (
 	ErrMsgLoadCollections                = "Unable to access Collections"
 	ErrMsgCollectionNotFound             = "Collection not found: %v"
 	ErrMsgCollectionAccess               = "Unable to access Collection: %v"
+	ErrMsgCollectionRequestBodyRead      = "Unable to read request body for Collection: %v"
 	ErrMsgFeatureNotFound                = "Feature not found: %v"
 	ErrMsgCreateFeatureNotConform        = "Unable to create new feature in Collection - data does not respect schema: %v"
 	ErrMsgCreateFeatureInCatalog         = "Unable to create new feature in Collection - catalog error: %v"
