@@ -78,6 +78,7 @@ const (
 	ErrMsgReplaceFeature                 = "Unable to replace feature in Collection: %v"
 	ErrMsgReplaceFeatureNotConform       = "Unable to replace feature in Collection - data does not respect schema"
 	ErrMsgMarshallingJSON                = "Error marshalling into JSON (table: %v, id: %v)"
+	ErrMsgNoParameters                   = "No parameter allowed"
 )
 
 // ==================================================
