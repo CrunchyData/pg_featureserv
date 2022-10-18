@@ -143,6 +143,7 @@ func MakeGeojsonFeatureMockPoint(id int, x float64, y float64) *api.GeojsonFeatu
 	props["prop_b"] = []bool{id%2 == 0, id%2 == 1}
 	props["prop_d"] = time.Now()
 	props["prop_j"] = api.Sorting{Name: idstr, IsDesc: id%2 == 1}
+	props["prop_v"] = idstr
 
 	feat := api.GeojsonFeatureData{Type: "Feature", ID: idstr, Geom: geom, Props: props}
 
@@ -165,7 +166,8 @@ func InsertComplexDataset(db *pgxpool.Pool) {
 			prop_r real NOT NULL,
 			prop_b bool[] NOT NULL,
 			prop_d date NOT NULL,
-			prop_j json NOT NULL
+			prop_j json NOT NULL,
+			prop_v varchar NOT NULL
 		);
 		`)
 	if errExec != nil {
@@ -186,12 +188,12 @@ func InsertComplexDataset(db *pgxpool.Pool) {
 
 	b := &pgx.Batch{}
 	sqlStatement := `
-		INSERT INTO public.mock_multi (geometry, prop_t, prop_i, prop_l, prop_f, prop_r, prop_b, prop_d, prop_j)
-		VALUES (ST_GeomFromGeoJSON($1), $2, $3, $4, $5, $6, $7, $8, $9)`
+		INSERT INTO public.mock_multi (geometry, prop_t, prop_i, prop_l, prop_f, prop_r, prop_b, prop_d, prop_j, prop_v)
+		VALUES (ST_GeomFromGeoJSON($1), $2, $3, $4, $5, $6, $7, $8, $9, $10)`
 
 	for _, f := range features {
 		geomStr, _ := f.Geom.MarshalJSON()
-		b.Queue(sqlStatement, geomStr, f.Props["prop_t"], f.Props["prop_i"], f.Props["prop_l"], f.Props["prop_f"], f.Props["prop_r"], f.Props["prop_b"], f.Props["prop_d"], f.Props["prop_j"])
+		b.Queue(sqlStatement, geomStr, f.Props["prop_t"], f.Props["prop_i"], f.Props["prop_l"], f.Props["prop_f"], f.Props["prop_r"], f.Props["prop_b"], f.Props["prop_d"], f.Props["prop_j"], f.Props["prop_v"])
 	}
 	res := db.SendBatch(ctx, b)
 	if res == nil {

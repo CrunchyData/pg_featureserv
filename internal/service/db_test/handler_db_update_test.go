@@ -102,6 +102,7 @@ func (t *DbTests) TestGetComplexCollectionUpdateSchema() {
 		util.Equals(t, "integer", val.Properties["prop_l"].Value.Type, "feature type long")
 		util.Equals(t, "number", val.Properties["prop_r"].Value.Type, "feature type real")
 		util.Equals(t, "string", val.Properties["prop_t"].Value.Type, "feature type text")
+		util.Equals(t, "string", val.Properties["prop_v"].Value.Type, "feature type varchar")
 	})
 }
 

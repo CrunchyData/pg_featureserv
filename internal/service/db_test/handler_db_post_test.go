@@ -144,6 +144,9 @@ func (t *DbTests) TestGetComplexCollectionCreateSchema() {
 
 		util.Equals(t, "prop_t", val.Required[7], "feature required text")
 		util.Equals(t, "string", val.Properties["prop_t"].Value.Type, "feature type text")
+
+		util.Equals(t, "prop_v", val.Required[8], "feature required varchar")
+		util.Equals(t, "string", val.Properties["prop_v"].Value.Type, "feature type varchar")
 	})
 }
 

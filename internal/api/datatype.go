@@ -40,27 +40,29 @@ const (
 
 // Constants
 const (
-	PGTypeBool        PGType = "bool"
-	PGTypeBoolArray   PGType = "_bool"
-	PGTypeInt         PGType = "int"
-	PGTypeIntArray    PGType = "_int"
-	PGTypeInt4        PGType = "int4"
-	PGTypeInt4Array   PGType = "_int4"
-	PGTypeInt8        PGType = "int8"
-	PGTypeInt8Array   PGType = "_int8"
-	PGTypeBigInt      PGType = "bigint"
-	PGTypeBigIntArray PGType = "_bigint"
-	PGTypeFloat4      PGType = "float4"
-	PGTypeFloat4Array PGType = "_float4"
-	PGTypeFloat8      PGType = "float8"
-	PGTypeFloat8Array PGType = "_float8"
-	PGTypeNumeric     PGType = "numeric"
-	PGTypeDate        PGType = "date"
-	PGTypeJSON        PGType = "json"
-	PGTypeGeometry    PGType = "geometry"
-	PGTypeText        PGType = "text"
-	PGTypeTextArray   PGType = "_text"
-	PGTypeTSVECTOR    PGType = "tsvector"
+	PGTypeBool         PGType = "bool"
+	PGTypeBoolArray    PGType = "_bool"
+	PGTypeInt          PGType = "int"
+	PGTypeIntArray     PGType = "_int"
+	PGTypeInt4         PGType = "int4"
+	PGTypeInt4Array    PGType = "_int4"
+	PGTypeInt8         PGType = "int8"
+	PGTypeInt8Array    PGType = "_int8"
+	PGTypeBigInt       PGType = "bigint"
+	PGTypeBigIntArray  PGType = "_bigint"
+	PGTypeFloat4       PGType = "float4"
+	PGTypeFloat4Array  PGType = "_float4"
+	PGTypeFloat8       PGType = "float8"
+	PGTypeFloat8Array  PGType = "_float8"
+	PGTypeNumeric      PGType = "numeric"
+	PGTypeDate         PGType = "date"
+	PGTypeJSON         PGType = "json"
+	PGTypeGeometry     PGType = "geometry"
+	PGTypeText         PGType = "text"
+	PGTypeTextArray    PGType = "_text"
+	PGTypeTSVECTOR     PGType = "tsvector"
+	PGTypeVarChar      PGType = "varchar"
+	PGTypeVarCharArray PGType = "_varchar"
 )
 
 // returns JSONType matching PGType
@@ -77,7 +79,7 @@ func (dbType PGType) ToJSONType() JSONType {
 		return JSONTypeBooleanArray
 	case PGTypeJSON:
 		return JSONTypeJSON
-	case PGTypeTextArray:
+	case PGTypeTextArray, PGTypeVarCharArray:
 		return JSONTypeStringArray
 	case PGTypeDate:
 		return JSONTypeDate
@@ -104,7 +106,7 @@ func (dbType PGType) ToOpenApiSchema() *openapi3.Schema {
 	case PGTypeFloat4, PGTypeFloat8:
 		return &openapi3.Schema{Type: "number"}
 
-	case PGTypeText:
+	case PGTypeText, PGTypeVarChar:
 		return &openapi3.Schema{Type: "string"}
 
 	case PGTypeDate:
@@ -113,7 +115,7 @@ func (dbType PGType) ToOpenApiSchema() *openapi3.Schema {
 	case PGTypeGeometry, PGTypeJSON:
 		return &openapi3.Schema{Type: "object"}
 
-	case PGTypeIntArray, PGTypeInt4Array, PGTypeInt8Array, PGTypeBigIntArray, PGTypeFloat4Array, PGTypeFloat8Array, PGTypeTextArray, PGTypeBoolArray:
+	case PGTypeIntArray, PGTypeInt4Array, PGTypeInt8Array, PGTypeBigIntArray, PGTypeFloat4Array, PGTypeFloat8Array, PGTypeTextArray, PGTypeVarCharArray, PGTypeBoolArray:
 		var subPropType string
 
 		switch dbType {
@@ -123,7 +125,7 @@ func (dbType PGType) ToOpenApiSchema() *openapi3.Schema {
 			subPropType = "integer"
 		case PGTypeFloat4Array, PGTypeFloat8Array:
 			subPropType = "number"
-		case PGTypeTextArray:
+		case PGTypeTextArray, PGTypeVarChar:
 			subPropType = "string"
 		default:
 			subPropType = string(dbType)
@@ -160,7 +162,7 @@ func (dbType PGType) ParseJSONInterface(val interface{}) (interface{}, error) {
 	case PGTypeFloat8, PGTypeNumeric:
 		convVal = val.(float64)
 
-	case PGTypeText, PGTypeTSVECTOR:
+	case PGTypeText, PGTypeVarChar, PGTypeTSVECTOR:
 		convVal = val.(string)
 
 	case PGTypeDate:

@@ -66,7 +66,7 @@ func (t *DbTests) TestPropertiesAllFromDbComplexTable() {
 
 		// Note that JSON numbers are read as float64
 		util.Equals(t, 5, len(v.Features), "# features")
-		util.Equals(t, 8, len(v.Features[0].Props), "feature 1 # properties")
+		util.Equals(t, 9, len(v.Features[0].Props), "feature 1 # properties")
 
 		util.Equals(t, "1", v.Features[0].Props["prop_t"].(string), "feature 1 # property text")
 
@@ -81,6 +81,7 @@ func (t *DbTests) TestPropertiesAllFromDbComplexTable() {
 		util.Equals(t, float32(1.0), features[0].Props["prop_r"].(float32), "feature 1 # property float32")
 		util.Equals(t, []bool{false, true}, features[0].Props["prop_b"].([]bool), "feature 1 # property bool")
 		util.Assert(t, time.Now().After(features[0].Props["prop_d"].(time.Time)), "feature 1 # property date")
+		util.Equals(t, "1", features[0].Props["prop_v"].(string), "feature 1 # property varchar")
 
 		expectJson := map[string]interface{}{
 			"Name":   features[0].Props["prop_t"].(string),
