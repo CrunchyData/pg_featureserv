@@ -103,7 +103,7 @@ func (t *DbTests) TestCreateSimpleFeatureDb() {
 // checks collection schema contains valid data description
 func (t *DbTests) TestGetComplexCollectionCreateSchema() {
 	t.Test.Run("TestGetComplexCollectionCreateSchema", func(t *testing.T) {
-		path := "/collections/mock_multi/schema?type=create"
+		path := "/collections/complex.mock_multi/schema?type=create"
 		var header = make(http.Header)
 		header.Add("Accept", api.ContentTypeSchemaJSON)
 
@@ -114,7 +114,7 @@ func (t *DbTests) TestGetComplexCollectionCreateSchema() {
 		errUnMarsh := json.Unmarshal(body, &fis)
 		util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 
-		util.Equals(t, "Data for table public.mock_multi", fis.Description, "feature description")
+		util.Equals(t, "Data for table complex.mock_multi", fis.Description, "feature description")
 		util.Equals(t, "GeoJSON Point", fis.Properties["geometry"].Value.Title, "feature geometry")
 
 		util.Equals(t, "Feature", fis.Properties["type"].Value.Default, "feature type is feature")
@@ -158,7 +158,7 @@ func (t *DbTests) TestCreateComplexFeatureDb() {
 		//--- retrieve max feature id before insert
 		var features []*api.GeojsonFeatureData
 		params := data.QueryParam{Limit: 100000, Offset: 0, Crs: 4326}
-		features, _ = cat.TableFeatures(context.Background(), "mock_multi", &params)
+		features, _ = cat.TableFeatures(context.Background(), "complex.mock_multi", &params)
 		maxIdBefore := len(features)
 
 		//--- generate json from new object
@@ -168,20 +168,20 @@ func (t *DbTests) TestCreateComplexFeatureDb() {
 		jsonStr := string(json)
 
 		// -- do the request call but we have to force the catalogInstance to db during this operation
-		rr := hTest.DoPostRequest(t, "/collections/mock_multi/items", []byte(jsonStr), header)
+		rr := hTest.DoPostRequest(t, "/collections/complex.mock_multi/items", []byte(jsonStr), header)
 
 		loc := rr.Header().Get("Location")
 
 		//--- retrieve max feature id after insert
-		features, _ = cat.TableFeatures(context.Background(), "mock_multi", &params)
+		features, _ = cat.TableFeatures(context.Background(), "complex.mock_multi", &params)
 		maxIdAfter := len(features)
 
 		util.Assert(t, maxIdAfter > maxIdBefore, "# feature in db")
 		util.Assert(t, len(loc) > 1, "Header location must not be empty")
-		util.Equals(t, fmt.Sprintf("http://test/collections/mock_multi/items/%d", maxIdAfter), loc,
+		util.Equals(t, fmt.Sprintf("http://test/collections/complex.mock_multi/items/%d", maxIdAfter), loc,
 			"Header location must contain valid data")
 
 		// check if it can be read
-		checkItem(t, "mock_multi", maxIdAfter)
+		checkItem(t, "complex.mock_multi", maxIdAfter)
 	})
 }

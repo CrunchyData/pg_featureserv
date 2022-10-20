@@ -79,7 +79,7 @@ func (t *DbTests) TestSimpleReplaceFeatureSuccessDb() {
 
 func (t *DbTests) TestGetComplexCollectionReplaceSchema() {
 	t.Test.Run("TestGetComplexCollectionReplaceSchema", func(t *testing.T) {
-		path := "/collections/mock_multi/schema?type=replace"
+		path := "/collections/complex.mock_multi/schema?type=replace"
 		var header = make(http.Header)
 		header.Add("Accept", api.ContentTypeSchemaJSON)
 
@@ -90,7 +90,7 @@ func (t *DbTests) TestGetComplexCollectionReplaceSchema() {
 		errUnMarsh := json.Unmarshal(body, &fis)
 		util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 
-		util.Equals(t, "Data for table public.mock_multi", fis.Description, "feature description")
+		util.Equals(t, "Data for table complex.mock_multi", fis.Description, "feature description")
 		util.Equals(t, "GeoJSON Point", fis.Properties["geometry"].Value.Title, "feature geometry")
 
 		util.Equals(t, "Feature", fis.Properties["type"].Value.Default, "feature type is feature")
@@ -128,7 +128,7 @@ func (t *DbTests) TestGetComplexCollectionReplaceSchema() {
 
 func (t *DbTests) TestReplaceComplexFeatureDb() {
 	t.Test.Run("TestReplaceComplexFeatureDb", func(t *testing.T) {
-		path := "/collections/mock_multi/items/100"
+		path := "/collections/complex.mock_multi/items/100"
 		var header = make(http.Header)
 		header.Add("Content-Type", api.ContentTypeSchemaPatchJSON)
 
@@ -140,6 +140,6 @@ func (t *DbTests) TestReplaceComplexFeatureDb() {
 		_ = hTest.DoRequestMethodStatus(t, "PUT", path, []byte(jsonStr), header, http.StatusNoContent)
 
 		// check if it can be read
-		checkItem(t, "mock_multi", 100)
+		checkItem(t, "complex.mock_multi", 100)
 	})
 }

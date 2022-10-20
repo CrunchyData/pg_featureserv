@@ -57,15 +57,25 @@ func CreateTestDb() *pgxpool.Pool {
 	dbHost := dbconfig.ConnConfig.Config.Host
 	log.Debugf("Connected as %s to %s @ %s", dbUser, dbName, dbHost)
 
-	InsertSimpleDataset(db)
-	InsertComplexDataset(db)
+	CreateSchema(db, "complex")
+	InsertSimpleDataset(db, "public")
+	InsertComplexDataset(db, "complex")
 
 	log.Debugf("Sample data injected")
 
 	return db
 }
 
-func InsertSimpleDataset(db *pgxpool.Pool) {
+func CreateSchema(db *pgxpool.Pool, schema string) {
+	ctx := context.Background()
+	_, errExec := db.Exec(ctx, fmt.Sprintf(`CREATE SCHEMA IF NOT EXISTS %s;`, schema))
+	if errExec != nil {
+		CloseTestDb(db)
+		log.Fatal(errExec)
+	}
+}
+
+func InsertSimpleDataset(db *pgxpool.Pool, schema string) {
 	ctx := context.Background()
 	// collections tables
 	// tables := []string{"mock_a", "mock_b", "mock_c"}
@@ -82,7 +92,7 @@ func InsertSimpleDataset(db *pgxpool.Pool) {
 
 	createBytes := []byte(`
 		DROP TABLE IF EXISTS %s CASCADE;
-		CREATE TABLE IF NOT EXISTS public.%s (
+		CREATE TABLE IF NOT EXISTS %s (
 			id SERIAL PRIMARY KEY,
 			geometry public.geometry(Point, 4326) NOT NULL,
 			prop_a text NOT NULL,
@@ -93,7 +103,8 @@ func InsertSimpleDataset(db *pgxpool.Pool) {
 	`)
 	for s := range tablesAndExtents {
 
-		createStatement := fmt.Sprintf(string(createBytes), s, s)
+		tableNameWithSchema := fmt.Sprintf("%s.%s", schema, s)
+		createStatement := fmt.Sprintf(string(createBytes), tableNameWithSchema, tableNameWithSchema)
 
 		_, errExec := db.Exec(ctx, createStatement)
 		if errExec != nil {
@@ -106,11 +117,12 @@ func InsertSimpleDataset(db *pgxpool.Pool) {
 	b := &pgx.Batch{}
 
 	insertBytes := []byte(`
-		INSERT INTO public.%s (geometry, prop_a, prop_b, prop_c, prop_d)
+		INSERT INTO %s (geometry, prop_a, prop_b, prop_c, prop_d)
 		VALUES (ST_GeomFromGeoJSON($1), $2, $3, $4, $5)
 	`)
 	for tableName, tableElements := range tablesAndExtents {
-		insertStatement := fmt.Sprintf(string(insertBytes), tableName)
+		tableNameWithSchema := fmt.Sprintf("%s.%s", schema, tableName)
+		insertStatement := fmt.Sprintf(string(insertBytes), tableNameWithSchema)
 		featuresMock := data.MakeFeaturesMockPoint(tableElements.extent, tableElements.nx, tableElements.ny)
 
 		for _, f := range featuresMock {
@@ -150,13 +162,13 @@ func MakeGeojsonFeatureMockPoint(id int, x float64, y float64) *api.GeojsonFeatu
 	return &feat
 }
 
-func InsertComplexDataset(db *pgxpool.Pool) {
+func InsertComplexDataset(db *pgxpool.Pool, schema string) {
 	ctx := context.Background()
 	// NOT same as featureMock
 	// TODO: mark all props as required with NOT NULL contraint?
-	_, errExec := db.Exec(ctx, `
-		DROP TABLE IF EXISTS mock_multi CASCADE;
-		CREATE TABLE IF NOT EXISTS public.mock_multi (
+	_, errExec := db.Exec(ctx, fmt.Sprintf(`
+		DROP TABLE IF EXISTS %s.mock_multi CASCADE;
+		CREATE TABLE IF NOT EXISTS %s.mock_multi (
 			id SERIAL PRIMARY KEY,
 			geometry public.geometry(Point, 4326) NOT NULL,
 			prop_t text NOT NULL,
@@ -169,7 +181,7 @@ func InsertComplexDataset(db *pgxpool.Pool) {
 			prop_j json NOT NULL,
 			prop_v varchar NOT NULL
 		);
-		`)
+		`, schema, schema))
 	if errExec != nil {
 		CloseTestDb(db)
 		log.Fatal(errExec)
@@ -187,9 +199,9 @@ func InsertComplexDataset(db *pgxpool.Pool) {
 	}
 
 	b := &pgx.Batch{}
-	sqlStatement := `
-		INSERT INTO public.mock_multi (geometry, prop_t, prop_i, prop_l, prop_f, prop_r, prop_b, prop_d, prop_j, prop_v)
-		VALUES (ST_GeomFromGeoJSON($1), $2, $3, $4, $5, $6, $7, $8, $9, $10)`
+	sqlStatement := fmt.Sprintf(`
+		INSERT INTO %s.mock_multi (geometry, prop_t, prop_i, prop_l, prop_f, prop_r, prop_b, prop_d, prop_j, prop_v)
+		VALUES (ST_GeomFromGeoJSON($1), $2, $3, $4, $5, $6, $7, $8, $9, $10)`, schema)
 
 	for _, f := range features {
 		geomStr, _ := f.Geom.MarshalJSON()
@@ -210,8 +222,8 @@ func InsertComplexDataset(db *pgxpool.Pool) {
 func CloseTestDb(db *pgxpool.Pool) {
 	log.Debugf("Sample dbs will be cleared...")
 	var sql string
-	for _, t := range []string{"mock_a", "mock_b", "mock_c", "mock_multi"} {
-		sql = fmt.Sprintf("%s DROP TABLE IF EXISTS public.%s CASCADE;", sql, t)
+	for _, t := range []string{"public.mock_a", "public.mock_b", "public.mock_c", "complex.mock_multi"} {
+		sql = fmt.Sprintf("%s DROP TABLE IF EXISTS %s CASCADE;", sql, t)
 	}
 	_, errExec := db.Exec(context.Background(), sql)
 	if errExec != nil {

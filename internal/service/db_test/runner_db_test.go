@@ -117,8 +117,8 @@ func afterRun() {
 func beforeEachRun() {
 	log.Debug("beforeEachRun")
 	// drop and create table
-	util.InsertSimpleDataset(db)
-	util.InsertComplexDataset(db)
+	util.InsertSimpleDataset(db, "public")
+	util.InsertComplexDataset(db, "complex")
 }
 
 // Run after each test

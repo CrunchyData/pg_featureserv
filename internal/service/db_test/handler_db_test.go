@@ -58,7 +58,7 @@ func (t *DbTests) TestPropertiesAllFromDbSimpleTable() {
 
 func (t *DbTests) TestPropertiesAllFromDbComplexTable() {
 	t.Test.Run("TestPropertiesAllFromDbComplexTable", func(t *testing.T) {
-		rr := hTest.DoRequest(t, "/collections/mock_multi/items?limit=5")
+		rr := hTest.DoRequest(t, "/collections/complex.mock_multi/items?limit=5")
 
 		var v api.FeatureCollection
 		errUnMarsh := json.Unmarshal(hTest.ReadBody(rr), &v)
@@ -70,9 +70,9 @@ func (t *DbTests) TestPropertiesAllFromDbComplexTable() {
 
 		util.Equals(t, "1", v.Features[0].Props["prop_t"].(string), "feature 1 # property text")
 
-		tbl, _ := cat.TableByName("mock_multi")
+		tbl, _ := cat.TableByName("complex.mock_multi")
 		params := data.QueryParam{Limit: 100000, Offset: 0, Crs: 4326, Columns: tbl.Columns}
-		features, _ := cat.TableFeatures(context.Background(), "mock_multi", &params)
+		features, _ := cat.TableFeatures(context.Background(), "complex.mock_multi", &params)
 
 		util.Equals(t, "1", features[0].Props["prop_t"].(string), "feature 1 # property text")
 		util.Equals(t, int32(1), features[0].Props["prop_i"].(int32), "feature 1 # property int")
