@@ -225,7 +225,7 @@ func (t *DbTests) TestEtagReplaceFeatureDb() {
 	t.Test.Run("TestEtagReplaceFeatureDb", func(t *testing.T) {
 		path := "/collections/mock_b/items/1"
 		var header = make(http.Header)
-		header.Add("Accept", api.ContentTypeSchemaPatchJSON)
+		header.Add("Accept", api.FormatJSON)
 
 		jsonStr := `{
 			"type": "Feature",
@@ -252,7 +252,9 @@ func (t *DbTests) TestEtagReplaceFeatureDb() {
 		util.Assert(t, err == nil, "wrong strong etag form")
 
 		// Replace
-		hTest.DoRequestMethodStatus(t, "PUT", path, []byte(jsonStr), header, http.StatusNoContent)
+		var header2 = make(http.Header)
+		header.Add("Accept", api.ContentTypeSchemaPatchJSON)
+		hTest.DoRequestMethodStatus(t, "PUT", path, []byte(jsonStr), header2, http.StatusNoContent)
 
 		resp2 := hTest.DoRequestMethodStatus(t, "GET", path, []byte(""), header, http.StatusOK)
 		encodedStrongEtagAfterPut := resp2.Header().Get("Etag")

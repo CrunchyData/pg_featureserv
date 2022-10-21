@@ -69,7 +69,7 @@ func (t *MockTests) TestReplaceFeatureSuccess() {
 	t.Test.Run("TestReplaceFeatureSuccess", func(t *testing.T) {
 		path := "/collections/mock_a/items/1"
 		var header = make(http.Header)
-		header.Add("Accept", api.ContentTypeSchemaPatchJSON)
+		header.Add("Accept", api.ContentTypeJSON)
 
 		jsonStr := `{
 		"type": "Feature",
@@ -119,23 +119,23 @@ func (t *MockTests) TestReplaceFeatureRequiredPropertiesSuccess() {
 	t.Test.Run("TestReplaceFeatureRequiredPropertiesSuccess", func(t *testing.T) {
 		path := "/collections/mock_a/items/1"
 		var header = make(http.Header)
-		header.Add("Accept", api.ContentTypeSchemaPatchJSON)
+		header.Add("Accept", api.ContentTypeJSON)
 
 		jsonStr := `{
-		"type": "Feature",
-		"id": "1",
-		"geometry": {
-			"type": "Point",
-			"coordinates": [
-			-120,
-			40
-			]
-		},
-		"properties": {
-			"prop_a": "propA...",
-			"prop_b": 2
-		}
-	}`
+			"type": "Feature",
+			"id": "1",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+				-120,
+				40
+				]
+			},
+			"properties": {
+				"prop_a": "propA...",
+				"prop_b": 2
+			}
+		}`
 
 		hTest.DoRequestMethodStatus(t, "PUT", path, []byte(jsonStr), header, http.StatusNoContent)
 

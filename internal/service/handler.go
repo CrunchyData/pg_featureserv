@@ -689,7 +689,7 @@ func handleItem(w http.ResponseWriter, r *http.Request) *appError {
 		case api.FormatHTML:
 			return writeItemHTML(w, tbl, name, fid, query, urlBase)
 		default:
-			return nil
+			return appErrorNotAcceptable(nil, api.ErrMsgNotSupportedFormat, format)
 		}
 	} else {
 		return appErrorBadRequest(errQuery, api.ErrMsgInvalidQuery)

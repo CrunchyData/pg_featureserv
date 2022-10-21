@@ -32,7 +32,7 @@ func (t *DbTests) TestSimpleReplaceFeatureSuccessDb() {
 	t.Test.Run("TestReplaceFeatureSuccessDb", func(t *testing.T) {
 		path := "/collections/mock_a/items/9"
 		var header = make(http.Header)
-		header.Add("Accept", api.ContentTypeSchemaPatchJSON)
+		header.Add("Accept", api.ContentTypeJSON)
 
 		jsonStr := `{
 		"type": "Feature",

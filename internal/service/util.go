@@ -140,6 +140,11 @@ func appErrorNotFound(err error, format string, v ...interface{}) *appError {
 	return &appError{err, msg, http.StatusNotFound}
 }
 
+func appErrorNotAcceptable(err error, format string, v ...interface{}) *appError {
+	msg := fmt.Sprintf(format, v...)
+	return &appError{err, msg, http.StatusNotAcceptable}
+}
+
 //========================
 
 func serveURLBase(r *http.Request) string {

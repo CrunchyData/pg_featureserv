@@ -61,6 +61,7 @@ func TestRunnerHandlerMock(t *testing.T) {
 		m.TestCollectionResponse()
 		m.TestCollectionsResponse()
 		m.TestFeatureNotFound()
+		m.TestFeatureFormats()
 	})
 	t.Run("CACHE AND ETAGS", func(t *testing.T) {
 		m := MockTests{Test: t}

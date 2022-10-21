@@ -115,6 +115,33 @@ func (t *MockTests) TestCollectionItem() {
 	})
 }
 
+func (t *MockTests) TestFeatureFormats() {
+	t.Test.Run("TestFeatureFormats", func(t *testing.T) {
+
+		hTest.DoRequestStatus(t, "/collections/mock_a/items/1.dummyformat", http.StatusNotAcceptable)
+
+		path := "/collections/mock_a/items/1"
+
+		// From header Accept
+		var header = make(http.Header)
+		header.Add("Accept", "json")
+		resp := hTest.DoRequestMethodStatus(t, "GET", path, nil, header, http.StatusOK)
+		var geoJsonStruct api.GeojsonFeatureData
+		errUnMarsh := json.Unmarshal(hTest.ReadBody(resp), &geoJsonStruct)
+		util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
+
+		// TODO HTML
+		// TODO SVG
+		// TODO TEXT
+
+		// From URL extension
+		resp2 := hTest.DoRequestStatus(t, "/collections/mock_a/items/1.json", http.StatusOK)
+		errUnMarsh2 := json.Unmarshal(hTest.ReadBody(resp2), &geoJsonStruct)
+		util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh2))
+
+	})
+}
+
 func (t *MockTests) TestCollectionItemPropertiesEmpty() {
 	t.Test.Run("TestCollectionItemPropertiesEmpty", func(t *testing.T) {
 		rr := hTest.DoRequest(t, "/collections/mock_a/items/1?properties=")
