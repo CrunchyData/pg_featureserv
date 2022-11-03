@@ -62,7 +62,14 @@ func (cache CacheNaive) AddWeakEtag(weakEtag string, etag interface{}) bool {
 	return true
 }
 
-func (cache CacheNaive) ToString() string {
+func (cache CacheNaive) RemoveWeakEtag(weakEtag string) bool {
+	mutex.Lock()
+	delete(cache.entries, weakEtag)
+	mutex.Unlock()
+	return true
+}
+
+func (cache CacheNaive) String() string {
 	b := new(bytes.Buffer)
 	for key, value := range cache.entries {
 		fmt.Fprintf(b, "%s=\"%s\"\n", key, value)
@@ -70,6 +77,10 @@ func (cache CacheNaive) ToString() string {
 	return b.String()
 }
 
-func (cache CacheNaive) IsCacheActive() bool {
-	return true
+func (cache CacheNaive) Type() string {
+	return "CacheNaive"
+}
+
+func (cache CacheNaive) Size() int {
+	return len(cache.entries)
 }

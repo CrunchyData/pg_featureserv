@@ -27,9 +27,16 @@ type Cacher interface {
 	// returns false if error occurs during the operation
 	AddWeakEtag(weakEtag string, etag interface{}) bool
 
-	// returns a string representation of the cache for dev purpose
-	ToString() string
+	// removes the weak etag string from the cache and returns true if successful
+	// returns false if error occurs during the operation
+	RemoveWeakEtag(weakEtag string) bool
 
-	// returns true if the cache is activated, false otherwise
-	IsCacheActive() bool
+	// Stringer: returns a string representation of the cache for dev purpose
+	String() string
+
+	// returns the cache name. May be a duplicate of `reflect.TypeOf(cache).Name()``
+	Type() string
+
+	// returns approx cache size
+	Size() int
 }

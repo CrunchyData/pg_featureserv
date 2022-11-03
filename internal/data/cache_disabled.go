@@ -28,10 +28,18 @@ func (cache CacheDisabled) AddWeakEtag(weakEtag string, etag interface{}) bool {
 	return false
 }
 
-func (cache CacheDisabled) ToString() string {
+func (cache CacheDisabled) RemoveWeakEtag(weakEtag string) bool {
+	return false
+}
+
+func (cache CacheDisabled) String() string {
 	return ""
 }
 
-func (cache CacheDisabled) IsCacheActive() bool {
-	return false
+func (cache CacheDisabled) Type() string {
+	return "CacheDisabled"
+}
+
+func (cache CacheDisabled) Size() int {
+	return 0
 }

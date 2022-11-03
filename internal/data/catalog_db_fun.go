@@ -245,7 +245,7 @@ func readDataWithArgs(ctx context.Context, db *pgxpool.Pool, propCols []string, 
 	start := time.Now()
 	rows, err := db.Query(context.Background(), sql, args...)
 	if err != nil {
-		log.Warnf("Error running Data query: %v", err)
+		log.Warnf("Error running 'Data' (query: '%v'): %v", sql, err)
 		return nil, err
 	}
 	defer rows.Close()

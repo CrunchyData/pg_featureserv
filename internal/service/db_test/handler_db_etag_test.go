@@ -37,13 +37,12 @@ func (t *DbTests) TestCacheActivationDb() {
 		// testing IsCacheActive() function
 
 		cache = data.CacheDisabled{}
-		util.Assert(t, reflect.TypeOf(cache).Name() == "CacheDisabled", "wrong type for disabled cache")
-		util.Assert(t, cache.IsCacheActive() == false, "CacheDisabled should be not active")
+		util.Equals(t, "CacheDisabled", reflect.TypeOf(cache).Name(), "wrong type for cache")
+		util.Equals(t, "CacheDisabled", cache.Type(), "wrong type for cache")
 
 		cache = data.CacheNaive{}
-		util.Assert(t, reflect.TypeOf(cache).Name() == "CacheNaive", "active cache should have CacheNaive type")
-		util.Assert(t, cache.IsCacheActive() == true, "CacheNaive should be active")
-
+		util.Equals(t, "CacheNaive", reflect.TypeOf(cache).Name(), "wrong type for cache")
+		util.Equals(t, "CacheNaive", cache.Type(), "wrong type for cache")
 	})
 }
 

@@ -39,10 +39,9 @@ type listenerDB struct {
 	dbconn        *pgxpool.Pool     // connection to database
 	tableIncludes map[string]string // list of included tables
 	tableExcludes map[string]string // list of excluded tables
-	// TODO: à changer avec l'implémentation du cache
-	cache      map[string]interface{} // cache of the catalog
-	lock       *sync.RWMutex
-	stopListen context.CancelFunc // channel used to stop the listen goroutine
+	cache         Cacher            // cache of the catalog
+	lock          *sync.RWMutex
+	stopListen    context.CancelFunc // channel used to stop the listen goroutine
 }
 
 // An eventNotification is a notification sent by the database after a INSERT, UPDATE or DELETE
@@ -57,7 +56,13 @@ type eventNotification struct {
 	Data     map[string]interface{} // data contained in the row
 }
 
-func newListenerDB(conn *pgxpool.Pool, cache map[string]interface{}, lock *sync.RWMutex) listenerDB {
+// toString for eventNotification
+func (e eventNotification) String() string {
+	return fmt.Sprintf("eventNotification[table: '%v.%v', action: '%v', xmin: %v/%v, data: %v]", e.Schema, e.Table, e.Action, e.Old_xmin, e.New_xmin, e.Data)
+}
+
+// creates new db listener
+func newListenerDB(conn *pgxpool.Pool, cache Cacher, lock *sync.RWMutex) listenerDB {
 
 	listener := listenerDB{
 		dbconn: conn,
@@ -133,14 +138,12 @@ func (listener *listenerDB) listenOneNotification(ctx context.Context) {
 		log.Fatal(errUnMarsh)
 	}
 	listener.lock.RLock()
+	log.Debugf("Listener received notification: %v, cache: %v", notificationData, listener.cache)
 	if notificationData.Action == "DELETE" || notificationData.Action == "UPDATE" {
-		fmt.Println(listener.cache)
-		fmt.Println(notificationData.Old_xmin)
-		delete(listener.cache, notificationData.Old_xmin)
+		listener.cache.RemoveWeakEtag(notificationData.Old_xmin)
 	}
 	if notificationData.Action == "INSERT" || notificationData.Action == "UPDATE" {
-		fmt.Println(notificationData.New_xmin)
-		listener.cache[notificationData.New_xmin] = notificationData.Data
+		listener.cache.AddWeakEtag(notificationData.New_xmin, notificationData.Data)
 	}
 	listener.lock.RUnlock()
 }

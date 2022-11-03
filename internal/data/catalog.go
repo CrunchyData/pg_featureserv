@@ -79,8 +79,9 @@ type Catalog interface {
 	// -> error != nil if a malformed etag is detected (wrong encoding, bad format.)
 	// -> The provided etags have to be in their strong form and Base64 encoded
 	CheckStrongEtags(etagsList []string) (bool, error)
+
 	// GetCache returns a copy of the cache
-	// GetCache() map[string]interface{}
+	GetCache() Cacher
 
 	Close()
 }

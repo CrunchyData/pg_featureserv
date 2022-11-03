@@ -26,7 +26,7 @@ import (
 	"time"
 
 	"github.com/CrunchyData/pg_featureserv/internal/data"
-	"github.com/CrunchyData/pg_featureserv/internal/util"
+	util "github.com/CrunchyData/pg_featureserv/internal/utiltest"
 )
 
 func (t *DbTests) TestCacheSizeIncreaseAfterCreate() {
@@ -34,8 +34,8 @@ func (t *DbTests) TestCacheSizeIncreaseAfterCreate() {
 		var header = make(http.Header)
 		header.Add("Content-Type", "application/geo+json")
 
-		//--- retrievecache size before insert
-		var sizeBefore = len(cat.GetCache())
+		//--- retrieve cache size before insert
+		var sizeBefore = cat.GetCache().Size()
 
 		//--- generate json from new object
 		tables, _ := cat.Tables()
@@ -57,10 +57,10 @@ func (t *DbTests) TestCacheSizeIncreaseAfterCreate() {
 		// Sleep in order to wait for the cache to update (parallel goroutine)
 		time.Sleep(100 * time.Millisecond)
 
-		//--- retrievecache size before insert
-		var sizeAfter = len(cat.GetCache())
+		//--- retrieve cache size after insert
+		var sizeAfter = cat.GetCache().Size()
 
-		util.Equals(t, sizeAfter, sizeBefore+1, "cache size augmented by 1 after one insert")
+		util.Assert(t, sizeAfter > sizeBefore, "cache size augmented after one insert")
 	})
 }
 
@@ -93,24 +93,23 @@ func (t *DbTests) TestCacheSizeDecreaseAfterDelete() {
 
 		time.Sleep(100 * time.Millisecond)
 
-		//--- retrievecache size before insert
-		var sizeBefore = len(cat.GetCache())
+		//--- retrieve cache size before delete
+		var sizeBefore = cat.GetCache().Size()
 
-		fmt.Println(firstId)
 		hTest.DoDeleteRequestStatus(t, fmt.Sprintf("/collections/mock_a/items/%v", firstId), http.StatusNoContent)
 
 		// Sleep in order to wait for the cache to update (parallel goroutine)
 		time.Sleep(100 * time.Millisecond)
 
-		//--- retrievecache size before insert
-		var sizeAfter = len(cat.GetCache())
+		//--- retrieve cache size after delete
+		var sizeAfter = cat.GetCache().Size()
 
-		util.Equals(t, sizeAfter, sizeBefore-1, "cache size decreased by 1 after one delete")
+		util.Assert(t, sizeAfter < sizeBefore, "cache size decreased after one delete")
 	})
 }
 
 func (t *DbTests) TestCacheModifiedAfterUpdate() {
-	t.Test.Run("TestCacheSizeDecreaseAfterDelete", func(t *testing.T) {
+	t.Test.Run("TestCacheModifiedAfterUpdate", func(t *testing.T) {
 		var header = make(http.Header)
 		header.Add("Content-Type", "application/geo+json")
 
@@ -136,6 +135,9 @@ func (t *DbTests) TestCacheModifiedAfterUpdate() {
 		loc := rr.Header().Get("Location")
 		var splittedLoc = strings.Split(loc, "/")
 		var firstId, _ = strconv.Atoi(splittedLoc[len(splittedLoc)-1])
+		time.Sleep(100 * time.Millisecond)
+		//--- retrieve cache size before update
+		var sizeBefore = cat.GetCache().Size()
 
 		jsonStr = fmt.Sprintf(`{
 			"type": "Feature",
@@ -159,8 +161,10 @@ func (t *DbTests) TestCacheModifiedAfterUpdate() {
 
 		// Sleep in order to wait for the cache to update (parallel goroutine)
 		time.Sleep(100 * time.Millisecond)
+		//--- retrieve cache size after update
+		var sizeAfter1 = cat.GetCache().Size()
 
-		// TODO: Test HERE if cache modified
+		util.Assert(t, sizeAfter1 != sizeBefore, "cache size cahnged after update")
 
 		jsonStr = fmt.Sprintf(`{
 			"type": "Feature",
@@ -184,6 +188,8 @@ func (t *DbTests) TestCacheModifiedAfterUpdate() {
 		// Sleep in order to wait for the cache to update (parallel goroutine)
 		time.Sleep(100 * time.Millisecond)
 
-		// TODO: Test HERE if cache modified
+		//--- retrieve cache size after other update
+		var sizeAfter2 = cat.GetCache().Size()
+		util.Assert(t, sizeAfter1 != sizeAfter2, "cache size cahnged after update")
 	})
 }

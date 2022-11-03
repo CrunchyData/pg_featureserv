@@ -52,18 +52,6 @@ type catalogDB struct {
 	listener      listenerDB
 }
 
-// An eventNotification is a notification sent by the database after a INSERT, UPDATE or DELETE
-// event on the databases included in pg_featureserv. It is populated using the return value of
-// the pl/pgSQL procedure named `sqlNotifyFunction` defined in db_sql.go
-type eventNotification struct {
-	Schema   string                 // schema of the table triggering the event
-	Table    string                 // name of the table triggering the event
-	Action   string                 // action triggering the event (INSERT, UPDATE or DELETE)
-	Old_xmin string                 // xmin of the previous version of the row (`nil` in case of INSERT)
-	New_xmin string                 // xmin of the new version of the row (`nil` in case of INSERT)
-	Data     map[string]interface{} // data contained in the row
-}
-
 var isStartup bool
 var isFunctionsLoaded bool
 var instanceDB catalogDB
@@ -102,9 +90,9 @@ func makeCache() Cacher {
 	activated := conf.Configuration.Cache.IsActive
 	if activated {
 		cache_size := conf.Configuration.Cache.MapSize
-		return CacheNaive{make(map[string]interface{}, cache_size)}
+		return &CacheNaive{make(map[string]interface{}, cache_size)}
 	} else {
-		return CacheDisabled{}
+		return &CacheDisabled{}
 	}
 }
 
@@ -178,7 +166,7 @@ func (cat *catalogDB) Close() {
 	cat.dbconn.Close()
 }
 
-func (cat *catalogDB) GetCache() map[string]interface{} {
+func (cat *catalogDB) GetCache() Cacher {
 	return cat.cache
 }
 
@@ -660,7 +648,7 @@ func readFeaturesWithArgs(ctx context.Context, db *pgxpool.Pool, sql string, arg
 	start := time.Now()
 	rows, err := db.Query(ctx, sql, args...)
 	if err != nil {
-		log.Warnf("Error running Features query: %v", err)
+		log.Warnf("Error running 'Features' (query: '%v'): %v", sql, err)
 		return nil, err
 	}
 	defer rows.Close()

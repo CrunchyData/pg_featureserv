@@ -204,8 +204,8 @@ func (cat *CatalogMock) Close() {
 	// this is a no-op
 }
 
-func (cat *CatalogMock) GetCache() map[string]interface{} {
-	return make(map[string]interface{})
+func (cat *CatalogMock) GetCache() Cacher {
+	return cat.cache
 }
 
 func (cat *CatalogMock) Tables() ([]*api.Table, error) {

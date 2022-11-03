@@ -38,19 +38,18 @@ var hTest util.HttpTesting
 var db *pgxpool.Pool
 var cat data.Catalog
 
-// ...
+// base struct for all test
 type DbTests struct {
 	Test *testing.T
 }
 
-// ...
+// Test entrypoint
 func TestMain(m *testing.M) {
 	conf.InitConfig("", false) // getting default configuration
 	conf.Configuration.Database.AllowWrite = true
 
 	log.Debug("init : Db/Service")
 	db = util.CreateTestDb()
-	// defer util.CloseTestDb(db)
 
 	cat = data.CatDBInstance()
 	service.SetCatalogInstance(cat)
@@ -61,7 +60,7 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-// ...
+// Describes all test groups
 func TestRunnerHandlerDb(t *testing.T) {
 	// initialisation avant l'execution des tests
 	beforeRun()
