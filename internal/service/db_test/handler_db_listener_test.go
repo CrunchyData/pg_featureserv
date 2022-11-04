@@ -164,7 +164,7 @@ func (t *DbTests) TestCacheModifiedAfterUpdate() {
 		//--- retrieve cache size after update
 		var sizeAfter1 = cat.GetCache().Size()
 
-		util.Assert(t, sizeAfter1 != sizeBefore, "cache size cahnged after update")
+		util.Equals(t, sizeBefore, sizeAfter1, "cache size do not changed after update")
 
 		jsonStr = fmt.Sprintf(`{
 			"type": "Feature",
@@ -190,6 +190,6 @@ func (t *DbTests) TestCacheModifiedAfterUpdate() {
 
 		//--- retrieve cache size after other update
 		var sizeAfter2 = cat.GetCache().Size()
-		util.Assert(t, sizeAfter1 != sizeAfter2, "cache size cahnged after update")
+		util.Equals(t, sizeBefore, sizeAfter2, "cache size do not changed after update")
 	})
 }
