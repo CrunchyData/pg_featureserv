@@ -20,7 +20,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"sync"
 
 	"github.com/CrunchyData/pg_featureserv/internal/api"
 	"github.com/jackc/pgconn"
@@ -36,11 +35,10 @@ const tempDBSchema = "pgfeatureserv"
 // applying the trigger function to the tables included in pg_featureserv, and listening to
 // events on those tables
 type listenerDB struct {
-	dbconn        *pgxpool.Pool     // connection to database
-	tableIncludes map[string]string // list of included tables
-	tableExcludes map[string]string // list of excluded tables
-	cache         Cacher            // cache of the catalog
-	lock          *sync.RWMutex
+	dbconn        *pgxpool.Pool      // connection to database
+	tableIncludes map[string]string  // list of included tables
+	tableExcludes map[string]string  // list of excluded tables
+	cache         Cacher             // cache of the catalog
 	stopListen    context.CancelFunc // channel used to stop the listen goroutine
 }
 
@@ -62,12 +60,11 @@ func (e eventNotification) String() string {
 }
 
 // creates new db listener
-func newListenerDB(conn *pgxpool.Pool, cache Cacher, lock *sync.RWMutex) *listenerDB {
+func newListenerDB(conn *pgxpool.Pool, cache Cacher) *listenerDB {
 
 	listener := &listenerDB{
 		dbconn: conn,
 		cache:  cache,
-		lock:   lock,
 	}
 
 	return listener
@@ -137,7 +134,6 @@ func (listener *listenerDB) listenOneNotification(ctx context.Context) {
 	if errUnMarsh != nil {
 		log.Fatal(errUnMarsh)
 	}
-	listener.lock.RLock()
 	log.Debugf("Listener received notification: %v, cache: %v", notificationData, listener.cache)
 	if notificationData.Action == "DELETE" || notificationData.Action == "UPDATE" {
 		listener.cache.RemoveWeakEtag(notificationData.Old_xmin)
@@ -145,7 +141,6 @@ func (listener *listenerDB) listenOneNotification(ctx context.Context) {
 	if notificationData.Action == "INSERT" || notificationData.Action == "UPDATE" {
 		listener.cache.AddWeakEtag(notificationData.New_xmin, notificationData.Data)
 	}
-	listener.lock.RUnlock()
 }
 
 func (listener *listenerDB) Close() {

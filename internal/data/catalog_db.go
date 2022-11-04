@@ -27,7 +27,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/CrunchyData/pg_featureserv/internal/api"
@@ -72,9 +71,8 @@ func CatDBInstance() Catalog {
 func newCatalogDB() catalogDB {
 	conn := dbConnect()
 	cache := makeCache()
-	var lock = sync.RWMutex{}
 
-	var listener = newListenerDB(conn, cache, &lock)
+	var listener = newListenerDB(conn, cache)
 
 	cat := catalogDB{
 		dbconn:   conn,
