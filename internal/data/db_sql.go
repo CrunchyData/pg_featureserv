@@ -167,12 +167,12 @@ func sqlExtentExact(tbl *api.Table) string {
 }
 
 // xmin is used as weak eTag value
-const sqlFmtFeatures = "SELECT %v,xmin %v FROM \"%s\".\"%s\" %v %v %v %s;"
+const sqlFmtFeatures = "SELECT %v, xmin AS eTag, %v FROM \"%s\".\"%s\" %v %v %v %s;"
 
 func sqlFeatures(tbl *api.Table, param *QueryParam) (string, []interface{}) {
 	geomCol := sqlGeomCol(tbl.GeometryColumn, tbl.Srid, param)
 
-	propCols := sqlColListFromColumnMap(param.Columns, tbl.DbTypes, true)
+	propCols := sqlColListFromColumnMap(param.Columns, tbl.DbTypes)
 	bboxFilter := sqlBBoxFilter(tbl.GeometryColumn, tbl.Srid, param.Bbox, param.BboxCrs)
 	attrFilter, attrVals := sqlAttrFilter(param.Filter)
 	cqlFilter := sqlCqlFilter(param.FilterSql)
@@ -186,9 +186,9 @@ func sqlFeatures(tbl *api.Table, param *QueryParam) (string, []interface{}) {
 
 // sqlColList creates a comma-separated column list, or blank if no columns
 // If addLeadingComma is true, a leading comma is added, for use when the target SQL has columns defined before
-func sqlColListFromColumnMap(names []string, dbtypes map[string]api.Column, addLeadingComma bool) string {
+func sqlColListFromColumnMap(names []string, dbtypes map[string]api.Column) string {
 	if len(names) == 0 {
-		return ""
+		return "null"
 	}
 
 	var cols []string
@@ -196,17 +196,13 @@ func sqlColListFromColumnMap(names []string, dbtypes map[string]api.Column, addL
 		colExpr := sqlColExpr(col, dbtypes[col].Type)
 		cols = append(cols, colExpr)
 	}
-	colsStr := strings.Join(cols, ",")
-	if addLeadingComma {
-		return ", " + colsStr
-	}
-	return colsStr
+	return strings.Join(cols, ",")
 }
 
 // sqlColListFromPGTypeMap creates a comma-separated column list, or blank if no columns
-func sqlColListFromStringMap(names []string, dbtypes map[string]api.PGType, addLeadingComma bool) string {
+func sqlColListFromStringMap(names []string, dbtypes map[string]api.PGType) string {
 	if len(names) == 0 {
-		return ""
+		return "null"
 	}
 
 	var cols []string
@@ -214,11 +210,7 @@ func sqlColListFromStringMap(names []string, dbtypes map[string]api.PGType, addL
 		colExpr := sqlColExpr(col, dbtypes[col])
 		cols = append(cols, colExpr)
 	}
-	colsStr := strings.Join(cols, ",")
-	if addLeadingComma {
-		return ", " + colsStr
-	}
-	return colsStr
+	return strings.Join(cols, ",")
 }
 
 // makeSQLColExpr casts a column to text if type is unknown to PGX
@@ -238,12 +230,12 @@ func sqlColExpr(name string, dbtype api.PGType) string {
 }
 
 // xmin is used as weak eTag value
-const sqlFmtFeature = "SELECT %v,xmin %v FROM \"%s\".\"%s\" WHERE \"%v\" = $1 LIMIT 1"
+const sqlFmtFeature = "SELECT %v, xmin AS eTag, %v FROM \"%s\".\"%s\" WHERE \"%v\" = $1 LIMIT 1"
 
 func sqlFeature(tbl *api.Table, param *QueryParam) string {
 	geomCol := sqlGeomCol(tbl.GeometryColumn, tbl.Srid, param)
 
-	propCols := sqlColListFromColumnMap(param.Columns, tbl.DbTypes, true)
+	propCols := sqlColListFromColumnMap(param.Columns, tbl.DbTypes)
 	sql := fmt.Sprintf(sqlFmtFeature, geomCol, propCols, tbl.Schema, tbl.Table, tbl.IDColumn)
 	return sql
 }
@@ -380,12 +372,12 @@ func applyTransform(funs []api.TransformFunction, expr string) string {
 	return expr
 }
 
-const sqlFmtGeomFunction = "SELECT %s %s FROM \"%s\".\"%s\"( %v ) %v %v %s;"
+const sqlFmtGeomFunction = "SELECT %s, %s FROM \"%s\".\"%s\"( %v ) %v %v %s;"
 
 func sqlGeomFunction(fn *api.Function, args map[string]string, propCols []string, param *QueryParam) (string, []interface{}) {
 	sqlArgs, argVals := sqlFunctionArgs(fn, args)
 	sqlGeomCol := sqlGeomCol(fn.GeometryColumn, SRID_UNKNOWN, param)
-	sqlPropCols := sqlColListFromStringMap(propCols, fn.Types, true)
+	sqlPropCols := sqlColListFromStringMap(propCols, fn.Types)
 	//-- SRS of function output is unknown, so have to assume 4326
 	bboxFilter := sqlBBoxFilter(fn.GeometryColumn, SRID_4326, param.Bbox, param.BboxCrs)
 	cqlFilter := sqlCqlFilter(param.FilterSql)
@@ -400,7 +392,7 @@ const sqlFmtFunction = "SELECT %v FROM \"%s\".\"%s\"( %v ) %v %v %s;"
 
 func sqlFunction(fn *api.Function, args map[string]string, propCols []string, param *QueryParam) (string, []interface{}) {
 	sqlArgs, argVals := sqlFunctionArgs(fn, args)
-	sqlPropCols := sqlColListFromStringMap(propCols, fn.Types, false)
+	sqlPropCols := sqlColListFromStringMap(propCols, fn.Types)
 	cqlFilter := sqlCqlFilter(param.FilterSql)
 	sqlWhere := sqlWhere(cqlFilter, "", "")
 	sqlOrderBy := sqlOrderBy(param.SortBy)
