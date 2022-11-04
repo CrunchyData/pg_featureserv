@@ -277,8 +277,15 @@ func (cat *catalogDB) AddTableFeature(ctx context.Context, tableName string, jso
 		return -9999, err
 	}
 	var i = 0
+	var maxCol = 0
+	for colName := range tbl.DbTypes {
+		if schemaObject.Props[colName] != nil { // ignore non required and missing columns
+			maxCol++
+		}
+	}
+
 	for colName, col := range tbl.DbTypes {
-		if colName == tbl.IDColumn {
+		if colName == tbl.IDColumn || schemaObject.Props[colName] == nil {
 			continue // ignore id column
 		}
 
@@ -292,11 +299,10 @@ func (cat *catalogDB) AddTableFeature(ctx context.Context, tableName string, jso
 		}
 		values = append(values, convVal)
 
-		if i < len(tbl.Columns)-1 {
+		if i < maxCol {
 			columnStr += ", "
 			placementStr += ", "
 		}
-
 	}
 
 	i++
