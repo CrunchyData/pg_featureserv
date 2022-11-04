@@ -62,9 +62,9 @@ func (e eventNotification) String() string {
 }
 
 // creates new db listener
-func newListenerDB(conn *pgxpool.Pool, cache Cacher, lock *sync.RWMutex) listenerDB {
+func newListenerDB(conn *pgxpool.Pool, cache Cacher, lock *sync.RWMutex) *listenerDB {
 
-	listener := listenerDB{
+	listener := &listenerDB{
 		dbconn: conn,
 		cache:  cache,
 		lock:   lock,
@@ -149,7 +149,9 @@ func (listener *listenerDB) listenOneNotification(ctx context.Context) {
 }
 
 func (listener *listenerDB) Close() {
-	listener.stopListen()
+	if listener.stopListen != nil {
+		listener.stopListen()
+	}
 	listener.dropTriggers()
 	listener.dropTemporaryDBSchema()
 }

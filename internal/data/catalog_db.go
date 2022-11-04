@@ -49,7 +49,7 @@ type catalogDB struct {
 	functions     []*api.Function
 	functionMap   map[string]*api.Function
 	cache         Cacher
-	listener      listenerDB
+	listener      *listenerDB
 }
 
 var isStartup bool
