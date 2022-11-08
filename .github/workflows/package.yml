@@ -1,7 +1,9 @@
-on: [push, pull_request]
+name: Package
+
+on: [pull_request]
 jobs:
-  ci:
-    name: CI
+  build_package:
+    name: Build and package
     strategy:
       matrix:
         go-version: [1.16.x]
@@ -10,15 +12,12 @@ jobs:
     steps:
 
     - name: 'Install Go'
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v3
       with:
         go-version: ${{ matrix.go-version }}
 
     - name: Checkout
       uses: actions/checkout@v3
-
-    - name: Test
-      run: make test
 
     - name: Build
       run: make build

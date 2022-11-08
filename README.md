@@ -4,7 +4,9 @@
 
 # pg_featureserv
 
-[![.github/workflows/ci.yml](https://github.com/CrunchyData/pg_featureserv/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/CrunchyData/pg_featureserv/actions/workflows/ci.yml)
+[![.github/workflows/package.yml](https://github.com/CrunchyData/pg_featureserv/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/CrunchyData/pg_featureserv/actions/workflows/ci.yml)
+
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/benoitdm-oslandia/pg_featureserv/master.svg)](https://results.pre-commit.ci/latest/github/benoitdm-oslandia/pg_featureserv/master)
 
 A lightweight RESTful geospatial feature server for [PostGIS](https://postgis.net/), written in [Go](https://golang.org/).
 It supports the [*OGC API - Features*](https://ogcapi.ogc.org/features/) REST API standard.
