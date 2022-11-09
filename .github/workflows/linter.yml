@@ -29,6 +29,12 @@ jobs:
       run: |
         curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.49.0
 
+    - name: Run pre-commit for commit message
+      run: |
+        git log -1 --format="%B" $GITHUB_SHA > .git/COMMIT_EDITMSG
+        pre-commit run --hook-stage manual commitlint
+        rm -f .git/COMMIT_EDITMSG
+
     - name: Run pre-commit
       run: |
         pre-commit run -a -v
