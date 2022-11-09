@@ -25,11 +25,11 @@ type Cacher interface {
 
 	// adds the weak etag string into the cache and returns true if successful
 	// returns false if error occurs during the operation
-	AddWeakEtag(weakEtag string, etag interface{}) bool
+	AddWeakEtag(weakEtag string, etag interface{}) (bool, error)
 
 	// removes the weak etag string from the cache and returns true if successful
 	// returns false if error occurs during the operation
-	RemoveWeakEtag(weakEtag string) bool
+	RemoveWeakEtag(weakEtag string) (bool, error)
 
 	// Stringer: returns a string representation of the cache for dev purpose
 	String() string

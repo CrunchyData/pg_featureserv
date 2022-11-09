@@ -63,3 +63,23 @@ func DecodeStrongEtag(encodedStrongEtag string) (*StrongEtagData, error) {
 	format, weakEtag := elements[2], elements[3]
 	return MakeStrongEtag(collectionName, sridValue, format, weakEtag), nil
 }
+
+func EtagToWeakEtag(strongEtag string) (string, error) {
+
+	weakEtagValue := ""
+
+	// Weak Etag form
+	if strings.HasPrefix(strongEtag, "W/") {
+		weakEtagValue = strings.Split(strongEtag, "W/")[1]
+	} else {
+		// Strong Etag form
+		strongValue, err := DecodeStrongEtag(strongEtag)
+		if err != nil {
+			return "", errors.New("wrong strong etag format")
+		}
+		weakEtagValue = strongValue.WeakEtag
+	}
+
+	weakEtagValue = strings.ReplaceAll(weakEtagValue, "\"", "")
+	return weakEtagValue, nil
+}

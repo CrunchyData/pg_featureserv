@@ -40,6 +40,17 @@ jobs:
         ports:
           # Maps tcp port 5432 on service container to the host
           - 5432:5432
+      redis:
+        image: redis
+        # Set health checks to wait until redis has started
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 6379 on service container to the host
+          - 6379:6379
 
     steps:
       - name: 'Install Go'
@@ -60,6 +71,7 @@ jobs:
         run: |
           # run test:
           export DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost/${POSTGRES_DB}"
+          export PGFS_CACHE_REDIS_URL="localhost:6379"
           PKGS=$(go list ./... | grep -v /vendor/)
           DEPS=$(go list ./... | grep -v vendor | grep -v test | xargs | sed 's/ /,/g')
           go test ${PKGS} -v \

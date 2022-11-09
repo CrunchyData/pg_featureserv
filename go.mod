@@ -5,9 +5,10 @@ go 1.13
 require (
 	github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20220209173558-ad29539cd2e9
 	github.com/getkin/kin-openapi v0.104.0
+	github.com/go-redis/redis/v8 v8.11.5
 	github.com/gorilla/handlers v1.4.2
 	github.com/gorilla/mux v1.8.0
-	github.com/jackc/pgconn v1.1.0 // indirect
+	github.com/jackc/pgconn v1.1.0
 	github.com/jackc/pgtype v1.0.2
 	github.com/jackc/pgx/v4 v4.1.2
 	github.com/paulmach/orb v0.7.1

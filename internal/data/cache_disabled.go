@@ -24,12 +24,12 @@ func (cache CacheDisabled) ContainsWeakEtag(strongEtag string) (bool, error) {
 	return false, nil
 }
 
-func (cache CacheDisabled) AddWeakEtag(weakEtag string, etag interface{}) bool {
-	return false
+func (cache CacheDisabled) AddWeakEtag(weakEtag string, etag interface{}) (bool, error) {
+	return false, nil
 }
 
-func (cache CacheDisabled) RemoveWeakEtag(weakEtag string) bool {
-	return false
+func (cache CacheDisabled) RemoveWeakEtag(weakEtag string) (bool, error) {
+	return false, nil
 }
 
 func (cache CacheDisabled) String() string {

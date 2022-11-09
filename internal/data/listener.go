@@ -136,10 +136,16 @@ func (listener *listenerDB) listenOneNotification(ctx context.Context) {
 	}
 	log.Debugf("Listener received notification: %v, cache: %v", notificationData, listener.cache)
 	if notificationData.Action == "DELETE" || notificationData.Action == "UPDATE" {
-		listener.cache.RemoveWeakEtag(notificationData.Old_xmin)
+		_, err = listener.cache.RemoveWeakEtag(notificationData.Old_xmin)
+		if err != nil {
+			log.Warnf("Error removing weak Etag to cache: %v", err)
+		}
 	}
 	if notificationData.Action == "INSERT" || notificationData.Action == "UPDATE" {
-		listener.cache.AddWeakEtag(notificationData.New_xmin, notificationData.Data)
+		_, err = listener.cache.AddWeakEtag(notificationData.New_xmin, notificationData.Data)
+		if err != nil {
+			log.Warnf("Error adding weak Etag to cache: %v", err)
+		}
 	}
 }
 

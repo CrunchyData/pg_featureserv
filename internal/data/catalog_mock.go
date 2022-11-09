@@ -276,7 +276,10 @@ func (cat *CatalogMock) TableFeature(ctx context.Context, name string, id string
 			feature_data := features[elementIdx].newPropsFilteredFeature(propNames)
 			weakEtag := feature.WeakEtag
 			feature_data.WeakEtag = weakEtag
-			cat.cache.AddWeakEtag(weakEtag, map[string]interface{}{"lastModified": time.Now().String()})
+			_, err = cat.cache.AddWeakEtag(weakEtag, map[string]interface{}{"lastModified": time.Now().String()})
+			if err != nil {
+				log.Warnf("Error adding weak Etag to cache: %v", err)
+			}
 			return feature_data, nil
 		}
 	}
@@ -317,7 +320,10 @@ func (cat *CatalogMock) AddTableFeature(ctx context.Context, tableName string, j
 	weakEtag := fmt.Sprint(sum.Sum32())
 	newFeature.WeakEtag = weakEtag
 
-	cat.cache.AddWeakEtag(weakEtag, map[string]interface{}{"lastModified": time.Now().String()})
+	_, err = cat.cache.AddWeakEtag(weakEtag, map[string]interface{}{"lastModified": time.Now().String()})
+	if err != nil {
+		log.Warnf("Error adding weak Etag to cache: %v", err)
+	}
 
 	cat.tableData[tableName] = append(cat.tableData[tableName], &newFeature)
 	return maxId + 1, nil

@@ -18,9 +18,7 @@ package data
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
-	"strings"
 	"sync"
 
 	"github.com/CrunchyData/pg_featureserv/internal/api"
@@ -33,40 +31,28 @@ type CacheNaive struct {
 var mutex = &sync.Mutex{} // allows concurrent accesses to the cache map
 
 func (cache CacheNaive) ContainsWeakEtag(strongEtag string) (bool, error) {
-
-	weakEtagValue := ""
-
-	// Weak Etag form
-	if strings.HasPrefix(strongEtag, "W/") {
-		weakEtagValue = strings.Split(strongEtag, "W/")[1]
-	} else {
-		// Strong Etag form
-		strongValue, err := api.DecodeStrongEtag(strongEtag)
-		if err != nil {
-			return false, errors.New("wrong strong etag format")
-		}
-		weakEtagValue = strongValue.WeakEtag
+	weakEtagValue, err := api.EtagToWeakEtag(strongEtag)
+	if err != nil {
+		return false, err
 	}
-
-	weakEtagValue = strings.ReplaceAll(weakEtagValue, "\"", "")
 	mutex.Lock()
 	_, present := cache.entries[weakEtagValue]
 	mutex.Unlock()
 	return present, nil
 }
 
-func (cache CacheNaive) AddWeakEtag(weakEtag string, etag interface{}) bool {
+func (cache CacheNaive) AddWeakEtag(weakEtag string, etag interface{}) (bool, error) {
 	mutex.Lock()
 	cache.entries[weakEtag] = etag
 	mutex.Unlock()
-	return true
+	return true, nil
 }
 
-func (cache CacheNaive) RemoveWeakEtag(weakEtag string) bool {
+func (cache CacheNaive) RemoveWeakEtag(weakEtag string) (bool, error) {
 	mutex.Lock()
 	delete(cache.entries, weakEtag)
 	mutex.Unlock()
-	return true
+	return true, nil
 }
 
 func (cache CacheNaive) String() string {

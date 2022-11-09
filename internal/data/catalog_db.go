@@ -703,7 +703,10 @@ func scanFeature(rows pgx.Rows, idColIndex int, propNames []string, cache Cacher
 	httpDateString := api.GetCurrentHttpDate() // Last modified value
 
 	// Add feature reference to the etags cache
-	cache.AddWeakEtag(weakEtag, map[string]interface{}{"last-modified": httpDateString})
+	_, err = cache.AddWeakEtag(weakEtag, map[string]interface{}{"last-modified": httpDateString})
+	if err != nil {
+		log.Warnf("Error adding weak Etag to cache: %v", err)
+	}
 
 	// val[0] = geometry column
 	// val[1] = etag
