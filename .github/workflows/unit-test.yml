@@ -14,7 +14,6 @@ on:
 permissions:
   contents: read
   pull-requests: write
-  checks: write
 
 env:
   POSTGRES_VERSION: "12"
@@ -52,19 +51,12 @@ jobs:
 
       - name: Install test dependencies
         run: |
-          if [ "${{ matrix.go-version }}" == "1.13" ]; then
             go get github.com/boumenot/gocover-cobertura
-            go get github.com/jstemmer/go-junit-report/v2
-          else
-            go get github.com/boumenot/gocover-cobertura
-            go install github.com/jstemmer/go-junit-report/v2@latest
-          fi
 
       - name: Install project dependencies
         run: go build
 
-      - name: Run test <1.16
-        if: matrix.go-version == '1.13' || matrix.go-version == '1.16'
+      - name: Run test
         run: |
           # run test:
           export DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost/${POSTGRES_DB}"
@@ -75,24 +67,7 @@ jobs:
             -covermode=count \
             -coverpkg ${DEPS} 2>&1
 
-      - name: Run test >1.16
-        if: matrix.go-version != '1.13' && matrix.go-version != '1.16'
-        run: |
-          # run test:
-          export DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost/${POSTGRES_DB}"
-          PKGS=$(go list ./... | grep -v /vendor/)
-          DEPS=$(go list ./... | grep -v vendor | grep -v test | xargs | sed 's/ /,/g')
-          go test ${PKGS} -json \
-            -coverprofile=coverage_${{ matrix.go-version }}.out \
-            -covermode=count \
-            -coverpkg ${DEPS} 2>&1 > unit-tests_${{ matrix.go-version }}.json
-
-      - name: Convert json to junit report >1.16
-        if: matrix.go-version != '1.13' && matrix.go-version != '1.16'
-        run: |
-          go-junit-report -parser gojson -in unit-tests_${{ matrix.go-version }}.json -out unit-tests_${{ matrix.go-version }}.xml
-
-      - name: Generate report
+      - name: Generate code coverage report
         run: |
           go run github.com/boumenot/gocover-cobertura < coverage_${{ matrix.go-version }}.out > coverage-unit_${{ matrix.go-version }}.xml
 
@@ -121,19 +96,12 @@ jobs:
         with:
           path: code-coverage-results.md
 
-      - name: Add unit test report in actions
-        uses: mikepenz/action-junit-report@v3
-        if: matrix.go-version == '1.19'
-        with:
-          report_paths: '**/unit-tests_*.xml'
-          detailed_summary: true
-          annotate_notice: true
-
-      - name: Upload unit test results
-        uses: actions/upload-artifact@v3
-        with:
-          name: go-test-results
-          path: unit-tests_*.xml
+      # TODO: retrieve and publish test results
+      # - name: Upload unit test results
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: go-test-results
+      #     path: unit-tests_*.xml
 
       - name: Upload coverage results
         uses: actions/upload-artifact@v3
