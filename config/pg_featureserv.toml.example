@@ -86,3 +86,14 @@ LimitMax = 10000
 [Website]
 # URL for the map view basemap
 BasemapUrl = "http://a.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"
+
+[Cache]
+# Type of cache, choose between Disabled / Naive / Redis
+Type = "Naive"
+
+[Cache.Naive]
+MapSize = 400000
+
+[Cache.Redis]
+Url= "localhost:6379"
+Password = "yourpassword"

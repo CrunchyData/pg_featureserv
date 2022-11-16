@@ -19,7 +19,6 @@ package conf
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -50,8 +49,11 @@ func setDefaultConfig() {
 	viper.SetDefault("Database.FunctionIncludes", []string{"postgisftw"})
 	viper.SetDefault("Database.AllowWrite", false)
 
-	viper.SetDefault("Cache.MapSize", 400000)
-	viper.SetDefault("Cache.IsActive", true)
+	viper.SetDefault("Cache.Type", "Naive")
+	viper.SetDefault("Cache.Naive.MapSize", 400000)
+	viper.SetDefault("Cache.Redis.Url", "localhost:6379")
+	viper.SetDefault("Cache.Redis.Password", "")
+
 	viper.SetDefault("Paging.LimitDefault", 10)
 	viper.SetDefault("Paging.LimitMax", 1000)
 
@@ -103,12 +105,6 @@ type Database struct {
 	TableExcludes         []string
 	FunctionIncludes      []string
 	AllowWrite            bool
-}
-
-// Cache config
-type Cache struct {
-	MapSize  int
-	IsActive bool
 }
 
 // Metadata config
@@ -178,41 +174,8 @@ func InitConfig(configFilename string, isDebug bool) {
 	}
 	log.Infof("Using database connection info from %v", dbconnSrc)
 
-	// Cache activation
-	cacheActivated := Configuration.Cache.IsActive
-	cacheActivationSrc := "config file"
-
-	value, present := os.LookupEnv(AppConfig.EnvCache)
-	if present {
-		cacheActivationEnvValue, err := strconv.ParseBool(value)
-		if err != nil {
-			log.Fatal(fmt.Errorf("fatal error reading env variable: %v", err))
-		}
-		cacheActivated = cacheActivationEnvValue
-		Configuration.Cache.IsActive = cacheActivationEnvValue
-		cacheActivationSrc = fmt.Sprintf("environment variable %s", AppConfig.EnvCache)
-	}
-
-	cacheActivationStatus := ""
-	if cacheActivated {
-		cacheActivationStatus = "active"
-	} else {
-		cacheActivationStatus = "disabled"
-	}
-	log.Infof("Etag cache mode set from %s (%s)", cacheActivationSrc, cacheActivationStatus)
-
-	// Cache size configuration
-	if cacheActivated {
-		cacheSizeSrc := "config file"
-		if cacheSizeInput, err := strconv.Atoi(os.Getenv(AppConfig.EnvCacheSize)); cacheSizeInput != 0 {
-			if err != nil {
-				log.Fatal(fmt.Errorf("fatal error reading env variable: %v", err))
-			}
-			Configuration.Cache.MapSize = cacheSizeInput
-			cacheSizeSrc = "environment variable"
-		}
-		log.Infof("Using etag cache size set from %s (%d entries)", cacheSizeSrc, Configuration.Cache.MapSize)
-	}
+	// Cache initialization
+	Configuration.Cache.InitFromEnvVariables()
 
 	// sanitize the configuration
 	Configuration.Server.BasePath = strings.TrimRight(Configuration.Server.BasePath, "/")
@@ -230,4 +193,6 @@ func DumpConfig() {
 	log.Debugf("  TableIncludes = %v", Configuration.Database.TableIncludes)
 	log.Debugf("  TableExcludes = %v", Configuration.Database.TableExcludes)
 	log.Debugf("  FunctionIncludes = %v", Configuration.Database.FunctionIncludes)
+
+	Configuration.Cache.DumpConfig()
 }

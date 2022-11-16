@@ -21,20 +21,26 @@ var setVersion string = "1.3"
 // AppConfiguration is the set of global application configuration constants.
 type AppConfiguration struct {
 	// AppName name of the software
-	Name string
+	Name      string
+	EnvPrefix string
 	// AppVersion version number of the software
-	Version      string
-	EnvDBURL     string
-	EnvCache     string
-	EnvCacheSize string
-	EnvPrefix    string
+	Version string
+	// Database URL
+	EnvDBURL string
+	// Cache configuration
+	EnvCacheType          string
+	EnvCacheNaiveSize     string
+	EnvCacheRedisUrl      string
+	EnvCacheRedisPassword string
 }
 
 var AppConfig = AppConfiguration{
-	Name:         "pg_featureserv",
-	Version:      setVersion,
-	EnvDBURL:     "DATABASE_URL",
-	EnvCache:     "PGFS_CACHE",
-	EnvCacheSize: "PGFS_CACHESIZE",
-	EnvPrefix:    "PGFS",
+	Name:                  "pg_featureserv",
+	Version:               setVersion,
+	EnvPrefix:             "PGFS",
+	EnvDBURL:              "DATABASE_URL",
+	EnvCacheType:          "PGFS_CACHE_TYPE",
+	EnvCacheNaiveSize:     "PGFS_CACHE_NAIVE_SIZE",
+	EnvCacheRedisUrl:      "PGFS_CACHE_REDIS_URL",
+	EnvCacheRedisPassword: "PGFS_CACHE_REDIS_PASSWORD",
 }

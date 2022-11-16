@@ -17,7 +17,6 @@ package data
 */
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 
@@ -30,9 +29,10 @@ type CacheRedis struct {
 	ctx    context.Context
 }
 
-func (cache *CacheRedis) Init(addr string) error {
+func (cache *CacheRedis) Init(addr string, password string) error {
 	cache.client = redis.NewClient(&redis.Options{
-		Addr: addr,
+		Addr:     addr,
+		Password: password,
 	})
 	cache.ctx = context.Background()
 	_, err := cache.client.Ping(cache.ctx).Result()
@@ -69,9 +69,7 @@ func (cache CacheRedis) RemoveWeakEtag(weakEtag string) (bool, error) {
 }
 
 func (cache CacheRedis) String() string {
-	b := new(bytes.Buffer)
-	// TODO
-	return b.String()
+	return fmt.Sprintf("Redis Cache running on %s", cache.client.Options().Addr)
 }
 
 func (cache CacheRedis) Type() string {

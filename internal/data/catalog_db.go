@@ -85,11 +85,20 @@ func newCatalogDB() catalogDB {
 
 // etags cache
 func makeCache() Cacher {
-	activated := conf.Configuration.Cache.IsActive
-	if activated {
-		cache_size := conf.Configuration.Cache.MapSize
+	if conf.Configuration.Cache.Type == "Naive" {
+		cache_size := conf.Configuration.Cache.Naive.MapSize
 		return &CacheNaive{make(map[string]interface{}, cache_size)}
+	} else if conf.Configuration.Cache.Type == "Redis" {
+		cache := CacheRedis{}
+		err := cache.Init(conf.Configuration.Cache.Redis.Url, conf.Configuration.Cache.Redis.Password)
+		if err != nil {
+			log.Fatalf("Error in CacheRedis init: %v", err)
+		}
+		return &cache
+	} else if conf.Configuration.Cache.Type == "Disabled" || conf.Configuration.Cache.Type == "" {
+		return &CacheDisabled{}
 	} else {
+		log.Fatal(fmt.Errorf("Invalid cache type: Disabled, Naive and Redis are supported. %v defined", conf.Configuration.Cache.Type))
 		return &CacheDisabled{}
 	}
 }

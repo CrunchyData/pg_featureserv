@@ -64,6 +64,7 @@ func DecodeStrongEtag(encodedStrongEtag string) (*StrongEtagData, error) {
 	return MakeStrongEtag(collectionName, sridValue, format, weakEtag), nil
 }
 
+// Returns a WeakEtag string from a etag. If etag starts with W/ value is split to get WeakEtag otherwise we decode etag to strong format to get WeakEtag
 func EtagToWeakEtag(strongEtag string) (string, error) {
 
 	weakEtagValue := ""
