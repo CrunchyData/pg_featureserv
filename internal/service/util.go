@@ -190,11 +190,17 @@ func serveURLBase(r *http.Request) string {
 	return fmt.Sprintf("%v://%v%v/", ps, ph, path)
 }
 
-func getRequestVar(varname string, r *http.Request) string {
+// Return value for the requested path route variable
+func getRequestVar(varName string, r *http.Request) string {
 	vars := mux.Vars(r)
-	nameFull := vars[varname]
-	name := api.PathStripFormat(nameFull)
-	return name
+	return vars[varName]
+}
+
+// Return value for the requested path route variable while stripping te extension
+func getRequestVarStrip(varName string, r *http.Request) string {
+	vars := mux.Vars(r)
+	value := vars[varName]
+	return api.PathStripFormat(value)
 }
 
 // urlPathFormat provides a URL for the given base and path

@@ -40,9 +40,10 @@ import (
 )
 
 const (
-	routeVarID         = "id"
-	routeVarFeatureID  = "fid"
-	routeVarStrongEtag = "etag"
+	routeVarCollectionID = "cid"
+	routeVarFeatureID    = "fid"
+	routeVarFunctionID   = "funid"
+	routeVarStrongEtag   = "etag"
 )
 
 func InitRouter(basePath string) *mux.Router {
@@ -52,9 +53,13 @@ func InitRouter(basePath string) *mux.Router {
 		Subrouter()
 
 	addRoute(router, "/", handleRoot)
-	addRoute(router, "/home{.fmt}", handleRoot)
+
+	addRoute(router, "/home", handleRoot)
+	addRoute(router, "/home.{fmt}", handleRoot)
+
 	// consistent with pg_tileserv
-	addRoute(router, "/index{.fmt}", handleRoot)
+	addRoute(router, "/index", handleRoot)
+	addRoute(router, "/index.{fmt}", handleRoot)
 
 	addRoute(router, "/etags/decodestrong/{etag}", handleDecodeStrongEtag)
 
@@ -67,37 +72,31 @@ func InitRouter(basePath string) *mux.Router {
 	addRoute(router, "/collections", handleCollections)
 	addRoute(router, "/collections.{fmt}", handleCollections)
 
-	addRoute(router, "/collections/{id}", handleCollection)
-	addRoute(router, "/collections/{id}.{fmt}", handleCollection)
+	addRoute(router, "/collections/{cid}", handleCollection)
 
-	addRoute(router, "/collections/{id}/items", handleCollectionItems)
-	addRoute(router, "/collections/{id}/items.{fmt}", handleCollectionItems)
+	addRoute(router, "/collections/{cid}/items", handleCollectionItems)
+	addRoute(router, "/collections/{cid}/items.{fmt}", handleCollectionItems)
 
 	if conf.Configuration.Database.AllowWrite {
-		addRouteWithMethod(router, "/collections/{id}/items", handleCreateCollectionItem, "POST")
+		addRouteWithMethod(router, "/collections/{cid}/items", handleCreateCollectionItem, "POST")
 
-		addRouteWithMethod(router, "/collections/{id}/items/{fid}", handleDeleteCollectionItem, "DELETE")
+		addRouteWithMethod(router, "/collections/{cid}/items/{fid}", handleDeleteCollectionItem, "DELETE")
 
-		addRouteWithMethod(router, "/collections/{id}/items/{fid}", handlePartialUpdateItem, "PATCH")
-		addRouteWithMethod(router, "/collections/{id}/items/{fid}.{fmt}", handlePartialUpdateItem, "PATCH")
+		addRouteWithMethod(router, "/collections/{cid}/items/{fid}", handlePartialUpdateItem, "PATCH")
 
-		addRouteWithMethod(router, "/collections/{id}/items/{fid}", handleReplaceItem, "PUT")
-		addRouteWithMethod(router, "/collections/{id}/items/{fid}.{fmt}", handleReplaceItem, "PUT")
+		addRouteWithMethod(router, "/collections/{cid}/items/{fid}", handleReplaceItem, "PUT")
 
-		addRoute(router, "/collections/{id}/schema", handleCollectionSchemas)
+		addRoute(router, "/collections/{cid}/schema", handleCollectionSchemas)
 	}
 
-	addRoute(router, "/collections/{id}/items/{fid}", handleItem)
-	addRoute(router, "/collections/{id}/items/{fid}.{fmt}", handleItem)
+	addRoute(router, "/collections/{cid}/items/{fid}", handleItem)
 
 	addRoute(router, "/functions", handleFunctions)
 	addRoute(router, "/functions.{fmt}", handleFunctions)
 
-	addRoute(router, "/functions/{id}", handleFunction)
-	addRoute(router, "/functions/{id}.{fmt}", handleFunction)
+	addRoute(router, "/functions/{funid}", handleFunction)
 
-	addRoute(router, "/functions/{id}/items", handleFunctionItems)
-	addRoute(router, "/functions/{id}/items.{fmt}", handleFunctionItems)
+	addRoute(router, "/functions/{funid}/items", handleFunctionItems)
 
 	return router
 }
@@ -179,7 +178,7 @@ func linkAlt(urlBase string, path string, desc string) *api.Link {
 
 func handleDecodeStrongEtag(w http.ResponseWriter, r *http.Request) *appError {
 	//--- extract request parameters
-	etag := getRequestVar(routeVarStrongEtag, r)
+	etag := getRequestVarStrip(routeVarStrongEtag, r)
 	decodedEtag, err := api.DecodeStrongEtag(etag)
 	if err != nil {
 		return appErrorBadRequest(err, "Malformed etag")
@@ -272,7 +271,9 @@ func handleCollection(w http.ResponseWriter, r *http.Request) *appError {
 	format := api.RequestedFormat(r)
 	urlBase := serveURLBase(r)
 
-	name := getRequestVar(routeVarID, r)
+	// the collection is at the end of the URL, this is why we strip the extension
+	// it may be an issue if the schema name is provided here
+	name := getRequestVarStrip(routeVarCollectionID, r)
 
 	tbl, err := catalogInstance.TableByName(name)
 	if tbl == nil && err == nil {
@@ -310,7 +311,7 @@ func handleCollectionSchemas(w http.ResponseWriter, r *http.Request) *appError {
 	format := api.RequestedFormat(r)
 
 	//--- extract request parameters
-	name := getRequestVar(routeVarID, r)
+	name := getRequestVar(routeVarCollectionID, r)
 	tbl, err1 := catalogInstance.TableByName(name)
 	if err1 != nil {
 		return appErrorInternal(err1, api.ErrMsgCollectionAccess, name)
@@ -350,7 +351,7 @@ func handleCreateCollectionItem(w http.ResponseWriter, r *http.Request) *appErro
 	urlBase := serveURLBase(r)
 
 	//--- extract request parameters
-	name := getRequestVar(routeVarID, r)
+	name := getRequestVar(routeVarCollectionID, r)
 
 	//--- check query parameters
 	queryValues := r.URL.Query()
@@ -399,8 +400,8 @@ func handleCreateCollectionItem(w http.ResponseWriter, r *http.Request) *appErro
 func handleDeleteCollectionItem(w http.ResponseWriter, r *http.Request) *appError {
 
 	//--- extract request parameters
-	name := getRequestVar(routeVarID, r)
-	fid := getRequestVar(routeVarFeatureID, r)
+	name := getRequestVar(routeVarCollectionID, r)
+	fid := getRequestVarStrip(routeVarFeatureID, r)
 
 	//--- check request parameters
 	index, err := strconv.Atoi(fid)
@@ -434,13 +435,14 @@ func handleDeleteCollectionItem(w http.ResponseWriter, r *http.Request) *appErro
 }
 
 func handleCollectionItems(w http.ResponseWriter, r *http.Request) *appError {
+	// "/collections/{id}/items"
 	// TODO: determine content from request header?
 	format := api.RequestedFormat(r)
 	urlBase := serveURLBase(r)
 	query := api.URLQuery(r.URL)
 
 	//--- extract request parameters
-	name := getRequestVar(routeVarID, r)
+	name := getRequestVar(routeVarCollectionID, r)
 	reqParam, err := parseRequestParams(r)
 	if err != nil {
 		return appErrorBadRequest(err, err.Error())
@@ -453,20 +455,22 @@ func handleCollectionItems(w http.ResponseWriter, r *http.Request) *appError {
 	if tbl == nil {
 		return appErrorNotFound(err1, api.ErrMsgCollectionNotFound, name)
 	}
-	param, err := createQueryParams(&reqParam, tbl.Columns, tbl.Srid)
-	if err != nil {
-		return appErrorBadRequest(err, err.Error())
-	}
+	param, errQuery := createQueryParams(&reqParam, tbl.Columns, tbl.Srid)
 	param.Filter = parseFilter(reqParam.Values, tbl.DbTypes)
 
-	ctx := r.Context()
-	switch format {
-	case api.FormatJSON:
-		return writeItemsJSON(ctx, w, name, param, urlBase)
-	case api.FormatHTML:
-		return writeItemsHTML(w, tbl, name, query, urlBase)
+	if errQuery == nil {
+		ctx := r.Context()
+		switch format {
+		case api.FormatJSON:
+			return writeItemsJSON(ctx, w, name, param, urlBase)
+		case api.FormatHTML:
+			return writeItemsHTML(w, tbl, name, query, urlBase)
+		default:
+			return appErrorNotAcceptable(nil, api.ErrMsgNotSupportedFormat, format)
+		}
+	} else {
+		return appErrorBadRequest(errQuery, api.ErrMsgInvalidQuery)
 	}
-	return nil
 }
 
 func writeCreateItemSchemaJSON(ctx context.Context, w http.ResponseWriter, table *api.Table) *appError {
@@ -640,8 +644,8 @@ func handleItem(w http.ResponseWriter, r *http.Request) *appError {
 
 	query := api.URLQuery(r.URL)
 	//--- extract request parameters
-	name := getRequestVar(routeVarID, r)
-	fid := getRequestVar(routeVarFeatureID, r)
+	name := getRequestVar(routeVarCollectionID, r)
+	fid := getRequestVarStrip(routeVarFeatureID, r)
 	reqParam, err := parseRequestParams(r)
 	if err != nil {
 		return appErrorBadRequest(err, err.Error())
@@ -698,8 +702,8 @@ func handleItem(w http.ResponseWriter, r *http.Request) *appError {
 
 func handlePartialUpdateItem(w http.ResponseWriter, r *http.Request) *appError {
 	// extract request parameters
-	name := getRequestVar(routeVarID, r)
-	fid := getRequestVar(routeVarFeatureID, r)
+	name := getRequestVar(routeVarCollectionID, r)
+	fid := getRequestVarStrip(routeVarFeatureID, r)
 
 	// check query parameters
 	queryValues := r.URL.Query()
@@ -753,8 +757,8 @@ func handlePartialUpdateItem(w http.ResponseWriter, r *http.Request) *appError {
 func handleReplaceItem(w http.ResponseWriter, r *http.Request) *appError {
 
 	// extract request parameters
-	name := getRequestVar(routeVarID, r)
-	fid := getRequestVar(routeVarFeatureID, r)
+	name := getRequestVar(routeVarCollectionID, r)
+	fid := getRequestVarStrip(routeVarFeatureID, r)
 
 	// check query parameters
 	queryValues := r.URL.Query()
@@ -977,7 +981,7 @@ func handleFunction(w http.ResponseWriter, r *http.Request) *appError {
 	format := api.RequestedFormat(r)
 	urlBase := serveURLBase(r)
 
-	shortName := getRequestVar(routeVarID, r)
+	shortName := getRequestVarStrip(routeVarFunctionID, r)
 	name := data.FunctionQualifiedId(shortName)
 
 	fn, err := catalogInstance.FunctionByName(name)
@@ -1018,7 +1022,7 @@ func handleFunctionItems(w http.ResponseWriter, r *http.Request) *appError {
 	urlBase := serveURLBase(r)
 
 	//--- extract request parameters
-	name := data.FunctionQualifiedId(getRequestVar(routeVarID, r))
+	name := data.FunctionQualifiedId(getRequestVarStrip(routeVarFunctionID, r))
 	reqParam, err := parseRequestParams(r)
 	if err != nil {
 		return appErrorBadRequest(err, err.Error())
@@ -1034,7 +1038,7 @@ func handleFunctionItems(w http.ResponseWriter, r *http.Request) *appError {
 		return appErrorBadRequest(err, err.Error())
 	}
 	fnArgs := restrict(reqParam.Values, fn.InNames)
-	//log.Debugf("Function request args: %v ", fnArgs)
+	// log.Debugf("Function request args: %v ", fnArgs)
 
 	ctx := r.Context()
 	switch format {

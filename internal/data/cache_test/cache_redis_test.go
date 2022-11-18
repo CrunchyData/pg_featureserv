@@ -38,7 +38,7 @@ func (t *CacheTests) TestRedisValidAddress() {
 	t.Test.Run("TestRedisValidAddress", func(t *testing.T) {
 
 		cache := data.CacheRedis{}
-		err := cache.Init(url)
+		err := cache.Init(url, "")
 		util.Assert(t, err == nil, "No error in CacheRedis initialization expected")
 
 		util.Assert(t, cache.String() == "Redis Cache running on "+url, "Invalid CacheRedis string")
@@ -50,7 +50,7 @@ func (t *CacheTests) TestRedisContainsWeakEtag() {
 	t.Test.Run("TestRedisContainsWeakEtag", func(t *testing.T) {
 
 		cache := data.CacheRedis{}
-		err := cache.Init(url)
+		err := cache.Init(url, "")
 		util.Assert(t, err == nil, "No error in CacheRedis initialization expected")
 
 		// Test invalid etag use
@@ -90,7 +90,7 @@ func (t *CacheTests) TestRedisAddWeakEtag() {
 	t.Test.Run("TestRedisAddWeakEtag", func(t *testing.T) {
 
 		cache := data.CacheRedis{}
-		err := cache.Init(url)
+		err := cache.Init(url, "")
 		util.Assert(t, err == nil, "No error in CacheRedis initialization expected")
 
 		validWeakEtag := "collection"
@@ -120,7 +120,7 @@ func (t *CacheTests) TestRedisRemoveWeakEtag() {
 	t.Test.Run("TestRedisRemoveWeakEtag", func(t *testing.T) {
 
 		cache := data.CacheRedis{}
-		err := cache.Init(url)
+		err := cache.Init(url, "")
 		util.Assert(t, err == nil, "No error in CacheRedis initialization expected")
 
 		validWeakEtag := "collection"

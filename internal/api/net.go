@@ -75,23 +75,10 @@ func RequestedFormat(r *http.Request) string {
 	// first check explicit path
 	path := r.URL.EscapedPath()
 
-	// Accept header value
-	hdrAcceptValue := r.Header.Get("Accept")
-
 	// Extension value
-	splittedPath := strings.Split(path, "/")
-	pathEnd := splittedPath[len(splittedPath)-1]
-	extension := ""
-	pos := strings.LastIndex(pathEnd, ".")
-	if pos != -1 {
-		extension = pathEnd[pos+1:]
-	}
-
-	// TODO: case when extension and header Accept are provided at the same time
-	// -> Bad Request ?
-
-	if extension != "" && hdrAcceptValue == "" {
-		switch extension {
+	suffix := PathSuffix(path)
+	if suffix != "" {
+		switch suffix {
 		case "json":
 			return FormatJSON
 		case "html":
@@ -101,23 +88,38 @@ func RequestedFormat(r *http.Request) string {
 		case "svg":
 			return FormatSVG
 		default:
-			return extension
+			return suffix
 		}
-	}
+	} else {
+		// Accept header value
+		hdrAcceptValue := r.Header.Get("Accept")
+		if hdrAcceptValue != "" {
+			// Accept header fields preferences:
+			// -> https://www.rfc-editor.org/rfc/rfc9110.html#section-12.5.1
 
-	if hdrAcceptValue != "" {
-		switch hdrAcceptValue {
-		case ContentTypeJSON:
-			return FormatJSON
-		case ContentTypeSchemaJSON, ContentTypeSchemaPatchJSON:
-			return FormatSchemaJSON
-		case ContentTypeHTML:
-			return FormatHTML
-		case ContentTypeText:
-			return FormatText
-		case ContentTypeSVG:
-			return FormatSVG
-		default:
+			// Examples:
+			// "Accept: application/json"
+			// "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
+			preferredFormats := strings.Split(hdrAcceptValue, ",")
+			for _, value := range preferredFormats {
+				mediaTypeValue := value
+				lastSemicolon := strings.LastIndex(value, ";")
+				if lastSemicolon > 0 {
+					mediaTypeValue = value[:lastSemicolon] // 'q' quality parameter not used
+				}
+				switch mediaTypeValue {
+				case ContentTypeJSON:
+					return FormatJSON
+				case ContentTypeSchemaJSON, ContentTypeSchemaPatchJSON:
+					return FormatSchemaJSON
+				case ContentTypeHTML:
+					return FormatHTML
+				case ContentTypeText:
+					return FormatText
+				case ContentTypeSVG:
+					return FormatSVG
+				}
+			}
 			return hdrAcceptValue
 		}
 	}
@@ -139,10 +141,23 @@ func SentDataFormat(r *http.Request) string {
 
 // PathStripFormat removes a format extension from a path
 func PathStripFormat(path string) string {
-	if strings.HasSuffix(path, ".html") || strings.HasSuffix(path, ".json") {
-		return path[0 : len(path)-5]
+	pos := strings.LastIndex(path, ".")
+	if pos != -1 {
+		path = path[:pos]
 	}
 	return path
+}
+
+// PathSuffix returns the format extension from a path following a dot character
+func PathSuffix(path string) string {
+	splittedPath := strings.Split(path, "/")
+	pathEnd := splittedPath[len(splittedPath)-1]
+	pos := strings.LastIndex(pathEnd, ".")
+	if pos != -1 {
+		return pathEnd[pos+1:]
+	} else {
+		return ""
+	}
 }
 
 // URLQuery gets the query part of a URL

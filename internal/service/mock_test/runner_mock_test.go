@@ -1,7 +1,7 @@
 package mock_test
 
 /*
- Copyright 2019 Crunchy Data Solutions, Inc.
+ Copyright 2022 Crunchy Data Solutions, Inc.
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
@@ -11,14 +11,19 @@ package mock_test
  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  See the License for the specific language governing permissions and
  limitations under the License.
+ Date     : October 2022
+ Authors  : Jean-philippe Bazonnais (jean-philippe dot bazonnais at ign dot fr)
+			Nicolas Revelant (nicolas dot revelant at ign dot fr)
 */
 
 import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/CrunchyData/pg_featureserv/internal/api"
@@ -53,6 +58,12 @@ func TestRunnerHandlerMock(t *testing.T) {
 
 	t.Run("GET", func(t *testing.T) {
 		m := MockTests{Test: t}
+		m.TestRoot()
+		m.TestGetFormatHandlingWithAcceptHeader()
+		m.TestGetFormatHandlingSuffix()
+		m.TestGetFormatHeaderAcceptUnsupportedMimeType()
+		m.TestGetFormatSuffixSupersedesAcceptHeader()
+		m.TestFeatureFormats()
 		m.TestCollectionItem()
 		m.TestCollectionItemsResponse()
 		m.TestCollectionMissingItemsNotFound()
@@ -61,7 +72,6 @@ func TestRunnerHandlerMock(t *testing.T) {
 		m.TestCollectionResponse()
 		m.TestCollectionsResponse()
 		m.TestFeatureNotFound()
-		m.TestFeatureFormats()
 	})
 	t.Run("CACHE AND ETAGS", func(t *testing.T) {
 		m := MockTests{Test: t}
@@ -292,5 +302,34 @@ func checkItem(t *testing.T, id int) []byte {
 	util.Equals(t, id, actId, "feature id")
 	util.Equals(t, 4, len(v.Props), "# feature props")
 
+	return body
+}
+
+// sends a GET request and checks the expected format (Content-Type header) from the response
+func checkRouteResponseFormat(t *testing.T, url string, expectedContentType string) {
+
+	resp := hTest.DoRequestStatus(t, url, http.StatusOK)
+	respContentType := resp.Result().Header["Content-Type"][0]
+	util.Assert(t, respContentType == expectedContentType, fmt.Sprintf("wrong Content-Type: %s", respContentType))
+}
+
+// sends a GET request with the specific Accept header provided, and checks the response received for :
+// - the expected status
+// - the expected format provided, or according to the initial Accept header (Content-Type header)
+func checkRouteWithAcceptHeader(t *testing.T, url string, acceptValue string, expectedStatus int, expectedFormat string) []byte {
+
+	var acceptHeader = make(http.Header)
+	acceptHeader.Add("Accept", acceptValue)
+
+	resp := hTest.DoRequestMethodStatus(t, "GET", url, nil, acceptHeader, expectedStatus)
+	contentType := resp.Result().Header["Content-Type"][0]
+
+	if expectedFormat != "" {
+		util.Assert(t, contentType == expectedFormat, fmt.Sprintf("Content-Type: %s", contentType))
+	} else {
+		util.Assert(t, strings.Contains(acceptValue, contentType), fmt.Sprintf("Content-Type: %s", contentType))
+	}
+
+	body, _ := ioutil.ReadAll(resp.Body)
 	return body
 }
