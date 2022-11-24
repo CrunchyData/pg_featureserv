@@ -36,6 +36,7 @@ import (
 	"github.com/CrunchyData/pg_featureserv/internal/data"
 	"github.com/CrunchyData/pg_featureserv/internal/ui"
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/go-http-utils/headers"
 	"github.com/gorilla/mux"
 )
 
@@ -62,6 +63,7 @@ func InitRouter(basePath string) *mux.Router {
 	addRoute(router, "/index.{fmt}", handleRoot)
 
 	addRoute(router, "/etags/decodestrong/{etag}", handleDecodeStrongEtag)
+	addRoute(router, "/etags/purge", handlePurgeEtagsInCache)
 
 	addRoute(router, "/api", handleAPI)
 	addRoute(router, "/api.{fmt}", handleAPI)
@@ -120,7 +122,7 @@ func handleRoot(w http.ResponseWriter, r *http.Request) *appError {
 }
 
 func doRoot(w http.ResponseWriter, r *http.Request, format string) *appError {
-	//log.Printf("Content-Type: %v  Accept: %v", r.Header.Get("Content-Type"), r.Header.Get("Accept"))
+	//log.Printf("Content-Type: %v  Accept: %v", r.Header.Get("Content-Type"), r.Header.Get(headers.Accept))
 	urlBase := serveURLBase(r)
 
 	// --- create content
@@ -192,6 +194,14 @@ func handleDecodeStrongEtag(w http.ResponseWriter, r *http.Request) *appError {
 
 	writeResponse(w, api.ContentTypeJSON, encodedContent)
 	return nil
+}
+
+func handlePurgeEtagsInCache(w http.ResponseWriter, r *http.Request) *appError {
+	if catalogInstance.CacheReset() {
+		writeResponse(w, api.ContentTypeText, []byte("cache cleaned successfully"))
+		return nil
+	}
+	return appErrorInternal(nil, api.ErrMsgCacheCleaningFailed)
 }
 
 func handleCollections(w http.ResponseWriter, r *http.Request) *appError {
@@ -639,170 +649,192 @@ func linksItems(name string, urlBase string) []*api.Link {
 }
 
 func handleItem(w http.ResponseWriter, r *http.Request) *appError {
+
+	// Parameters
 	format := api.RequestedFormat(r)
 	urlBase := serveURLBase(r)
-
 	query := api.URLQuery(r.URL)
+
 	//--- extract request parameters
-	name := getRequestVar(routeVarCollectionID, r)
-	fid := getRequestVarStrip(routeVarFeatureID, r)
+	tableName := getRequestVar(routeVarFeatureID, r)
+	fid := getRequestVar(routeVarFeatureID, r)
 	reqParam, err := parseRequestParams(r)
 	if err != nil {
 		return appErrorBadRequest(err, err.Error())
 	}
 
-	// "If-Match" header
-	// TODO
-	// r.Header.Get("If-Match") ?
+	// Getting collection
+	tbl, err1 := catalogInstance.TableByName(tableName)
+	if err1 != nil {
+		return appErrorInternal(err1, api.ErrMsgCollectionAccess, tableName)
+	}
+	if tbl == nil {
+		return appErrorNotFound(err1, api.ErrMsgCollectionNotFound, tableName)
+	}
 
-	// "If-None-Match" header
-	ifNoneMatch := r.Header.Get("If-None-Match")
-	if ifNoneMatch != "" {
-		// TODO :
-		// - *
+	// Preconditional headers evaluation order according to RFC7232
+	// -> https://www.rfc-editor.org/rfc/rfc7232.html#section-2.3
+	// - If-Match
+	// - If-Unmodified-Since
+	// - If-None-Match
+	// - If-Modified-Since
+	// - If-Range
+	// - Range
 
-		eTagsList := strings.Split(ifNoneMatch, ",")
+	var eTagsList = make([]string, 1)
+	var checkPrecondition = false
+	var precondition = false
 
-		notModified, err := catalogInstance.CheckStrongEtags(eTagsList)
+	if r.Header.Get(headers.IfMatch) != "" {
+		checkPrecondition = true
+	} else if r.Header.Get(headers.IfNoneMatch) != "" {
+		checkPrecondition = true
+		ifNoneMatchValue := r.Header.Get(headers.IfNoneMatch)
+		if ifNoneMatchValue == "*" {
+			// "*" value prevents an unsafe request method (e.g., PUT) from inadvertently modifying an
+			// existing representation of the target resource when the client believes that the resource does
+			// not have a current representation : https://www.rfc-editor.org/rfc/rfc7232.html#section-3.2
+
+			// TODO : This section currently allows to retrieve the weak etag from database.
+			// But it will have to be deleted when we will be able to found easily the weak etag into the cache
+			// starting from the collection name and the feature id.
+			// This supposes a necessary modification of the cache structure
+			// ------------------------------------------------------------------------------------------------
+			reqParam, err := parseRequestParams(r)
+			if err != nil {
+				return appErrorBadRequest(err, err.Error())
+			}
+			param, errQuery := createQueryParams(&reqParam, tbl.Columns, tbl.Srid)
+			if errQuery == nil {
+				ctx := r.Context()
+				feature, err := catalogInstance.TableFeature(ctx, tableName, fid, param)
+				if err != nil {
+					return appErrorInternal(err, api.ErrMsgDataReadError, tableName)
+				}
+				if feature == nil {
+					return appErrorNotFound(nil, api.ErrMsgFeatureNotFound, fid)
+				}
+				weakEtag := "W/\"" + feature.WeakEtag + "\""
+				eTagsList[0] = weakEtag
+			} else {
+				return appErrorBadRequest(errQuery, api.ErrMsgInvalidQuery)
+			}
+			// ------------------------------------------------------------------------------------------------
+		} else {
+			eTagsList = strings.Split(ifNoneMatchValue, ",")
+		}
+
+		precondition, err = catalogInstance.CheckStrongEtags(eTagsList)
 		if err != nil {
-			return appErrorBadRequest(err, "Malformed etags are considered as not found in cache")
+			return appErrorBadRequest(err, "Malformed etags")
 		}
-		if notModified {
-			w.WriteHeader(http.StatusNotModified) // weak etag detected into the catalog cache
-			return nil
+
+	}
+
+	// Performing request according to its method
+	switch r.Method {
+	case http.MethodGet:
+		// GET
+		if checkPrecondition {
+			if !precondition {
+				w.WriteHeader(http.StatusNotModified) // weak etag detected into the cache
+				return nil
+			}
 		}
-	}
-
-	tbl, err1 := catalogInstance.TableByName(name)
-	if err1 != nil {
-		return appErrorInternal(err1, api.ErrMsgCollectionAccess, name)
-	}
-	if tbl == nil {
-		return appErrorNotFound(err1, api.ErrMsgCollectionNotFound, name)
-	}
-	param, errQuery := createQueryParams(&reqParam, tbl.Columns, tbl.Srid)
-
-	if errQuery == nil {
-		ctx := r.Context()
-
-		crs := reqParam.Crs // default "4326"
-
-		switch format {
-		case api.FormatJSON:
-			return writeItemJSON(ctx, w, name, fid, param, urlBase, crs)
-		case api.FormatHTML:
-			return writeItemHTML(w, tbl, name, fid, query, urlBase)
-		default:
-			return appErrorNotAcceptable(nil, api.ErrMsgNotSupportedFormat, format)
+		param, errQuery := createQueryParams(&reqParam, tbl.Columns, tbl.Srid)
+		if errQuery == nil {
+			ctx := r.Context()
+			crs := reqParam.Crs // default "4326"
+			switch format {
+			case api.FormatJSON:
+				return writeItemJSON(ctx, w, tableName, fid, param, urlBase, crs)
+			case api.FormatHTML:
+				return writeItemHTML(w, tbl, tableName, fid, query, urlBase)
+			default:
+				return appErrorNotAcceptable(nil, api.ErrMsgNotSupportedFormat, format)
+			}
+		} else {
+			return appErrorBadRequest(errQuery, api.ErrMsgInvalidQuery)
 		}
-	} else {
-		return appErrorBadRequest(errQuery, api.ErrMsgInvalidQuery)
-	}
-}
 
-func handlePartialUpdateItem(w http.ResponseWriter, r *http.Request) *appError {
-	// extract request parameters
-	name := getRequestVar(routeVarCollectionID, r)
-	fid := getRequestVarStrip(routeVarFeatureID, r)
+	case http.MethodPut:
+		// PUT
+		if checkPrecondition {
+			if !precondition {
+				w.WriteHeader(http.StatusPreconditionFailed) // weak etag detected into the cache
+				return nil
+			}
+		}
+		// extract JSON from request body
+		body, errBody := ioutil.ReadAll(r.Body)
+		if errBody != nil || len(body) == 0 {
+			return appErrorInternal(errBody, api.ErrMsgCollectionRequestBodyRead, tableName)
+		}
 
-	// check query parameters
-	queryValues := r.URL.Query()
-	paramValues := extractSingleArgs(queryValues)
-	if len(paramValues) != 0 {
-		return appErrorBadRequest(nil, api.ErrMsgNoParameters)
-	}
+		//--- check if body matches the schema
+		// schema for replace is the same as in create http://docs.ogc.org/DRAFTS/20-002.html#feature-geojson
+		createSchema, errGetSch := getCreateItemSchema(r.Context(), tbl)
+		if errGetSch != nil {
+			return appErrorInternal(errGetSch, errGetSch.Error())
+		}
+		var val interface{}
+		_ = json.Unmarshal(body, &val)
+		errValSch := createSchema.VisitJSON(val)
+		if errValSch != nil {
+			return appErrorBadRequest(errValSch, api.ErrMsgReplaceFeatureNotConform)
+		}
 
-	// check that collection exists
-	tbl, err1 := catalogInstance.TableByName(name)
-	if err1 != nil {
-		return appErrorInternal(err1, api.ErrMsgCollectionAccess, name)
-	}
-	if tbl == nil {
-		return appErrorNotFound(err1, api.ErrMsgCollectionNotFound, name)
-	}
+		// perform replace in database
+		err2 := catalogInstance.ReplaceTableFeature(r.Context(), tableName, fid, body)
+		if err2 != nil {
+			return appErrorInternal(err2, api.ErrMsgReplaceFeature, tableName)
+		}
 
-	// extract JSON from request body
-	body, errBody := ioutil.ReadAll(r.Body)
-	if errBody != nil || len(body) == 0 {
-		return appErrorInternal(errBody, api.ErrMsgCollectionRequestBodyRead, name)
-	}
+		w.WriteHeader(http.StatusNoContent)
+		return nil
 
-	// check schema
-	updateSchema, errGetSch := getUpdateItemSchema(r.Context(), tbl)
-	if errGetSch != nil {
-		return appErrorInternal(errGetSch, errGetSch.Error())
-	}
-	var val map[string]interface{}
-	_ = json.Unmarshal(body, &val)
-	errValSch := updateSchema.VisitJSON(val)
-	if errValSch != nil {
-		return appErrorBadRequest(errValSch, api.ErrMsgPartialUpdateFeatureNotConform, name)
-	}
+	case http.MethodPatch:
+		// PATCH
+		if checkPrecondition {
+			if !precondition {
+				w.WriteHeader(http.StatusPreconditionFailed) // weak etag detected into the cache
+				return nil
+			}
+		}
 
-	check, errChck := tbl.CheckTableFields(val)
-	if !check && errChck != nil {
-		return appErrorBadRequest(errChck, "validation error")
-	}
+		body, errBody := ioutil.ReadAll(r.Body) // extract JSON from request body
+		if errBody != nil || len(body) == 0 {
+			return appErrorInternal(errBody, api.ErrMsgCollectionRequestBodyRead, tableName)
+		}
+		// check schema
+		updateSchema, errGetSch := getUpdateItemSchema(r.Context(), tbl)
+		if errGetSch != nil {
+			return appErrorInternal(errGetSch, errGetSch.Error())
+		}
+		var val map[string]interface{}
+		_ = json.Unmarshal(body, &val)
+		errValSch := updateSchema.VisitJSON(val)
+		if errValSch != nil {
+			return appErrorBadRequest(errValSch, api.ErrMsgPartialUpdateFeatureNotConform, tableName)
+		}
 
-	// perform update in database
-	err := catalogInstance.PartialUpdateTableFeature(r.Context(), name, fid, body)
-	if err != nil {
-		return appErrorInternal(err, api.ErrMsgPartialUpdateFeature, name)
-	}
+		check, errChck := tbl.CheckTableFields(val)
+		if !check && errChck != nil {
+			return appErrorBadRequest(errChck, "validation error")
+		}
 
-	w.WriteHeader(http.StatusNoContent)
-	return nil
-}
+		// perform update in database
+		errUpdate := catalogInstance.PartialUpdateTableFeature(r.Context(), tableName, fid, body)
+		if errUpdate != nil {
+			return appErrorInternal(errUpdate, api.ErrMsgPartialUpdateFeature, tableName)
+		}
+		w.WriteHeader(http.StatusNoContent)
+		return nil
 
-func handleReplaceItem(w http.ResponseWriter, r *http.Request) *appError {
-
-	// extract request parameters
-	name := getRequestVar(routeVarCollectionID, r)
-	fid := getRequestVarStrip(routeVarFeatureID, r)
-
-	// check query parameters
-	queryValues := r.URL.Query()
-	paramValues := extractSingleArgs(queryValues)
-	if len(paramValues) != 0 {
-		return appErrorBadRequest(nil, api.ErrMsgNoParameters)
-	}
-
-	// check that collection exists
-	tbl, err1 := catalogInstance.TableByName(name)
-	if err1 != nil {
-		return appErrorInternal(err1, api.ErrMsgCollectionAccess, name)
-	}
-	if tbl == nil {
-		return appErrorNotFound(err1, api.ErrMsgCollectionNotFound, name)
+	default:
+		return nil
 	}
 
-	// extract JSON from request body
-	body, errBody := ioutil.ReadAll(r.Body)
-	if errBody != nil || len(body) == 0 {
-		return appErrorInternal(errBody, api.ErrMsgCollectionRequestBodyRead, name)
-	}
-
-	//--- check if body matches the schema
-	// schema for replace is the same as in create http://docs.ogc.org/DRAFTS/20-002.html#feature-geojson
-	createSchema, errGetSch := getCreateItemSchema(r.Context(), tbl)
-	if errGetSch != nil {
-		return appErrorInternal(errGetSch, errGetSch.Error())
-	}
-	var val interface{}
-	_ = json.Unmarshal(body, &val)
-	errValSch := createSchema.VisitJSON(val)
-	if errValSch != nil {
-		return appErrorBadRequest(errValSch, api.ErrMsgReplaceFeatureNotConform)
-	}
-
-	// perform replace in database
-	err2 := catalogInstance.ReplaceTableFeature(r.Context(), name, fid, body)
-	if err2 != nil {
-		return appErrorInternal(err2, api.ErrMsgReplaceFeature, name)
-	}
-
-	w.WriteHeader(http.StatusNoContent)
-	return nil
 }
 
 func writeItemHTML(w http.ResponseWriter, tbl *api.Table, name string, fid string, query string, urlBase string) *appError {
@@ -848,6 +880,17 @@ func writeItemJSON(ctx context.Context, w http.ResponseWriter, tableName string,
 	encodedStrongEtag := base64.StdEncoding.EncodeToString([]byte(strongEtag))
 	w.Header().Set("Etag", encodedStrongEtag)
 	w.Header().Set("Last-Modified", feature.LastModifiedDate)
+
+	// Check the etag presence into the cache, and add it if necessary
+	weakEtagToCheck := "W/\"" + feature.WeakEtag + "\""
+	notPresent, err := catalogInstance.CheckStrongEtags([]string{weakEtagToCheck})
+	if err != nil {
+		return appErrorBadRequest(err, api.ErrMsgMalformedEtag, weakEtagToCheck)
+	}
+	if notPresent {
+		//nolint:errcheck
+		catalogInstance.AddEtagToCache(feature.WeakEtag, map[string]interface{}{"last-modified": feature.LastModifiedDate})
+	}
 
 	writeResponse(w, api.ContentTypeGeoJSON, encodedContent)
 	return nil

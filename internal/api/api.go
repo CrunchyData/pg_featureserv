@@ -84,6 +84,8 @@ const (
 	ErrMsgMarshallingJSONEtag            = "Error marshalling into JSON: %v"
 	ErrMsgNoParameters                   = "No parameter allowed"
 	ErrMsgNotSupportedFormat             = "Requested format %v not supported"
+	ErrMsgMalformedEtag                  = "Malformed etag detected %v"
+	ErrMsgCacheCleaningFailed            = "Server cache could not be cleaned"
 )
 
 // ==================================================

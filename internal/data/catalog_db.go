@@ -177,6 +177,10 @@ func (cat *catalogDB) GetCache() Cacher {
 	return cat.cache
 }
 
+func (cat *catalogDB) AddEtagToCache(weakEtag string, referenceContent map[string]interface{}) (bool, error) {
+	return cat.cache.AddWeakEtag(weakEtag, referenceContent)
+}
+
 func (cat *catalogDB) Tables() ([]*api.Table, error) {
 	cat.refreshTables(true)
 	return cat.tables, nil
@@ -556,13 +560,29 @@ func (cat *catalogDB) CheckStrongEtags(etagsList []string) (bool, error) {
 	for _, strongEtag := range etagsList {
 		found, err := cat.cache.ContainsWeakEtag(strongEtag)
 		if err != nil {
-			return false, err
+			return true, err
 		}
 		if found {
-			return true, nil
+			return false, nil
 		}
 	}
-	return false, nil
+	return true, nil
+}
+
+func (cat *catalogDB) CacheReset() bool {
+
+	activated := false
+	if cat.cache.Type() == "CacheNaive" {
+		activated = true
+	}
+	if activated {
+		cacheSize := cat.cache.Size()
+		cat.cache = &CacheNaive{make(map[string]interface{}, cacheSize)}
+	} else {
+		cat.cache = &CacheDisabled{}
+	}
+
+	return true
 }
 
 func isMatchSchemaTable(tbl *api.Table, list map[string]string) bool {
@@ -710,12 +730,6 @@ func scanFeature(rows pgx.Rows, idColIndex int, propNames []string, cache Cacher
 	weakEtag := fmt.Sprint(vals[1]) // Weak etag value
 
 	httpDateString := api.GetCurrentHttpDate() // Last modified value
-
-	// Add feature reference to the etags cache
-	_, err = cache.AddWeakEtag(weakEtag, map[string]interface{}{"last-modified": httpDateString})
-	if err != nil {
-		log.Warnf("Error adding weak Etag to cache: %v", err)
-	}
 
 	// val[0] = geometry column
 	// val[1] = etag

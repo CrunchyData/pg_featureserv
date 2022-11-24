@@ -27,6 +27,7 @@ import (
 	"github.com/CrunchyData/pg_featureserv/internal/api"
 	"github.com/CrunchyData/pg_featureserv/internal/data"
 	util "github.com/CrunchyData/pg_featureserv/internal/utiltest"
+	"github.com/go-http-utils/headers"
 )
 
 func (t *DbTests) TestCacheActivationDb() {
@@ -82,7 +83,7 @@ func (t *DbTests) TestWeakEtagStableOnRequestsDb() {
 	t.Test.Run("TestWeakEtagStableOnRequestsDb", func(t *testing.T) {
 		path := "/collections/mock_b/items/1"
 		var headerJson = make(http.Header)
-		headerJson.Add("Accept", api.ContentTypeJSON)
+		headerJson.Add(headers.Accept, api.ContentTypeJSON)
 
 		resp := hTest.DoRequestMethodStatus(t, "GET", path, []byte(""), headerJson, http.StatusOK)
 		encodedStrongEtag1 := resp.Header().Get("Etag")
@@ -100,78 +101,20 @@ func (t *DbTests) TestWeakEtagStableOnRequestsDb() {
 	})
 }
 
-func (t *DbTests) TestEtagHeaderIfNoneMatchDb() {
-	t.Test.Run("TestEtagHeaderIfNoneMatchDb", func(t *testing.T) {
-		path := "/collections/mock_a/items/1"
-
-		// first GET prefetches the etag into the server cache
-		resp := hTest.DoRequestMethodStatus(t, "GET", path, []byte(""), nil, http.StatusOK)
-
-		strongEtagFromServer := resp.Header().Get("ETag")
-
-		var header = make(http.Header)
-		header.Add("If-None-Match", strongEtagFromServer)
-		hTest.DoRequestMethodStatus(t, "GET", path, []byte(""), header, http.StatusNotModified)
-	})
-}
-
-func (t *DbTests) TestEtagHeaderIfNonMatchAfterReplaceDb() {
-	t.Test.Run("TestEtagHeaderIfNonMatchAfterReplaceDb", func(t *testing.T) {
-		path := "/collections/mock_a/items/1"
-		resp := hTest.DoRequestMethodStatus(t, "GET", path, []byte(""), nil, http.StatusOK)
-		strongEtagFromServer := resp.Header().Get("Etag")
-
-		// If-None-Match before replace
-		var header = make(http.Header)
-		header.Add("If-None-Match", strongEtagFromServer)
-		hTest.DoRequestMethodStatus(t, "GET", path, []byte(""), header, http.StatusNotModified)
-
-		// Replace
-		var headerPut = make(http.Header)
-		headerPut.Add("Accept", api.ContentTypeSchemaPatchJSON)
-		jsonStr := `{
-			"type": "Feature",
-			"id": "1",
-			"geometry": {
-				"type": "Point",
-				"coordinates": [
-				-120,
-				40
-				]
-			},
-			"properties": {
-				"prop_a": "propA...",
-				"prop_b": 1,
-				"prop_c": "propC...",
-				"prop_d": 1
-			}
-		}`
-		hTest.DoRequestMethodStatus(t, "PUT", path, []byte(jsonStr), headerPut, http.StatusNoContent)
-
-		// TODO : test will be OK once merge done with trigger
-
-		// If-None-Match after replace
-		// resp2 := hTest.DoRequestMethodStatus(t, "GET", path, []byte(""), header, http.StatusOK)
-		// strongEtagAfterPut := resp2.Header().Get("Etag")
-
-		// util.Assert(t, strongEtagFromServer != strongEtagAfterPut, "strong etag value is still the same after replace!")
-	})
-}
-
 func (t *DbTests) TestEtagHeaderIfNonMatchMalformedEtagDb() {
 	t.Test.Run("TestEtagHeaderIfNonMatchMalformedEtagDb", func(t *testing.T) {
 		path := "/collections/mock_a/items/1"
 
 		var header = make(http.Header)
-		header.Add("If-None-Match", "\"unknown_etag\"")
+		header.Add(headers.IfNoneMatch, "\"unknown_etag\"")
 		hTest.DoRequestMethodStatus(t, "GET", path, []byte(""), header, http.StatusBadRequest)
 
 		var header2 = make(http.Header)
-		header2.Add("If-None-Match", "\"mock_a-4326-json-812\"")
+		header2.Add(headers.IfNoneMatch, "\"mock_a-4326-json-812\"")
 		hTest.DoRequestMethodStatus(t, "GET", path, []byte(""), header2, http.StatusBadRequest)
 
 		var header3 = make(http.Header)
-		header3.Add("If-None-Match", "mock_a-4326-json-812")
+		header3.Add(headers.IfNoneMatch, "mock_a-4326-json-812")
 		hTest.DoRequestMethodStatus(t, "GET", path, []byte(""), header3, http.StatusBadRequest)
 	})
 }
@@ -192,7 +135,7 @@ func (t *DbTests) TestEtagHeaderIfNonMatchVariousEtagsDb() {
 		var header = make(http.Header)
 		etags := []string{encodedWrongEtag1, encodedWrongEtag2, encodedValidEtagFromServer}
 		headerValue := strings.Join(etags, ",")
-		header.Add("If-None-Match", headerValue)
+		header.Add(headers.IfNoneMatch, headerValue)
 		hTest.DoRequestMethodStatus(t, "GET", path, []byte(""), header, http.StatusNotModified)
 	})
 }
@@ -209,7 +152,7 @@ func (t *DbTests) TestEtagHeaderIfNonMatchWeakEtagDb() {
 		// strong-etag => "<collection>-<srid>-<format>-<weakEtag>"
 		weakEtag := "W/" + "\"" + decodedStrongEtag.WeakEtag + "\""
 		var header = make(http.Header)
-		header.Add("If-None-Match", weakEtag)
+		header.Add(headers.IfNoneMatch, weakEtag)
 		hTest.DoRequestMethodStatus(t, "GET", path, nil, header, http.StatusNotModified)
 	})
 }
@@ -224,7 +167,7 @@ func (t *DbTests) TestEtagReplaceFeatureDb() {
 	t.Test.Run("TestEtagReplaceFeatureDb", func(t *testing.T) {
 		path := "/collections/mock_b/items/1"
 		var header = make(http.Header)
-		header.Add("Accept", api.FormatJSON)
+		header.Add(headers.Accept, api.FormatJSON)
 
 		jsonStr := `{
 			"type": "Feature",
@@ -252,7 +195,7 @@ func (t *DbTests) TestEtagReplaceFeatureDb() {
 
 		// Replace
 		var header2 = make(http.Header)
-		header.Add("Accept", api.ContentTypeSchemaPatchJSON)
+		header.Add(headers.Accept, api.ContentTypeSchemaPatchJSON)
 		hTest.DoRequestMethodStatus(t, "PUT", path, []byte(jsonStr), header2, http.StatusNoContent)
 
 		resp2 := hTest.DoRequestMethodStatus(t, "GET", path, []byte(""), header, http.StatusOK)

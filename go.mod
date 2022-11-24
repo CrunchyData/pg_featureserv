@@ -5,6 +5,7 @@ go 1.13
 require (
 	github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20220209173558-ad29539cd2e9
 	github.com/getkin/kin-openapi v0.104.0
+	github.com/go-http-utils/headers v0.0.0-20181008091004-fed159eddc2a
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/gorilla/handlers v1.4.2
 	github.com/gorilla/mux v1.8.0

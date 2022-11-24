@@ -450,13 +450,18 @@ func (cat *CatalogMock) CheckStrongEtags(etagsList []string) (bool, error) {
 	for _, strongEtag := range etagsList {
 		found, err := cat.cache.ContainsWeakEtag(strongEtag)
 		if err != nil {
-			return false, err
+			return true, err
 		}
 		if found {
-			return true, nil
+			return false, nil
 		}
 	}
-	return false, nil
+	return true, nil
+}
+
+func (cat *CatalogMock) CacheReset() bool {
+	cat.cache = makeCache()
+	return true
 }
 
 func (cat *CatalogMock) Functions() ([]*api.Function, error) {
@@ -481,4 +486,8 @@ func (cat *CatalogMock) FunctionFeatures(ctx context.Context, name string, args 
 func (cat *CatalogMock) FunctionData(ctx context.Context, name string, args map[string]string, param *QueryParam) ([]map[string]interface{}, error) {
 	// TODO:
 	return nil, nil
+}
+
+func (cat *CatalogMock) AddEtagToCache(weakEtag string, referenceContent map[string]interface{}) (bool, error) {
+	return cat.cache.AddWeakEtag(weakEtag, referenceContent)
 }

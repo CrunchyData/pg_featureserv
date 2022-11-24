@@ -62,29 +62,13 @@ func TestMain(m *testing.M) {
 
 // Describes all test groups
 func TestRunnerHandlerDb(t *testing.T) {
-	// initialisation avant l'execution des tests
+	// tests intialization
 	beforeRun()
 
 	t.Run("Init", func(t *testing.T) {
 		beforeEachRun()
 		test := DbTests{Test: t}
 		test.TestProperDbInit()
-		afterEachRun()
-	})
-	t.Run("CACHE", func(t *testing.T) {
-		beforeEachRun()
-		test := DbTests{Test: t}
-		test.TestCacheActivationDb()
-		test.TestLastModifiedDb()
-		test.TestEtagDb()
-		test.TestWeakEtagStableOnRequestsDb()
-		test.TestEtagHeaderIfNoneMatchDb()
-		test.TestEtagHeaderIfNonMatchAfterReplaceDb()
-		test.TestEtagHeaderIfNonMatchMalformedEtagDb()
-		test.TestEtagHeaderIfNonMatchVariousEtagsDb()
-		test.TestEtagHeaderIfNonMatchWeakEtagDb()
-		test.TestEtagHeaderIfMatchDb()
-		test.TestEtagReplaceFeatureDb()
 		afterEachRun()
 	})
 	t.Run("GET", func(t *testing.T) {
@@ -94,7 +78,6 @@ func TestRunnerHandlerDb(t *testing.T) {
 		test.TestPropertiesAllFromDbComplexTable()
 		afterEachRun()
 	})
-	// liste de tests sur la suppression des features
 	t.Run("DELETE", func(t *testing.T) {
 		beforeEachRun()
 		test := DbTests{Test: t}
@@ -126,6 +109,20 @@ func TestRunnerHandlerDb(t *testing.T) {
 		test.TestUpdateSimpleFeatureDb()
 		afterEachRun()
 	})
+	t.Run("CACHE-ETAGS", func(t *testing.T) {
+		beforeEachRun()
+		test := DbTests{Test: t}
+		test.TestCacheActivationDb()
+		test.TestLastModifiedDb()
+		test.TestEtagDb()
+		test.TestWeakEtagStableOnRequestsDb()
+		test.TestEtagHeaderIfNonMatchMalformedEtagDb()
+		test.TestEtagHeaderIfNonMatchVariousEtagsDb()
+		test.TestEtagHeaderIfNonMatchWeakEtagDb()
+		test.TestEtagHeaderIfMatchDb()
+		test.TestEtagReplaceFeatureDb()
+		afterEachRun()
+	})
 	t.Run("Listen", func(t *testing.T) {
 		beforeEachRun()
 		test := DbTests{Test: t}
@@ -137,8 +134,24 @@ func TestRunnerHandlerDb(t *testing.T) {
 		test.TestCacheModifiedAfterUpdate()
 		afterEachRun()
 	})
+	t.Run("HEADER-IF-NON-MATCH", func(t *testing.T) {
+		beforeEachRun()
+		test := DbTests{Test: t}
+		test.TestGetFeatureIfNoneMatchStaValueWithEtagPresentInCacheDb()
+		test.TestGetFeatureIfNoneMatchStaValueWithNoEtagDb()
+		test.TestGetFeatureIfNonMatchAfterReplaceDb()
+		test.TestUpdateFeatureIfNoneMatchWithEtagPresentInCacheDb()
+		test.TestUpdateFeatureIfNoneMatchWithEtagNotDetectedDb()
+		test.TestUpdateFeatureIfNoneMatchStarValueWithExistingRepresentationInCacheDb()
+		test.TestUpdateFeatureIfNoneMatchStarValueWithNoRepresentationInCacheDb()
+		test.TestReplaceFeatureIfNoneMatchWithEtagPresentInCacheDb()
+		test.TestReplaceFeatureIfNoneMatchWithEtagNotDetectedDb()
+		test.TestReplaceFeatureIfNoneMatchStarValueWithNoRepresentationInCacheDb()
+		test.TestReplaceFeatureIfNoneMatchStarValueWithExistingRepresentationInCacheDb()
+		afterEachRun()
+	})
 
-	// nettoyage après execution des tests
+	// after tests cleaning
 	afterRun()
 }
 
