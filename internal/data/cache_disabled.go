@@ -1,5 +1,7 @@
 package data
 
+import "github.com/CrunchyData/pg_featureserv/internal/api"
+
 /*
  Copyright 2022 Crunchy Data Solutions, Inc.
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,11 +22,15 @@ type CacheDisabled struct {
 	// no-ope
 }
 
-func (cache CacheDisabled) ContainsWeakEtag(strongEtag string) (bool, error) {
+func (cache CacheDisabled) GetWeakEtag(etag interface{}) (*api.WeakEtagData, error) {
+	return nil, nil
+}
+
+func (cache CacheDisabled) ContainsEtag(etag interface{}) (bool, error) {
 	return false, nil
 }
 
-func (cache CacheDisabled) AddWeakEtag(weakEtag string, etag interface{}) (bool, error) {
+func (cache CacheDisabled) AddWeakEtag(weakEtag string, etag *api.WeakEtagData) (bool, error) {
 	return false, nil
 }
 
@@ -42,4 +48,8 @@ func (cache CacheDisabled) Type() string {
 
 func (cache CacheDisabled) Size() int {
 	return 0
+}
+
+func (cache CacheDisabled) Reset() (bool, error) {
+	return true, nil
 }

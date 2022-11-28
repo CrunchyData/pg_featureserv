@@ -74,19 +74,6 @@ type Catalog interface {
 
 	FunctionData(ctx context.Context, name string, args map[string]string, param *QueryParam) ([]map[string]interface{}, error)
 
-	// Add a weakEtag reference into the cache for a specific feature
-	// returns true of the operation have been successful, false otherwise
-	AddEtagToCache(weakEtag string, referenceContent map[string]interface{}) (bool, error)
-
-	// CheckStrongEtags checks if the weak value of at least one of the etags provided is present into the cache
-	// Returns false at the first listed etag present into the cache, true otherwise
-	// -> error != nil if a malformed etag is detected (wrong encoding, bad format.)
-	// -> The provided etags have to be in their strong form and Base64 encoded
-	CheckStrongEtags(etagsList []string) (bool, error)
-
-	// Reset the cache and its content with a new instance
-	CacheReset() bool
-
 	// GetCache returns a copy of the cache
 	GetCache() Cacher
 

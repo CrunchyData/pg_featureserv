@@ -198,7 +198,7 @@ func (cat *catalogDB) FunctionFeatures(ctx context.Context, name string, args ma
 	sql, argValues := sqlGeomFunction(fn, args, propCols, param)
 	log.Debugf("Function features query: %v", sql)
 	log.Debugf("Function %v Args: %v", name, argValues)
-	features, err := readFeaturesWithArgs(ctx, cat.dbconn, sql, argValues, idColIndex, propCols, cat.cache)
+	features, err := readFeaturesWithArgs(ctx, cat.dbconn, sql, argValues, name, idColIndex, propCols, cat.cache)
 	return features, err
 }
 

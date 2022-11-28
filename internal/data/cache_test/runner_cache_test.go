@@ -47,7 +47,7 @@ func TestRunnerCache(t *testing.T) {
 		m.RedisUrl = redisCacheUrl
 		m.TestRedisInvalidAddress()
 		m.TestRedisValidAddress()
-		m.TestRedisContainsWeakEtag()
+		m.TestRedisContainsEtag()
 		m.TestRedisAddWeakEtag()
 		m.TestRedisRemoveWeakEtag()
 		afterEachRun()

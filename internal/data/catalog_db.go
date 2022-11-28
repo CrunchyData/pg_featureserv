@@ -177,10 +177,6 @@ func (cat *catalogDB) GetCache() Cacher {
 	return cat.cache
 }
 
-func (cat *catalogDB) AddEtagToCache(weakEtag string, referenceContent map[string]interface{}) (bool, error) {
-	return cat.cache.AddWeakEtag(weakEtag, referenceContent)
-}
-
 func (cat *catalogDB) Tables() ([]*api.Table, error) {
 	cat.refreshTables(true)
 	return cat.tables, nil
@@ -246,7 +242,7 @@ func (cat *catalogDB) TableFeatures(ctx context.Context, name string, param *Que
 	sql, argValues := sqlFeatures(tbl, param)
 	log.Debug("Features query: " + sql)
 	idColIndex := indexOfName(cols, tbl.IDColumn)
-	features, err := readFeaturesWithArgs(ctx, cat.dbconn, sql, argValues, idColIndex, cols, cat.cache)
+	features, err := readFeaturesWithArgs(ctx, cat.dbconn, sql, argValues, name, idColIndex, cols, cat.cache)
 	return features, err
 }
 
@@ -264,7 +260,7 @@ func (cat *catalogDB) TableFeature(ctx context.Context, name string, id string, 
 	//--- Add a SQL arg for the feature ID
 	argValues := make([]interface{}, 0)
 	argValues = append(argValues, id)
-	features, err := readFeaturesWithArgs(ctx, cat.dbconn, sql, argValues, idColIndex, cols, cat.cache)
+	features, err := readFeaturesWithArgs(ctx, cat.dbconn, sql, argValues, name, idColIndex, cols, cat.cache)
 
 	if len(features) == 0 {
 		return nil, err
@@ -556,35 +552,6 @@ func isIncluded(tbl *api.Table, tableIncludes map[string]string, tableExcludes m
 	return isIncluded && !isExcluded
 }
 
-func (cat *catalogDB) CheckStrongEtags(etagsList []string) (bool, error) {
-	for _, strongEtag := range etagsList {
-		found, err := cat.cache.ContainsWeakEtag(strongEtag)
-		if err != nil {
-			return true, err
-		}
-		if found {
-			return false, nil
-		}
-	}
-	return true, nil
-}
-
-func (cat *catalogDB) CacheReset() bool {
-
-	activated := false
-	if cat.cache.Type() == "CacheNaive" {
-		activated = true
-	}
-	if activated {
-		cacheSize := cat.cache.Size()
-		cat.cache = &CacheNaive{make(map[string]interface{}, cacheSize)}
-	} else {
-		cat.cache = &CacheDisabled{}
-	}
-
-	return true
-}
-
 func isMatchSchemaTable(tbl *api.Table, list map[string]string) bool {
 	schemaLow := strings.ToLower(tbl.Schema)
 	if _, ok := list[schemaLow]; ok {
@@ -673,11 +640,11 @@ func scanTable(rows pgx.Rows) *api.Table {
 //=================================================
 
 //nolint:unused
-func readFeatures(ctx context.Context, db *pgxpool.Pool, sql string, idColIndex int, propCols []string, cache Cacher) ([]*api.GeojsonFeatureData, error) {
-	return readFeaturesWithArgs(ctx, db, sql, nil, idColIndex, propCols, cache)
+func readFeatures(ctx context.Context, db *pgxpool.Pool, sql string, tableName string, idColIndex int, propCols []string, cache Cacher) ([]*api.GeojsonFeatureData, error) {
+	return readFeaturesWithArgs(ctx, db, sql, nil, tableName, idColIndex, propCols, cache)
 }
 
-func readFeaturesWithArgs(ctx context.Context, db *pgxpool.Pool, sql string, args []interface{}, idColIndex int, propCols []string, cache Cacher) ([]*api.GeojsonFeatureData, error) {
+func readFeaturesWithArgs(ctx context.Context, db *pgxpool.Pool, sql string, args []interface{}, tableName string, idColIndex int, propCols []string, cache Cacher) ([]*api.GeojsonFeatureData, error) {
 	start := time.Now()
 	rows, err := db.Query(ctx, sql, args...)
 	if err != nil {
@@ -685,7 +652,7 @@ func readFeaturesWithArgs(ctx context.Context, db *pgxpool.Pool, sql string, arg
 		return nil, err
 	}
 	defer rows.Close()
-	data, err := scanFeatures(ctx, rows, idColIndex, propCols, cache)
+	data, err := scanFeatures(ctx, rows, tableName, idColIndex, propCols, cache)
 	if err != nil {
 		return data, err
 	}
@@ -693,11 +660,11 @@ func readFeaturesWithArgs(ctx context.Context, db *pgxpool.Pool, sql string, arg
 	return data, nil
 }
 
-func scanFeatures(ctx context.Context, rows pgx.Rows, idColIndex int, propCols []string, cache Cacher) ([]*api.GeojsonFeatureData, error) {
+func scanFeatures(ctx context.Context, rows pgx.Rows, tableName string, idColIndex int, propCols []string, cache Cacher) ([]*api.GeojsonFeatureData, error) {
 	// init features array to empty (not nil)
 	var features []*api.GeojsonFeatureData = []*api.GeojsonFeatureData{}
 	for rows.Next() {
-		feature, err := scanFeature(rows, idColIndex, propCols, cache)
+		feature, err := scanFeature(rows, tableName, idColIndex, propCols, cache)
 		if err != nil {
 			return nil, err
 		}
@@ -718,7 +685,7 @@ func scanFeatures(ctx context.Context, rows pgx.Rows, idColIndex int, propCols [
 	return features, nil
 }
 
-func scanFeature(rows pgx.Rows, idColIndex int, propNames []string, cache Cacher) (*api.GeojsonFeatureData, error) {
+func scanFeature(rows pgx.Rows, tableName string, idColIndex int, propNames []string, cache Cacher) (*api.GeojsonFeatureData, error) {
 	var id string
 
 	vals, err := rows.Values()
@@ -727,7 +694,7 @@ func scanFeature(rows pgx.Rows, idColIndex int, propNames []string, cache Cacher
 		return nil, err
 	}
 
-	weakEtag := fmt.Sprint(vals[1]) // Weak etag value
+	weakEtagStr := fmt.Sprint(vals[1]) // Weak etag value
 
 	httpDateString := api.GetCurrentHttpDate() // Last modified value
 
@@ -750,13 +717,13 @@ func scanFeature(rows pgx.Rows, idColIndex int, propNames []string, cache Cacher
 			if err != nil {
 				return nil, err
 			}
-			return api.MakeGeojsonFeature(id, g, props, weakEtag, httpDateString), nil
+			return api.MakeGeojsonFeature(tableName, id, g, props, weakEtagStr, httpDateString), nil
 		} else {
-			return api.MakeGeojsonFeature(id, vals[0].(geojson.Geometry), props, weakEtag, httpDateString), nil
+			return api.MakeGeojsonFeature(tableName, id, vals[0].(geojson.Geometry), props, weakEtagStr, httpDateString), nil
 		}
 	} else {
 		var g geojson.Geometry
-		return api.MakeGeojsonFeature(id, g, props, weakEtag, httpDateString), nil
+		return api.MakeGeojsonFeature(tableName, id, g, props, weakEtagStr, httpDateString), nil
 	}
 }
 

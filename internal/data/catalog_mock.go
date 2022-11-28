@@ -26,7 +26,6 @@ import (
 	"fmt"
 	"hash/fnv"
 	"strconv"
-	"time"
 
 	"github.com/CrunchyData/pg_featureserv/internal/api"
 
@@ -276,7 +275,7 @@ func (cat *CatalogMock) TableFeature(ctx context.Context, name string, id string
 			feature_data := features[elementIdx].newPropsFilteredFeature(propNames)
 			weakEtag := feature.WeakEtag
 			feature_data.WeakEtag = weakEtag
-			_, err = cat.cache.AddWeakEtag(weakEtag, map[string]interface{}{"lastModified": time.Now().String()})
+			_, err = cat.cache.AddWeakEtag(weakEtag.CacheKey(), feature.WeakEtag)
 			if err != nil {
 				log.Warnf("Error adding weak Etag to cache: %v", err)
 			}
@@ -317,10 +316,10 @@ func (cat *CatalogMock) AddTableFeature(ctx context.Context, tableName string, j
 	sum := fnv.New32a()
 	encodedContent, _ := json.Marshal(schemaObject.Geom)
 	sum.Write(encodedContent)
-	weakEtag := fmt.Sprint(sum.Sum32())
+	weakEtag := api.MakeWeakEtag(tableName, newFeature.ID, fmt.Sprint(sum.Sum32()), api.GetCurrentHttpDate())
 	newFeature.WeakEtag = weakEtag
 
-	_, err = cat.cache.AddWeakEtag(weakEtag, map[string]interface{}{"lastModified": time.Now().String()})
+	_, err = cat.cache.AddWeakEtag(weakEtag.CacheKey(), weakEtag)
 	if err != nil {
 		log.Warnf("Error adding weak Etag to cache: %v", err)
 	}
@@ -446,19 +445,6 @@ func (cat *CatalogMock) DeleteTableFeature(ctx context.Context, tableName string
 	return errors.New("Feature not found")
 }
 
-func (cat *CatalogMock) CheckStrongEtags(etagsList []string) (bool, error) {
-	for _, strongEtag := range etagsList {
-		found, err := cat.cache.ContainsWeakEtag(strongEtag)
-		if err != nil {
-			return true, err
-		}
-		if found {
-			return false, nil
-		}
-	}
-	return true, nil
-}
-
 func (cat *CatalogMock) CacheReset() bool {
 	cat.cache = makeCache()
 	return true
@@ -486,8 +472,4 @@ func (cat *CatalogMock) FunctionFeatures(ctx context.Context, name string, args 
 func (cat *CatalogMock) FunctionData(ctx context.Context, name string, args map[string]string, param *QueryParam) ([]map[string]interface{}, error) {
 	// TODO:
 	return nil, nil
-}
-
-func (cat *CatalogMock) AddEtagToCache(weakEtag string, referenceContent map[string]interface{}) (bool, error) {
-	return cat.cache.AddWeakEtag(weakEtag, referenceContent)
 }

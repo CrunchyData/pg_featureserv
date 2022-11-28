@@ -136,13 +136,24 @@ func (listener *listenerDB) listenOneNotification(ctx context.Context) {
 	}
 	log.Debugf("Listener received notification: %v, cache: %v", notificationData, listener.cache)
 	if notificationData.Action == "DELETE" || notificationData.Action == "UPDATE" {
-		_, err = listener.cache.RemoveWeakEtag(notificationData.Old_xmin)
+		weakEtag := api.MakeWeakEtag("", "", notificationData.Old_xmin, "")
+		_, err = listener.cache.RemoveWeakEtag(weakEtag.CacheKey())
 		if err != nil {
 			log.Warnf("Error removing weak Etag to cache: %v", err)
 		}
 	}
 	if notificationData.Action == "INSERT" || notificationData.Action == "UPDATE" {
-		_, err = listener.cache.AddWeakEtag(notificationData.New_xmin, notificationData.Data)
+		collection := fmt.Sprintf(`"%s"."%s"`, notificationData.Schema, notificationData.Table)
+		// TODO retrieve the id
+		weakEtag := api.MakeWeakEtag(collection, "", notificationData.New_xmin, api.GetCurrentHttpDate())
+		weakEtag.Data = notificationData.Data
+
+		// ===== DOUBLE ADD!!
+		_, err = listener.cache.AddWeakEtag(weakEtag.CacheKey(), weakEtag)
+		if err != nil {
+			log.Warnf("Error adding weak Etag to cache: %v", err)
+		}
+		_, err = listener.cache.AddWeakEtag(weakEtag.AlternateCacheKey(), weakEtag)
 		if err != nil {
 			log.Warnf("Error adding weak Etag to cache: %v", err)
 		}

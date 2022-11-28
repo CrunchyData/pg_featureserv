@@ -38,28 +38,26 @@ func makeFeatureMockPoint(id int, x float64, y float64) *featureMock {
 	sum := fnv.New32a()
 	encodedContent, _ := json.Marshal(geom)
 	sum.Write(encodedContent)
-	weakEtag := fmt.Sprint(sum.Sum32())
 
 	httpDateString := api.GetCurrentHttpDate() // Last modified value
 
 	idstr := strconv.Itoa(id)
 
 	feat := featureMock{
-		GeojsonFeatureData: api.GeojsonFeatureData{
-			Type:             "Feature",
-			ID:               idstr,
-			Geom:             geom,
-			Props:            map[string]interface{}{"prop_a": "propA", "prop_b": id, "prop_c": "propC", "prop_d": id % 10},
-			WeakEtag:         weakEtag,
-			LastModifiedDate: httpDateString,
-		},
+		GeojsonFeatureData: *api.MakeGeojsonFeature(
+			"",
+			idstr,
+			*geom,
+			map[string]interface{}{"prop_a": "propA", "prop_b": id, "prop_c": "propC", "prop_d": id % 10},
+			fmt.Sprint(sum.Sum32()),
+			httpDateString),
 	}
 	return &feat
 }
 
 func (fm *featureMock) toJSON(propNames []string) string {
 	props := fm.extractProperties(propNames)
-	return api.MakeGeojsonFeatureJSON(fm.ID, *fm.Geom, props, fm.WeakEtag, fm.LastModifiedDate)
+	return api.MakeGeojsonFeatureJSON("", fm.ID, *fm.Geom, props, fm.WeakEtag.Etag, fm.WeakEtag.LastModified)
 }
 
 func (fm *featureMock) extractProperties(propNames []string) map[string]interface{} {

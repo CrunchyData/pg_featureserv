@@ -124,11 +124,11 @@ func (hTest *HttpTesting) DoRequestMethodStatus(t *testing.T, method string, url
 		if bodyMsg != "" {
 			Equals(t,
 				statusExpected, status,
-				fmt.Errorf("handler returned wrong status code.\n\tCaused by: %v", bodyMsg).Error())
+				fmt.Errorf("handler returned wrong status code for url '%v'.\n\tCaused by: %v", url, bodyMsg).Error())
 		} else {
 			Equals(t,
 				statusExpected, status,
-				"handler returned wrong status code.")
+				fmt.Errorf("handler returned wrong status code for url '%v'.", url).Error())
 		}
 	}
 	return rr

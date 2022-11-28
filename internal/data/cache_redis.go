@@ -18,6 +18,7 @@ package data
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/CrunchyData/pg_featureserv/internal/api"
@@ -33,6 +34,7 @@ func (cache *CacheRedis) Init(addr string, password string) error {
 	cache.client = redis.NewClient(&redis.Options{
 		Addr:     addr,
 		Password: password,
+		DB:       1, //TODO add redis db management
 	})
 	cache.ctx = context.Background()
 	_, err := cache.client.Ping(cache.ctx).Result()
@@ -43,28 +45,51 @@ func (cache *CacheRedis) Init(addr string, password string) error {
 	return nil
 }
 
-func (cache CacheRedis) ContainsWeakEtag(strongEtag string) (bool, error) {
-	weakEtagValue, err := api.EtagToWeakEtag(strongEtag)
+// returns the object if the weak etag (etag is string - strong or weak etag - or *api.WeakEtagData) is referenced into the cache
+// returns nil otherwise
+// an error will be returned if a malformed etag is detected
+func (cache CacheRedis) GetWeakEtag(etag interface{}) (*api.WeakEtagData, error) {
+	weakEtagValue, err := anyToEtag(cache, etag)
+	if err != nil {
+		return nil, err
+	}
+
+	var etagStr string
+	etagStr, err = cache.client.Get(cache.ctx, weakEtagValue.CacheKey()).Result()
+	// redis.Nil error means that the value is not available : https://redis.uptrace.dev/guide/go-redis.html#redis-nil
+	if err == redis.Nil {
+		return nil, nil
+	} else {
+		var out *api.WeakEtagData
+		err = json.Unmarshal([]byte(etagStr), out)
+		return out, err
+	}
+}
+
+func (cache CacheRedis) ContainsEtag(etag interface{}) (bool, error) {
+	weakEtagValue, err := anyToEtag(cache, etag)
 	if err != nil {
 		return false, err
 	}
 
-	_, err = cache.client.Get(cache.ctx, weakEtagValue).Result()
+	_, err = cache.client.Get(cache.ctx, weakEtagValue.CacheKey()).Result()
 	// redis.Nil error means that the value is not available : https://redis.uptrace.dev/guide/go-redis.html#redis-nil
-	if err == redis.Nil {
+	if err == nil {
+		return true, nil
+	} else if err == redis.Nil {
 		return false, nil
 	} else {
-		return err == nil, err
+		return false, err
 	}
 }
 
-func (cache CacheRedis) AddWeakEtag(weakEtag string, etag interface{}) (bool, error) {
-	err := cache.client.Set(cache.ctx, weakEtag, etag, 0).Err()
+func (cache CacheRedis) AddWeakEtag(etagKey string, etag *api.WeakEtagData) (bool, error) {
+	err := cache.client.Set(cache.ctx, etagKey, *etag, 0).Err()
 	return err == nil, err
 }
 
-func (cache CacheRedis) RemoveWeakEtag(weakEtag string) (bool, error) {
-	nb_deleted, err := cache.client.Del(cache.ctx, weakEtag).Result()
+func (cache CacheRedis) RemoveWeakEtag(etagKey string) (bool, error) {
+	nb_deleted, err := cache.client.Del(cache.ctx, etagKey).Result()
 	return nb_deleted > 0, err
 }
 
@@ -83,4 +108,12 @@ func (cache CacheRedis) Size() int {
 	} else {
 		return -1
 	}
+}
+
+func (cache CacheRedis) Reset() (bool, error) {
+	_, err := cache.client.FlushDB(cache.ctx).Result()
+	if err == nil {
+		return true, nil
+	}
+	return false, err
 }

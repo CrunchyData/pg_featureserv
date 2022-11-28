@@ -22,7 +22,6 @@ package service
 import (
 	"bytes"
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -75,6 +74,7 @@ func InitRouter(basePath string) *mux.Router {
 	addRoute(router, "/collections.{fmt}", handleCollections)
 
 	addRoute(router, "/collections/{cid}", handleCollection)
+	addRoute(router, "/collections/{cid}.{fmt}", handleCollection)
 
 	addRoute(router, "/collections/{cid}/items", handleCollectionItems)
 	addRoute(router, "/collections/{cid}/items.{fmt}", handleCollectionItems)
@@ -84,14 +84,17 @@ func InitRouter(basePath string) *mux.Router {
 
 		addRouteWithMethod(router, "/collections/{cid}/items/{fid}", handleDeleteCollectionItem, "DELETE")
 
-		addRouteWithMethod(router, "/collections/{cid}/items/{fid}", handlePartialUpdateItem, "PATCH")
+		addRouteWithMethod(router, "/collections/{cid}/items/{fid}", handleItem, "PATCH")
+		addRouteWithMethod(router, "/collections/{cid}/items/{fid}.{fmt}", handleItem, "PATCH")
 
-		addRouteWithMethod(router, "/collections/{cid}/items/{fid}", handleReplaceItem, "PUT")
+		addRouteWithMethod(router, "/collections/{cid}/items/{fid}", handleItem, "PUT")
+		addRouteWithMethod(router, "/collections/{cid}/items/{fid}.{fmt}", handleItem, "PUT")
 
 		addRoute(router, "/collections/{cid}/schema", handleCollectionSchemas)
 	}
 
 	addRoute(router, "/collections/{cid}/items/{fid}", handleItem)
+	addRoute(router, "/collections/{cid}/items/{fid}.{fmt}", handleItem)
 
 	addRoute(router, "/functions", handleFunctions)
 	addRoute(router, "/functions.{fmt}", handleFunctions)
@@ -197,7 +200,8 @@ func handleDecodeStrongEtag(w http.ResponseWriter, r *http.Request) *appError {
 }
 
 func handlePurgeEtagsInCache(w http.ResponseWriter, r *http.Request) *appError {
-	if catalogInstance.CacheReset() {
+	ok, err := catalogInstance.GetCache().Reset()
+	if ok && err == nil {
 		writeResponse(w, api.ContentTypeText, []byte("cache cleaned successfully"))
 		return nil
 	}
@@ -656,8 +660,8 @@ func handleItem(w http.ResponseWriter, r *http.Request) *appError {
 	query := api.URLQuery(r.URL)
 
 	//--- extract request parameters
-	tableName := getRequestVar(routeVarFeatureID, r)
-	fid := getRequestVar(routeVarFeatureID, r)
+	tableName := getRequestVar(routeVarCollectionID, r)
+	fid := getRequestVarStrip(routeVarFeatureID, r)
 	reqParam, err := parseRequestParams(r)
 	if err != nil {
 		return appErrorBadRequest(err, err.Error())
@@ -681,7 +685,7 @@ func handleItem(w http.ResponseWriter, r *http.Request) *appError {
 	// - If-Range
 	// - Range
 
-	var eTagsList = make([]string, 1)
+	var eTagsList = make([]string, 0)
 	var checkPrecondition = false
 	var precondition = false
 
@@ -694,41 +698,29 @@ func handleItem(w http.ResponseWriter, r *http.Request) *appError {
 			// "*" value prevents an unsafe request method (e.g., PUT) from inadvertently modifying an
 			// existing representation of the target resource when the client believes that the resource does
 			// not have a current representation : https://www.rfc-editor.org/rfc/rfc7232.html#section-3.2
-
-			// TODO : This section currently allows to retrieve the weak etag from database.
-			// But it will have to be deleted when we will be able to found easily the weak etag into the cache
-			// starting from the collection name and the feature id.
-			// This supposes a necessary modification of the cache structure
 			// ------------------------------------------------------------------------------------------------
-			reqParam, err := parseRequestParams(r)
+			weakEtag := api.MakeWeakEtag(tableName, fid, "", "")
+			weakEtag, err = catalogInstance.GetCache().GetWeakEtag(weakEtag)
 			if err != nil {
-				return appErrorBadRequest(err, err.Error())
+				return appErrorInternal(err, api.ErrMsgDataReadError, tableName)
 			}
-			param, errQuery := createQueryParams(&reqParam, tbl.Columns, tbl.Srid)
-			if errQuery == nil {
-				ctx := r.Context()
-				feature, err := catalogInstance.TableFeature(ctx, tableName, fid, param)
-				if err != nil {
-					return appErrorInternal(err, api.ErrMsgDataReadError, tableName)
-				}
-				if feature == nil {
-					return appErrorNotFound(nil, api.ErrMsgFeatureNotFound, fid)
-				}
-				weakEtag := "W/\"" + feature.WeakEtag + "\""
-				eTagsList[0] = weakEtag
-			} else {
-				return appErrorBadRequest(errQuery, api.ErrMsgInvalidQuery)
+			if weakEtag != nil {
+				weakEtagStr := weakEtag.String()
+				eTagsList = append(eTagsList, weakEtagStr)
 			}
+
 			// ------------------------------------------------------------------------------------------------
 		} else {
 			eTagsList = strings.Split(ifNoneMatchValue, ",")
 		}
 
-		precondition, err = catalogInstance.CheckStrongEtags(eTagsList)
+		present, err := data.IsOneEtagInCache(catalogInstance.GetCache(), eTagsList)
 		if err != nil {
 			return appErrorBadRequest(err, "Malformed etags")
 		}
 
+		// to respect RFC the precondition is false when one etag is present.
+		precondition = !present
 	}
 
 	// Performing request according to its method
@@ -876,20 +868,25 @@ func writeItemJSON(ctx context.Context, w http.ResponseWriter, tableName string,
 		return appErrorInternal(err, api.ErrMsgMarshallingJSON, tableName, feature.ID)
 	}
 
-	strongEtag := fmt.Sprintf(`"%s-%d-%s-%s"`, tableName, crs, "json", feature.WeakEtag)
-	encodedStrongEtag := base64.StdEncoding.EncodeToString([]byte(strongEtag))
+	strongEtag := api.MakeStrongEtag(feature.WeakEtag.Collection, feature.WeakEtag.FeatureId, feature.WeakEtag.Etag,
+		feature.WeakEtag.LastModified, crs, "json")
+	encodedStrongEtag := strongEtag.ToEncodedString()
 	w.Header().Set("Etag", encodedStrongEtag)
-	w.Header().Set("Last-Modified", feature.LastModifiedDate)
+	w.Header().Set("Last-Modified", strongEtag.WeakEtagData.LastModified)
 
+	// TODO should not be here! What if the output format is html?
 	// Check the etag presence into the cache, and add it if necessary
-	weakEtagToCheck := "W/\"" + feature.WeakEtag + "\""
-	notPresent, err := catalogInstance.CheckStrongEtags([]string{weakEtagToCheck})
+	weakEtagStr := strongEtag.WeakEtagData.String()
+	present, err := data.IsOneEtagInCache(catalogInstance.GetCache(), []string{weakEtagStr})
 	if err != nil {
-		return appErrorBadRequest(err, api.ErrMsgMalformedEtag, weakEtagToCheck)
+		return appErrorBadRequest(err, api.ErrMsgMalformedEtag, weakEtagStr)
 	}
-	if notPresent {
+	if !present {
+		// ===== DOUBLE ADD!!
 		//nolint:errcheck
-		catalogInstance.AddEtagToCache(feature.WeakEtag, map[string]interface{}{"last-modified": feature.LastModifiedDate})
+		catalogInstance.GetCache().AddWeakEtag(strongEtag.WeakEtagData.CacheKey(), strongEtag.WeakEtagData)
+		//nolint:errcheck
+		catalogInstance.GetCache().AddWeakEtag(strongEtag.WeakEtagData.AlternateCacheKey(), strongEtag.WeakEtagData)
 	}
 
 	writeResponse(w, api.ContentTypeGeoJSON, encodedContent)

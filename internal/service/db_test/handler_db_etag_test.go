@@ -17,7 +17,6 @@ package db_test
 */
 
 import (
-	"encoding/base64"
 	"net/http"
 	"reflect"
 	"strings"
@@ -75,7 +74,7 @@ func (t *DbTests) TestEtagDb() {
 		util.Assert(t, decodedStrongEtag.Collection == "mock_a", "wrong collection name")
 		util.Assert(t, decodedStrongEtag.Srid == 4326, "wrong SRID value")
 		util.Assert(t, decodedStrongEtag.Format == "json", "wrong format")
-		util.Assert(t, reflect.TypeOf(decodedStrongEtag.WeakEtag).String() == "string", "weak etag is not a string value")
+		util.Assert(t, reflect.TypeOf(decodedStrongEtag.WeakEtagData.Etag).String() == "string", "weak etag is not a string value")
 	})
 }
 
@@ -97,7 +96,7 @@ func (t *DbTests) TestWeakEtagStableOnRequestsDb() {
 		strongEtag2, err2 := api.DecodeStrongEtag(encodeStrongEtag2)
 		util.Assert(t, err2 == nil, "wrong strong etag form")
 
-		util.Assert(t, strongEtag1.WeakEtag == strongEtag2.WeakEtag, "weak etag values are different for the same feature!")
+		util.Assert(t, strongEtag1.WeakEtagData.Etag == strongEtag2.WeakEtagData.Etag, "weak etag values are different for the same feature!")
 	})
 }
 
@@ -125,11 +124,11 @@ func (t *DbTests) TestEtagHeaderIfNonMatchVariousEtagsDb() {
 		resp := hTest.DoRequestMethodStatus(t, "GET", path, []byte(""), nil, http.StatusOK)
 		encodedValidEtagFromServer := resp.Header().Get("Etag")
 
-		wrongEtag := "mock_a-4326-json-99999"
-		wrongEtag2 := "collection2-4326-html-99999"
+		wrongEtag := api.MakeStrongEtag("mock_a", "1", "99999", "", 4326, "json")
+		wrongEtag2 := api.MakeStrongEtag("collection2", "1", "99999", "", 4326, "html")
 
-		encodedWrongEtag1 := base64.StdEncoding.EncodeToString([]byte(wrongEtag))
-		encodedWrongEtag2 := base64.StdEncoding.EncodeToString([]byte(wrongEtag2))
+		encodedWrongEtag1 := wrongEtag.ToEncodedString()
+		encodedWrongEtag2 := wrongEtag2.ToEncodedString()
 
 		// If-None-Match before replace
 		var header = make(http.Header)
@@ -150,7 +149,7 @@ func (t *DbTests) TestEtagHeaderIfNonMatchWeakEtagDb() {
 		util.Assert(t, err == nil, "wrong strong etag form")
 
 		// strong-etag => "<collection>-<srid>-<format>-<weakEtag>"
-		weakEtag := "W/" + "\"" + decodedStrongEtag.WeakEtag + "\""
+		weakEtag := decodedStrongEtag.WeakEtagData.String()
 		var header = make(http.Header)
 		header.Add(headers.IfNoneMatch, weakEtag)
 		hTest.DoRequestMethodStatus(t, "GET", path, nil, header, http.StatusNotModified)

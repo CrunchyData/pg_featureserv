@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/CrunchyData/pg_featureserv/internal/api"
 	"github.com/CrunchyData/pg_featureserv/internal/data"
 	util "github.com/CrunchyData/pg_featureserv/internal/utiltest"
 )
@@ -39,49 +40,52 @@ func (t *CacheTests) TestRedisValidAddress() {
 
 		cache := data.CacheRedis{}
 		err := cache.Init(url, "")
-		util.Assert(t, err == nil, "No error in CacheRedis initialization expected")
-
-		util.Assert(t, cache.String() == "Redis Cache running on "+url, "Invalid CacheRedis string")
+		util.Equals(t, err, nil, "No error in CacheRedis initialization expected")
+		util.Equals(t, "Redis Cache running on "+url, cache.String(), "Invalid CacheRedis string")
 	})
 }
 
-func (t *CacheTests) TestRedisContainsWeakEtag() {
+func (t *CacheTests) TestRedisContainsEtag() {
 	url := t.RedisUrl
-	t.Test.Run("TestRedisContainsWeakEtag", func(t *testing.T) {
+	t.Test.Run("TestRedisContainsEtag", func(t *testing.T) {
 
 		cache := data.CacheRedis{}
 		err := cache.Init(url, "")
-		util.Assert(t, err == nil, "No error in CacheRedis initialization expected")
+		util.Equals(t, err, nil, "No error in CacheRedis initialization expected")
+
+		res, err := cache.Reset()
+		util.Equals(t, err, nil, "No error in CacheRedis reset expected")
+		util.Assert(t, res, "No error in CacheRedis reset expected")
 
 		// Test invalid etag use
-		_, err = cache.ContainsWeakEtag("invalid_val")
+		_, err = cache.ContainsEtag("invalid_val")
 		util.Assert(t, err != nil, "Invalid etag used for RedisCache, expecting failure")
 
-		validWeakEtag := "collection"
-		wValidWeakEtag := "W/" + validWeakEtag
+		validWeakEtag := api.MakeWeakEtag("collection", "1", "etag", "")
+		wValidWeakEtag := validWeakEtag.String()
 
 		// Test valid etag but not available
-		res, err := cache.ContainsWeakEtag(wValidWeakEtag)
-		util.Assert(t, err == nil, "No error expected with valid Etag use")
-		util.Assert(t, res == false, wValidWeakEtag+" Etag should not be available in Redis cache")
+		res, err = cache.ContainsEtag(wValidWeakEtag)
+		util.Equals(t, err, nil, "No error expected with valid Etag use")
+		util.Assert(t, !res, wValidWeakEtag+" Etag should not be available in Redis cache")
 
 		// Test contains after add
-		res, err = cache.AddWeakEtag(validWeakEtag, "value")
-		util.Assert(t, err == nil, "No error expected with valid Etag use")
+		res, err = cache.AddWeakEtag(validWeakEtag.CacheKey(), validWeakEtag)
+		util.Equals(t, err, nil, "No error expected with valid Etag use")
 		util.Assert(t, res, "Result should be true when adding a valid weak Etag")
 
-		res, err = cache.ContainsWeakEtag(wValidWeakEtag)
-		util.Assert(t, err == nil, "No error expected with valid Etag use")
+		res, err = cache.ContainsEtag(wValidWeakEtag)
+		util.Equals(t, err, nil, "No error expected with valid Etag use")
 		util.Assert(t, res, wValidWeakEtag+" Etag should be available in Redis cache")
 
 		// Test etag not available after remove
-		res, err = cache.RemoveWeakEtag(validWeakEtag)
-		util.Assert(t, err == nil, "No error expected with valid Etag use")
-		util.Assert(t, res, validWeakEtag+" Result should be true when removing an available weak etag")
+		res, err = cache.RemoveWeakEtag(validWeakEtag.CacheKey())
+		util.Equals(t, err, nil, "No error expected with valid Etag use")
+		util.Assert(t, res, wValidWeakEtag+" Result should be true when removing an available weak etag")
 
-		res, err = cache.ContainsWeakEtag(wValidWeakEtag)
-		util.Assert(t, err == nil, "No error expected with valid Etag use")
-		util.Assert(t, res == false, wValidWeakEtag+" Etag should not be available in Redis cache")
+		res, err = cache.ContainsEtag(wValidWeakEtag)
+		util.Equals(t, err, nil, "No error expected with valid Etag use")
+		util.Assert(t, !res, wValidWeakEtag+" Etag should not be available in Redis cache")
 	})
 }
 
@@ -97,8 +101,9 @@ func (t *CacheTests) TestRedisAddWeakEtag() {
 
 		initialSize := cache.Size()
 
+		weakEtagValue := api.WeakEtagData{}
 		//Test add a valid etag and check size update
-		res, err := cache.AddWeakEtag(validWeakEtag, "value")
+		res, err := cache.AddWeakEtag(validWeakEtag, &weakEtagValue)
 		util.Assert(t, err == nil, "No error expected with valid Etag use")
 		util.Assert(t, res, "Result should be true when adding a valid weak Etag")
 
@@ -131,8 +136,9 @@ func (t *CacheTests) TestRedisRemoveWeakEtag() {
 		util.Assert(t, err == nil, "No error expected with valid Etag use")
 		util.Assert(t, res == false, "Result should be false when removing a weak etag not available")
 
+		weakEtagValue := api.WeakEtagData{}
 		// Add etag and test removal
-		res, err = cache.AddWeakEtag(validWeakEtag, "value")
+		res, err = cache.AddWeakEtag(validWeakEtag, &weakEtagValue)
 		util.Assert(t, err == nil, "No error expected with valid Etag use")
 		util.Assert(t, res, "Result should be true when adding a valid weak Etag")
 
@@ -140,7 +146,7 @@ func (t *CacheTests) TestRedisRemoveWeakEtag() {
 		util.Assert(t, err == nil, "No error expected with valid Etag use")
 		util.Assert(t, res, validWeakEtag+" Result should be true when removing an available weak etag")
 
-		res, err = cache.ContainsWeakEtag(wValidWeakEtag)
+		res, err = cache.ContainsEtag(wValidWeakEtag)
 		util.Assert(t, err == nil, "No error expected with valid Etag use")
 		util.Assert(t, res == false, wValidWeakEtag+" Etag should not be available in Redis cache")
 	})

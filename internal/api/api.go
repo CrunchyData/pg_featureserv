@@ -269,12 +269,11 @@ func NewCollectionsInfo(tables []*Table) *CollectionsInfo {
 
 // Generic representation of Db data
 type GeojsonFeatureData struct {
-	Type             string                 `json:"type"`
-	ID               string                 `json:"id,omitempty"`
-	Geom             *geojson.Geometry      `json:"geometry"`
-	Props            map[string]interface{} `json:"properties"`
-	WeakEtag         string                 `json:"-"`
-	LastModifiedDate string                 `json:"-"`
+	Type     string                 `json:"type"`
+	ID       string                 `json:"id,omitempty"`
+	Geom     *geojson.Geometry      `json:"geometry"`
+	Props    map[string]interface{} `json:"properties"`
+	WeakEtag *WeakEtagData          `json:"-"`
 }
 
 // Define a FeatureCollection structure for parsing test data
@@ -287,9 +286,9 @@ type FeatureCollection struct {
 	Links          []*Link               `json:"links"`
 }
 
-func MakeGeojsonFeatureJSON(id string, geom geojson.Geometry, props map[string]interface{}, weakEtag string, lastModifiedDate string) string {
+func MakeGeojsonFeatureJSON(tableName string, id string, geom geojson.Geometry, props map[string]interface{}, weakEtag string, lastModifiedDate string) string {
 
-	featData := MakeGeojsonFeature(id, geom, props, weakEtag, lastModifiedDate)
+	featData := MakeGeojsonFeature(tableName, id, geom, props, weakEtag, lastModifiedDate)
 	json, err := json.Marshal(featData)
 	if err != nil {
 		log.Errorf("Error marshalling feature into JSON: %v", err)
@@ -299,15 +298,15 @@ func MakeGeojsonFeatureJSON(id string, geom geojson.Geometry, props map[string]i
 	return jsonStr
 }
 
-func MakeGeojsonFeature(id string, geom geojson.Geometry, props map[string]interface{}, weakEtag string, lastModifiedHttpDate string) *GeojsonFeatureData {
+func MakeGeojsonFeature(tableName string, id string, geom geojson.Geometry, props map[string]interface{}, weakEtagStr string, lastModifiedHttpDate string) *GeojsonFeatureData {
 
+	weakEtag := MakeWeakEtag(tableName, id, weakEtagStr, lastModifiedHttpDate)
 	featData := GeojsonFeatureData{
-		Type:             "Feature",
-		ID:               id,
-		Geom:             &geom,
-		Props:            props,
-		WeakEtag:         weakEtag,
-		LastModifiedDate: lastModifiedHttpDate,
+		Type:     "Feature",
+		ID:       id,
+		Geom:     &geom,
+		Props:    props,
+		WeakEtag: weakEtag,
 	}
 	return &featData
 }

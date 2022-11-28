@@ -30,27 +30,43 @@ type CacheNaive struct {
 
 var mutex = &sync.Mutex{} // allows concurrent accesses to the cache map
 
-func (cache CacheNaive) ContainsWeakEtag(strongEtag string) (bool, error) {
-	weakEtagValue, err := api.EtagToWeakEtag(strongEtag)
+func (cache CacheNaive) GetWeakEtag(etag interface{}) (*api.WeakEtagData, error) {
+	weakEtagValue, err := anyToEtag(cache, etag)
+	if err != nil {
+		return nil, err
+	}
+
+	mutex.Lock()
+	var out interface{}
+	out, present := cache.entries[weakEtagValue.CacheKey()]
+	mutex.Unlock()
+	if present {
+		return out.(*api.WeakEtagData), nil
+	}
+	return nil, nil
+}
+func (cache CacheNaive) ContainsEtag(etag interface{}) (bool, error) {
+	weakEtagValue, err := anyToEtag(cache, etag)
 	if err != nil {
 		return false, err
 	}
+
 	mutex.Lock()
-	_, present := cache.entries[weakEtagValue]
+	_, present := cache.entries[weakEtagValue.CacheKey()]
 	mutex.Unlock()
 	return present, nil
 }
 
-func (cache CacheNaive) AddWeakEtag(weakEtag string, etag interface{}) (bool, error) {
+func (cache CacheNaive) AddWeakEtag(etagKey string, etagData *api.WeakEtagData) (bool, error) {
 	mutex.Lock()
-	cache.entries[weakEtag] = etag
+	cache.entries[etagKey] = etagData
 	mutex.Unlock()
 	return true, nil
 }
 
-func (cache CacheNaive) RemoveWeakEtag(weakEtag string) (bool, error) {
+func (cache CacheNaive) RemoveWeakEtag(etagKey string) (bool, error) {
 	mutex.Lock()
-	delete(cache.entries, weakEtag)
+	delete(cache.entries, etagKey)
 	mutex.Unlock()
 	return true, nil
 }
@@ -69,4 +85,13 @@ func (cache CacheNaive) Type() string {
 
 func (cache CacheNaive) Size() int {
 	return len(cache.entries)
+}
+
+func (cache CacheNaive) Reset() (bool, error) {
+	mutex.Lock()
+	for k := range cache.entries {
+		delete(cache.entries, k)
+	}
+	mutex.Unlock()
+	return true, nil
 }

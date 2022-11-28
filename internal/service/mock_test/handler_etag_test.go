@@ -17,13 +17,11 @@ package mock_test
 */
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"reflect"
-	"strings"
 	"testing"
 	"time"
 
@@ -34,7 +32,7 @@ import (
 func (t *MockTests) TestApiDecodeStrongEtag() {
 	t.Test.Run("TestApiDecodeStrongEtag", func(t *testing.T) {
 		// Valid Etag
-		path := "/etags/decodestrong/Im1vY2tfYi00MzI2LWpzb24tMzk1NzI3NTc0NCI="
+		path := "/etags/decodestrong/bW9ja19iLTEtNDMyNi1qc29uLTM5NTcyNzU3NDQ="
 		resp := hTest.DoRequestStatus(t, path, http.StatusOK)
 
 		strongEtag, err := ioutil.ReadAll(resp.Body)
@@ -47,9 +45,10 @@ func (t *MockTests) TestApiDecodeStrongEtag() {
 		var etagContent api.StrongEtagData
 		util.Assert(t, json.Unmarshal([]byte(strongEtag), &etagContent) == nil, "the returned etag has to be in json format")
 		util.Assert(t, etagContent.Collection == "mock_b", "missing/wrong collection inside decoded etag")
+		util.Assert(t, etagContent.FeatureId == "1", "missing/wrong feature id inside decoded etag")
 		util.Assert(t, etagContent.Srid == 4326, "missing/wrong srid inside decoded etag")
 		util.Assert(t, etagContent.Format == "json", "missing/wrong format inside decoded etag")
-		util.Assert(t, etagContent.WeakEtag == "3957275744", "missing/wrong weak value inside decoded etag")
+		util.Assert(t, etagContent.WeakEtagData.Etag == "3957275744", "missing/wrong weak value inside decoded etag")
 	})
 }
 
@@ -74,16 +73,9 @@ func (t *MockTests) TestGetFeatureNoHeaderCheckEtag() {
 
 		// Check strong ETag validity
 		strongEtag := resp.Result().Header["Etag"][0]
-		decodedString, _ := base64.StdEncoding.DecodeString(strongEtag)
-		decodedStrongEtag := string(decodedString)
-		decodedStrongEtag = strings.Replace(decodedStrongEtag, "\"", "", -1)
-		etagElements := strings.Split(decodedStrongEtag, "-")
-		util.Equals(t, 4, len(etagElements), "strong ETag has to contain 4 values")
-		util.Equals(t, "mock_b-4326-json-3957275744", decodedStrongEtag, "wrong strong ETag value")
-		// - Extract weak eTag from Strong eTag
-		weakEtag := etagElements[3]
-		util.Equals(t, 10, len(weakEtag), "wrong weak ETag string size")
-		util.Equals(t, "3957275744", weakEtag, "wrong weak ETag string")
+		decodedStrongEtag, _ := api.DecodeStrongEtag(strongEtag)
+		util.Equals(t, 10, len(decodedStrongEtag.WeakEtagData.Etag), "wrong weak ETag string size")
+		util.Equals(t, "3957275744", decodedStrongEtag.WeakEtagData.Etag, "wrong weak ETag string")
 	})
 }
 
@@ -93,10 +85,9 @@ func (t *MockTests) TestGetFeatureHeaderIfNoneMatchWeakEtag() {
 		resp := hTest.DoRequestMethodStatus(t, "GET", path, nil, nil, http.StatusOK)
 
 		strongEtag := resp.Result().Header["Etag"][0]
-		decodedString, _ := base64.StdEncoding.DecodeString(strongEtag)
-		decodedStrongEtag := string(decodedString)
+		decodedStrongEtag, _ := api.DecodeStrongEtag(strongEtag)
 		// strong-etag => "<collection>-<srid>-<format>-<weakEtag>"
-		weakEtag := "W/" + "\"" + strings.Split(decodedStrongEtag, "-")[3] + "\""
+		weakEtag := decodedStrongEtag.WeakEtagData.String()
 		var header = make(http.Header)
 		header.Add("If-None-Match", weakEtag)
 		hTest.DoRequestMethodStatus(t, "GET", path, nil, header, http.StatusNotModified)
@@ -107,7 +98,7 @@ func (t *MockTests) TestGetFeatureHeaderIfNoneMatchMalformedEtag() {
 	t.Test.Run("TestGetFeatureHeaderIfNoneMatchMalformedEtag", func(t *testing.T) {
 		path := "/collections/mock_b/items/1"
 		var header = make(http.Header)
-		header.Add("If-None-Match", "\"aa-mock_b-4326-json-999999999\"")
+		header.Add("If-None-Match", "\"aa-mock_b-1-4326-json-999999999\"")
 		hTest.DoRequestMethodStatus(t, "GET", path, nil, header, http.StatusBadRequest)
 	})
 }
