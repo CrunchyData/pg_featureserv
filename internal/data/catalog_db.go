@@ -53,28 +53,31 @@ type catalogDB struct {
 
 var isStartup bool
 var isFunctionsLoaded bool
-var instanceDB catalogDB
+var instanceDB *catalogDB
 
 const fmtQueryStats = "Database query result: %v rows in %v"
 
+// first function called when accessing this file
 func init() {
 	isStartup = true
+	instanceDB = nil
 }
 
 // CatDBInstance tbd
 func CatDBInstance() Catalog {
-	// TODO: make a singleton
-	instanceDB = newCatalogDB()
-	return &instanceDB
+	if instanceDB == nil {
+		instanceDB = newCatalogDB()
+	}
+	return instanceDB
 }
 
-func newCatalogDB() catalogDB {
+func newCatalogDB() *catalogDB {
 	conn := dbConnect()
 	cache := makeCache()
 
 	var listener = newListenerDB(conn, cache)
 
-	cat := catalogDB{
+	cat := &catalogDB{
 		dbconn:   conn,
 		cache:    cache,
 		listener: listener,
@@ -222,13 +225,13 @@ func (cat *catalogDB) loadExtent(sql string, tbl *api.Table) bool {
 
 func (cat *catalogDB) TableByName(name string) (*api.Table, error) {
 	cat.refreshTables(false)
+	var tbl *api.Table
 	tbl, ok := cat.tableMap[name]
 	if !ok {
-		tbl, ok := cat.tableMap["public."+name]
+		tbl, ok = cat.tableMap["public."+name]
 		if !ok {
-			return nil, nil
+			return nil, fmt.Errorf("Unknown table '%v'", name)
 		}
-		return tbl, nil
 	}
 	return tbl, nil
 }
@@ -710,6 +713,7 @@ func scanFeature(rows pgx.Rows, tableName string, idColIndex int, propNames []st
 
 	//--- geom value is expected to be a GeoJSON string or geojson object
 	//--- convert NULL to an empty string
+	var out *api.GeojsonFeatureData
 	if vals[0] != nil {
 		if "string" == reflect.TypeOf(vals[0]).String() {
 			var g geojson.Geometry
@@ -717,14 +721,32 @@ func scanFeature(rows pgx.Rows, tableName string, idColIndex int, propNames []st
 			if err != nil {
 				return nil, err
 			}
-			return api.MakeGeojsonFeature(tableName, id, g, props, weakEtagStr, httpDateString), nil
+			out = api.MakeGeojsonFeature(tableName, id, g, props, weakEtagStr, httpDateString)
+
 		} else {
-			return api.MakeGeojsonFeature(tableName, id, vals[0].(geojson.Geometry), props, weakEtagStr, httpDateString), nil
+			out = api.MakeGeojsonFeature(tableName, id, vals[0].(geojson.Geometry), props, weakEtagStr, httpDateString)
 		}
+
 	} else {
 		var g geojson.Geometry
-		return api.MakeGeojsonFeature(tableName, id, g, props, weakEtagStr, httpDateString), nil
+		out = api.MakeGeojsonFeature(tableName, id, g, props, weakEtagStr, httpDateString)
 	}
+
+	// Check the etag presence into the cache, and add it if necessary
+	weakEtagStr = out.WeakEtag.String()
+	present, err := IsOneEtagInCache(cache, []string{weakEtagStr})
+	if err != nil {
+		log.Warnf(api.ErrMsgMalformedEtag+". Error: %v", weakEtagStr, err)
+	}
+	if !present {
+		// ===== DOUBLE ADD!!
+		//nolint:errcheck
+		cache.AddWeakEtag(out.WeakEtag.CacheKey(), out.WeakEtag)
+		//nolint:errcheck
+		cache.AddWeakEtag(out.WeakEtag.AlternateCacheKey(), out.WeakEtag)
+	}
+
+	return out, nil
 }
 
 func extractProperties(vals []interface{}, idColIndex int, propOffset int, propNames []string) map[string]interface{} {

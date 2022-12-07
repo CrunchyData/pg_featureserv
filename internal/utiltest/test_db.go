@@ -169,8 +169,8 @@ func InsertComplexDataset(db *pgxpool.Pool, schema string) {
 	_, errExec := db.Exec(ctx, fmt.Sprintf(`
 		DROP TABLE IF EXISTS %s.mock_multi CASCADE;
 		CREATE TABLE IF NOT EXISTS %s.mock_multi (
-			id SERIAL PRIMARY KEY,
 			geometry public.geometry(Point, 4326) NOT NULL,
+			fid SERIAL PRIMARY KEY,
 			prop_t text NOT NULL,
 			prop_i int NOT NULL,
 			prop_l bigint NOT NULL,

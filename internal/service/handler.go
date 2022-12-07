@@ -321,7 +321,6 @@ func handleCollection(w http.ResponseWriter, r *http.Request) *appError {
 }
 
 func handleCollectionSchemas(w http.ResponseWriter, r *http.Request) *appError {
-	// TODO: determine content from request header?
 	format := api.RequestedFormat(r)
 
 	//--- extract request parameters
@@ -450,7 +449,6 @@ func handleDeleteCollectionItem(w http.ResponseWriter, r *http.Request) *appErro
 
 func handleCollectionItems(w http.ResponseWriter, r *http.Request) *appError {
 	// "/collections/{id}/items"
-	// TODO: determine content from request header?
 	format := api.RequestedFormat(r)
 	urlBase := serveURLBase(r)
 	query := api.URLQuery(r.URL)
@@ -723,25 +721,35 @@ func handleItem(w http.ResponseWriter, r *http.Request) *appError {
 		precondition = !present
 	}
 
+	// check precondition
+	if checkPrecondition && !precondition {
+		switch r.Method {
+		case http.MethodGet:
+			w.WriteHeader(http.StatusNotModified) // weak etag detected into the cache
+
+		default:
+			w.WriteHeader(http.StatusPreconditionFailed) // weak etag detected into the cache
+
+		}
+
+		return nil
+	}
+
 	// Performing request according to its method
 	switch r.Method {
 	case http.MethodGet:
 		// GET
-		if checkPrecondition {
-			if !precondition {
-				w.WriteHeader(http.StatusNotModified) // weak etag detected into the cache
-				return nil
-			}
-		}
 		param, errQuery := createQueryParams(&reqParam, tbl.Columns, tbl.Srid)
 		if errQuery == nil {
-			ctx := r.Context()
 			crs := reqParam.Crs // default "4326"
+
 			switch format {
 			case api.FormatJSON:
-				return writeItemJSON(ctx, w, tableName, fid, param, urlBase, crs)
+				return writeItemJSON(r.Context(), w, tableName, fid, param, urlBase, crs)
+
 			case api.FormatHTML:
 				return writeItemHTML(w, tbl, tableName, fid, query, urlBase)
+
 			default:
 				return appErrorNotAcceptable(nil, api.ErrMsgNotSupportedFormat, format)
 			}
@@ -751,12 +759,6 @@ func handleItem(w http.ResponseWriter, r *http.Request) *appError {
 
 	case http.MethodPut:
 		// PUT
-		if checkPrecondition {
-			if !precondition {
-				w.WriteHeader(http.StatusPreconditionFailed) // weak etag detected into the cache
-				return nil
-			}
-		}
 		// extract JSON from request body
 		body, errBody := ioutil.ReadAll(r.Body)
 		if errBody != nil || len(body) == 0 {
@@ -787,14 +789,8 @@ func handleItem(w http.ResponseWriter, r *http.Request) *appError {
 
 	case http.MethodPatch:
 		// PATCH
-		if checkPrecondition {
-			if !precondition {
-				w.WriteHeader(http.StatusPreconditionFailed) // weak etag detected into the cache
-				return nil
-			}
-		}
-
-		body, errBody := ioutil.ReadAll(r.Body) // extract JSON from request body
+		// extract JSON from request body
+		body, errBody := ioutil.ReadAll(r.Body)
 		if errBody != nil || len(body) == 0 {
 			return appErrorInternal(errBody, api.ErrMsgCollectionRequestBodyRead, tableName)
 		}
@@ -874,27 +870,11 @@ func writeItemJSON(ctx context.Context, w http.ResponseWriter, tableName string,
 	w.Header().Set("Etag", encodedStrongEtag)
 	w.Header().Set("Last-Modified", strongEtag.WeakEtagData.LastModified)
 
-	// TODO should not be here! What if the output format is html?
-	// Check the etag presence into the cache, and add it if necessary
-	weakEtagStr := strongEtag.WeakEtagData.String()
-	present, err := data.IsOneEtagInCache(catalogInstance.GetCache(), []string{weakEtagStr})
-	if err != nil {
-		return appErrorBadRequest(err, api.ErrMsgMalformedEtag, weakEtagStr)
-	}
-	if !present {
-		// ===== DOUBLE ADD!!
-		//nolint:errcheck
-		catalogInstance.GetCache().AddWeakEtag(strongEtag.WeakEtagData.CacheKey(), strongEtag.WeakEtagData)
-		//nolint:errcheck
-		catalogInstance.GetCache().AddWeakEtag(strongEtag.WeakEtagData.AlternateCacheKey(), strongEtag.WeakEtagData)
-	}
-
 	writeResponse(w, api.ContentTypeGeoJSON, encodedContent)
 	return nil
 }
 
 func handleConformance(w http.ResponseWriter, r *http.Request) *appError {
-	// TODO: determine content from request header?
 	format := api.RequestedFormat(r)
 	urlBase := serveURLBase(r)
 
@@ -913,7 +893,6 @@ func handleConformance(w http.ResponseWriter, r *http.Request) *appError {
 }
 
 func handleAPI(w http.ResponseWriter, r *http.Request) *appError {
-	// TODO: determine content from request header?
 	format := api.RequestedFormat(r)
 	urlBase := serveURLBase(r)
 
@@ -1057,7 +1036,6 @@ func handleFunction(w http.ResponseWriter, r *http.Request) *appError {
 }
 
 func handleFunctionItems(w http.ResponseWriter, r *http.Request) *appError {
-	// TODO: determine content from request header?
 	format := api.RequestedFormat(r)
 	urlBase := serveURLBase(r)
 

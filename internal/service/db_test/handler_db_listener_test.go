@@ -18,6 +18,7 @@ package db_test
 */
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -43,7 +44,7 @@ func (t *DbTests) TestCacheSizeIncreaseAfterCreate() {
 		for _, tbl := range tables {
 			if tbl.ID == "public.mock_a" {
 				for _, c := range tbl.Columns {
-					if c != "id" {
+					if c != tbl.IDColumn {
 						cols = append(cols, c)
 					}
 				}
@@ -64,6 +65,31 @@ func (t *DbTests) TestCacheSizeIncreaseAfterCreate() {
 	})
 }
 
+func (t *DbTests) TestCacheSizeIncreaseAfterCreateComplex() {
+	t.Test.Run("TestCacheSizeIncreaseAfterCreate", func(t *testing.T) {
+		var header = make(http.Header)
+		header.Add("Content-Type", "application/geo+json")
+
+		//--- retrieve cache size before insert
+		var sizeBefore = cat.GetCache().Size()
+
+		//--- generate json from new object
+		feat := util.MakeGeojsonFeatureMockPoint(99, 12, 34)
+		jsonBytes, erMarsh := json.Marshal(feat)
+		util.Assert(t, erMarsh == nil, fmt.Sprintf("%v", erMarsh))
+
+		// -- do the request call but we have to force the catalogInstance to db during this operation
+		_ = hTest.DoPostRequest(t, "/collections/complex.mock_multi/items", []byte(jsonBytes), header)
+
+		// Sleep in order to wait for the cache to update (parallel goroutine)
+		time.Sleep(100 * time.Millisecond)
+
+		//--- retrieve cache size after insert
+		var sizeAfter = cat.GetCache().Size()
+
+		util.Assert(t, sizeAfter > sizeBefore, "cache size augmented after one insert")
+	})
+}
 func (t *DbTests) TestCacheSizeDecreaseAfterDelete() {
 	t.Test.Run("TestCacheSizeDecreaseAfterDelete", func(t *testing.T) {
 		var header = make(http.Header)
@@ -75,7 +101,7 @@ func (t *DbTests) TestCacheSizeDecreaseAfterDelete() {
 		for _, tbl := range tables {
 			if tbl.ID == "public.mock_a" {
 				for _, c := range tbl.Columns {
-					if c != "id" {
+					if c != tbl.IDColumn {
 						cols = append(cols, c)
 					}
 				}

@@ -134,6 +134,7 @@ func (listener *listenerDB) listenOneNotification(ctx context.Context) {
 	if errUnMarsh != nil {
 		log.Fatal(errUnMarsh)
 	}
+
 	log.Debugf("Listener received notification: %v, cache: %v", notificationData, listener.cache)
 	if notificationData.Action == "DELETE" || notificationData.Action == "UPDATE" {
 		weakEtag := api.MakeWeakEtag("", "", notificationData.Old_xmin, "")
@@ -143,19 +144,40 @@ func (listener *listenerDB) listenOneNotification(ctx context.Context) {
 		}
 	}
 	if notificationData.Action == "INSERT" || notificationData.Action == "UPDATE" {
-		collection := fmt.Sprintf(`"%s"."%s"`, notificationData.Schema, notificationData.Table)
-		// TODO retrieve the id
-		weakEtag := api.MakeWeakEtag(collection, "", notificationData.New_xmin, api.GetCurrentHttpDate())
-		weakEtag.Data = notificationData.Data
+		collection := fmt.Sprintf(`%s.%s`, notificationData.Schema, notificationData.Table)
+		// ==== retrieve tabe data
+		table, errCat := CatDBInstance().TableByName(collection)
+		if errCat != nil {
+			log.Warnf("Listener received notification about unknown table '%v'. Error: %v", collection, errCat.Error())
 
-		// ===== DOUBLE ADD!!
-		_, err = listener.cache.AddWeakEtag(weakEtag.CacheKey(), weakEtag)
-		if err != nil {
-			log.Warnf("Error adding weak Etag to cache: %v", err)
-		}
-		_, err = listener.cache.AddWeakEtag(weakEtag.AlternateCacheKey(), weakEtag)
-		if err != nil {
-			log.Warnf("Error adding weak Etag to cache: %v", err)
+		} else {
+			// ==== retrieve the id
+			var id string
+			switch table.DbTypes[table.IDColumn].Type {
+			case api.PGTypeText, api.PGTypeVarChar:
+				id = notificationData.Data[table.IDColumn].(string)
+			case api.PGTypeFloat8, api.PGTypeFloat4, api.PGTypeInt, api.PGTypeInt4, api.PGTypeInt8:
+				id = fmt.Sprintf("%f", notificationData.Data[table.IDColumn].(float64))
+			default:
+				log.Warnf("Listener received notification about table '%v' with unhandled id '%v' of type '%v'.",
+					collection, table.IDColumn, table.DbTypes[table.IDColumn].Type)
+				id = ""
+			}
+
+			if id != "" {
+				weakEtag := api.MakeWeakEtag(collection, id, notificationData.New_xmin, api.GetCurrentHttpDate())
+				weakEtag.Data = notificationData.Data
+
+				// ===== DOUBLE ADD!!
+				_, err = listener.cache.AddWeakEtag(weakEtag.CacheKey(), weakEtag)
+				if err != nil {
+					log.Warnf("Error adding weak Etag to cache: %v", err)
+				}
+				_, err = listener.cache.AddWeakEtag(weakEtag.AlternateCacheKey(), weakEtag)
+				if err != nil {
+					log.Warnf("Error adding weak Etag to cache: %v", err)
+				}
+			}
 		}
 	}
 }

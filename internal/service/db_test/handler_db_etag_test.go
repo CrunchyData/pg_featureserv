@@ -158,7 +158,7 @@ func (t *DbTests) TestEtagHeaderIfNonMatchWeakEtagDb() {
 
 func (t *DbTests) TestEtagHeaderIfMatchDb() {
 	t.Test.Run("TestEtagHeaderIfMatchDb", func(t *testing.T) {
-		// TODO
+		// TODO not implemented
 	})
 }
 

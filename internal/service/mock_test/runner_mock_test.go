@@ -325,7 +325,7 @@ func checkRouteWithAcceptHeader(t *testing.T, url string, acceptValue string, ex
 	contentType := resp.Result().Header["Content-Type"][0]
 
 	if expectedFormat != "" {
-		util.Assert(t, contentType == expectedFormat, fmt.Sprintf("Content-Type: %s", contentType))
+		util.Equals(t, expectedFormat, contentType, fmt.Sprintf("Content-Type: %s", contentType))
 	} else {
 		util.Assert(t, strings.Contains(acceptValue, contentType), fmt.Sprintf("Content-Type: %s", contentType))
 	}
