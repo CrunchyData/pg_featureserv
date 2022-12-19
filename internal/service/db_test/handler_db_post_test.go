@@ -166,18 +166,16 @@ func (t *DbTests) TestCreateComplexFeatureDb() {
 		feat := util.MakeGeojsonFeatureMockPoint(99999, -50, 35)
 		json, err := json.Marshal(feat)
 		util.Assert(t, err == nil, fmt.Sprintf("Error marshalling feature into JSON: %v", err))
-		jsonStr := string(json)
 
 		// -- do the request call but we have to force the catalogInstance to db during this operation
-		rr := hTest.DoPostRequest(t, "/collections/complex.mock_multi/items", []byte(jsonStr), header)
-
-		loc := rr.Header().Get("Location")
+		rr := hTest.DoPostRequest(t, "/collections/complex.mock_multi/items", json, header)
 
 		//--- retrieve max feature id after insert
 		features, _ = cat.TableFeatures(context.Background(), "complex.mock_multi", &params)
 		maxIdAfter := len(features)
-
 		util.Assert(t, maxIdAfter > maxIdBefore, "# feature in db")
+
+		loc := rr.Header().Get("Location")
 		util.Assert(t, len(loc) > 1, "Header location must not be empty")
 		util.Equals(t, fmt.Sprintf("http://test/collections/complex.mock_multi/items/%d", maxIdAfter), loc,
 			"Header location must contain valid data")

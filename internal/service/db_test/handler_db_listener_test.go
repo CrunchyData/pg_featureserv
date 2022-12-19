@@ -80,7 +80,7 @@ func (t *DbTests) TestCacheSizeIncreaseAfterCreateComplex() {
 		util.Assert(t, erMarsh == nil, fmt.Sprintf("%v", erMarsh))
 
 		// -- do the request call but we have to force the catalogInstance to db during this operation
-		_ = hTest.DoPostRequest(t, "/collections/complex.mock_multi/items", []byte(jsonBytes), header)
+		_ = hTest.DoPostRequest(t, "/collections/complex.mock_multi/items", jsonBytes, header)
 
 		// Sleep in order to wait for the cache to update (parallel goroutine)
 		time.Sleep(100 * time.Millisecond)

@@ -134,11 +134,10 @@ func (t *DbTests) TestReplaceComplexFeatureDb() {
 		header.Add("Content-Type", api.ContentTypeSchemaPatchJSON)
 
 		feat := util.MakeGeojsonFeatureMockPoint(100, -50, 35)
-		jsonObj, err := json.Marshal(feat)
+		json, err := json.Marshal(feat)
 		util.Assert(t, err == nil, fmt.Sprintf("Error marshalling feature into JSON: %v", err))
-		jsonStr := string(jsonObj)
 
-		_ = hTest.DoRequestMethodStatus(t, "PUT", path, []byte(jsonStr), header, http.StatusNoContent)
+		_ = hTest.DoRequestMethodStatus(t, "PUT", path, json, header, http.StatusNoContent)
 
 		// check if it can be read
 		checkItem(t, "complex.mock_multi", 100)
