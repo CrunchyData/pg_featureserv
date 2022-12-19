@@ -199,7 +199,7 @@ func (listener *listenerDB) addTemporaryDBSchema() {
 }
 
 func (listener *listenerDB) dropTemporaryDBSchema() {
-	sqlStatement := "DROP SCHEMA %s CASCADE"
+	sqlStatement := "DROP SCHEMA IF EXISTS %s CASCADE"
 	_, errExec := listener.dbconn.Exec(context.Background(), fmt.Sprintf(sqlStatement, tempDBSchema))
 	if errExec != nil {
 		log.Fatal(errExec)
