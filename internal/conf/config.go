@@ -25,6 +25,11 @@ import (
 	"github.com/spf13/viper"
 )
 
+const (
+	originEnvVar   = "environment variable"
+	originConfFile = "config file"
+)
+
 // Configuration for system
 var Configuration Config
 
@@ -167,10 +172,10 @@ func InitConfig(configFilename string, isDebug bool) {
 	// Read environment variable database configuration
 	// It takes precedence over config file (if any)
 	// A blank value is ignored
-	dbconnSrc := "config file"
+	dbconnSrc := originConfFile
 	if dbURL := os.Getenv(AppConfig.EnvDBURL); dbURL != "" {
 		Configuration.Database.DbConnection = dbURL
-		dbconnSrc = "environment variable " + AppConfig.EnvDBURL
+		dbconnSrc = originEnvVar + " " + AppConfig.EnvDBURL
 	}
 	log.Infof("Using database connection info from %v", dbconnSrc)
 

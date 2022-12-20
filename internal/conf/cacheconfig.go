@@ -33,10 +33,10 @@ type Cache struct {
 
 // Init Cache configuration from environnement variables
 func (cache *Cache) InitFromEnvVariables() {
-	origin := "config file"
+	origin := originConfFile
 	cacheTypeInput := os.Getenv(AppConfig.EnvCacheType)
 	if cacheTypeInput != "" {
-		origin = "environment variable"
+		origin = originEnvVar
 		cache.Type = cacheTypeInput
 	}
 	if cache.Type != "Disabled" && cache.Type != "Naive" && cache.Type != "Redis" {
@@ -70,13 +70,13 @@ type NaiveCacheConfig struct {
 
 // Init Naive cache configuration from environnement variables
 func (cache *NaiveCacheConfig) InitFromEnvVariables() {
-	origin := "config file"
+	origin := originConfFile
 	if cacheSizeInput, err := strconv.Atoi(os.Getenv(AppConfig.EnvCacheNaiveSize)); cacheSizeInput != 0 {
 		if err != nil {
 			log.Fatal(fmt.Errorf("fatal error reading env variable: %v", err))
 		}
 		cache.MapSize = cacheSizeInput
-		origin = "environment variable"
+		origin = originEnvVar
 	}
 	log.Infof("Using etag cache size set from %s (%d entries)", origin, cache.MapSize)
 }
@@ -89,18 +89,18 @@ type RedisCacheConfig struct {
 
 // Init Redis cache configuration from environnement variables
 func (cache *RedisCacheConfig) InitFromEnvVariables() {
-	origin := "config file"
+	origin := originConfFile
 	urlInput := os.Getenv(AppConfig.EnvCacheRedisUrl)
 	if urlInput != "" {
-		origin = "environment variable"
+		origin = originEnvVar
 		cache.Url = urlInput
 	}
 	log.Infof("Using Redis cache url %s set from %s", cache.Url, origin)
 
-	origin = "config file"
+	origin = originConfFile
 	passwordInput := os.Getenv(AppConfig.EnvCacheRedisPassword)
 	if passwordInput != "" {
-		origin = "environment variable"
+		origin = originEnvVar
 		cache.Password = passwordInput
 	}
 	log.Infof("Using Redis cache password set from %s", origin)
