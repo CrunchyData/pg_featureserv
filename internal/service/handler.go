@@ -44,6 +44,7 @@ const (
 	routeVarFeatureID    = "fid"
 	routeVarFunctionID   = "funid"
 	routeVarStrongEtag   = "etag"
+	routeOptionalFormat  = "{fmt:(?:\\.[a-zA-Z]+)?}"
 )
 
 func InitRouter(basePath string) *mux.Router {
@@ -54,50 +55,36 @@ func InitRouter(basePath string) *mux.Router {
 
 	addRoute(router, "/", handleRoot)
 
-	addRoute(router, "/home", handleRoot)
-	addRoute(router, "/home.{fmt}", handleRoot)
+	addRoute(router, "/home"+routeOptionalFormat, handleRoot)
 
 	// consistent with pg_tileserv
-	addRoute(router, "/index", handleRoot)
-	addRoute(router, "/index.{fmt}", handleRoot)
+	addRoute(router, "/index"+routeOptionalFormat, handleRoot)
 
 	addRoute(router, "/etags/decodestrong/{etag}", handleDecodeStrongEtag)
 	addRoute(router, "/etags/purge", handlePurgeEtagsInCache)
 
-	addRoute(router, "/api", handleAPI)
-	addRoute(router, "/api.{fmt}", handleAPI)
+	addRoute(router, "/api"+routeOptionalFormat, handleAPI)
 
-	addRoute(router, "/conformance", handleConformance)
-	addRoute(router, "/conformance.{fmt}", handleConformance)
+	addRoute(router, "/conformance"+routeOptionalFormat, handleConformance)
 
-	addRoute(router, "/collections", handleCollections)
-	addRoute(router, "/collections.{fmt}", handleCollections)
+	addRoute(router, "/collections"+routeOptionalFormat, handleCollections)
 
-	addRoute(router, "/collections/{cid}", handleCollection)
-	addRoute(router, "/collections/{cid}.{fmt}", handleCollection)
+	addRoute(router, "/collections/{cid}"+routeOptionalFormat, handleCollection)
 
-	addRoute(router, "/collections/{cid}/items", handleCollectionItems)
-	addRoute(router, "/collections/{cid}/items.{fmt}", handleCollectionItems)
+	addRoute(router, "/collections/{cid}/items"+routeOptionalFormat, handleCollectionItems)
 
 	if conf.Configuration.Database.AllowWrite {
 		addRouteWithMethod(router, "/collections/{cid}/items", handleCreateCollectionItem, "POST")
-
 		addRouteWithMethod(router, "/collections/{cid}/items/{fid}", handleDeleteCollectionItem, "DELETE")
-
-		addRouteWithMethod(router, "/collections/{cid}/items/{fid}", handleItem, "PATCH")
-		addRouteWithMethod(router, "/collections/{cid}/items/{fid}.{fmt}", handleItem, "PATCH")
-
-		addRouteWithMethod(router, "/collections/{cid}/items/{fid}", handleItem, "PUT")
-		addRouteWithMethod(router, "/collections/{cid}/items/{fid}.{fmt}", handleItem, "PUT")
+		addRouteWithMethod(router, "/collections/{cid}/items/{fid}"+routeOptionalFormat, handleItem, "PATCH")
+		addRouteWithMethod(router, "/collections/{cid}/items/{fid}"+routeOptionalFormat, handleItem, "PUT")
 
 		addRoute(router, "/collections/{cid}/schema", handleCollectionSchemas)
 	}
 
-	addRoute(router, "/collections/{cid}/items/{fid}", handleItem)
-	addRoute(router, "/collections/{cid}/items/{fid}.{fmt}", handleItem)
+	addRoute(router, "/collections/{cid}/items/{fid}"+routeOptionalFormat, handleItem)
 
-	addRoute(router, "/functions", handleFunctions)
-	addRoute(router, "/functions.{fmt}", handleFunctions)
+	addRoute(router, "/functions"+routeOptionalFormat, handleFunctions)
 
 	addRoute(router, "/functions/{funid}", handleFunction)
 
