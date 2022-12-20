@@ -39,10 +39,11 @@ func (t *DbTests) TestCacheSizeIncreaseAfterCreate() {
 		var sizeBefore = cat.GetCache().Size()
 
 		//--- generate json from new object
+		tableName := "public.mock_a"
 		tables, _ := cat.Tables()
 		var cols []string
 		for _, tbl := range tables {
-			if tbl.ID == "public.mock_a" {
+			if tbl.ID == tableName {
 				for _, c := range tbl.Columns {
 					if c != tbl.IDColumn {
 						cols = append(cols, c)
@@ -51,7 +52,7 @@ func (t *DbTests) TestCacheSizeIncreaseAfterCreate() {
 				break
 			}
 		}
-		jsonStr := data.MakeFeatureMockPointAsJSON(99, 12, 34, cols)
+		jsonStr := data.MakeFeatureMockPointAsJSON(tableName, 99, 12, 34, cols)
 		// -- do the request call but we have to force the catalogInstance to db during this operation
 		_ = hTest.DoPostRequest(t, "/collections/mock_a/items", []byte(jsonStr), header)
 
@@ -96,10 +97,11 @@ func (t *DbTests) TestCacheSizeDecreaseAfterDelete() {
 		header.Add("Content-Type", "application/geo+json")
 
 		//--- generate json from new object
+		tableName := "public.mock_a"
 		tables, _ := cat.Tables()
 		var cols []string
 		for _, tbl := range tables {
-			if tbl.ID == "public.mock_a" {
+			if tbl.ID == tableName {
 				for _, c := range tbl.Columns {
 					if c != tbl.IDColumn {
 						cols = append(cols, c)
@@ -108,7 +110,7 @@ func (t *DbTests) TestCacheSizeDecreaseAfterDelete() {
 				break
 			}
 		}
-		jsonStr := data.MakeFeatureMockPointAsJSON(101, 12, 34, cols)
+		jsonStr := data.MakeFeatureMockPointAsJSON(tableName, 101, 12, 34, cols)
 		// -- do the request call but we have to force the catalogInstance to db during this operation
 		_ = hTest.DoPostRequest(t, "/collections/mock_a/items", []byte(jsonStr), header)
 		rr := hTest.DoPostRequest(t, "/collections/mock_a/items", []byte(jsonStr), header)

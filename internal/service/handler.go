@@ -183,7 +183,7 @@ func linkAlt(urlBase string, path string, desc string) *api.Link {
 
 func handleDecodeStrongEtag(w http.ResponseWriter, r *http.Request) *appError {
 	//--- extract request parameters
-	etag := getRequestVarStrip(routeVarStrongEtag, r)
+	etag := getRequestVarStrip(routeVarStrongEtag, api.FormatJSON, r)
 	decodedEtag, err := api.DecodeStrongEtag(etag)
 	if err != nil {
 		return appErrorBadRequest(err, "Malformed etag")
@@ -287,11 +287,14 @@ func handleCollection(w http.ResponseWriter, r *http.Request) *appError {
 
 	// the collection is at the end of the URL, this is why we strip the extension
 	// it may be an issue if the schema name is provided here
-	name := getRequestVarStrip(routeVarCollectionID, r)
+	name := getRequestVarStrip(routeVarCollectionID, format, r)
 
-	tbl, err := catalogInstance.TableByName(name)
-	if tbl == nil && err == nil {
-		return appErrorNotFound(err, api.ErrMsgCollectionNotFound, name)
+	tbl, err1 := catalogInstance.TableByName(name)
+	if err1 != nil {
+		return appErrorInternal(err1, api.ErrMsgCollectionAccess, name)
+	}
+	if tbl == nil {
+		return appErrorNotFound(err1, api.ErrMsgCollectionNotFound, name)
 	}
 	catalogInstance.TableReload(name)
 	content := tbl.NewCollectionInfo()
@@ -414,7 +417,7 @@ func handleDeleteCollectionItem(w http.ResponseWriter, r *http.Request) *appErro
 
 	//--- extract request parameters
 	name := getRequestVar(routeVarCollectionID, r)
-	fid := getRequestVarStrip(routeVarFeatureID, r)
+	fid := getRequestVarStrip(routeVarFeatureID, api.FormatJSON, r)
 
 	//--- check request parameters
 	index, err := strconv.Atoi(fid)
@@ -659,7 +662,7 @@ func handleItem(w http.ResponseWriter, r *http.Request) *appError {
 
 	//--- extract request parameters
 	tableName := getRequestVar(routeVarCollectionID, r)
-	fid := getRequestVarStrip(routeVarFeatureID, r)
+	fid := getRequestVarStrip(routeVarFeatureID, format, r)
 	reqParam, err := parseRequestParams(r)
 	if err != nil {
 		return appErrorBadRequest(err, err.Error())
@@ -740,21 +743,18 @@ func handleItem(w http.ResponseWriter, r *http.Request) *appError {
 	case http.MethodGet:
 		// GET
 		param, errQuery := createQueryParams(&reqParam, tbl.Columns, tbl.Srid)
-		if errQuery == nil {
-			crs := reqParam.Crs // default "4326"
-
-			switch format {
-			case api.FormatJSON:
-				return writeItemJSON(r.Context(), w, tableName, fid, param, urlBase, crs)
-
-			case api.FormatHTML:
-				return writeItemHTML(w, tbl, tableName, fid, query, urlBase)
-
-			default:
-				return appErrorNotAcceptable(nil, api.ErrMsgNotSupportedFormat, format)
-			}
-		} else {
+		if errQuery != nil {
 			return appErrorBadRequest(errQuery, api.ErrMsgInvalidQuery)
+		}
+		switch format {
+		case api.FormatJSON:
+			return writeItemJSON(r.Context(), w, tableName, fid, param, urlBase, reqParam.Crs)
+
+		case api.FormatHTML:
+			return writeItemHTML(w, tbl, tableName, fid, query, urlBase)
+
+		default:
+			return appErrorNotAcceptable(nil, api.ErrMsgNotSupportedFormat, format)
 		}
 
 	case http.MethodPut:
@@ -1000,7 +1000,7 @@ func handleFunction(w http.ResponseWriter, r *http.Request) *appError {
 	format := api.RequestedFormat(r)
 	urlBase := serveURLBase(r)
 
-	shortName := getRequestVarStrip(routeVarFunctionID, r)
+	shortName := getRequestVarStrip(routeVarFunctionID, format, r)
 	name := data.FunctionQualifiedId(shortName)
 
 	fn, err := catalogInstance.FunctionByName(name)
@@ -1040,7 +1040,7 @@ func handleFunctionItems(w http.ResponseWriter, r *http.Request) *appError {
 	urlBase := serveURLBase(r)
 
 	//--- extract request parameters
-	name := data.FunctionQualifiedId(getRequestVarStrip(routeVarFunctionID, r))
+	name := data.FunctionQualifiedId(getRequestVarStrip(routeVarFunctionID, format, r))
 	reqParam, err := parseRequestParams(r)
 	if err != nil {
 		return appErrorBadRequest(err, err.Error())

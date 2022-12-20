@@ -58,22 +58,22 @@ func (t *MockTests) TestGetFormatHandlingWithAcceptHeader() {
 		errUnMarsh := json.Unmarshal(jsonBody, &jsonMap)
 		util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
 
-		checkRouteWithAcceptHeader(t, "/", "text/html", http.StatusOK, api.ContentTypeHTML)
+		checkRouteWithAcceptHeader(t, "/", api.ContentTypeHTML, http.StatusOK, api.ContentTypeHTML)
 
 		checkRouteWithAcceptHeader(t, "/api", "*/*", http.StatusOK, api.ContentTypeJSON)
 
 		// Browser tests
 		// -------------
 		// route /api + default Accept header from Firefox 92
-		firefoxAcceptHdr := "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8"
+		firefoxAcceptHdr := api.ContentTypeHTML + ",application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8"
 		checkRouteWithAcceptHeader(t, "/api", firefoxAcceptHdr, http.StatusOK, "")
 
 		// route /api + default Accept header from Safari/Chrome
-		chromeAcceptHdr := "text/html, application/xhtml+xml, image/jxr, */*"
+		chromeAcceptHdr := api.ContentTypeHTML + ", application/xhtml+xml, image/jxr, */*"
 		checkRouteWithAcceptHeader(t, "/api", chromeAcceptHdr, http.StatusOK, "")
 
 		// route /api + default Accept header from Opera
-		operaAcceptHdr := "text/html, application/xml;q=0.9, application/xhtml+xml, image/png, image/webp, image/jpeg, image/gif, image/x-xbitmap, */*;q=0.1"
+		operaAcceptHdr := api.ContentTypeHTML + ", application/xml;q=0.9, application/xhtml+xml, image/png, image/webp, image/jpeg, image/gif, image/x-xbitmap, */*;q=0.1"
 		checkRouteWithAcceptHeader(t, "/api", operaAcceptHdr, http.StatusOK, "")
 
 		// route /api + Accept header with a supported format present in the middle of the value
@@ -124,8 +124,6 @@ func (t *MockTests) TestGetFormatHeaderAcceptUnsupportedMimeType() {
 
 		gifAccept := "image/gif"
 		xmlAccept := "application/xml"
-		var dummyAcceptHdr = make(http.Header)
-		dummyAcceptHdr.Add("Accept", "dummy/format")
 		// Root
 		checkRouteWithAcceptHeader(t, "/", gifAccept, http.StatusOK, api.ContentTypeJSON)
 		checkRouteWithAcceptHeader(t, "/", xmlAccept, http.StatusOK, api.ContentTypeJSON)
@@ -138,8 +136,8 @@ func (t *MockTests) TestGetFormatHeaderAcceptUnsupportedMimeType() {
 		checkRouteWithAcceptHeader(t, "/collections/mock_a", gifAccept, http.StatusOK, api.ContentTypeJSON)
 
 		// GET item(s)
-		hTest.DoRequestMethodStatus(t, "GET", "/collections/mock_a/items", nil, dummyAcceptHdr, http.StatusNotAcceptable)
-		hTest.DoRequestMethodStatus(t, "GET", "/collections/mock_a/items/1", nil, dummyAcceptHdr, http.StatusNotAcceptable)
+		checkRouteWithAcceptHeader(t, "/collections/mock_a/items", gifAccept, http.StatusOK, api.ContentTypeGeoJSON)
+		checkRouteWithAcceptHeader(t, "/collections/mock_a/items/1", gifAccept, http.StatusOK, api.ContentTypeGeoJSON)
 
 	})
 }
@@ -147,7 +145,7 @@ func (t *MockTests) TestGetFormatHeaderAcceptUnsupportedMimeType() {
 func (t *MockTests) TestGetFormatSuffixSupersedesAcceptHeader() {
 	t.Test.Run("TestGetFormatSuffixSupersedesAcceptHeader", func(t *testing.T) {
 
-		htmlAccept := "text/html"
+		htmlAccept := api.ContentTypeHTML
 		checkRouteWithAcceptHeader(t, "/api", htmlAccept, http.StatusOK, api.ContentTypeHTML)
 		checkRouteWithAcceptHeader(t, "/api.json", htmlAccept, http.StatusOK, api.ContentTypeJSON)
 		checkRouteWithAcceptHeader(t, "/api.html", htmlAccept, http.StatusOK, api.ContentTypeHTML)
@@ -158,7 +156,8 @@ func (t *MockTests) TestGetFormatSuffixSupersedesAcceptHeader() {
 func (t *MockTests) TestFeatureFormats() {
 	t.Test.Run("TestFeatureFormats", func(t *testing.T) {
 
-		hTest.DoRequestStatus(t, "/collections/mock_a/items/1.dummyformat", http.StatusNotAcceptable)
+		// should ignore dummy format and return html
+		checkRouteWithAcceptHeader(t, "/collections/mock_a/items/1.dummyformat", api.ContentTypeHTML, http.StatusOK, api.ContentTypeHTML)
 
 		path := "/collections/mock_a/items/1"
 

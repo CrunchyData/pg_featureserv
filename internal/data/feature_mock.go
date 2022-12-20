@@ -32,7 +32,7 @@ type featureMock struct {
 	api.GeojsonFeatureData
 }
 
-func makeFeatureMockPoint(id int, x float64, y float64) *featureMock {
+func makeFeatureMockPoint(tableName string, id int, x float64, y float64) *featureMock {
 	geom := geojson.NewGeometry(orb.Point{x, y})
 
 	sum := fnv.New32a()
@@ -45,7 +45,7 @@ func makeFeatureMockPoint(id int, x float64, y float64) *featureMock {
 
 	feat := featureMock{
 		GeojsonFeatureData: *api.MakeGeojsonFeature(
-			"",
+			tableName,
 			idstr,
 			*geom,
 			map[string]interface{}{"prop_a": "propA", "prop_b": id, "prop_c": "propC", "prop_d": id % 10},
@@ -130,12 +130,12 @@ func doLimit(features []*featureMock, limit int, offset int) []*featureMock {
 	return features[start:end]
 }
 
-func MakeFeatureMockPointAsJSON(id int, x float64, y float64, columns []string) string {
-	feat := makeFeatureMockPoint(id, x, y)
+func MakeFeatureMockPointAsJSON(tableName string, id int, x float64, y float64, columns []string) string {
+	feat := makeFeatureMockPoint(tableName, id, x, y)
 	return feat.toJSON(columns)
 }
 
-func MakeFeaturesMockPoint(extent api.Extent, nx int, ny int) []*featureMock {
+func MakeFeaturesMockPoint(tableName string, extent api.Extent, nx int, ny int) []*featureMock {
 	basex := extent.Minx
 	basey := extent.Miny
 	dx := (extent.Maxx - extent.Minx) / float64(nx)
@@ -149,8 +149,7 @@ func MakeFeaturesMockPoint(extent api.Extent, nx int, ny int) []*featureMock {
 			id := index + 1
 			x := basex + dx*float64(ix)
 			y := basey + dy*float64(iy)
-			features[index] = makeFeatureMockPoint(id, x, y)
-			//fmt.Println(features[index])
+			features[index] = makeFeatureMockPoint(tableName, id, x, y)
 
 			index++
 		}

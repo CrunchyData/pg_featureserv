@@ -17,6 +17,7 @@ package api
 */
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
@@ -75,7 +76,7 @@ func RequestedFormat(r *http.Request) string {
 	// first check explicit path
 	path := r.URL.EscapedPath()
 
-	// Extension value
+	// First check suffix value
 	suffix := PathSuffix(path)
 	if suffix != "" {
 		switch suffix {
@@ -87,42 +88,42 @@ func RequestedFormat(r *http.Request) string {
 			return FormatText
 		case "svg":
 			return FormatSVG
-		default:
-			return suffix
 		}
-	} else {
-		// Accept header value
-		hdrAcceptValue := r.Header.Get("Accept")
-		if hdrAcceptValue != "" {
-			// Accept header fields preferences:
-			// -> https://www.rfc-editor.org/rfc/rfc9110.html#section-12.5.1
 
-			// Examples:
-			// "Accept: application/json"
-			// "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
-			preferredFormats := strings.Split(hdrAcceptValue, ",")
-			for _, value := range preferredFormats {
-				mediaTypeValue := value
-				lastSemicolon := strings.LastIndex(value, ";")
-				if lastSemicolon > 0 {
-					mediaTypeValue = value[:lastSemicolon] // 'q' quality parameter not used
-				}
-				switch mediaTypeValue {
-				case ContentTypeJSON:
-					return FormatJSON
-				case ContentTypeSchemaJSON, ContentTypeSchemaPatchJSON:
-					return FormatSchemaJSON
-				case ContentTypeHTML:
-					return FormatHTML
-				case ContentTypeText:
-					return FormatText
-				case ContentTypeSVG:
-					return FormatSVG
-				}
+	}
+
+	// Second if suffix is not defined or not valid, check "Accept" header value
+	hdrAcceptValue := r.Header.Get("Accept")
+	if hdrAcceptValue != "" {
+		// Accept header fields preferences:
+		// -> https://www.rfc-editor.org/rfc/rfc9110.html#section-12.5.1
+
+		// Examples:
+		// "Accept: application/json"
+		// "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
+		preferredFormats := strings.Split(hdrAcceptValue, ",")
+		for _, value := range preferredFormats {
+			mediaTypeValue := value
+			lastSemicolon := strings.LastIndex(value, ";")
+			if lastSemicolon > 0 {
+				mediaTypeValue = value[:lastSemicolon] // 'q' quality parameter not used
 			}
-			return hdrAcceptValue
+			switch mediaTypeValue {
+			case ContentTypeJSON:
+				return FormatJSON
+			case ContentTypeSchemaJSON, ContentTypeSchemaPatchJSON:
+				return FormatSchemaJSON
+			case ContentTypeHTML:
+				return FormatHTML
+			case ContentTypeText:
+				return FormatText
+			case ContentTypeSVG:
+				return FormatSVG
+			}
 		}
 	}
+
+	// nothing found, fallback to json
 	return FormatJSON
 }
 
@@ -140,8 +141,8 @@ func SentDataFormat(r *http.Request) string {
 }
 
 // PathStripFormat removes a format extension from a path
-func PathStripFormat(path string) string {
-	pos := strings.LastIndex(path, ".")
+func PathStripFormat(path string, format string) string {
+	pos := strings.LastIndex(path, fmt.Sprintf(".%v", format))
 	if pos != -1 {
 		path = path[:pos]
 	}

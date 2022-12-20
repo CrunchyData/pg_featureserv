@@ -310,7 +310,7 @@ func checkRouteResponseFormat(t *testing.T, url string, expectedContentType stri
 
 	resp := hTest.DoRequestStatus(t, url, http.StatusOK)
 	respContentType := resp.Result().Header["Content-Type"][0]
-	util.Assert(t, respContentType == expectedContentType, fmt.Sprintf("wrong Content-Type: %s", respContentType))
+	util.Equals(t, expectedContentType, respContentType, fmt.Sprintf("wrong Content-Type: %s", respContentType))
 }
 
 // sends a GET request with the specific Accept header provided, and checks the response received for :

@@ -197,10 +197,10 @@ func getRequestVar(varName string, r *http.Request) string {
 }
 
 // Return value for the requested path route variable while stripping te extension
-func getRequestVarStrip(varName string, r *http.Request) string {
+func getRequestVarStrip(varName string, format string, r *http.Request) string {
 	vars := mux.Vars(r)
 	value := vars[varName]
-	return api.PathStripFormat(value)
+	return api.PathStripFormat(value, format)
 }
 
 // urlPathFormat provides a URL for the given base and path

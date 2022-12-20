@@ -23,6 +23,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"testing"
 	"time"
 
@@ -88,4 +89,25 @@ func (t *DbTests) TestPropertiesAllFromDbComplexTable() {
 			"IsDesc": features[0].Props["prop_i"].(int32)%2 == 1}
 		util.Equals(t, expectJson, features[0].Props["prop_j"], "feature 1 # property json")
 	})
+}
+
+func (t *DbTests) TestGetFormatHandlingSuffix() {
+	t.Test.Run("TestGetFormatHandlingSuffix", func(t *testing.T) {
+
+		// checking supported suffixes HTML and JSON, and missing suffix
+		checkRouteResponseFormat(t, "/collections/public.mock_a", api.ContentTypeJSON)
+		checkRouteResponseFormat(t, "/collections/public.mock_a.html", api.ContentTypeHTML)
+		checkRouteResponseFormat(t, "/collections/public.mock_a.json", api.ContentTypeJSON)
+		checkRouteResponseFormat(t, "/collections/mock_a/items/20?limit=100", api.ContentTypeGeoJSON)
+		checkRouteResponseFormat(t, "/collections/mock_a/items/20.html?limit=100", api.ContentTypeHTML)
+		checkRouteResponseFormat(t, "/collections/mock_a/items/20.json?limit=100", api.ContentTypeGeoJSON)
+	})
+}
+
+// sends a GET request and checks the expected format (Content-Type header) from the response
+func checkRouteResponseFormat(t *testing.T, url string, expectedContentType string) {
+
+	resp := hTest.DoRequestStatus(t, url, http.StatusOK)
+	respContentType := resp.Result().Header["Content-Type"][0]
+	util.Equals(t, expectedContentType, respContentType, fmt.Sprintf("wrong Content-Type: %s", respContentType))
 }

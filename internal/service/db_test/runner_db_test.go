@@ -76,6 +76,7 @@ func TestRunnerHandlerDb(t *testing.T) {
 		test := DbTests{Test: t}
 		test.TestPropertiesAllFromDbSimpleTable()
 		test.TestPropertiesAllFromDbComplexTable()
+		test.TestGetFormatHandlingSuffix()
 		afterEachRun()
 	})
 	t.Run("DELETE", func(t *testing.T) {

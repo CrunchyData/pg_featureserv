@@ -110,15 +110,15 @@ func (t *MockTests) TestCreateFeature() {
 		}
 
 		{
+			tableName := "mock_a"
 			var cols []string
 			for _, t := range catalogMock.TableDefs {
-				if t.ID == "mock_a" {
+				if t.ID == tableName {
 					cols = t.Columns
 					break
 				}
 			}
-			jsonStr := data.MakeFeatureMockPointAsJSON(0, 12, 34, cols)
-			// fmt.Println(jsonStr)
+			jsonStr := data.MakeFeatureMockPointAsJSON(tableName, 0, 12, 34, cols)
 			rr := hTest.DoPostRequest(t, "/collections/mock_a/items", []byte(jsonStr), header)
 
 			loc := rr.Header().Get("Location")

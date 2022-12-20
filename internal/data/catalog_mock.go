@@ -101,9 +101,9 @@ func newCatalogMock() CatalogMock {
 	}
 
 	tableData := map[string][]*featureMock{}
-	tableData["mock_a"] = MakeFeaturesMockPoint(layerA.Extent, 3, 3)
-	tableData["mock_b"] = MakeFeaturesMockPoint(layerB.Extent, 10, 10)
-	tableData["mock_c"] = MakeFeaturesMockPoint(layerC.Extent, 100, 100)
+	tableData["mock_a"] = MakeFeaturesMockPoint("mock_a", layerA.Extent, 3, 3)
+	tableData["mock_b"] = MakeFeaturesMockPoint("mock_b", layerB.Extent, 10, 10)
+	tableData["mock_c"] = MakeFeaturesMockPoint("mock_c", layerC.Extent, 100, 100)
 
 	var tables []*api.Table
 	tables = append(tables, layerA)

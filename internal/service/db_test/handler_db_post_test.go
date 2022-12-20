@@ -66,10 +66,11 @@ func (t *DbTests) TestCreateSimpleFeatureDb() {
 		maxIdBefore := len(features)
 
 		//--- generate json from new object
+		tableName := "public.mock_a"
 		tables, _ := cat.Tables()
 		var cols []string
 		for _, tbl := range tables {
-			if tbl.ID == "public.mock_a" {
+			if tbl.ID == tableName {
 				for _, c := range tbl.Columns {
 					if c != "id" {
 						cols = append(cols, c)
@@ -78,7 +79,7 @@ func (t *DbTests) TestCreateSimpleFeatureDb() {
 				break
 			}
 		}
-		jsonStr := data.MakeFeatureMockPointAsJSON(99, 12, 34, cols)
+		jsonStr := data.MakeFeatureMockPointAsJSON(tableName, 99, 12, 34, cols)
 		// fmt.Println(jsonStr)
 
 		// -- do the request call but we have to force the catalogInstance to db during this operation
