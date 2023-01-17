@@ -16,10 +16,10 @@ jobs:
         go-version: 1.16.x
 
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Build
-      run: make build && make build-docker
+      run: make build && make docker
 
     - name: Docker Upload
       env:
