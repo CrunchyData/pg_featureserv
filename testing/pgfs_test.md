@@ -72,14 +72,16 @@ http://localhost:9000/collections/public.trop_storm/items.html?filter=time_start
 http://localhost:9000/collections/public.trop_storm/items.html?filter=time_start%20between%202005-01-01%20and%20NOW() AND intersects(geom, POLYGON ((-81.4067 30.8422, -79.6862 25.3781, -81.1609 24.7731, -83.9591 30.0292, -85.2258 29.6511, -87.5892 29.9914, -87.5514 31.0123, -81.4067 30.8422)) )&limit=100
 ```
 
-```
-
 ### Filter-Crs
 ```
 http://localhost:9000/collections/pgfs_test.test_crs/items.html?filter=DWITHIN(geom,POINT(-124.6 49.3),40000)&limit=100
+```
 
+```
 http://localhost:9000/collections/pgfs_test.test_crs/items.html?filter=DWITHIN(geom,POINT(1000000 400000),60000)&filter-crs=3005&limit=100
+```
 
+```
 http://localhost:9000/collections/pgfs_test.test_crs/items.html?filter=intersects(geom,%20ENVELOPE(1000000,400000,1100000,500000))&filter-crs=3005&limit=100
 ```
 
