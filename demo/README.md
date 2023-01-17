@@ -5,7 +5,7 @@ Contains example code to demonstrate the capabilities of `pg_featureserv`.
 ### Routing example
 
 A demo using OpenLayers and PgRouting.
-See instructions in `routing/openlayers-pgrouting.md`.
+See [instructions](routing/openlayers-pgrouting.md).
 
 ### Demo functions
 
