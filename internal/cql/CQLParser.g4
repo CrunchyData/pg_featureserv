@@ -65,6 +65,8 @@ isNullPredicate : propertyName IS (NOT)? NULL;
 #
 # Note: does not enforce type consistency.
 # That occurs when transpiled expression is evaluated.
+#
+# This is more general than the CQL grammar, to allow strings as values
 #============================================================================*/
 
 scalarExpression : scalarValue
