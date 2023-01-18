@@ -4,8 +4,8 @@
 
 # Build: in this dir: antlr -Dlanguage=Go -package cql CQLParser.g4 CqlLexer.g4
 #
-# See examples:
-# https://portal.ogc.org/files/96288#cql-bnf
+# Standard and examples:
+# https://docs.ogc.org/DRAFTS/21-065.html#cql2-bnf
 # https://github.com/interactive-instruments/xtraplatform-spatial/tree/master/xtraplatform-cql/src/main/antlr/de/ii/xtraplatform/cql/infra
 */
 parser grammar CQLParser;
@@ -15,28 +15,23 @@ options { tokenVocab=CqlLexer; contextSuperClass=CqlContext; }
 # A CQL filter is a logically connected expression of one or more predicates.
 #============================================================================*/
 
-cqlFilter : booleanValueExpression EOF;
-booleanValueExpression : booleanTerm | booleanValueExpression OR booleanTerm;
-booleanTerm : booleanFactor | booleanTerm AND booleanFactor;
+cqlFilter : booleanExpression EOF;
+booleanExpression : booleanTerm ( OR booleanTerm )?;
+booleanTerm : booleanFactor ( AND booleanFactor )?;
 booleanFactor : ( NOT )? booleanPrimary;
 booleanPrimary : predicate
-                | LEFTPAREN booleanValueExpression RIGHTPAREN;
+                | LEFTPAREN booleanExpression RIGHTPAREN;
 
 /*============================================================================
 #  CQL supports scalar, spatial, temporal and existence predicates.
 #============================================================================*/
 
-predicate : binaryComparisonPredicate
-            | likePredicate
-            | betweenPredicate
-            | isNullPredicate
-            | inPredicate
-            | spatialPredicate
-            | distancePredicate
-//            | temporalPredicate
-//            | arrayPredicate
-//            | existencePredicate
-            ;
+predicate : comparisonPredicate
+          | spatialPredicate
+          | distancePredicate
+//          | temporalPredicate
+//          | arrayPredicate
+          ;
 
 /*============================================================================
 # A comparison predicate evaluates if two scalar expression statisfy the
@@ -45,14 +40,20 @@ predicate : binaryComparisonPredicate
 # an operator to test if a scalar expression is NULL or not.
 #============================================================================*/
 
+comparisonPredicate : binaryComparisonPredicate
+                    | isLikePredicate
+                    | isBetweenPredicate
+                    | isInListPredicate
+                    | isNullPredicate;
+
 binaryComparisonPredicate : scalarExpression ComparisonOperator scalarExpression;
 
-likePredicate :  propertyName (NOT)? ( LIKE | ILIKE ) characterLiteral;
+isLikePredicate :  propertyName (NOT)? ( LIKE | ILIKE ) characterLiteral;
 
-betweenPredicate : scalarExpression (NOT)? BETWEEN
+isBetweenPredicate : scalarExpression (NOT)? BETWEEN
                              scalarExpression AND scalarExpression ;
 
-inPredicate : propertyName NOT? IN LEFTPAREN (
+isInListPredicate : propertyName NOT? IN LEFTPAREN (
         characterLiteral (COMMA characterLiteral)*
         | numericLiteral (COMMA numericLiteral)*
     ) RIGHTPAREN;
@@ -64,6 +65,8 @@ isNullPredicate : propertyName IS (NOT)? NULL;
 #
 # Note: does not enforce type consistency.
 # That occurs when transpiled expression is evaluated.
+#
+# This is more general than the CQL grammar, to allow strings as values
 #============================================================================*/
 
 scalarExpression : scalarValue
