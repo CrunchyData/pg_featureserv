@@ -206,23 +206,23 @@ func (l *cqlListener) EnterEveryRule(ctx antlr.ParserRuleContext) {
 */
 
 func (l *cqlListener) ExitCqlFilter(ctx *CqlFilterContext) {
-	l.sql = sqlFor(ctx.BooleanValueExpression())
+	l.sql = sqlFor(ctx.BooleanExpression())
 }
 
-func (l *cqlListener) ExitBooleanValueExpression(ctx *BooleanValueExpressionContext) {
-	sql := sqlFor(ctx.BooleanTerm())
+func (l *cqlListener) ExitBooleanExpression(ctx *BooleanExpressionContext) {
+	sql := sqlFor(ctx.BooleanTerm(0))
 	if ctx.OR() != nil {
-		expr := sqlFor(ctx.BooleanValueExpression())
-		sql = expr + " OR " + sql
+		term := sqlFor(ctx.BooleanTerm(1))
+		sql = sql + " OR " + term
 	}
 	ctx.SetSql(sql)
 }
 
 func (l *cqlListener) ExitBooleanTerm(ctx *BooleanTermContext) {
-	sql := sqlFor(ctx.BooleanFactor())
+	sql := sqlFor(ctx.BooleanFactor(0))
 	if ctx.AND() != nil {
-		expr := sqlFor(ctx.BooleanTerm())
-		sql = expr + " AND " + sql
+		fact := sqlFor(ctx.BooleanFactor(1))
+		sql = sql + " AND " + fact
 	}
 	ctx.SetSql(sql)
 }
@@ -240,29 +240,37 @@ func (l *cqlListener) ExitBooleanPrimary(ctx *BooleanPrimaryContext) {
 	if ctx.LEFTPAREN() == nil {
 		sql = sqlFor(ctx.Predicate())
 	} else {
-		sql = "(" + sqlFor(ctx.BooleanValueExpression()) + ")"
+		sql = "(" + sqlFor(ctx.BooleanExpression()) + ")"
 	}
 	ctx.SetSql(sql)
 }
 
 func (l *cqlListener) ExitPredicate(ctx *PredicateContext) {
 	var sql string
-	if ctx.BinaryComparisonPredicate() != nil {
-		sql = sqlFor(ctx.BinaryComparisonPredicate())
-	} else if ctx.LikePredicate() != nil {
-		sql = sqlFor(ctx.LikePredicate())
-	} else if ctx.BetweenPredicate() != nil {
-		sql = sqlFor(ctx.BetweenPredicate())
-	} else if ctx.IsNullPredicate() != nil {
-		sql = sqlFor(ctx.IsNullPredicate())
-	} else if ctx.InPredicate() != nil {
-		sql = sqlFor(ctx.InPredicate())
+	if ctx.ComparisonPredicate() != nil {
+		sql = sqlFor(ctx.ComparisonPredicate())
 	} else if ctx.SpatialPredicate() != nil {
 		sql = sqlFor(ctx.SpatialPredicate())
 	} else if ctx.DistancePredicate() != nil {
 		sql = sqlFor(ctx.DistancePredicate())
 		//	} else if ctx.TemporalPredicate() != nil {
 		//		sql = sqlFor(ctx.TemporalPredicate())
+	}
+	ctx.SetSql(sql)
+}
+
+func (l *cqlListener) ExitComparisonPredicate(ctx *ComparisonPredicateContext) {
+	var sql string
+	if ctx.BinaryComparisonPredicate() != nil {
+		sql = sqlFor(ctx.BinaryComparisonPredicate())
+	} else if ctx.IsLikePredicate() != nil {
+		sql = sqlFor(ctx.IsLikePredicate())
+	} else if ctx.IsBetweenPredicate() != nil {
+		sql = sqlFor(ctx.IsBetweenPredicate())
+	} else if ctx.IsNullPredicate() != nil {
+		sql = sqlFor(ctx.IsNullPredicate())
+	} else if ctx.IsInListPredicate() != nil {
+		sql = sqlFor(ctx.IsInListPredicate())
 	}
 	ctx.SetSql(sql)
 }
@@ -306,7 +314,7 @@ func (l *cqlListener) ExitScalarExpression(ctx *ScalarExpressionContext) {
 	ctx.SetSql(sql)
 }
 
-func (l *cqlListener) ExitLikePredicate(ctx *LikePredicateContext) {
+func (l *cqlListener) ExitIsLikePredicate(ctx *IsLikePredicateContext) {
 	var sb strings.Builder
 	sb.WriteString(quotedName(getText(ctx.PropertyName())))
 	if ctx.NOT() != nil {
@@ -321,7 +329,7 @@ func (l *cqlListener) ExitLikePredicate(ctx *LikePredicateContext) {
 	ctx.SetSql(sb.String())
 }
 
-func (l *cqlListener) ExitBetweenPredicate(ctx *BetweenPredicateContext) {
+func (l *cqlListener) ExitIsBetweenPredicate(ctx *IsBetweenPredicateContext) {
 	lhs := sqlFor(ctx.ScalarExpression(0))
 	not := ""
 	if ctx.NOT() != nil {
@@ -343,7 +351,7 @@ func (l *cqlListener) ExitIsNullPredicate(ctx *IsNullPredicateContext) {
 	ctx.SetSql(sql)
 }
 
-func (l *cqlListener) ExitInPredicate(ctx *InPredicateContext) {
+func (l *cqlListener) ExitIsInListPredicate(ctx *IsInListPredicateContext) {
 	var sb strings.Builder
 	sb.WriteString(quotedName(getText(ctx.PropertyName())))
 	if ctx.NOT() != nil {
@@ -356,7 +364,7 @@ func (l *cqlListener) ExitInPredicate(ctx *InPredicateContext) {
 	ctx.SetSql(sql)
 }
 
-func inPredValueList(ctx *InPredicateContext, sb *strings.Builder) {
+func inPredValueList(ctx *IsInListPredicateContext, sb *strings.Builder) {
 	//-- numeric literal list?
 	nums := ctx.AllNumericLiteral()
 	if len(nums) > 0 {

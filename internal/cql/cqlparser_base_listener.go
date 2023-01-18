@@ -26,11 +26,11 @@ func (s *BaseCQLParserListener) EnterCqlFilter(ctx *CqlFilterContext) {}
 // ExitCqlFilter is called when production cqlFilter is exited.
 func (s *BaseCQLParserListener) ExitCqlFilter(ctx *CqlFilterContext) {}
 
-// EnterBooleanValueExpression is called when production booleanValueExpression is entered.
-func (s *BaseCQLParserListener) EnterBooleanValueExpression(ctx *BooleanValueExpressionContext) {}
+// EnterBooleanExpression is called when production booleanExpression is entered.
+func (s *BaseCQLParserListener) EnterBooleanExpression(ctx *BooleanExpressionContext) {}
 
-// ExitBooleanValueExpression is called when production booleanValueExpression is exited.
-func (s *BaseCQLParserListener) ExitBooleanValueExpression(ctx *BooleanValueExpressionContext) {}
+// ExitBooleanExpression is called when production booleanExpression is exited.
+func (s *BaseCQLParserListener) ExitBooleanExpression(ctx *BooleanExpressionContext) {}
 
 // EnterBooleanTerm is called when production booleanTerm is entered.
 func (s *BaseCQLParserListener) EnterBooleanTerm(ctx *BooleanTermContext) {}
@@ -56,6 +56,12 @@ func (s *BaseCQLParserListener) EnterPredicate(ctx *PredicateContext) {}
 // ExitPredicate is called when production predicate is exited.
 func (s *BaseCQLParserListener) ExitPredicate(ctx *PredicateContext) {}
 
+// EnterComparisonPredicate is called when production comparisonPredicate is entered.
+func (s *BaseCQLParserListener) EnterComparisonPredicate(ctx *ComparisonPredicateContext) {}
+
+// ExitComparisonPredicate is called when production comparisonPredicate is exited.
+func (s *BaseCQLParserListener) ExitComparisonPredicate(ctx *ComparisonPredicateContext) {}
+
 // EnterBinaryComparisonPredicate is called when production binaryComparisonPredicate is entered.
 func (s *BaseCQLParserListener) EnterBinaryComparisonPredicate(ctx *BinaryComparisonPredicateContext) {
 }
@@ -63,23 +69,23 @@ func (s *BaseCQLParserListener) EnterBinaryComparisonPredicate(ctx *BinaryCompar
 // ExitBinaryComparisonPredicate is called when production binaryComparisonPredicate is exited.
 func (s *BaseCQLParserListener) ExitBinaryComparisonPredicate(ctx *BinaryComparisonPredicateContext) {}
 
-// EnterLikePredicate is called when production likePredicate is entered.
-func (s *BaseCQLParserListener) EnterLikePredicate(ctx *LikePredicateContext) {}
+// EnterIsLikePredicate is called when production isLikePredicate is entered.
+func (s *BaseCQLParserListener) EnterIsLikePredicate(ctx *IsLikePredicateContext) {}
 
-// ExitLikePredicate is called when production likePredicate is exited.
-func (s *BaseCQLParserListener) ExitLikePredicate(ctx *LikePredicateContext) {}
+// ExitIsLikePredicate is called when production isLikePredicate is exited.
+func (s *BaseCQLParserListener) ExitIsLikePredicate(ctx *IsLikePredicateContext) {}
 
-// EnterBetweenPredicate is called when production betweenPredicate is entered.
-func (s *BaseCQLParserListener) EnterBetweenPredicate(ctx *BetweenPredicateContext) {}
+// EnterIsBetweenPredicate is called when production isBetweenPredicate is entered.
+func (s *BaseCQLParserListener) EnterIsBetweenPredicate(ctx *IsBetweenPredicateContext) {}
 
-// ExitBetweenPredicate is called when production betweenPredicate is exited.
-func (s *BaseCQLParserListener) ExitBetweenPredicate(ctx *BetweenPredicateContext) {}
+// ExitIsBetweenPredicate is called when production isBetweenPredicate is exited.
+func (s *BaseCQLParserListener) ExitIsBetweenPredicate(ctx *IsBetweenPredicateContext) {}
 
-// EnterInPredicate is called when production inPredicate is entered.
-func (s *BaseCQLParserListener) EnterInPredicate(ctx *InPredicateContext) {}
+// EnterIsInListPredicate is called when production isInListPredicate is entered.
+func (s *BaseCQLParserListener) EnterIsInListPredicate(ctx *IsInListPredicateContext) {}
 
-// ExitInPredicate is called when production inPredicate is exited.
-func (s *BaseCQLParserListener) ExitInPredicate(ctx *InPredicateContext) {}
+// ExitIsInListPredicate is called when production isInListPredicate is exited.
+func (s *BaseCQLParserListener) ExitIsInListPredicate(ctx *IsInListPredicateContext) {}
 
 // EnterIsNullPredicate is called when production isNullPredicate is entered.
 func (s *BaseCQLParserListener) EnterIsNullPredicate(ctx *IsNullPredicateContext) {}
