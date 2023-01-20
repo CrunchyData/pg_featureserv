@@ -20,6 +20,7 @@ booleanExpression : booleanTerm ( OR booleanTerm )?;
 booleanTerm : booleanFactor ( AND booleanFactor )?;
 booleanFactor : ( NOT )? booleanPrimary;
 booleanPrimary : predicate
+                | booleanLiteral
                 | LEFTPAREN booleanExpression RIGHTPAREN;
 
 /*============================================================================
@@ -66,7 +67,10 @@ isNullPredicate : propertyName IS (NOT)? NULL;
 # Note: does not enforce type consistency.
 # That occurs when transpiled expression is evaluated.
 #
-# This is more general than the CQL grammar, to allow strings as values
+# This is more simplistic (ang general) than the CQL grammar,
+# to allow strings as values.
+# It's ok, since this is just for transpiling to SQL.
+# The Postgres parser will provide a final check on the correctness.
 #============================================================================*/
 
 scalarExpression : scalarValue

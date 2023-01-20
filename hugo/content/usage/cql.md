@@ -44,7 +44,7 @@ true
 ## Arithmetic expressions
 
 Values of numeric expressions can be computed using the
-arithmetic operators `+`,`-`,`*`,`/` and `%` (modulo),
+arithmetic operators `+`,`-`,`*`,`/`, `%` (modulo), and `^` (exponentiation)
 with parentheses to specify operator precedence.
 
 **NOTE:** `+` needs to be URL-encoded as `%2B`.
@@ -52,6 +52,16 @@ with parentheses to specify operator precedence.
 x + 3
 2 * (y - 3)
 p % 10
+```
+
+## String concatenation
+
+Values of string expressions can be computed using the
+concatenation operator ||`.
+
+```
+x || y
+'a' || x || 'b'
 ```
 
 ## Comparisons

@@ -237,10 +237,12 @@ func (l *cqlListener) ExitBooleanFactor(ctx *BooleanFactorContext) {
 
 func (l *cqlListener) ExitBooleanPrimary(ctx *BooleanPrimaryContext) {
 	var sql string
-	if ctx.LEFTPAREN() == nil {
-		sql = sqlFor(ctx.Predicate())
-	} else {
+	if ctx.BooleanLiteral() != nil {
+		sql = getText(ctx.BooleanLiteral())
+	} else if ctx.LEFTPAREN() != nil {
 		sql = "(" + sqlFor(ctx.BooleanExpression()) + ")"
+	} else {
+		sql = sqlFor(ctx.Predicate())
 	}
 	ctx.SetSql(sql)
 }

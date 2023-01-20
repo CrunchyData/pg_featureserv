@@ -82,8 +82,11 @@ func TestArithmetic(t *testing.T) {
 	checkCQL(t, "p > 2 * (3 + x)", "\"p\" > 2 * (3 + \"x\")")
 	checkCQL(t, "p > (y + 5) / (3 - x)", "\"p\" > (\"y\" + 5) / (3 - \"x\")")
 	checkCQL(t, "p = x % 10", "\"p\" = \"x\" % 10")
+	checkCQL(t, "p = x ^ (i + 2)", "\"p\" = \"x\" ^ (\"i\" + 2)")
 	checkCQL(t, "p BETWEEN x + 10 AND x * 2", "\"p\" BETWEEN \"x\" + 10 AND \"x\" * 2")
 	checkCQL(t, "p BETWEEN 2 * (1 + 1000000) AND 900000", "\"p\" BETWEEN 2 * (1 + 1000000) AND 900000")
+
+	checkCQL(t, "p = 'a' || x || 'b'", "\"p\" = 'a' || \"x\" || 'b'")
 }
 
 func TestGeometryLiteral(t *testing.T) {
@@ -119,6 +122,8 @@ func TestBooleanExpression(t *testing.T) {
 	checkCQL(t, "x = 1 OR x = 2", "\"x\" = 1 OR \"x\" = 2")
 	checkCQL(t, "(x = 1 OR x = 2) AND y < 4", "(\"x\" = 1 OR \"x\" = 2) AND \"y\" < 4")
 	checkCQL(t, "NOT x IS NOT NULL", "NOT  \"x\" IS NOT NULL")
+	checkCQL(t, "NOT TRUE OR FALSE", "NOT TRUE OR FALSE")
+	checkCQL(t, "NOT true OR false", "NOT true OR false")
 }
 
 func TestTemporal(t *testing.T) {

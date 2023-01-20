@@ -72,7 +72,7 @@ IN: I N;
 # Definition of ARITHMETIC operators
 #============================================================================*/
 
-ArithmeticOperator : PLUS | MINUS | ASTERISK | SOLIDUS | PERCENT;
+ArithmeticOperator : PLUS | MINUS | ASTERISK | SOLIDUS | PERCENT | CARET | CONCAT;
 
 /*============================================================================
 # Definition of SPATIAL operators
@@ -150,6 +150,8 @@ COMMA : ',';
 MINUS : '-';
 PERIOD : '.';
 SOLIDUS : '/';
+CARET : '^';
+CONCAT : '||';
 COLON : ':';
 SEMICOLON : ';';
 QUESTIONMARK : '?';
