@@ -98,9 +98,9 @@ func (t *DbTests) TestGetFormatHandlingSuffix() {
 		checkRouteResponseFormat(t, "/collections/public.mock_a", api.ContentTypeJSON)
 		checkRouteResponseFormat(t, "/collections/public.mock_a.html", api.ContentTypeHTML)
 		checkRouteResponseFormat(t, "/collections/public.mock_a.json", api.ContentTypeJSON)
-		checkRouteResponseFormat(t, "/collections/mock_a/items/20?limit=100", api.ContentTypeGeoJSON)
-		checkRouteResponseFormat(t, "/collections/mock_a/items/20.html?limit=100", api.ContentTypeHTML)
-		checkRouteResponseFormat(t, "/collections/mock_a/items/20.json?limit=100", api.ContentTypeGeoJSON)
+		checkRouteResponseFormat(t, "/collections/mock_a/items/2?limit=100", api.ContentTypeGeoJSON)
+		checkRouteResponseFormat(t, "/collections/mock_a/items/2.html?limit=100", api.ContentTypeHTML)
+		checkRouteResponseFormat(t, "/collections/mock_a/items/2.json?limit=100", api.ContentTypeGeoJSON)
 	})
 }
 
