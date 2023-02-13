@@ -101,6 +101,22 @@ func (t *DbTests) TestCreateSimpleFeatureDb() {
 	})
 }
 
+func (t *DbTests) TestCreateSuperSimpleFeatureDb() {
+	t.Test.Run("TestCreateSuperSimpleFeatureDb", func(t *testing.T) {
+		var header = make(http.Header)
+		header.Add("Content-Type", "application/geo+json")
+
+		//--- generate json from new object
+		tableName := "public.mock_ssimple"
+		var cols []string
+		jsonStr := data.MakeFeatureMockPointAsJSON(tableName, 99, 12, 34, cols)
+		// fmt.Println(jsonStr)
+
+		// -- do the request call but we have to force the catalogInstance to db during this operation
+		hTest.DoPostRequest(t, "/collections/mock_ssimple/items", []byte(jsonStr), header)
+	})
+}
+
 // checks collection schema contains valid data description
 func (t *DbTests) TestGetComplexCollectionCreateSchema() {
 	t.Test.Run("TestGetComplexCollectionCreateSchema", func(t *testing.T) {

@@ -35,7 +35,7 @@ import (
 func (t *DbTests) TestProperDbInit() {
 	t.Test.Skip() // FIXME system tables not filtred correctly !?
 	tables, _ := cat.Tables()
-	util.Equals(t.Test, 5, len(tables), "# tables in DB")
+	util.Equals(t.Test, 6, len(tables), "# tables in DB")
 }
 
 func (t *DbTests) TestPropertiesAllFromDbSimpleTable() {

@@ -59,6 +59,7 @@ func CreateTestDb() *pgxpool.Pool {
 
 	CreateSchema(db, "complex")
 	InsertSimpleDataset(db, "public")
+	InsertSuperSimpleDataset(db, "public")
 	InsertComplexDataset(db, "complex")
 
 	log.Debugf("Sample data injected")
@@ -128,6 +129,67 @@ func InsertSimpleDataset(db *pgxpool.Pool, schema string) {
 		for _, f := range featuresMock {
 			geomStr, _ := f.Geom.MarshalJSON()
 			b.Queue(insertStatement, geomStr, f.Props["prop_a"], f.Props["prop_b"], f.Props["prop_c"], f.Props["prop_d"])
+		}
+		res := db.SendBatch(ctx, b)
+		if res == nil {
+			CloseTestDb(db)
+			log.Fatal("Injection failed")
+		}
+		resClose := res.Close()
+		if resClose != nil {
+			CloseTestDb(db)
+			log.Fatal(fmt.Sprintf("Injection failed: %v", resClose.Error()))
+		}
+	}
+}
+
+func InsertSuperSimpleDataset(db *pgxpool.Pool, schema string) {
+	ctx := context.Background()
+	// collections tables
+	// tables := []string{"mock_a", "mock_b", "mock_c"}
+	type tableContent struct {
+		extent api.Extent
+		nx     int
+		ny     int
+	}
+	tablesAndExtents := map[string]tableContent{
+		"mock_ssimple": {api.Extent{Minx: -120, Miny: 40, Maxx: -74, Maxy: 50}, 3, 3},
+	}
+
+	createBytes := []byte(`
+		DROP TABLE IF EXISTS %s CASCADE;
+		CREATE TABLE IF NOT EXISTS %s (
+			id SERIAL PRIMARY KEY,
+			geometry public.geometry(Point, 4326) NOT NULL
+		);
+	`)
+	for s := range tablesAndExtents {
+
+		tableNameWithSchema := fmt.Sprintf("%s.%s", schema, s)
+		createStatement := fmt.Sprintf(string(createBytes), tableNameWithSchema, tableNameWithSchema)
+
+		_, errExec := db.Exec(ctx, createStatement)
+		if errExec != nil {
+			CloseTestDb(db)
+			log.Fatal(errExec)
+		}
+	}
+
+	// collections features/table records
+	b := &pgx.Batch{}
+
+	insertBytes := []byte(`
+		INSERT INTO %s (geometry)
+		VALUES (ST_GeomFromGeoJSON($1))
+	`)
+	for tableName, tableElements := range tablesAndExtents {
+		tableNameWithSchema := fmt.Sprintf("%s.%s", schema, tableName)
+		insertStatement := fmt.Sprintf(string(insertBytes), tableNameWithSchema)
+		featuresMock := data.MakeFeaturesMockPoint(tableName, tableElements.extent, tableElements.nx, tableElements.ny)
+
+		for _, f := range featuresMock {
+			geomStr, _ := f.Geom.MarshalJSON()
+			b.Queue(insertStatement, geomStr)
 		}
 		res := db.SendBatch(ctx, b)
 		if res == nil {

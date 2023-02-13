@@ -309,15 +309,13 @@ func (cat *catalogDB) AddTableFeature(ctx context.Context, tableName string, jso
 		}
 		values = append(values, convVal)
 
-		if i < maxCol {
-			columnStr += ", "
-			placementStr += ", "
-		}
+		columnStr += ", "
+		placementStr += ", "
 	}
 
 	i++
-	columnStr += ", " + tbl.GeometryColumn
-	placementStr += fmt.Sprintf(", ST_GeomFromGeoJSON($%d)", i)
+	columnStr += tbl.GeometryColumn
+	placementStr += fmt.Sprintf("ST_GeomFromGeoJSON($%d)", i)
 	geomJson, _ := schemaObject.Geom.MarshalJSON()
 	values = append(values, geomJson)
 
