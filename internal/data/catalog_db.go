@@ -278,8 +278,8 @@ func (cat *catalogDB) AddTableFeature(ctx context.Context, tableName string, jso
 	if err != nil {
 		return -9999, err
 	}
-	var columnStr string
-	var placementStr string
+	var columnStr []string
+	var placementStr []string
 	var values []interface{}
 
 	tbl, err := cat.TableByName(tableName)
@@ -300,22 +300,19 @@ func (cat *catalogDB) AddTableFeature(ctx context.Context, tableName string, jso
 		}
 
 		i++
-		columnStr += colName
-		placementStr += fmt.Sprintf("$%d", i)
+		columnStr = append(columnStr, colName)
+		placementStr = append(placementStr, fmt.Sprintf("$%d", i))
 
 		convVal, errConv := col.Type.ParseJSONInterface(schemaObject.Props[colName])
 		if errConv != nil {
 			return -9999, errConv
 		}
 		values = append(values, convVal)
-
-		columnStr += ", "
-		placementStr += ", "
 	}
 
 	i++
-	columnStr += tbl.GeometryColumn
-	placementStr += fmt.Sprintf("ST_GeomFromGeoJSON($%d)", i)
+	columnStr = append(columnStr, tbl.GeometryColumn)
+	placementStr = append(placementStr, fmt.Sprintf("ST_GeomFromGeoJSON($%d)", i))
 	geomJson, _ := schemaObject.Geom.MarshalJSON()
 	values = append(values, geomJson)
 
@@ -323,7 +320,7 @@ func (cat *catalogDB) AddTableFeature(ctx context.Context, tableName string, jso
 		INSERT INTO %s (%s)
 		VALUES (%s)
 		RETURNING %s`,
-		tbl.ID, columnStr, placementStr, tbl.IDColumn)
+		tbl.ID, strings.Join(columnStr, ", "), strings.Join(placementStr, ", "), tbl.IDColumn)
 
 	var id int64 = -1
 	err = cat.dbconn.QueryRow(ctx, sqlStatement, values...).Scan(&id)
@@ -352,8 +349,8 @@ func (cat *catalogDB) PartialUpdateTableFeature(ctx context.Context, tableName s
 		return errJson
 	}
 
-	var columnStr string
-	var placementStr string
+	var columnStr []string
+	var placementStr []string
 	var values []interface{}
 
 	var i = 0
@@ -367,10 +364,8 @@ func (cat *catalogDB) PartialUpdateTableFeature(ctx context.Context, tableName s
 
 		i++
 
-		columnStr += colName
-		columnStr += ", "
-		placementStr += fmt.Sprintf("$%d", i)
-		placementStr += ", "
+		columnStr = append(columnStr, colName)
+		placementStr = append(placementStr, fmt.Sprintf("$%d", i))
 
 		convVal, errConv := col.Type.ParseJSONInterface(schemaObject.Props[colName])
 		if errConv != nil {
@@ -379,23 +374,27 @@ func (cat *catalogDB) PartialUpdateTableFeature(ctx context.Context, tableName s
 		values = append(values, convVal)
 	}
 
-	columnStr = strings.TrimSuffix(columnStr, ", ")
-	placementStr = strings.TrimSuffix(placementStr, ", ")
-
 	if schemaObject.Geom != nil {
 		i++
-		columnStr += ", " + tbl.GeometryColumn
-		placementStr += fmt.Sprintf(", ST_GeomFromGeoJSON($%d)", i)
+		columnStr = append(columnStr, tbl.GeometryColumn)
+		placementStr = append(placementStr, fmt.Sprintf("ST_GeomFromGeoJSON($%d)", i))
 		geomJson, _ := schemaObject.Geom.MarshalJSON()
 		values = append(values, geomJson)
 	}
 
+	var setStr string
+	if len(columnStr) == 1 {
+		setStr = fmt.Sprintf("%s = %s", strings.Join(columnStr, ", "), strings.Join(placementStr, ", "))
+	} else {
+		setStr = fmt.Sprintf("( %s ) = ( %s )", strings.Join(columnStr, ", "), strings.Join(placementStr, ", "))
+	}
+
 	sqlStatement := fmt.Sprintf(`
 		UPDATE %s
-		SET ( %s ) = ( %s )
-		WHERE %s=%s
+		SET    %s
+		WHERE  %s=%s
 		RETURNING %s
-	`, tbl.ID, columnStr, placementStr, tbl.IDColumn, id, tbl.IDColumn)
+	`, tbl.ID, setStr, tbl.IDColumn, id, tbl.IDColumn)
 
 	row := cat.dbconn.QueryRow(ctx, sqlStatement, values...)
 
@@ -419,7 +418,7 @@ func (cat *catalogDB) ReplaceTableFeature(ctx context.Context, tableName string,
 	if err != nil {
 		return err
 	}
-	var colValueStr string
+	var colValueStr []string
 	var values []interface{}
 
 	tbl, err := cat.TableByName(tableName)
@@ -433,9 +432,7 @@ func (cat *catalogDB) ReplaceTableFeature(ctx context.Context, tableName string,
 		}
 
 		i++
-		colValueStr += colName
-		colValueStr += "="
-		colValueStr += fmt.Sprintf("$%d", i)
+		colValueStr = append(colValueStr, fmt.Sprintf("%s=$%d", colName, i))
 		if col.IsRequired || schemaObject.Props[colName] != nil {
 			convVal, errConv := col.Type.ParseJSONInterface(schemaObject.Props[colName])
 			if errConv != nil {
@@ -445,16 +442,10 @@ func (cat *catalogDB) ReplaceTableFeature(ctx context.Context, tableName string,
 		} else {
 			values = append(values, nil)
 		}
-
-		if i < len(tbl.Columns)-1 {
-			colValueStr += ", "
-		}
 	}
 
 	i++
-	colValueStr += ", " + tbl.GeometryColumn
-	colValueStr += "="
-	colValueStr += fmt.Sprintf("ST_GeomFromGeoJSON($%d)", i)
+	colValueStr = append(colValueStr, fmt.Sprintf("%s=ST_GeomFromGeoJSON($%d)", tbl.GeometryColumn, i))
 	geomJson, _ := schemaObject.Geom.MarshalJSON()
 	values = append(values, geomJson)
 
@@ -463,7 +454,7 @@ func (cat *catalogDB) ReplaceTableFeature(ctx context.Context, tableName string,
 		SET %s
 		WHERE %s=%s
 		RETURNING %s
-		`, tbl.ID, colValueStr, tbl.IDColumn, id, tbl.IDColumn)
+		`, tbl.ID, strings.Join(colValueStr, ", "), tbl.IDColumn, id, tbl.IDColumn)
 
 	err = cat.dbconn.QueryRow(ctx, sqlStatement, values...).Scan(&idx)
 	if err != nil && err != pgx.ErrNoRows {

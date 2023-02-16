@@ -45,8 +45,8 @@ func (t *DbTests) TestUpdateSimpleFeatureDb() {
 				]
 			},
 			"properties": {
-				"prop_a": "propA...",
-				"prop_b": 2
+				"prop_a": "propJ...",
+				"prop_b": 656
 			}
 		}`
 
@@ -61,10 +61,50 @@ func (t *DbTests) TestUpdateSimpleFeatureDb() {
 		util.Equals(t, "2", jsonData["id"].(string), "feature ID")
 		util.Equals(t, "Feature", jsonData["type"].(string), "feature Type")
 		props := jsonData["properties"].(map[string]interface{})
-		util.Equals(t, "propA...", props["prop_a"].(string), "feature value a")
-		util.Equals(t, 2, int(props["prop_b"].(float64)), "feature value b")
+		util.Equals(t, "propJ...", props["prop_a"].(string), "feature value a")
+		util.Equals(t, 656, int(props["prop_b"].(float64)), "feature value b")
 		util.Equals(t, "propC", props["prop_c"].(string), "feature value c")
 		util.Equals(t, 2, int(props["prop_d"].(float64)), "feature value d")
+		geom := jsonData["geometry"].(map[string]interface{})
+		util.Equals(t, "Point", geom["type"].(string), "feature Type")
+		coordinate := geom["coordinates"].([]interface{})
+		util.Equals(t, -120, int(coordinate[0].(float64)), "feature latitude")
+		util.Equals(t, 40, int(coordinate[1].(float64)), "feature longitude")
+	})
+}
+
+func (t *DbTests) TestUpdateSimpleFeatureNoPropDb() {
+	t.Test.Run("TestUpdateSimpleFeatureDb", func(t *testing.T) {
+		path := "/collections/mock_a/items/3"
+		var header = make(http.Header)
+		header.Add("Content-Type", api.ContentTypeSchemaPatchJSON)
+
+		jsonStr := `{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+				-120,
+				40
+				]
+			}
+		}`
+
+		_ = hTest.DoRequestMethodStatus(t, "PATCH", path, []byte(jsonStr), header, http.StatusNoContent)
+
+		// check if it can be read
+		feature := checkItem(t, "mock_a", 3)
+		var jsonData map[string]interface{}
+		errUnMarsh := json.Unmarshal(feature, &jsonData)
+		util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
+
+		util.Equals(t, "3", jsonData["id"].(string), "feature ID")
+		util.Equals(t, "Feature", jsonData["type"].(string), "feature Type")
+		props := jsonData["properties"].(map[string]interface{})
+		util.Equals(t, "propA", props["prop_a"].(string), "feature value a")
+		util.Equals(t, 3, int(props["prop_b"].(float64)), "feature value b")
+		util.Equals(t, "propC", props["prop_c"].(string), "feature value c")
+		util.Equals(t, 3, int(props["prop_d"].(float64)), "feature value d")
 		geom := jsonData["geometry"].(map[string]interface{})
 		util.Equals(t, "Point", geom["type"].(string), "feature Type")
 		coordinate := geom["coordinates"].([]interface{})

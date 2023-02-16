@@ -109,6 +109,7 @@ func TestRunnerHandlerDb(t *testing.T) {
 		test.TestGetComplexCollectionUpdateSchema()
 		test.TestUpdateComplexFeatureDb()
 		test.TestUpdateSimpleFeatureDb()
+		test.TestUpdateSimpleFeatureNoPropDb()
 		afterEachRun()
 	})
 	t.Run("CACHE-ETAGS", func(t *testing.T) {
