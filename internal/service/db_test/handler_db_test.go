@@ -30,6 +30,7 @@ import (
 	"github.com/CrunchyData/pg_featureserv/internal/api"
 	"github.com/CrunchyData/pg_featureserv/internal/data"
 	util "github.com/CrunchyData/pg_featureserv/internal/utiltest"
+	"github.com/paulmach/orb"
 )
 
 func (t *DbTests) TestProperDbInit() {
@@ -104,9 +105,29 @@ func (t *DbTests) TestGetFormatHandlingSuffix() {
 	})
 }
 
+func (t *DbTests) TestGetCrs() {
+	t.Test.Run("TestGetCrs", func(t *testing.T) {
+		rr := hTest.DoRequest(t, "/collections/mock_a/items?limit=2&crs=2154")
+
+		var v api.FeatureCollection
+		errUnMarsh := json.Unmarshal(hTest.ReadBody(rr), &v)
+		util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
+
+		util.Equals(t, 2, len(v.Features), "# features")
+		util.Equals(t, 4, len(v.Features[0].Props), "feature 1 # properties")
+		util.Assert(t, v.Features[0].Geom.Geometry().(orb.Point).X() < -1e+5, "feature 1 # coordinate X")
+		util.Assert(t, v.Features[0].Geom.Geometry().(orb.Point).Y() > 1e+5, "feature 1 # coordinate Y")
+	})
+}
+
+func (t *DbTests) TestGetWrongCrs() {
+	t.Test.Run("TestGetWrongCrs", func(t *testing.T) {
+		hTest.DoRequestStatus(t, "/collections/mock_a/items?limit=2&crs=3", http.StatusBadRequest)
+	})
+}
+
 // sends a GET request and checks the expected format (Content-Type header) from the response
 func checkRouteResponseFormat(t *testing.T, url string, expectedContentType string) {
-
 	resp := hTest.DoRequestStatus(t, url, http.StatusOK)
 	respContentType := resp.Result().Header["Content-Type"][0]
 	util.Equals(t, expectedContentType, respContentType, fmt.Sprintf("wrong Content-Type: %s", respContentType))

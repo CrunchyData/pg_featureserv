@@ -163,3 +163,39 @@ func (t *DbTests) TestUpdateComplexFeatureDb() {
 		checkItem(t, "complex.mock_multi", 100)
 	})
 }
+
+func (t *DbTests) TesUpdateComplexFeatureDbCrs() {
+	t.Test.Run("TesUpdateComplexFeatureDbCrs", func(t *testing.T) {
+		path := "/collections/complex.mock_multi/items/100"
+		var header = make(http.Header)
+		header.Add("Content-Type", api.ContentTypeSchemaPatchJSON)
+		header.Add("Content-Crs", "2154")
+
+		feat := util.MakeGeojsonFeatureMockPoint(99999, 657775, 6860705)
+		json, err := json.Marshal(feat)
+		util.Assert(t, err == nil, fmt.Sprintf("Error marshalling feature into JSON: %v", err))
+
+		_ = hTest.DoRequestMethodStatus(t, "PATCH", path, json, header, http.StatusNoContent)
+
+		// check if it can be read
+		checkItem(t, "complex.mock_multi", 100)
+	})
+}
+
+func (t *DbTests) TesUpdateComplexFeatureDbWrongCrs() {
+	t.Test.Run("TesUpdateComplexFeatureDbWrongCrs", func(t *testing.T) {
+		path := "/collections/complex.mock_multi/items/100"
+		var header = make(http.Header)
+		header.Add("Content-Type", api.ContentTypeSchemaPatchJSON)
+		header.Add("Content-Crs", "3")
+
+		feat := util.MakeGeojsonFeatureMockPoint(99999, 657775, 6860705)
+		json, err := json.Marshal(feat)
+		util.Assert(t, err == nil, fmt.Sprintf("Error marshalling feature into JSON: %v", err))
+
+		_ = hTest.DoRequestMethodStatus(t, "PATCH", path, json, header, http.StatusBadRequest)
+
+		// check if it can be read
+		checkItem(t, "complex.mock_multi", 100)
+	})
+}

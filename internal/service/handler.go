@@ -390,8 +390,14 @@ func handleCreateCollectionItem(w http.ResponseWriter, r *http.Request) *appErro
 		return appErrorBadRequest(errValSch, api.ErrMsgCreateFeatureNotConform, name)
 	}
 
-	newId, err2 := catalogInstance.AddTableFeature(r.Context(), name, bodyContent)
+	//--- get crs header
+	crs := r.Header.Get("Content-Crs")
+
+	newId, err2 := catalogInstance.AddTableFeature(r.Context(), name, bodyContent, crs)
 	if err2 != nil {
+		if strings.Contains(err2.Error(), fmt.Sprintf("SRID (%s)", crs)) {
+			return appErrorBadRequest(err2, api.ErrMsgWrongCrs, crs)
+		}
 		return appErrorInternal(err2, api.ErrMsgCreateFeatureInCatalog, name)
 	}
 
@@ -617,6 +623,9 @@ func writeItemsJSON(ctx context.Context, w http.ResponseWriter, name string, par
 	//--- query features data
 	features, err := catalogInstance.TableFeatures(ctx, name, param)
 	if err != nil {
+		if strings.Contains(err.Error(), fmt.Sprintf("SRID (%v)", param.Crs)) {
+			return appErrorBadRequest(err, api.ErrMsgWrongCrs, strconv.Itoa(param.Crs))
+		}
 		return appErrorInternal(err, api.ErrMsgDataReadError, name)
 	}
 	if features == nil {
@@ -765,9 +774,15 @@ func handleItem(w http.ResponseWriter, r *http.Request) *appError {
 			return appErrorBadRequest(errValSch, api.ErrMsgReplaceFeatureNotConform)
 		}
 
+		// retrieve crs
+		crs := r.Header.Get("Content-Crs")
+
 		// perform replace in database
-		err2 := catalogInstance.ReplaceTableFeature(r.Context(), tableName, fid, body)
+		err2 := catalogInstance.ReplaceTableFeature(r.Context(), tableName, fid, body, crs)
 		if err2 != nil {
+			if strings.Contains(err2.Error(), fmt.Sprintf("SRID (%v)", crs)) {
+				return appErrorBadRequest(err2, api.ErrMsgWrongCrs, crs)
+			}
 			return appErrorInternal(err2, api.ErrMsgReplaceFeature, tableName)
 		}
 
@@ -798,9 +813,15 @@ func handleItem(w http.ResponseWriter, r *http.Request) *appError {
 			return appErrorBadRequest(errChck, "validation error")
 		}
 
+		// retrieve crs
+		crs := r.Header.Get("Content-Crs")
+
 		// perform update in database
-		errUpdate := catalogInstance.PartialUpdateTableFeature(r.Context(), tableName, fid, body)
+		errUpdate := catalogInstance.PartialUpdateTableFeature(r.Context(), tableName, fid, body, crs)
 		if errUpdate != nil {
+			if strings.Contains(errUpdate.Error(), fmt.Sprintf("SRID (%v)", crs)) {
+				return appErrorBadRequest(errUpdate, api.ErrMsgWrongCrs, crs)
+			}
 			return appErrorInternal(errUpdate, api.ErrMsgPartialUpdateFeature, tableName)
 		}
 		w.WriteHeader(http.StatusNoContent)
@@ -836,6 +857,9 @@ func writeItemJSON(ctx context.Context, w http.ResponseWriter, tableName string,
 	//--- query data for request
 	feature, err := catalogInstance.TableFeature(ctx, tableName, fid, param)
 	if err != nil {
+		if strings.Contains(err.Error(), fmt.Sprintf("SRID (%v)", crs)) {
+			return appErrorBadRequest(err, api.ErrMsgWrongCrs, strconv.Itoa(crs))
+		}
 		return appErrorInternal(err, api.ErrMsgDataReadError, tableName)
 	}
 	if feature == nil {

@@ -36,21 +36,21 @@ func (t *DbTests) TestSimpleReplaceFeatureSuccessDb() {
 		header.Add("Accept", api.ContentTypeJSON)
 
 		jsonStr := `{
-		"type": "Feature",
-		"id": "9",
-		"geometry": {
-			"type": "Point",
-			"coordinates": [
-			-120,
-			40
-			]
-		},
-		"properties": {
-			"prop_a": "propA...",
-			"prop_b": 1,
-			"prop_c": "propC..."
-		}
-	}`
+			"type": "Feature",
+			"id": "9",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+				-120,
+				40
+				]
+			},
+			"properties": {
+				"prop_a": "propA...",
+				"prop_b": 1,
+				"prop_c": "propC..."
+			}
+		}`
 
 		hTest.DoRequestMethodStatus(t, "PUT", path, []byte(jsonStr), header, http.StatusNoContent)
 
@@ -138,6 +138,42 @@ func (t *DbTests) TestReplaceComplexFeatureDb() {
 		util.Assert(t, err == nil, fmt.Sprintf("Error marshalling feature into JSON: %v", err))
 
 		_ = hTest.DoRequestMethodStatus(t, "PUT", path, json, header, http.StatusNoContent)
+
+		// check if it can be read
+		checkItem(t, "complex.mock_multi", 100)
+	})
+}
+
+func (t *DbTests) TestReplaceComplexFeatureDbCrs() {
+	t.Test.Run("TestReplaceComplexFeatureDbCrs", func(t *testing.T) {
+		path := "/collections/complex.mock_multi/items/100"
+		var header = make(http.Header)
+		header.Add("Content-Type", api.ContentTypeSchemaPatchJSON)
+		header.Add("Content-Crs", "2154")
+
+		feat := util.MakeGeojsonFeatureMockPoint(100, 657775, 6860705)
+		json, err := json.Marshal(feat)
+		util.Assert(t, err == nil, fmt.Sprintf("Error marshalling feature into JSON: %v", err))
+
+		_ = hTest.DoRequestMethodStatus(t, "PUT", path, json, header, http.StatusNoContent)
+
+		// check if it can be read
+		checkItem(t, "complex.mock_multi", 100)
+	})
+}
+
+func (t *DbTests) TestReplaceComplexFeatureDbWrongCrs() {
+	t.Test.Run("TestReplaceComplexFeatureDbWrongCrs", func(t *testing.T) {
+		path := "/collections/complex.mock_multi/items/100"
+		var header = make(http.Header)
+		header.Add("Content-Type", api.ContentTypeSchemaPatchJSON)
+		header.Add("Content-Crs", "3")
+
+		feat := util.MakeGeojsonFeatureMockPoint(100, 657775, 6860705)
+		json, err := json.Marshal(feat)
+		util.Assert(t, err == nil, fmt.Sprintf("Error marshalling feature into JSON: %v", err))
+
+		_ = hTest.DoRequestMethodStatus(t, "PUT", path, json, header, http.StatusBadRequest)
 
 		// check if it can be read
 		checkItem(t, "complex.mock_multi", 100)

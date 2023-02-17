@@ -53,13 +53,13 @@ type Catalog interface {
 
 	// AddTableFeature returns the id of the new feature created in the table tableName
 	// using the JSON data to create the feature
-	AddTableFeature(ctx context.Context, tableName string, jsonData []byte) (int64, error)
+	AddTableFeature(ctx context.Context, tableName string, jsonData []byte, crs string) (int64, error)
 
 	// PartialUpdateTableFeature updates a table feature with given id with the JSON data
-	PartialUpdateTableFeature(ctx context.Context, tableName string, id string, jsonData []byte) error
+	PartialUpdateTableFeature(ctx context.Context, tableName string, id string, jsonData []byte, crs string) error
 
 	// ReplaceTableFeature replaces a table feature with given id with the new jsonData
-	ReplaceTableFeature(ctx context.Context, tableName string, id string, jsonData []byte) error
+	ReplaceTableFeature(ctx context.Context, tableName string, id string, jsonData []byte, crs string) error
 
 	// DeleteTableFeature returns the status code from the delete operation on the feature which ID is provided
 	DeleteTableFeature(ctx context.Context, tableName string, id string) error

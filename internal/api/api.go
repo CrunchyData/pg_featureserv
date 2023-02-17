@@ -86,6 +86,7 @@ const (
 	ErrMsgNotSupportedFormat             = "Requested format %v not supported"
 	ErrMsgMalformedEtag                  = "Malformed etag detected %v"
 	ErrMsgCacheCleaningFailed            = "Server cache could not be cleaned"
+	ErrMsgWrongCrs                       = "CRS SRID invalid or unknown: %s"
 )
 
 // ==================================================

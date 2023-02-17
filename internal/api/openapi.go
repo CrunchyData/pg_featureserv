@@ -467,6 +467,22 @@ func GetOpenAPIContent(urlBase string) *openapi3.T {
 			AllowEmptyValue: false,
 		},
 	}
+	paramContentCrs := openapi3.ParameterRef{
+		Value: &openapi3.Parameter{
+			Name:        "Content-Crs",
+			Description: "SRID for coordinate reference system of output features.",
+			In:          "header",
+			Required:    false,
+			Schema: &openapi3.SchemaRef{
+				Value: &openapi3.Schema{
+					Type:    "integer",
+					Min:     openapi3.Float64Ptr(1),
+					Default: 4326,
+				},
+			},
+			AllowEmptyValue: false,
+		},
+	}
 	paramLimit := openapi3.ParameterRef{
 		Value: &openapi3.Parameter{
 			Name:        "limit",
@@ -727,8 +743,7 @@ func GetOpenAPIContent(urlBase string) *openapi3.T {
 					OperationID: "createCollectionFeature",
 					Parameters: openapi3.Parameters{
 						&paramCollectionID,
-						// TODO keep it for the next evolution
-						// &paramCrs,
+						&paramContentCrs,
 					},
 					RequestBody: &openapi3.RequestBodyRef{
 						Value: &openapi3.RequestBody{
@@ -837,8 +852,7 @@ func GetOpenAPIContent(urlBase string) *openapi3.T {
 					Parameters: openapi3.Parameters{
 						&paramCollectionID,
 						&paramFeatureID,
-						// TODO keep it for the next evolution
-						// &paramCrs,
+						&paramContentCrs,
 					},
 					RequestBody: &openapi3.RequestBodyRef{
 						Value: &openapi3.RequestBody{
@@ -867,7 +881,7 @@ func GetOpenAPIContent(urlBase string) *openapi3.T {
 						&paramFeatureID,
 						&paramProperties,
 						&paramTransform,
-						&paramCrs,
+						&paramContentCrs,
 					},
 					RequestBody: &openapi3.RequestBodyRef{
 						Value: &openapi3.RequestBody{
