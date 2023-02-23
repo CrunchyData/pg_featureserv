@@ -29,7 +29,7 @@ import (
 )
 
 const sqlTables = `SELECT
-	Format('%s.%s', n.nspname, c.relname) AS id,
+	Format('%I.%I', n.nspname, c.relname) AS id,
 	n.nspname AS schema,
 	c.relname AS table,
 	coalesce(d.description, '') AS description,
@@ -75,7 +75,7 @@ proargs AS (
 		AND array_length(p.proargnames, 1) = array_length(p.proargmodes, 1)
 		AND array_length(p.proargmodes, 1) = array_length(p.proallargtypes, 1)
 		AND has_schema_privilege(n.oid, 'usage')
-		AND has_function_privilege(Format('%s.%s(%s)', n.nspname, p.proname, oidvectortypes(proargtypes)), 'execute')
+		AND has_function_privilege(Format('%I.%I(%s)', n.nspname, p.proname, oidvectortypes(proargtypes)), 'execute')
 ),
 proargarrays AS (
 	SELECT p.oid,
@@ -110,6 +110,7 @@ DECLARE
 		notification json;
 		new_xmin text;
 		old_xmin text;
+		id text;
 BEGIN
 		IF (TG_OP = 'DELETE') THEN
 			data = row_to_json(OLD);
@@ -124,8 +125,12 @@ BEGIN
 			old_xmin = OLD.xmin::text;
 			new_xmin = NEW.xmin::text;
 		END IF;
+
+		id := Format('%%I.%%I', TG_TABLE_SCHEMA, TG_TABLE_NAME);
+
 		-- Contruct the notification as a JSON string.
 		notification = json_build_object(
+						'id', id,
 						'schema',TG_TABLE_SCHEMA,
 						'table',TG_TABLE_NAME,
 						'action', TG_OP,

@@ -46,6 +46,7 @@ type listenerDB struct {
 // event on the databases included in pg_featureserv. It is populated using the return value of
 // the pl/pgSQL procedure named `sqlNotifyFunction` defined in db_sql.go
 type eventNotification struct {
+	Id       string
 	Schema   string                 // schema of the table triggering the event
 	Table    string                 // name of the table triggering the event
 	Action   string                 // action triggering the event (INSERT, UPDATE or DELETE)
@@ -144,7 +145,7 @@ func (listener *listenerDB) listenOneNotification(ctx context.Context) {
 		}
 	}
 	if notificationData.Action == "INSERT" || notificationData.Action == "UPDATE" {
-		collection := fmt.Sprintf(`%s.%s`, notificationData.Schema, notificationData.Table)
+		collection := notificationData.Id
 		// ==== retrieve tabe data
 		table, errCat := CatDBInstance().TableByName(collection)
 		if errCat != nil {
@@ -234,18 +235,17 @@ func (listener *listenerDB) addTriggerToTables() {
 
 func (listener *listenerDB) addTriggerToTable(tbl *api.Table) {
 	dropTriggerBytes := []byte(`
-	DROP TRIGGER IF EXISTS %[1]s_notify_event ON %[2]s;
+	DROP TRIGGER IF EXISTS "%[1]s_notify_event" ON %[2]s;
 	`)
 	triggerBytes := []byte(`
-	CREATE TRIGGER %[1]s_notify_event
+	CREATE TRIGGER "%[1]s_notify_event"
 	AFTER INSERT OR UPDATE OR DELETE ON %[2]s
 	FOR EACH ROW EXECUTE PROCEDURE %[3]s.notify_event();
 	`)
 
 	triggerName := tbl.Schema + "_" + tbl.Table
-	tableName := tbl.Schema + "." + tbl.Table
-	dropTriggerStatement := fmt.Sprintf(string(dropTriggerBytes), triggerName, tableName)
-	triggerStatement := fmt.Sprintf(string(triggerBytes), triggerName, tableName, tempDBSchema)
+	dropTriggerStatement := fmt.Sprintf(string(dropTriggerBytes), triggerName, tbl.ID)
+	triggerStatement := fmt.Sprintf(string(triggerBytes), triggerName, tbl.ID, tempDBSchema)
 	_, errDrop := listener.dbconn.Exec(context.Background(), dropTriggerStatement)
 	if errDrop != nil {
 		log.Fatal(errDrop)
@@ -277,12 +277,11 @@ func (listener *listenerDB) dropTriggers() {
 
 func (listener *listenerDB) dropTrigger(tbl *api.Table) {
 	dropTriggerBytes := []byte(`
-	DROP TRIGGER IF EXISTS %[1]s_notify_event ON %[2]s;
+	DROP TRIGGER IF EXISTS "%[1]s_notify_event" ON %[2]s;
 	`)
 
 	triggerName := tbl.Schema + "_" + tbl.Table
-	tableName := tbl.Schema + "." + tbl.Table
-	dropTriggerStatement := fmt.Sprintf(string(dropTriggerBytes), triggerName, tableName)
+	dropTriggerStatement := fmt.Sprintf(string(dropTriggerBytes), triggerName, tbl.ID)
 
 	_, errDrop := listener.dbconn.Exec(context.Background(), dropTriggerStatement)
 	if errDrop != nil {
