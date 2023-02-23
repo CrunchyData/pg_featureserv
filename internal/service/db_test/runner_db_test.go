@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/url"
 	"os"
 	"strconv"
 	"testing"
@@ -163,6 +164,13 @@ func TestRunnerHandlerDb(t *testing.T) {
 		afterEachRun()
 	})
 
+	t.Run("COMPLEX_SCHEMA", func(t *testing.T) {
+		beforeEachRun()
+		test := DbTests{Test: t}
+		test.TestUpdateComplexSchemaName()
+		afterEachRun()
+	})
+
 	// after tests cleaning
 	afterRun()
 }
@@ -198,7 +206,7 @@ func afterEachRun() {
 // Check if item is available and is not empty
 // (copy from service/handler_test.go)
 func checkItem(t *testing.T, tableName string, id int) []byte {
-	path := fmt.Sprintf("/collections/%v/items/%d", tableName, id)
+	path := fmt.Sprintf("/collections/%v/items/%d", url.QueryEscape(tableName), id)
 	resp := hTest.DoRequest(t, path)
 	body, _ := ioutil.ReadAll(resp.Body)
 

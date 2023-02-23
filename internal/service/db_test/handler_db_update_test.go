@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"testing"
 
 	"github.com/CrunchyData/pg_featureserv/internal/api"
@@ -197,5 +198,40 @@ func (t *DbTests) TesUpdateComplexFeatureDbWrongCrs() {
 
 		// check if it can be read
 		checkItem(t, "complex.mock_multi", 100)
+	})
+}
+
+func (t *DbTests) TestUpdateComplexSchemaName() {
+	t.Test.Run("TestUpdateComplexSchemaName", func(t *testing.T) {
+		path := url.QueryEscape(fmt.Sprintf(`/collections/%s.mock_ssimple/items/3`, util.SpecialSchemaStr))
+		var header = make(http.Header)
+		header.Add("Content-Type", api.ContentTypeSchemaPatchJSON)
+
+		jsonStr := `{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+				-120,
+				40
+				]
+			}
+		}`
+
+		_ = hTest.DoRequestMethodStatus(t, "PATCH", path, []byte(jsonStr), header, http.StatusNoContent)
+
+		// check if it can be read
+		feature := checkItem(t, fmt.Sprintf(`%s.mock_ssimple`, util.SpecialSchemaStr), 3)
+		var jsonData map[string]interface{}
+		errUnMarsh := json.Unmarshal(feature, &jsonData)
+		util.Assert(t, errUnMarsh == nil, fmt.Sprintf("%v", errUnMarsh))
+
+		util.Equals(t, "3", jsonData["id"].(string), "feature ID")
+		util.Equals(t, "Feature", jsonData["type"].(string), "feature Type")
+		geom := jsonData["geometry"].(map[string]interface{})
+		util.Equals(t, "Point", geom["type"].(string), "feature Type")
+		coordinate := geom["coordinates"].([]interface{})
+		util.Equals(t, -120, int(coordinate[0].(float64)), "feature latitude")
+		util.Equals(t, 40, int(coordinate[1].(float64)), "feature longitude")
 	})
 }

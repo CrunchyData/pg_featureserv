@@ -33,6 +33,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const SpecialSchemaStr = `"😀.$^{schema}"`
+
 func CreateTestDb() *pgxpool.Pool {
 	dbURL := os.Getenv(conf.AppConfig.EnvDBURL)
 	if dbURL == "" {
@@ -58,9 +60,11 @@ func CreateTestDb() *pgxpool.Pool {
 	log.Debugf("Connected as %s to %s @ %s", dbUser, dbName, dbHost)
 
 	CreateSchema(db, "complex")
+	CreateSchema(db, SpecialSchemaStr)
 	InsertSimpleDataset(db, "public")
 	InsertSuperSimpleDataset(db, "public")
 	InsertComplexDataset(db, "complex")
+	InsertSuperSimpleDataset(db, SpecialSchemaStr)
 
 	log.Debugf("Sample data injected")
 
@@ -284,7 +288,7 @@ func InsertComplexDataset(db *pgxpool.Pool, schema string) {
 func CloseTestDb(db *pgxpool.Pool) {
 	log.Debugf("Sample dbs will be cleared...")
 	var sql string
-	for _, t := range []string{"public.mock_a", "public.mock_b", "public.mock_c", "complex.mock_multi"} {
+	for _, t := range []string{"public.mock_a", "public.mock_b", "public.mock_c", "complex.mock_multi", fmt.Sprintf(`%s.mock_ssimple`, SpecialSchemaStr)} {
 		sql = fmt.Sprintf("%s DROP TABLE IF EXISTS %s CASCADE;", sql, t)
 	}
 	_, errExec := db.Exec(context.Background(), sql)
