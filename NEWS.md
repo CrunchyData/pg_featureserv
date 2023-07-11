@@ -1,7 +1,7 @@
 # pg_featureserv Version History
 
 ## Version 1.3
-*Released: TBD*
+*Released: 2023 July 10*
 
 ### New Features
 
