@@ -89,6 +89,11 @@ func TestArithmetic(t *testing.T) {
 	checkCQL(t, "p = 'a' || x || 'b'", "\"p\" = 'a' || \"x\" || 'b'")
 }
 
+func TestLiteral(t *testing.T) {
+	checkCQL(t, "p > 1.0E+1", "\"p\" > 1.0E+1")
+	checkCQL(t, "p > 1.0e+1", "\"p\" > 1.0e+1")
+}
+
 func TestGeometryLiteral(t *testing.T) {
 	checkCQL(t, "equals(geom, POINT(0 0))",
 		"ST_Equals(\"geom\",'SRID=4326;POINT(0 0)'::geometry)")

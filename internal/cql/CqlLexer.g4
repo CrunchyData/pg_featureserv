@@ -167,7 +167,7 @@ UnsignedNumericLiteral : ExactNumericLiteral | ApproximateNumericLiteral;
 SignedNumericLiteral : (Sign)? ExactNumericLiteral | ApproximateNumericLiteral;
 ExactNumericLiteral : UnsignedInteger  (PERIOD (UnsignedInteger)? )?
                         |  PERIOD UnsignedInteger;
-ApproximateNumericLiteral : Mantissa 'E' Exponent;
+ApproximateNumericLiteral : Mantissa ('E' | 'e') Exponent;
 Mantissa : ExactNumericLiteral;
 Exponent : SignedInteger;
 SignedInteger : (Sign)? UnsignedInteger;

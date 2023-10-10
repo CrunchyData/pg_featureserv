@@ -13,6 +13,8 @@ package cql
  limitations under the License.
 */
 
+// Build grammar with: antlr -Dlanguage=Go -package cql CqlLexer.g4 CQLParser.g4 
+
 import (
 	"fmt"
 	"strings"
