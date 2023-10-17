@@ -70,7 +70,7 @@ Produces a dataset of items from the collection (as GeoJSON)
 Path: `/collections/{cid}/items`
 
 ### Parameters
-* `bbox=mix,miny,maxx,maxy` - filter features in response to ones intersecting a bounding box (in lon/lat or specified CRS).
+* `bbox=minx,miny,maxx,maxy` - filter features in response to ones intersecting a bounding box (in lon/lat or specified CRS).
 * `bbox-crs=SRID` - specify CRS for the `bbox` coordinates
 * `<propname>=val` - filter features for a property having a value.
   Multiple property filters are ANDed together.
@@ -157,7 +157,7 @@ Path: `/functions/{fid}/items`
 * `limit=N` - limits the number of features in the response
 * `offset=N` - starts the response at the given offset
 * `sortby=[+|-]PROP` - sort the response items by a property (ascending (default) or descending).
-* `bbox=mix,miny,maxx,maxy` - filter features in response to ones intersecting given bounding box (in lon/lat, for now)
+* `bbox=minx,miny,maxx,maxy` - filter features in response to ones intersecting given bounding box (in lon/lat, for now)
 * `properties=PROP-LIST`- return only the given properties (comma-separated)
 * `precision=N` - set precision of GeoJSON ordinates to use N decimal places
 * `transform` - transform the feature geometry by the given geometry function pipeline
