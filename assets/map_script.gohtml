@@ -117,40 +117,70 @@
 var SHOW_FEATURE_LINK = {{ .context.ShowFeatureLink }};
 var BASEMAP_URL = "{{ .config.Website.BasemapUrl }}";
 
-var vectorLayer = new ol.layer.Vector({
-	source: new ol.source.Vector({
-	  url: DATA_URL,
-	  format: new ol.format.GeoJSON()
-	}),
-	style: styleFunction
-  });
-var map = new ol.Map({
-	layers: [
-		new ol.layer.Tile({
-			source: new ol.source.OSM({
-				"url" : BASEMAP_URL
-			})
-		}),
-	],
-	target: 'map',
-	controls: ol.control.defaults({	attribution: false }),
-	view: new ol.View({
-		center: [0,0],
-		zoom: 10
-	})
-});
-map.addLayer(vectorLayer);
+var map
+var vectorLayer
 
-map.once('rendercomplete', function(event) {
-	zoomLayer(vectorLayer);
-	onMapLoad();
-});
-map.on('pointermove', (evt) => {
+// we download the data first to be able to set the correct
+// extent of the map right at the start
+var xhr = new XMLHttpRequest();
+xhr.open('GET', DATA_URL, true);
+xhr.responseType = 'json';
+xhr.onload = function() {
+  if (xhr.status === 200) {
+    var result = xhr.response;
+    initMap(result);
+  } else {
+    var error = 'Loading feature(s) failed\n' + xhr.statusText;
+    alert(error);
+    console.error(error);
+  }
+};
+xhr.send();
+
+function initMap(geojson) {
+    const olFeatures = new ol.format.GeoJSON().readFeatures(
+        geojson,
+        {
+            featureProjection: 'EPSG:3857'
+        }
+    )
+    const vectorSource =  new ol.source.Vector({
+        features: olFeatures,
+    })
+
+    vectorLayer = new ol.layer.Vector({
+        source: vectorSource,
+        style: styleFunction
+    });
+
+    const extent = vectorSource.getExtent()
+
+    map = new ol.Map({
+        layers: [
+            new ol.layer.Tile({
+                source: new ol.source.OSM({
+                    "url" : BASEMAP_URL
+                })
+            }),
+            vectorLayer
+        ],
+        target: 'map',
+        controls: ol.control.defaults({ attribution: false }),
+    });
+
+    zoomExtent(extent)
+
+    map.once('rendercomplete', function(event) {
+        onMapLoad();
+    });
+    map.on('pointermove', (evt) => {
         let ptGeo = ol.proj.transform(evt.coordinate, 'EPSG:3857', 'EPSG:4326');
         let pFormat = ol.coordinate.toStringXY(ptGeo, 4);
         let divPos = document.getElementById('map-mousepos');
         divPos.innerHTML = pFormat + '  : ' + map.getView().getZoom().toFixed(0) ;
     });
+}
+
 function onFeatureClick(evt) {
 	var features = map.getFeaturesAtPixel(evt.pixel);
 	var loc = evt.coordinate;
@@ -166,9 +196,12 @@ function zoomLayer(lyr) {
 	zoomExtent( lyr.getSource().getExtent() );
 }
 function zoomExtent(extent) {
-	let sz = Math.max( ol.extent.getWidth(extent), ol.extent.getHeight(extent) );
-	let zoomext = ol.extent.buffer( extent,  0.2 * sz);
-    map.getView().fit(zoomext, map.getSize());
+    map.getView().fit(
+        extent,
+        {
+          padding: [100, 100, 100, 100]
+        }
+    );
 }
 function extentGeo() {
 	var extent = map.getView().calculateExtent(map.getSize());
