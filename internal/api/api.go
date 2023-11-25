@@ -483,6 +483,7 @@ var conformance = Conformance{
 		"http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/collections",
 		"http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/simple-query",
 		"http://www.opengis.net/spec/ogcapi-features-4/1.0/conf/create-replace-delete",
+		"http://www.opengis.net/spec/ogcapi-features-4/1.0/conf/update",
 		"http://www.opengis.net/spec/ogcapi-features-4/1.0/conf/features",
 	},
 }

@@ -141,6 +141,15 @@ Content: JSON document representing a geojson feature.
 #### Response
 Empty response with 200 HTTP Status Code.
 
+### PATCH
+Update one collection feature.
+#### Request
+Path: `/collections/{cid}/items/{fid}`
+Content: JSON document representing a geojson feature.
+
+#### Response
+Empty response with 200 HTTP Status Code.
+
 ### DELETE
 Delete one collection feature.
 

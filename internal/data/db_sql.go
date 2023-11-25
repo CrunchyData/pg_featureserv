@@ -267,6 +267,27 @@ func sqlReplaceFeature(tbl *Table, id string, feature Feature) (string, []interf
 	return sql, columnValues, nil
 }
 
+func sqlUpdateFeature(tbl *Table, id string, feature Feature) (string, []interface{}, error) {
+	columnNames, columnIndex, columnValues := getColumnValues(tbl, feature, true)
+
+	geomSQL := buildGeometrySQL(tbl)
+	setClause := buildUpdateSetClause(columnNames, columnIndex)
+
+	sql := fmt.Sprintf("UPDATE \"%s\".\"%s\" SET %s=%v%s WHERE \"%v\" = $%v;", tbl.Schema, tbl.Table, tbl.GeometryColumn, geomSQL, setClause, tbl.IDColumn, len(tbl.Columns)+2)
+
+	var err error
+	argValues := make([]interface{}, len(columnValues)+2)
+	argValues[0], err = json.Marshal(feature.Geometry)
+	if err != nil {
+		return "", nil, err
+	}
+
+	copy(argValues[1:], columnValues)
+	argValues[len(columnValues)+1] = id
+
+	return sql, argValues, nil
+}
+
 func sqlDeleteFeature(tbl *Table, id string) (string, []interface{}) {
 	sql := fmt.Sprintf("DELETE FROM \"%s\".\"%s\" WHERE \"%v\" = $1;", tbl.Schema, tbl.Table, tbl.IDColumn)
 	argValues := make([]interface{}, 1)
