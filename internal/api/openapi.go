@@ -355,10 +355,36 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 						},
 					},
 				},
+				Post: &openapi3.Operation{
+					OperationID: "createCollectionFeature",
+					Parameters: openapi3.Parameters{
+						&paramCollectionID,
+					},
+					RequestBody: &openapi3.RequestBodyRef{
+						Value: &openapi3.RequestBody{
+							Description: "Feature",
+							Required:    true,
+							/*
+								// TODO: create schema for input?
+								Content: openapi3.NewContentWithJSONSchemaRef(
+									&openapi3.SchemaRef{
+										Ref: "http://geojson.org/schema/Feature.json",
+									},
+								),
+							*/
+						},
+					},
+					Responses: openapi3.Responses{
+						"201": &openapi3.ResponseRef{
+							Value: &openapi3.Response{
+								Description: "Created"},
+						},
+					},
+				},
 			},
 			apiBase + "collections/{collectionId}/items/{featureId}": &openapi3.PathItem{
-				Summary:     "Single feature data from collection",
-				Description: "Provides access to a single feature identitfied by {featureId} from the specified collection",
+				Summary:     "Feature in collection",
+				Description: "Gets, Replaces or Deletes Single Feature in collection.",
 				Get: &openapi3.Operation{
 					OperationID: "getCollectionFeature",
 					Parameters: openapi3.Parameters{
@@ -390,6 +416,64 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 									),
 								*/
 							},
+						},
+					},
+				},
+				Put: &openapi3.Operation{
+					OperationID: "replaceCollectionFeature",
+					Parameters: openapi3.Parameters{
+						&paramCollectionID,
+						&openapi3.ParameterRef{
+							Value: &openapi3.Parameter{
+								Name:            "featureId",
+								Description:     "ID of feature in collection to replace.",
+								In:              "path",
+								Required:        true,
+								Schema:          &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+								AllowEmptyValue: false,
+							},
+						},
+					},
+					RequestBody: &openapi3.RequestBodyRef{
+						Value: &openapi3.RequestBody{
+							Description: "Feature",
+							Required:    true,
+							/*
+								// TODO: create schema for input?
+								Content: openapi3.NewContentWithJSONSchemaRef(
+									&openapi3.SchemaRef{
+										Ref: "http://geojson.org/schema/Feature.json",
+									},
+								),
+							*/
+						},
+					},
+					Responses: openapi3.Responses{
+						"204": &openapi3.ResponseRef{
+							Value: &openapi3.Response{
+								Description: "No Content"},
+						},
+					},
+				},
+				Delete: &openapi3.Operation{
+					OperationID: "deleteCollectionFeature",
+					Parameters: openapi3.Parameters{
+						&paramCollectionID,
+						&openapi3.ParameterRef{
+							Value: &openapi3.Parameter{
+								Name:            "featureId",
+								Description:     "ID of feature in collection to delete.",
+								In:              "path",
+								Required:        true,
+								Schema:          &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+								AllowEmptyValue: false,
+							},
+						},
+					},
+					Responses: openapi3.Responses{
+						"204": &openapi3.ResponseRef{
+							Value: &openapi3.Response{
+								Description: "No Content"},
 						},
 					},
 				},

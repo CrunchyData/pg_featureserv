@@ -5,6 +5,7 @@
 * [OGC API for Features version 1.0](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html)
 * [OGC API - Features - Part 3: Filtering and the Common Query Language (CQL)](https://portal.ogc.org/files/96288)
 * [OpenAPI Specifcation version 3.0.2](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md)
+* [OGC API - Features - Part 4: Create, Replace, Update and Delete](https://docs.ogc.org/DRAFTS/20-002.html)
 
 ## Notes
 
@@ -63,10 +64,12 @@ JSON document containing feature collection metadata.
 * items - `/collections/{cid}/items.html` - Features as HTML
 
 ## Features
+Access to features in a collection.
 
+### GET
 Produces a dataset of items from the collection (as GeoJSON)
 
-### Request
+#### Request
 Path: `/collections/{cid}/items`
 
 ### Parameters
@@ -88,7 +91,7 @@ Usually used with an aggregate `transform` function.
 * `limit=N` - limits the number of features in the response.
 * `offset=N` - starts the response at an offset.
 
-### Response
+#### Response
 
 GeoJSON document containing the features resulting from the request query.
 
@@ -99,21 +102,53 @@ GeoJSON document containing the features resulting from the request query.
 * next - TBD
 * prev - TBD
 
-## Feature
+### POST
+Create a feature in collection.
 
-### Request
+#### Request
+Path: `/collections/{cid}/items`
+Content: JSON document representing a geojson feature.
+
+#### Response
+Empty response with 201 HTTP Status Code.
+
+## Feature
+Provides access to one collection feature.
+
+### GET
+Get one collection feature.
+
+#### Request
 Path: `/collections/{cid}/items/{fid}`
 
-#### Parameters
+##### Parameters
 * `properties=PROP-LIST`- return only the given properties (comma-separated)
 * `transform` - transform the feature geometry by the given geometry function pipeline
 
-### Response
+#### Response
 
-#### Links
+##### Links
 * self - `/collections/{cid}/items/{fid}.json` - This document as JSON
 * alternate - `/collections/{cid}/items/{fid}.html` - This document as HTML
 * collection - `/collections/{cid}` - The collection document
+
+### PUT
+Replace one collection feature.
+#### Request
+Path: `/collections/{cid}/items/{fid}`
+Content: JSON document representing a geojson feature.
+
+#### Response
+Empty response with 200 HTTP Status Code.
+
+### DELETE
+Delete one collection feature.
+
+#### Request
+Path: `/collections/{cid}/items/{fid}`
+
+#### Response
+Empty response with 200 HTTP Status Code.
 
 ## Functions
 

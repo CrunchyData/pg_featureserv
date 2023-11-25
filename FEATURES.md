@@ -87,13 +87,20 @@ It includes [*OGC API - Features*](http://docs.opengeospatial.org/is/17-069r3/17
 
 ### Output formats
 - [x] GeoJSON
+- [ ] GML
 - [x] JSON for metadata
 - [x] JSON for non-geometry functions
 - [ ] `next` link
 - [ ] `prev` link
 
+### Input formats
+- [x] GeoJSON
+- [ ] GML
+
 ### Transactions
-- [ ] Support POST, PUT, PATCH, DELETE...  TBD
+- [X] Support POST, PUT, DELETE on tables with primary key
+- [ ] Support PATCH...  TBD
+- [ ] Support Optimistic locking
 
 ## User Interface (HTML)
 - [x] `/home.html` landing page

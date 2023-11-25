@@ -17,7 +17,9 @@ See also our companion project [`pg_tileserv`](https://github.com/CrunchyData/pg
   * Standard query parameters: `limit`, `bbox`, `bbox-crs`, property filtering, `sortby`, `crs`
   * Query parameters `filter` and `filter-crs` allow [CQL filtering](https://portal.ogc.org/files/96288), with spatial support
   * Extended query parameters: `offset`, `properties`, `transform`, `precision`, `groupby`
+  * Transactions (Create, Replace, Delete)
 * Data responses are formatted in JSON and [GeoJSON](https://www.rfc-editor.org/rfc/rfc7946.txt)
+* Request content for transactions supports [GeoJSON](https://www.rfc-editor.org/rfc/rfc7946.txt) 
 * Provides a simple HTML user interface, with web maps to view spatial data
 * Uses the power of PostgreSQL to reduce the amount of code
   and to make data definition easy and familiar.
@@ -46,6 +48,8 @@ For a full list of software capabilities see [FEATURES](FEATURES.md).
 * [*OGC API - Features - Part 2: Coordinate Reference Systems by Reference*](https://docs.ogc.org/is/18-058/18-058.html)
 * [**DRAFT** *OGC API - Features - Part 3: Filtering*](http://docs.ogc.org/DRAFTS/19-079r1.html)
 * [**DRAFT** *Common Query Language (CQL2)*](https://docs.ogc.org/DRAFTS/21-065.html)
+* [**DRAFT** *OGC API - Features - Part 4: Create, Replace, Update and Delete*](https://docs.ogc.org/DRAFTS/20-002.html)
+
 * [*GeoJSON*](https://www.rfc-editor.org/rfc/rfc7946.txt)
 
 ## Download

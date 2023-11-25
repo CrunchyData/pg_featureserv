@@ -1,6 +1,7 @@
 package data
 
 import (
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
@@ -22,7 +23,6 @@ import (
 */
 
 const forceTextTSVECTOR = "tsvector"
-
 const sqlTables = `SELECT
 	Format('%s.%s', n.nspname, c.relname) AS id,
 	n.nspname AS schema,
@@ -57,6 +57,7 @@ AND has_table_privilege(c.oid, 'select')
 AND postgis_typmod_srid(a.atttypmod) > 0
 ORDER BY id
 `
+
 const sqlFunctionsTemplate = `WITH
 proargs AS (
 	SELECT p.oid,
@@ -189,6 +190,89 @@ func sqlFeature(tbl *Table, param *QueryParam) string {
 	propCols := sqlColList(param.Columns, tbl.DbTypes, true)
 	sql := fmt.Sprintf(sqlFmtFeature, geomCol, propCols, tbl.Schema, tbl.Table, tbl.IDColumn)
 	return sql
+}
+
+func getColumnValues(tbl *Table, feature Feature, includeOnlySetProperties bool) ([]string, []string, []interface{}) {
+	var columnNames, columnIndex []string
+	var columnValues []interface{}
+	var i = 2
+
+	for _, column := range tbl.Columns {
+		val, ok := feature.Properties[column]
+
+		if !includeOnlySetProperties || (ok && val != nil) {
+			columnNames = append(columnNames, column)
+			columnIndex = append(columnIndex, fmt.Sprintf("$%v", i))
+			columnValues = append(columnValues, val)
+			i++
+		}
+	}
+
+	return columnNames, columnIndex, columnValues
+}
+
+func buildGeometrySQL(tbl *Table) string {
+	if len(tbl.Columns) > 0 {
+		return fmt.Sprintf("ST_Transform(ST_GeomFromGeoJSON($1),%v)", tbl.Srid)
+	}
+	return fmt.Sprintf("ST_Transform(ST_GeomFromGeoJSON($1),%v)", tbl.Srid)
+}
+
+func buildUpdateSetClause(columnNames []string, columnIndex []string) string {
+	var setClause string
+	for index := 0; index < len(columnNames); index++ {
+		setClause += fmt.Sprintf(", %s=%s", columnNames[index], columnIndex[index])
+	}
+	return setClause
+}
+
+func sqlCreateFeature(tbl *Table, feature Feature) (string, []interface{}, error) {
+	columnNames, columnIndex, columnValues := getColumnValues(tbl, feature, true)
+
+	columnNamesStr := strings.Join(columnNames, ",")
+	columnIndexStr := strings.Join(columnIndex, ",")
+	geomSQL := buildGeometrySQL(tbl)
+
+	sql := fmt.Sprintf("INSERT INTO \"%s\".\"%s\" (%s, %s) VALUES (%s, %v);", tbl.Schema, tbl.Table, columnNamesStr, tbl.GeometryColumn, columnIndexStr, geomSQL)
+
+	var err error
+	argValues := make([]interface{}, len(columnValues)+1)
+	argValues[0], err = json.Marshal(feature.Geometry)
+	if err != nil {
+		return "", nil, err
+	}
+
+	copy(argValues[1:], columnValues)
+
+	return sql, argValues, nil
+}
+
+func sqlReplaceFeature(tbl *Table, id string, feature Feature) (string, []interface{}, error) {
+	columnNames, columnIndex, columnValues := getColumnValues(tbl, feature, false)
+
+	geomSQL := buildGeometrySQL(tbl)
+	setClause := buildUpdateSetClause(columnNames, columnIndex)
+
+	sql := fmt.Sprintf("UPDATE \"%s\".\"%s\" SET %s=%v%s WHERE \"%v\" = $%v;", tbl.Schema, tbl.Table, tbl.GeometryColumn, geomSQL, setClause, tbl.IDColumn, len(tbl.Columns)+2)
+
+	var err error
+	argValues := make([]interface{}, len(columnValues)+2)
+	argValues[0], err = json.Marshal(feature.Geometry)
+	if err != nil {
+		return "", nil, err
+	}
+
+	copy(argValues[1:], columnValues)
+	argValues[len(columnValues)+1] = id
+
+	return sql, argValues, nil
+}
+
+func sqlDeleteFeature(tbl *Table, id string) (string, []interface{}) {
+	sql := fmt.Sprintf("DELETE FROM \"%s\".\"%s\" WHERE \"%v\" = $1;", tbl.Schema, tbl.Table, tbl.IDColumn)
+	argValues := make([]interface{}, 1)
+	argValues[0] = id
+	return sql, argValues
 }
 
 func sqlCqlFilter(sql string) string {

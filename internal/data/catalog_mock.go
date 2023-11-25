@@ -242,6 +242,18 @@ func (cat *CatalogMock) TableFeature(ctx context.Context, name string, id string
 	return features[index].toJSON(propNames), nil
 }
 
+func (cat *CatalogMock) CreateTableFeature(ctx context.Context, name string, feature Feature) error {
+	return nil
+}
+
+func (cat *CatalogMock) ReplaceTableFeature(ctx context.Context, name string, id string, feature Feature) error {
+	return nil
+}
+
+func (cat *CatalogMock) DeleteTableFeature(ctx context.Context, name string, id string) error {
+	return nil
+}
+
 func (cat *CatalogMock) Functions() ([]*Function, error) {
 	return cat.FunctionDefs, nil
 }

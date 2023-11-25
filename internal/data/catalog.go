@@ -47,6 +47,15 @@ type Catalog interface {
 	// It returns an empty string if the table or feature does not exist
 	TableFeature(ctx context.Context, name string, id string, param *QueryParam) (string, error)
 
+	// ReplaceTableFeature replaces a feature
+	ReplaceTableFeature(ctx context.Context, name string, id string, feature Feature) error
+
+	// CreateTableFeature creates a feature
+	CreateTableFeature(ctx context.Context, name string, feature Feature) error
+
+	// DeleteTableFeature deletes a feature
+	DeleteTableFeature(ctx context.Context, name string, id string) error
+
 	Functions() ([]*Function, error)
 
 	// FunctionByName returns the function with given name.
@@ -162,4 +171,18 @@ func FunctionQualifiedId(name string) string {
 		return name
 	}
 	return SchemaPostGISFTW + "." + name
+}
+
+type Geometry struct {
+	Type        string                 `json:"type"`
+	Coordinates interface{}            `json:"coordinates"`
+	CRS         map[string]interface{} `json:"crs,omitempty"`
+}
+
+// A Feature corresponds to GeoJSON feature object
+type Feature struct {
+	ID         interface{}            `json:"id,omitempty"`
+	Type       string                 `json:"type"`
+	Geometry   *Geometry              `json:"geometry"`
+	Properties map[string]interface{} `json:"properties"`
 }
