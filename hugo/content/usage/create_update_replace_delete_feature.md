@@ -21,6 +21,20 @@ The id specified in the body is ignored and the database default value is used t
 ```
 curl -i --request "POST" 'http://localhost:9000/collections/public.tramway_stations/items' -d '{"type":"Feature","id":"129","geometry":{"type":"Point","coordinates":[-71.222868058,46.836016945,0]},"properties":{"description":null,"diffusion":"Publique","niveau_rstc":"Tramway","nom":"Hôpital Enfant-Jésus","objectid":129,"type_station":"Reguliere"}}'
 ```
+## Update feature
+
+PATCH query to the path `/collections/{collid}/items/{fid}` allows to update
+a feature in a feature collection.
+
+The geojson feature must be part of the request body. 
+If the geometry geometry crs is different from the storage crs, the geometry will be transformed.
+Missing properties will not be updated.
+The id specified in the body is ignored.
+
+#### Example
+```
+curl -i --request "PUT" 'http://localhost:9000/collections/public.tramway_stations/items/129.json' -d '{"type":"Feature","id":"129","geometry":{"type":"Point","coordinates":[-71.222868058,46.836016945,0]},"properties":{"description":null,"diffusion":"Publique","niveau_rstc":"Tramway","nom":"Hôpital Enfant-Jésus","objectid":129,"type_station":"Reguliere"}}'
+```
 
 ## Replace feature
 

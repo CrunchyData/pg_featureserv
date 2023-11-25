@@ -270,6 +270,24 @@ func (cat *catalogDB) ReplaceTableFeature(ctx context.Context, name string, id s
 	return nil
 }
 
+func (cat *catalogDB) UpdateTableFeature(ctx context.Context, name string, id string, feature Feature) error {
+	tbl, err := cat.TableByName(name)
+	if err != nil {
+		return err
+	}
+	sql, argValues, err := sqlUpdateFeature(tbl, id, feature)
+	log.Debug("Update feature query: " + sql)
+	result, err := cat.dbconn.Exec(ctx, sql, argValues...)
+	if err != nil {
+		return err
+	}
+	rows := result.RowsAffected()
+	if rows != 1 {
+		return fmt.Errorf("expected to affect 1 row, affected %d", rows)
+	}
+	return nil
+}
+
 func (cat *catalogDB) DeleteTableFeature(ctx context.Context, name string, id string) error {
 	tbl, err := cat.TableByName(name)
 	if err != nil {

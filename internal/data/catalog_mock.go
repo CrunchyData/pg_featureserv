@@ -250,6 +250,10 @@ func (cat *CatalogMock) ReplaceTableFeature(ctx context.Context, name string, id
 	return nil
 }
 
+func (cat *CatalogMock) UpdateTableFeature(ctx context.Context, name string, id string, feature Feature) error {
+	return nil
+}
+
 func (cat *CatalogMock) DeleteTableFeature(ctx context.Context, name string, id string) error {
 	return nil
 }

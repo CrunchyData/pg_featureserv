@@ -419,6 +419,20 @@ func handleItem(w http.ResponseWriter, r *http.Request) *appError {
 		catalogInstance.ReplaceTableFeature(ctx, name, fid, inputFeature)
 		w.WriteHeader(http.StatusNoContent)
 		return nil
+	case http.MethodPatch:
+		body, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			return appErrorInternalFmt(err, api.ErrMsgInvalidQuery)
+		}
+		print(body)
+		var inputFeature data.Feature
+		err = json.Unmarshal([]byte(body), &inputFeature)
+		if err != nil {
+			return appErrorInternalFmt(err, api.ErrMsgInvalidQuery)
+		}
+		catalogInstance.UpdateTableFeature(ctx, name, fid, inputFeature)
+		w.WriteHeader(http.StatusNoContent)
+		return nil
 	case http.MethodDelete:
 		err := catalogInstance.DeleteTableFeature(ctx, name, fid)
 		if err != nil {

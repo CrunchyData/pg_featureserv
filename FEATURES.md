@@ -98,8 +98,7 @@ It includes [*OGC API - Features*](http://docs.opengeospatial.org/is/17-069r3/17
 - [ ] GML
 
 ### Transactions
-- [X] Support POST, PUT, DELETE on tables with primary key
-- [ ] Support PATCH...  TBD
+- [X] Support POST, PUT, PATCH, DELETE on tables with primary key
 - [ ] Support Optimistic locking
 
 ## User Interface (HTML)
