@@ -293,17 +293,25 @@ func handleCollectionItems(w http.ResponseWriter, r *http.Request) *appError {
 		}
 		return nil
 	case http.MethodPost:
+		if format != "json" {
+			return appErrorInternalFmt(nil, api.ErrMsgInvalidQuery)
+		}
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			return appErrorInternalFmt(err, api.ErrMsgInvalidQuery)
 		}
-		print(body)
 		var feature data.Feature
 		err = json.Unmarshal([]byte(body), &feature)
 		if err != nil {
 			return appErrorInternalFmt(err, api.ErrMsgInvalidQuery)
 		}
-		catalogInstance.CreateTableFeature(ctx, name, feature)
+		var featureId string
+		featureId, err = catalogInstance.CreateTableFeature(ctx, name, feature)
+		if err != nil {
+			return appErrorInternalFmt(err, api.ErrMsgInvalidQuery)
+		}
+		urlBase := serveURLBase(r)
+		w.Header().Set("Location", urlBase+"collections/"+name+"/items/"+featureId+".json")
 		w.WriteHeader(http.StatusCreated)
 		return nil
 
@@ -406,11 +414,13 @@ func handleItem(w http.ResponseWriter, r *http.Request) *appError {
 			return appErrorInternalFmt(errQuery, api.ErrMsgInvalidQuery)
 		}
 	case http.MethodPut:
+		if format != "json" {
+			return appErrorInternalFmt(nil, api.ErrMsgInvalidQuery)
+		}
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			return appErrorInternalFmt(err, api.ErrMsgInvalidQuery)
 		}
-		print(body)
 		var inputFeature data.Feature
 		err = json.Unmarshal([]byte(body), &inputFeature)
 		if err != nil {

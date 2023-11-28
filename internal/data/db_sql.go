@@ -192,11 +192,31 @@ func sqlFeature(tbl *Table, param *QueryParam) string {
 	return sql
 }
 
-func getColumnValues(tbl *Table, feature Feature, includeOnlySetProperties bool) ([]string, []string, []interface{}) {
+func getColumnValues(tbl *Table, feature Feature, includeOnlySetProperties bool) ([]string, []string, []interface{}, error) {
 	var columnNames, columnIndex []string
 	var columnValues []interface{}
-	var i = 2
+	var i = 1
 
+	var geometryStr []byte
+	if feature.Geometry != nil {
+		var err error
+		geometryStr, err = json.Marshal(feature.Geometry)
+		if err != nil {
+			return nil, nil, nil, err
+		}
+	}
+
+	if feature.Geometry != nil {
+		columnNames = append(columnNames, tbl.GeometryColumn)
+		columnIndex = append(columnIndex, fmt.Sprintf("ST_Transform(ST_GeomFromGeoJSON($%v),%v)", i, tbl.Srid))
+		columnValues = append(columnValues, geometryStr)
+		i++
+	} else if !includeOnlySetProperties {
+		columnNames = append(columnNames, tbl.GeometryColumn)
+		columnIndex = append(columnIndex, fmt.Sprintf("$%v", i))
+		columnValues = append(columnValues, feature.Geometry)
+		i++
+	}
 	for _, column := range tbl.Columns {
 		val, ok := feature.Properties[column]
 
@@ -208,14 +228,7 @@ func getColumnValues(tbl *Table, feature Feature, includeOnlySetProperties bool)
 		}
 	}
 
-	return columnNames, columnIndex, columnValues
-}
-
-func buildGeometrySQL(tbl *Table) string {
-	if len(tbl.Columns) > 0 {
-		return fmt.Sprintf("ST_Transform(ST_GeomFromGeoJSON($1),%v)", tbl.Srid)
-	}
-	return fmt.Sprintf("ST_Transform(ST_GeomFromGeoJSON($1),%v)", tbl.Srid)
+	return columnNames, columnIndex, columnValues, nil
 }
 
 func buildUpdateSetClause(columnNames []string, columnIndex []string) string {
@@ -227,45 +240,31 @@ func buildUpdateSetClause(columnNames []string, columnIndex []string) string {
 }
 
 func sqlCreateFeature(tbl *Table, feature Feature) (string, []interface{}, error) {
-	columnNames, columnIndex, columnValues := getColumnValues(tbl, feature, true)
+	columnNames, columnIndex, columnValues, err := getColumnValues(tbl, feature, true)
+	if err != nil {
+		return "", nil, err
+	}
 
 	columnNamesStr := strings.Join(columnNames, ",")
 	columnIndexStr := strings.Join(columnIndex, ",")
-	geomSQL := buildGeometrySQL(tbl)
 
-	sql := fmt.Sprintf("INSERT INTO \"%s\".\"%s\" (%s, %s) VALUES (%s, %v);", tbl.Schema, tbl.Table, columnNamesStr, tbl.GeometryColumn, columnIndexStr, geomSQL)
+	sql := fmt.Sprintf("INSERT INTO \"%s\".\"%s\" (%s) VALUES (%s) RETURNING %s::varchar;", tbl.Schema, tbl.Table, columnNamesStr, columnIndexStr, tbl.IDColumn)
 
-	var err error
-	argValues := make([]interface{}, len(columnValues)+1)
-	argValues[0], err = json.Marshal(feature.Geometry)
-	if err != nil {
-		return "", nil, err
-	}
-
-	copy(argValues[1:], columnValues)
-
-	return sql, argValues, nil
+	return sql, columnValues, nil
 }
 
 func sqlReplaceFeature(tbl *Table, id string, feature Feature) (string, []interface{}, error) {
-	columnNames, columnIndex, columnValues := getColumnValues(tbl, feature, false)
-
-	geomSQL := buildGeometrySQL(tbl)
-	setClause := buildUpdateSetClause(columnNames, columnIndex)
-
-	sql := fmt.Sprintf("UPDATE \"%s\".\"%s\" SET %s=%v%s WHERE \"%v\" = $%v;", tbl.Schema, tbl.Table, tbl.GeometryColumn, geomSQL, setClause, tbl.IDColumn, len(tbl.Columns)+2)
-
-	var err error
-	argValues := make([]interface{}, len(columnValues)+2)
-	argValues[0], err = json.Marshal(feature.Geometry)
+	columnNames, columnIndex, columnValues, err := getColumnValues(tbl, feature, true)
 	if err != nil {
 		return "", nil, err
 	}
+	setClause := buildUpdateSetClause(columnNames, columnIndex)
 
-	copy(argValues[1:], columnValues)
-	argValues[len(columnValues)+1] = id
+	sql := fmt.Sprintf("UPDATE \"%s\".\"%s\" SET %s WHERE \"%v\" = $%v;", tbl.Schema, tbl.Table, setClause, tbl.IDColumn, len(columnNames))
 
-	return sql, argValues, nil
+	columnValues = append(columnValues, (id))
+
+	return sql, columnValues, nil
 }
 
 func sqlDeleteFeature(tbl *Table, id string) (string, []interface{}) {

@@ -51,7 +51,7 @@ type Catalog interface {
 	ReplaceTableFeature(ctx context.Context, name string, id string, feature Feature) error
 
 	// CreateTableFeature creates a feature
-	CreateTableFeature(ctx context.Context, name string, feature Feature) error
+	CreateTableFeature(ctx context.Context, name string, feature Feature) (string, error)
 
 	// DeleteTableFeature deletes a feature
 	DeleteTableFeature(ctx context.Context, name string, id string) error

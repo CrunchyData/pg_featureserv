@@ -234,22 +234,22 @@ func (cat *catalogDB) TableFeature(ctx context.Context, name string, id string, 
 	return features[0], nil
 }
 
-func (cat *catalogDB) CreateTableFeature(ctx context.Context, name string, feature Feature) error {
+func (cat *catalogDB) CreateTableFeature(ctx context.Context, name string, feature Feature) (string, error) {
 	tbl, err := cat.TableByName(name)
 	if err != nil {
-		return err
+		return "", err
 	}
 	sql, argValues, err := sqlCreateFeature(tbl, feature)
 	log.Debug("Create feature query: " + sql)
-	result, err := cat.dbconn.Exec(ctx, sql, argValues...)
+	row := cat.dbconn.QueryRow(ctx, sql, argValues...)
+	var featureId string
+
+	err = row.Scan(&featureId)
+
 	if err != nil {
-		return err
+		return "", err
 	}
-	rows := result.RowsAffected()
-	if rows != 1 {
-		return fmt.Errorf("expected to affect 1 row, affected %d", rows)
-	}
-	return nil
+	return featureId, err
 }
 
 func (cat *catalogDB) ReplaceTableFeature(ctx context.Context, name string, id string, feature Feature) error {
