@@ -268,14 +268,14 @@ func sqlReplaceFeature(tbl *Table, id string, feature Feature) (string, []interf
 }
 
 func sqlUpdateFeature(tbl *Table, id string, feature Feature) (string, []interface{}, error) {
-	columnNames, columnIndex, columnValues := getColumnValues(tbl, feature, true)
-
-	geomSQL := buildGeometrySQL(tbl)
+	columnNames, columnIndex, columnValues, err := getColumnValues(tbl, feature, true)
+	if err != nil {
+		return "", nil, err
+	}
 	setClause := buildUpdateSetClause(columnNames, columnIndex)
 
-	sql := fmt.Sprintf("UPDATE \"%s\".\"%s\" SET %s=%v%s WHERE \"%v\" = $%v;", tbl.Schema, tbl.Table, tbl.GeometryColumn, geomSQL, setClause, tbl.IDColumn, len(tbl.Columns)+2)
+	sql := fmt.Sprintf("UPDATE \"%s\".\"%s\" SET %s WHERE \"%v\" = $%v;", tbl.Schema, tbl.Table, setClause, tbl.IDColumn, len(columnNames))
 
-	var err error
 	argValues := make([]interface{}, len(columnValues)+2)
 	argValues[0], err = json.Marshal(feature.Geometry)
 	if err != nil {

@@ -430,6 +430,9 @@ func handleItem(w http.ResponseWriter, r *http.Request) *appError {
 		w.WriteHeader(http.StatusNoContent)
 		return nil
 	case http.MethodPatch:
+		if format != "json" {
+			return appErrorInternalFmt(nil, api.ErrMsgInvalidQuery)
+		}
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			return appErrorInternalFmt(err, api.ErrMsgInvalidQuery)
