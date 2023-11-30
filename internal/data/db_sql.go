@@ -219,13 +219,20 @@ func getColumnValues(tbl *Table, feature Feature, includeOnlySetProperties bool)
 	}
 	for _, column := range tbl.Columns {
 		val, ok := feature.Properties[column]
-
+		if column == tbl.IDColumn {
+			continue
+		}
 		if !includeOnlySetProperties || (ok && val != nil) {
 			columnNames = append(columnNames, column)
 			columnIndex = append(columnIndex, fmt.Sprintf("$%v", i))
-			columnValues = append(columnValues, val)
+			if tbl.DbTypes[column] == "int4" {
+				columnValues = append(columnValues, int(val.(float64)))
+			} else {
+				columnValues = append(columnValues, val)
+			}
 			i++
 		}
+
 	}
 
 	return columnNames, columnIndex, columnValues, nil
