@@ -266,6 +266,9 @@ func handleCollectionItems(w http.ResponseWriter, r *http.Request) *appError {
 	name := getRequestVar(routeVarID, r)
 	ctx := r.Context()
 	switch r.Method {
+	case http.MethodOptions:
+		w.Header().Set("Allow", "GET, POST")
+		return nil
 	case http.MethodGet:
 		reqParam, err := parseRequestParams(r)
 		if err != nil {
@@ -400,6 +403,9 @@ func handleItem(w http.ResponseWriter, r *http.Request) *appError {
 	}
 
 	switch r.Method {
+	case http.MethodOptions:
+		w.Header().Set("Allow", "GET, PUT, PATCH, DELETE")
+		return nil
 	case http.MethodGet:
 		if errQuery == nil {
 			switch format {
