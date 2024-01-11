@@ -1,12 +1,36 @@
-FROM centos:7
+ARG GOLANG_VERSION
+ARG TARGETARCH
+ARG VERSION
+ARG BASE_REGISTRY
+ARG BASE_IMAGE
+ARG PLATFORM
 
+FROM --platform=${PLATFORM} golang:${GOLANG_VERSION}-alpine AS builder
+LABEL stage=featureservbuilder
+
+ARG TARGETARCH
 ARG VERSION
 
-LABEL vendor="Crunchy Data" \
-	url="https://crunchydata.com" \
-	release="${VERSION}" \
-	org.opencontainers.image.vendor="Crunchy Data" \
-	os.version="7.7"
+WORKDIR /app
+COPY . ./
+
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=${TARGETARCH} go build -v -ldflags "-s -w -X main.programVersion=${VERSION}"
+
+FROM --platform=${TARGETARCH} ${BASE_REGISTRY}/${BASE_IMAGE} AS inherited
+
+COPY --from=builder /app/pg_featureserv .
+COPY --from=builder /app/assets ./assets
+
+VOLUME ["/config"]
+VOLUME ["/assets"]
+
+USER 1001
+EXPOSE 9000
+
+ENTRYPOINT ["./pg_featureserv"]
+CMD []
+
+FROM --platform=${PLATFORM} ${BASE_REGISTRY}/${BASE_IMAGE} AS local
 
 ADD ./pg_featureserv .
 ADD ./assets ./assets
