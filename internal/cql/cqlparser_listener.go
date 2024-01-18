@@ -10,8 +10,8 @@ type CQLParserListener interface {
 	// EnterCqlFilter is called when entering the cqlFilter production.
 	EnterCqlFilter(c *CqlFilterContext)
 
-	// EnterBooleanValueExpression is called when entering the booleanValueExpression production.
-	EnterBooleanValueExpression(c *BooleanValueExpressionContext)
+	// EnterBooleanExpression is called when entering the booleanExpression production.
+	EnterBooleanExpression(c *BooleanExpressionContext)
 
 	// EnterBooleanTerm is called when entering the booleanTerm production.
 	EnterBooleanTerm(c *BooleanTermContext)
@@ -25,17 +25,20 @@ type CQLParserListener interface {
 	// EnterPredicate is called when entering the predicate production.
 	EnterPredicate(c *PredicateContext)
 
+	// EnterComparisonPredicate is called when entering the comparisonPredicate production.
+	EnterComparisonPredicate(c *ComparisonPredicateContext)
+
 	// EnterBinaryComparisonPredicate is called when entering the binaryComparisonPredicate production.
 	EnterBinaryComparisonPredicate(c *BinaryComparisonPredicateContext)
 
-	// EnterLikePredicate is called when entering the likePredicate production.
-	EnterLikePredicate(c *LikePredicateContext)
+	// EnterIsLikePredicate is called when entering the isLikePredicate production.
+	EnterIsLikePredicate(c *IsLikePredicateContext)
 
-	// EnterBetweenPredicate is called when entering the betweenPredicate production.
-	EnterBetweenPredicate(c *BetweenPredicateContext)
+	// EnterIsBetweenPredicate is called when entering the isBetweenPredicate production.
+	EnterIsBetweenPredicate(c *IsBetweenPredicateContext)
 
-	// EnterInPredicate is called when entering the inPredicate production.
-	EnterInPredicate(c *InPredicateContext)
+	// EnterIsInListPredicate is called when entering the isInListPredicate production.
+	EnterIsInListPredicate(c *IsInListPredicateContext)
 
 	// EnterIsNullPredicate is called when entering the isNullPredicate production.
 	EnterIsNullPredicate(c *IsNullPredicateContext)
@@ -112,8 +115,8 @@ type CQLParserListener interface {
 	// ExitCqlFilter is called when exiting the cqlFilter production.
 	ExitCqlFilter(c *CqlFilterContext)
 
-	// ExitBooleanValueExpression is called when exiting the booleanValueExpression production.
-	ExitBooleanValueExpression(c *BooleanValueExpressionContext)
+	// ExitBooleanExpression is called when exiting the booleanExpression production.
+	ExitBooleanExpression(c *BooleanExpressionContext)
 
 	// ExitBooleanTerm is called when exiting the booleanTerm production.
 	ExitBooleanTerm(c *BooleanTermContext)
@@ -127,17 +130,20 @@ type CQLParserListener interface {
 	// ExitPredicate is called when exiting the predicate production.
 	ExitPredicate(c *PredicateContext)
 
+	// ExitComparisonPredicate is called when exiting the comparisonPredicate production.
+	ExitComparisonPredicate(c *ComparisonPredicateContext)
+
 	// ExitBinaryComparisonPredicate is called when exiting the binaryComparisonPredicate production.
 	ExitBinaryComparisonPredicate(c *BinaryComparisonPredicateContext)
 
-	// ExitLikePredicate is called when exiting the likePredicate production.
-	ExitLikePredicate(c *LikePredicateContext)
+	// ExitIsLikePredicate is called when exiting the isLikePredicate production.
+	ExitIsLikePredicate(c *IsLikePredicateContext)
 
-	// ExitBetweenPredicate is called when exiting the betweenPredicate production.
-	ExitBetweenPredicate(c *BetweenPredicateContext)
+	// ExitIsBetweenPredicate is called when exiting the isBetweenPredicate production.
+	ExitIsBetweenPredicate(c *IsBetweenPredicateContext)
 
-	// ExitInPredicate is called when exiting the inPredicate production.
-	ExitInPredicate(c *InPredicateContext)
+	// ExitIsInListPredicate is called when exiting the isInListPredicate production.
+	ExitIsInListPredicate(c *IsInListPredicateContext)
 
 	// ExitIsNullPredicate is called when exiting the isNullPredicate production.
 	ExitIsNullPredicate(c *IsNullPredicateContext)

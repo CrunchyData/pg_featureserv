@@ -26,7 +26,7 @@ func TestDebug(t *testing.T) {
 	checkCQL(t, "1990-01-01 BETWEEN time_start AND time_end", "timestamp '1990-01-01' BETWEEN \"time_start\" AND \"time_end\"")
 }
 
-func TestPredicate(t *testing.T) {
+func TestComparisonPredicate(t *testing.T) {
 	checkCQL(t, "", "")
 	checkCQL(t, "id > tt", "\"id\" > \"tt\"")
 	checkCQL(t, "id > 1", "\"id\" > 1")
@@ -39,21 +39,30 @@ func TestPredicate(t *testing.T) {
 	checkCQL(t, "id = -1.2345", "\"id\" = -1.2345")
 	checkCQL(t, "id = id2", "\"id\" = \"id2\"")
 	checkCQL(t, "id = 'foo'", "\"id\" = 'foo'")
+}
 
+func TestLikePredicate(t *testing.T) {
 	checkCQL(t, "id LIKE 'foo'", "\"id\" LIKE 'foo'")
 	checkCQL(t, "id ILIKE 'foo'", "\"id\" ILIKE 'foo'")
 	checkCQL(t, "id ILIKE '%Ca%'", "\"id\" ILIKE '%Ca%'")
+}
 
+func TestBetweenPredicate(t *testing.T) {
 	checkCQL(t, "id BETWEEN 1 and 2", "\"id\" BETWEEN 1 AND 2")
 	checkCQL(t, "id NOT BETWEEN 1 and 2", "\"id\" NOT BETWEEN 1 AND 2")
+}
 
+func TestInPredicate(t *testing.T) {
 	checkCQL(t, "id IN (1,2,3)", "\"id\" IN (1,2,3)")
 	checkCQL(t, "id NOT IN (1,2,3)", "\"id\" NOT IN (1,2,3)")
 	checkCQL(t, "id IN ('a','b','c')", "\"id\" IN ('a','b','c')")
+}
 
+func TestNullPredicate(t *testing.T) {
 	checkCQL(t, "id IS NULL", "\"id\" IS NULL")
 	checkCQL(t, "id IS NOT NULL", "\"id\" IS NOT NULL")
 }
+
 func TestSpatialPredicate(t *testing.T) {
 	checkCQL(t, "crosses(geom, POINT(0 0))", "ST_Crosses(\"geom\",'SRID=4326;POINT(0 0)'::geometry)")
 	checkCQL(t, "Contains(geom, POINT(0 0))", "ST_Contains(\"geom\",'SRID=4326;POINT(0 0)'::geometry)")
@@ -73,8 +82,16 @@ func TestArithmetic(t *testing.T) {
 	checkCQL(t, "p > 2 * (3 + x)", "\"p\" > 2 * (3 + \"x\")")
 	checkCQL(t, "p > (y + 5) / (3 - x)", "\"p\" > (\"y\" + 5) / (3 - \"x\")")
 	checkCQL(t, "p = x % 10", "\"p\" = \"x\" % 10")
+	checkCQL(t, "p = x ^ (i + 2)", "\"p\" = \"x\" ^ (\"i\" + 2)")
 	checkCQL(t, "p BETWEEN x + 10 AND x * 2", "\"p\" BETWEEN \"x\" + 10 AND \"x\" * 2")
 	checkCQL(t, "p BETWEEN 2 * (1 + 1000000) AND 900000", "\"p\" BETWEEN 2 * (1 + 1000000) AND 900000")
+
+	checkCQL(t, "p = 'a' || x || 'b'", "\"p\" = 'a' || \"x\" || 'b'")
+}
+
+func TestLiteral(t *testing.T) {
+	checkCQL(t, "p > 1.0E+1", "\"p\" > 1.0E+1")
+	checkCQL(t, "p > 1.0e+1", "\"p\" > 1.0e+1")
 }
 
 func TestGeometryLiteral(t *testing.T) {
@@ -110,6 +127,8 @@ func TestBooleanExpression(t *testing.T) {
 	checkCQL(t, "x = 1 OR x = 2", "\"x\" = 1 OR \"x\" = 2")
 	checkCQL(t, "(x = 1 OR x = 2) AND y < 4", "(\"x\" = 1 OR \"x\" = 2) AND \"y\" < 4")
 	checkCQL(t, "NOT x IS NOT NULL", "NOT  \"x\" IS NOT NULL")
+	checkCQL(t, "NOT TRUE OR FALSE", "NOT TRUE OR FALSE")
+	checkCQL(t, "NOT true OR false", "NOT true OR false")
 }
 
 func TestTemporal(t *testing.T) {

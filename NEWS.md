@@ -1,7 +1,15 @@
 # pg_featureserv Version History
 
+## Version 1.4
+*Released: ??*
+
+### Bug Fixes
+
+* Fix CQL parser to allow scientific notation using `e` (#141)
+
+
 ## Version 1.3
-*Released: TBD*
+*Released: 2023 July 10*
 
 ### New Features
 

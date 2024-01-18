@@ -72,7 +72,7 @@ IN: I N;
 # Definition of ARITHMETIC operators
 #============================================================================*/
 
-ArithmeticOperator : PLUS | MINUS | ASTERISK | SOLIDUS | PERCENT;
+ArithmeticOperator : PLUS | MINUS | ASTERISK | SOLIDUS | PERCENT | CARET | CONCAT;
 
 /*============================================================================
 # Definition of SPATIAL operators
@@ -150,6 +150,8 @@ COMMA : ',';
 MINUS : '-';
 PERIOD : '.';
 SOLIDUS : '/';
+CARET : '^';
+CONCAT : '||';
 COLON : ':';
 SEMICOLON : ';';
 QUESTIONMARK : '?';
@@ -165,7 +167,7 @@ UnsignedNumericLiteral : ExactNumericLiteral | ApproximateNumericLiteral;
 SignedNumericLiteral : (Sign)? ExactNumericLiteral | ApproximateNumericLiteral;
 ExactNumericLiteral : UnsignedInteger  (PERIOD (UnsignedInteger)? )?
                         |  PERIOD UnsignedInteger;
-ApproximateNumericLiteral : Mantissa 'E' Exponent;
+ApproximateNumericLiteral : Mantissa ('E' | 'e') Exponent;
 Mantissa : ExactNumericLiteral;
 Exponent : SignedInteger;
 SignedInteger : (Sign)? UnsignedInteger;

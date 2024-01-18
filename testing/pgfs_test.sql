@@ -46,6 +46,24 @@ VALUES
   (2, 'SRID=4326;POINT(2 2)', '{"p1": 1, "p2": 2.3, "p3": [1, 2, 3]}');
 
 --=====================================================================
+
+-- Test a table with mixed geometry types
+
+CREATE TABLE pgfs_test.test_geom
+(
+    id integer primary key,
+    geom geometry(Geometry, 4326),
+    data text
+);
+
+-- DROP TABLE pgfs_test.test_json;
+
+INSERT INTO pgfs_test.test_geom
+VALUES
+  (1, 'SRID=4326;POINT(1 1)', 'aaa'),
+  (2, 'SRID=4326;LINESTRING(1 1, 2 2)', 'bbb');
+
+--=====================================================================
 CREATE TABLE pgfs_test.test_arr
 (
     id integer primary key,
