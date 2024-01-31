@@ -10,16 +10,14 @@ jobs:
     if: github.repository == 'CrunchyData/pg_featureserv'
     steps:
 
-    - name: Install Go
-      uses: actions/setup-go@v2
-      with:
-        go-version: 1.16.x
-
     - name: Checkout
       uses: actions/checkout@v3
 
-    - name: Build
-      run: make build && make docker
+    - name: Build ARM64
+      run: make TARGETARCH=arm64 multi-stage-docker
+
+    - name: Build x86_64
+      run: make TARGETARCH=amd64 multi-stage-docker
 
     - name: Docker Upload
       env:
@@ -29,3 +27,9 @@ jobs:
       run: |
         echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
         docker push --all-tags $DOCKER_REPO
+        docker manifest create $DOCKER_REPO:latest $DOCKER_REPO:latest-amd64 $DOCKER_REPO:latest-arm64
+        docker manifest push $DOCKER_REPO:latest
+        date_tag=$(docker images | grep featureserv | grep -v latest | grep -v arm64 | awk '{print $2}')
+        date_tag=${date_tag/-amd64/}
+        docker manifest create $DOCKER_REPO:${date_tag} $DOCKER_REPO:${date_tag}-amd64 $DOCKER_REPO:${date_tag}-arm64
+        docker manifest push $DOCKER_REPO:${date_tag}
