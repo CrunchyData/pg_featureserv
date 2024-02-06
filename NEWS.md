@@ -6,7 +6,7 @@
 ### Bug Fixes
 
 * Fix CQL parser to allow scientific notation using `e` (#141)
-
+* Container build update (#154)
 
 ## Version 1.3
 *Released: 2023 July 10*
