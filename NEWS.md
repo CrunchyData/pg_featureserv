@@ -1,7 +1,7 @@
 # pg_featureserv Version History
 
-## Version 1.4
-*Released: ??*
+## Version 1.3.1
+*Released: 2024 Feb 6*
 
 ### Bug Fixes
 
