@@ -3,10 +3,15 @@
 ## Version 1.3.1
 *Released: 2024 Feb 6*
 
+### Improvements
+
+* Container build update (#154)
+* Improve map UI layout (#146)
+
 ### Bug Fixes
 
 * Fix CQL parser to allow scientific notation using `e` (#141)
-* Container build update (#154)
+
 
 ## Version 1.3
 *Released: 2023 July 10*
