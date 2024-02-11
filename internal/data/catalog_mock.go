@@ -15,9 +15,12 @@ package data
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strconv"
 
+	orb "github.com/paulmach/orb"
+	"github.com/paulmach/orb/geojson"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -40,55 +43,58 @@ func CatMockInstance() *CatalogMock {
 func newCatalogMock() CatalogMock {
 	// must be in synch with featureMock type
 	propNames := []string{"prop_a", "prop_b", "prop_c", "prop_d"}
-	types := map[string]string{
-		"prop_a": "text",
-		"prop_b": "int",
-		"prop_c": "text",
-		"prop_d": "int",
+	types := map[string]Column{
+		"prop_a": {Index: 0, Type: "text", IsRequired: true},
+		"prop_b": {Index: 1, Type: "int", IsRequired: true},
+		"prop_c": {Index: 2, Type: "text", IsRequired: false},
+		"prop_d": {Index: 3, Type: "int", IsRequired: false},
 	}
 	jtypes := []string{"string", "number", "string", "number"}
 	colDesc := []string{"Property A", "Property B", "Property C", "Property D"}
 
 	layerA := &Table{
-		ID:          "mock_a",
-		Title:       "Mock A",
-		Description: "This dataset contains mock data about A (9 points)",
-		Extent:      Extent{Minx: -120, Miny: 40, Maxx: -74, Maxy: 50},
-		Srid:        4326,
-		Columns:     propNames,
-		DbTypes:     types,
-		JSONTypes:   jtypes,
-		ColDesc:     colDesc,
+		ID:           "mock_a",
+		Title:        "Mock A",
+		Description:  "This dataset contains mock data about A (9 points)",
+		Extent:       Extent{Minx: -120, Miny: 40, Maxx: -74, Maxy: 50},
+		Srid:         4326,
+		GeometryType: "Point",
+		Columns:      propNames,
+		DbTypes:      types,
+		JSONTypes:    jtypes,
+		ColDesc:      colDesc,
 	}
 
 	layerB := &Table{
-		ID:          "mock_b",
-		Title:       "Mock B",
-		Description: "This dataset contains mock data about B (100 points)",
-		Extent:      Extent{Minx: -75, Miny: 45, Maxx: -74, Maxy: 46},
-		Srid:        4326,
-		Columns:     propNames,
-		DbTypes:     types,
-		JSONTypes:   jtypes,
-		ColDesc:     colDesc,
+		ID:           "mock_b",
+		Title:        "Mock B",
+		Description:  "This dataset contains mock data about B (100 points)",
+		Extent:       Extent{Minx: -75, Miny: 45, Maxx: -74, Maxy: 46},
+		Srid:         4326,
+		GeometryType: "Point",
+		Columns:      propNames,
+		DbTypes:      types,
+		JSONTypes:    jtypes,
+		ColDesc:      colDesc,
 	}
 
 	layerC := &Table{
-		ID:          "mock_c",
-		Title:       "Mock C",
-		Description: "This dataset contains mock data about C (10000 points)",
-		Extent:      Extent{Minx: -120, Miny: 40, Maxx: -74, Maxy: 60},
-		Srid:        4326,
-		Columns:     propNames,
-		DbTypes:     types,
-		JSONTypes:   jtypes,
-		ColDesc:     colDesc,
+		ID:           "mock_c",
+		Title:        "Mock C",
+		Description:  "This dataset contains mock data about C (10000 points)",
+		Extent:       Extent{Minx: -120, Miny: 40, Maxx: -74, Maxy: 60},
+		Srid:         4326,
+		GeometryType: "Point",
+		Columns:      propNames,
+		DbTypes:      types,
+		JSONTypes:    jtypes,
+		ColDesc:      colDesc,
 	}
 
 	tableData := map[string][]*featureMock{}
-	tableData["mock_a"] = makePointFeatures(layerA.Extent, 3, 3)
-	tableData["mock_b"] = makePointFeatures(layerB.Extent, 10, 10)
-	tableData["mock_c"] = makePointFeatures(layerC.Extent, 100, 100)
+	tableData["mock_a"] = MakePointFeatures(layerA.Extent, 3, 3)
+	tableData["mock_b"] = MakePointFeatures(layerB.Extent, 10, 10)
+	tableData["mock_c"] = MakePointFeatures(layerC.Extent, 100, 100)
 
 	var tables []*Table
 	tables = append(tables, layerA)
@@ -229,6 +235,8 @@ func (cat *CatalogMock) TableFeature(ctx context.Context, name string, id string
 		return "", nil
 	}
 
+	index--
+
 	// TODO: return not found if index out of range
 	if index < 0 || index >= len(features) {
 		return "", nil
@@ -240,6 +248,33 @@ func (cat *CatalogMock) TableFeature(ctx context.Context, name string, id string
 	}
 
 	return features[index].toJSON(propNames), nil
+}
+
+// returns the number of feature for a specific table
+func (cat *CatalogMock) TableSize(tableName string) int64 {
+	return int64(len(cat.tableData[tableName]))
+}
+
+func (cat *CatalogMock) AddTableFeature(ctx context.Context, tableName string, jsonData []byte) (int64, error) {
+	var newFeature featureMock
+
+	var schemaObject geojsonFeatureData
+	err := json.Unmarshal(jsonData, &schemaObject)
+	if err != nil {
+		return 0, err
+	}
+
+	maxId := cat.TableSize(tableName)
+
+	newFeature.ID = fmt.Sprintf("%d", maxId+1)
+	newFeature.Geom = schemaObject.Geom
+	newFeature.PropA = schemaObject.Props["prop_a"].(string)
+	newFeature.PropB = int(schemaObject.Props["prop_b"].(float64))
+	newFeature.PropC = schemaObject.Props["prop_c"].(string)
+	newFeature.PropD = int(schemaObject.Props["prop_d"].(float64))
+
+	cat.tableData[tableName] = append(cat.tableData[tableName], &newFeature)
+	return maxId + 1, nil
 }
 
 func (cat *CatalogMock) Functions() ([]*Function, error) {
@@ -266,7 +301,12 @@ func (cat *CatalogMock) FunctionData(ctx context.Context, name string, args map[
 	return nil, nil
 }
 
-func makePointFeatures(extent Extent, nx int, ny int) []*featureMock {
+func MakeFeatureMockPointAsJSON(id int, x float64, y float64, columns []string) string {
+	feat := makeFeatureMockPoint(id, x, y)
+	return feat.toJSON(columns)
+}
+
+func MakePointFeatures(extent Extent, nx int, ny int) []*featureMock {
 	basex := extent.Minx
 	basey := extent.Miny
 	dx := (extent.Maxx - extent.Minx) / float64(nx)
@@ -290,26 +330,25 @@ func makePointFeatures(extent Extent, nx int, ny int) []*featureMock {
 }
 
 type featureMock struct {
-	ID    string
-	Geom  string
-	PropA string
-	PropB int
-	PropC string
-	PropD int
+	ID    string            `json:"ID"`
+	Geom  *geojson.Geometry `json:"geometry"`
+	PropA string            `json:"prop_a"`
+	PropB int               `json:"prop_b"`
+	PropC string            `json:"prop_c"`
+	PropD int               `json:"prop_d"`
 }
 
 func makeFeatureMockPoint(id int, x float64, y float64) *featureMock {
-	geomFmt := `{"type": "Point","coordinates": [ %v, %v ]  }`
-	geomStr := fmt.Sprintf(geomFmt, x, y)
+	geom := geojson.NewGeometry(orb.Point{x, y})
 
 	idstr := strconv.Itoa(id)
-	feat := featureMock{idstr, geomStr, "propA", id, "propC", id % 10}
+	feat := featureMock{idstr, geom, "propA", id, "propC", id % 10}
 	return &feat
 }
 
 func (fm *featureMock) toJSON(propNames []string) string {
 	props := fm.extractProperties(propNames)
-	return makeFeatureJSON(fm.ID, fm.Geom, props)
+	return makeGeojsonFeatureJSON(fm.ID, *fm.Geom, props)
 }
 
 func (fm *featureMock) extractProperties(propNames []string) map[string]interface{} {

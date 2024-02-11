@@ -16,14 +16,18 @@ package service
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
+	"sort"
 	"strings"
 
 	"github.com/CrunchyData/pg_featureserv/internal/api"
 	"github.com/CrunchyData/pg_featureserv/internal/conf"
 	"github.com/CrunchyData/pg_featureserv/internal/data"
 	"github.com/CrunchyData/pg_featureserv/internal/ui"
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/gorilla/mux"
 )
 
@@ -32,7 +36,7 @@ const (
 	routeVarFeatureID = "fid"
 )
 
-func initRouter(basePath string) *mux.Router {
+func InitRouter(basePath string) *mux.Router {
 	router := mux.NewRouter().
 		StrictSlash(true).
 		PathPrefix("/" + strings.TrimRight(strings.TrimLeft(basePath, "/"), "/")).
@@ -58,6 +62,12 @@ func initRouter(basePath string) *mux.Router {
 	addRoute(router, "/collections/{id}/items", handleCollectionItems)
 	addRoute(router, "/collections/{id}/items.{fmt}", handleCollectionItems)
 
+	if conf.Configuration.Database.AllowWrite {
+		addRouteWithMethod(router, "/collections/{id}/items", handleCreateCollectionItem, "POST")
+
+		addRoute(router, "/collections/{id}/schema", handleCollectionSchemas)
+	}
+
 	addRoute(router, "/collections/{id}/items/{fid}", handleItem)
 	addRoute(router, "/collections/{id}/items/{fid}.{fmt}", handleItem)
 
@@ -74,7 +84,11 @@ func initRouter(basePath string) *mux.Router {
 }
 
 func addRoute(router *mux.Router, path string, handler func(http.ResponseWriter, *http.Request) *appError) {
-	router.Handle(path, appHandler(handler))
+	addRouteWithMethod(router, path, handler, "GET")
+}
+
+func addRouteWithMethod(router *mux.Router, path string, handler func(http.ResponseWriter, *http.Request) *appError, method string) {
+	router.Handle(path, appHandler(handler)).Methods(method)
 }
 
 //nolint:unused
@@ -254,6 +268,94 @@ func handleCollection(w http.ResponseWriter, r *http.Request) *appError {
 	}
 }
 
+func handleCollectionSchemas(w http.ResponseWriter, r *http.Request) *appError {
+	// TODO: determine content from request header?
+	format := api.RequestedFormat(r)
+
+	//--- extract request parameters
+	name := getRequestVar(routeVarID, r)
+	tbl, err1 := catalogInstance.TableByName(name)
+	if err1 != nil {
+		return appErrorInternalFmt(err1, api.ErrMsgCollectionAccess, name)
+	}
+	if tbl == nil {
+		return appErrorNotFoundFmt(err1, api.ErrMsgCollectionNotFound, name)
+	}
+
+	queryValues := r.URL.Query()
+	paramValues := extractSingleArgs(queryValues)
+	// --- type parameter
+	schemaType := parseString(paramValues, api.ParamType)
+
+	ctx := r.Context()
+	switch format {
+	case api.FormatSchemaJSON:
+		{
+			switch schemaType {
+			case "create":
+				return writeCreateItemSchemaJSON(ctx, w, tbl)
+			default:
+				return appErrorBadRequest(nil, fmt.Sprintf("Asked schema type %s not implemented!", schemaType))
+			}
+		}
+	default:
+		{
+			return appErrorBadRequest(nil, fmt.Sprintf("Format %s not implemented!", format))
+		}
+	}
+
+}
+
+func handleCreateCollectionItem(w http.ResponseWriter, r *http.Request) *appError {
+	urlBase := serveURLBase(r)
+
+	//--- extract request parameters
+	name := getRequestVar(routeVarID, r)
+
+	//--- check query parameters
+	queryValues := r.URL.Query()
+	paramValues := extractSingleArgs(queryValues)
+	if len(paramValues) != 0 {
+		return appErrorMsg(nil, "No parameter allowed", http.StatusBadRequest)
+	}
+
+	//--- check feature availability
+	tbl, err1 := catalogInstance.TableByName(name)
+	if err1 != nil {
+		return appErrorInternalFmt(err1, api.ErrMsgCollectionAccess, name)
+	}
+	if tbl == nil {
+		return appErrorNotFoundFmt(err1, api.ErrMsgCollectionNotFound, name)
+	}
+
+	//--- json body
+	bodyContent, errBody := ioutil.ReadAll(r.Body)
+	if errBody != nil || len(bodyContent) == 0 {
+		return appErrorInternalFmt(errBody, "Unable to read request body for Collection: %v", name)
+	}
+
+	//--- check if body matches the schema
+	createSchema, errGetSch := getCreateItemSchema(r.Context(), tbl)
+	if errGetSch != nil {
+		return appErrorInternalFmt(errGetSch, errGetSch.Error())
+	}
+	var val interface{}
+	_ = json.Unmarshal(bodyContent, &val)
+	errValSch := createSchema.VisitJSON(val)
+	if errValSch != nil {
+		return appErrorInternalFmt(errValSch, api.ErrMsgCreateFeatureNotConform, name)
+	}
+
+	newId, err2 := catalogInstance.AddTableFeature(r.Context(), name, bodyContent)
+	if err2 != nil {
+		return appErrorInternalFmt(err2, api.ErrMsgCreateFeatureInCatalog, name)
+	}
+
+	w.Header().Set("Location", fmt.Sprintf("%scollections/%s/items/%d", urlBase, name, newId))
+	w.WriteHeader(http.StatusCreated)
+	return nil
+}
+
 func handleCollectionItems(w http.ResponseWriter, r *http.Request) *appError {
 	// TODO: determine content from request header?
 	format := api.RequestedFormat(r)
@@ -288,6 +390,92 @@ func handleCollectionItems(w http.ResponseWriter, r *http.Request) *appError {
 		return writeItemsHTML(w, tbl, name, query, urlBase)
 	}
 	return nil
+}
+
+func writeCreateItemSchemaJSON(ctx context.Context, w http.ResponseWriter, table *data.Table) *appError {
+	createSchema, err := getCreateItemSchema(ctx, table)
+	if err != nil {
+		return appErrorMsg(err, err.Error(), http.StatusInternalServerError)
+	}
+	return writeJSON(w, api.ContentTypeSchemaJSON, createSchema)
+
+}
+
+func getCreateItemSchema(ctx context.Context, table *data.Table) (openapi3.Schema, error) {
+	// Feature schema skeleton
+	var featureInfoSchema openapi3.Schema = openapi3.Schema{
+		Type:     "object",
+		Required: []string{"type", "geometry", "properties"},
+		Properties: map[string]*openapi3.SchemaRef{
+			"id": {Value: &openapi3.Schema{Type: "string", Format: "uri"}},
+			"type": {
+				Value: &openapi3.Schema{
+					Type:    "string",
+					Default: "Feature",
+				},
+			},
+			"geometry": {
+				Value: &openapi3.Schema{
+					Items: &openapi3.SchemaRef{
+						Ref: fmt.Sprintf("https://geojson.org/schema/%v.json", table.GeometryType),
+						Value: &openapi3.Schema{
+							Type: "string", // mandatory to validate the schema
+						},
+					},
+				},
+			},
+			"properties": {
+				Value: &openapi3.Schema{},
+			},
+		},
+	}
+	featureInfoSchema.Description = table.Description
+
+	props := featureInfoSchema.Properties["properties"].Value
+	props.Type = "object"
+
+	// update required properties
+	requiredTypeKeys := make([]string, 0, len(table.DbTypes))
+
+	for k := range table.DbTypes {
+		if k != table.IDColumn {
+			requiredTypeKeys = append(requiredTypeKeys, k)
+		}
+	}
+	sort.Strings(requiredTypeKeys)
+
+	var requiredTypes []string
+	for _, k := range requiredTypeKeys {
+		if table.DbTypes[k].IsRequired {
+			requiredTypes = append(requiredTypes, k)
+		}
+	}
+
+	props.Required = requiredTypes
+
+	// update properties by their name and type
+	props.Properties = make(map[string]*openapi3.SchemaRef)
+	for k, v := range table.DbTypes {
+		if k != table.IDColumn {
+			propType := v.Type
+			if api.Db2OpenapiFormatMap[v.Type] != "" {
+				propType = api.Db2OpenapiFormatMap[v.Type]
+			}
+			props.Properties[k] = &openapi3.SchemaRef{
+				Value: &openapi3.Schema{
+					Type: propType,
+				},
+			}
+		}
+	}
+
+	errVal := featureInfoSchema.Validate(ctx)
+	if errVal != nil {
+		encodedContent, _ := json.Marshal(featureInfoSchema)
+		return featureInfoSchema, fmt.Errorf("schema not valid: %v\n\t%v", errVal, string(encodedContent))
+	}
+
+	return featureInfoSchema, nil
 }
 
 func writeItemsHTML(w http.ResponseWriter, tbl *data.Table, name string, query string, urlBase string) *appError {

@@ -47,6 +47,10 @@ type Catalog interface {
 	// It returns an empty string if the table or feature does not exist
 	TableFeature(ctx context.Context, name string, id string, param *QueryParam) (string, error)
 
+	// AddTableFeature returns the id of the new feature created in the table tableName
+	// using the JSON data to create the feature
+	AddTableFeature(ctx context.Context, tableName string, jsonData []byte) (int64, error)
+
 	Functions() ([]*Function, error)
 
 	// FunctionByName returns the function with given name.
@@ -93,6 +97,13 @@ type QueryParam struct {
 	TransformFuns []TransformFunction
 }
 
+// Column holds metadata for column objects
+type Column struct {
+	Index      int
+	Type       string
+	IsRequired bool
+}
+
 // Table holds metadata for table/view objects
 type Table struct {
 	ID             string
@@ -106,7 +117,7 @@ type Table struct {
 	Srid           int
 	Extent         Extent
 	Columns        []string
-	DbTypes        map[string]string
+	DbTypes        map[string]Column
 	JSONTypes      []string
 	ColDesc        []string
 }

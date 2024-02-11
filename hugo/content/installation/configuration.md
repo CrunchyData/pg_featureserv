@@ -118,6 +118,9 @@ WriteTimeoutSec = 30
 # Publish functions from these schemas (default is publish postgisftw)
 # FunctionIncludes = [ "postgisftw", "schema2" ]
 
+# Allow write changes to database. Default is to read only.
+# AllowWrite = false
+
 [Paging]
 # The default number of features in a response
 LimitDefault = 20

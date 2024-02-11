@@ -130,7 +130,8 @@ const sqlFmtFeatures = "SELECT %v %v FROM \"%s\".\"%s\" %v %v %v %s;"
 
 func sqlFeatures(tbl *Table, param *QueryParam) (string, []interface{}) {
 	geomCol := sqlGeomCol(tbl.GeometryColumn, tbl.Srid, param)
-	propCols := sqlColList(param.Columns, tbl.DbTypes, true)
+
+	propCols := sqlColListFromColumnMap(param.Columns, tbl.DbTypes, true)
 	bboxFilter := sqlBBoxFilter(tbl.GeometryColumn, tbl.Srid, param.Bbox, param.BboxCrs)
 	attrFilter, attrVals := sqlAttrFilter(param.Filter)
 	cqlFilter := sqlCqlFilter(param.FilterSql)
@@ -144,7 +145,25 @@ func sqlFeatures(tbl *Table, param *QueryParam) (string, []interface{}) {
 
 // sqlColList creates a comma-separated column list, or blank if no columns
 // If addLeadingComma is true, a leading comma is added, for use when the target SQL has columns defined before
-func sqlColList(names []string, dbtypes map[string]string, addLeadingComma bool) string {
+func sqlColListFromColumnMap(names []string, dbtypes map[string]Column, addLeadingComma bool) string {
+	if len(names) == 0 {
+		return ""
+	}
+
+	var cols []string
+	for _, col := range names {
+		colExpr := sqlColExpr(col, dbtypes[col].Type)
+		cols = append(cols, colExpr)
+	}
+	colsStr := strings.Join(cols, ",")
+	if addLeadingComma {
+		return ", " + colsStr
+	}
+	return colsStr
+}
+
+// sqlColListFromPGTypeMap creates a comma-separated column list, or blank if no columns
+func sqlColListFromStringMap(names []string, dbtypes map[string]string, addLeadingComma bool) string {
 	if len(names) == 0 {
 		return ""
 	}
@@ -186,7 +205,8 @@ const sqlFmtFeature = "SELECT %v %v FROM \"%s\".\"%s\" WHERE \"%v\" = $1 LIMIT 1
 
 func sqlFeature(tbl *Table, param *QueryParam) string {
 	geomCol := sqlGeomCol(tbl.GeometryColumn, tbl.Srid, param)
-	propCols := sqlColList(param.Columns, tbl.DbTypes, true)
+
+	propCols := sqlColListFromColumnMap(param.Columns, tbl.DbTypes, true)
 	sql := fmt.Sprintf(sqlFmtFeature, geomCol, propCols, tbl.Schema, tbl.Table, tbl.IDColumn)
 	return sql
 }
@@ -328,7 +348,7 @@ const sqlFmtGeomFunction = "SELECT %s %s FROM \"%s\".\"%s\"( %v ) %v %v %s;"
 func sqlGeomFunction(fn *Function, args map[string]string, propCols []string, param *QueryParam) (string, []interface{}) {
 	sqlArgs, argVals := sqlFunctionArgs(fn, args)
 	sqlGeomCol := sqlGeomCol(fn.GeometryColumn, SRID_UNKNOWN, param)
-	sqlPropCols := sqlColList(propCols, fn.Types, true)
+	sqlPropCols := sqlColListFromStringMap(propCols, fn.Types, true)
 	//-- SRS of function output is unknown, so have to assume 4326
 	bboxFilter := sqlBBoxFilter(fn.GeometryColumn, SRID_4326, param.Bbox, param.BboxCrs)
 	cqlFilter := sqlCqlFilter(param.FilterSql)
@@ -343,7 +363,7 @@ const sqlFmtFunction = "SELECT %v FROM \"%s\".\"%s\"( %v ) %v %v %s;"
 
 func sqlFunction(fn *Function, args map[string]string, propCols []string, param *QueryParam) (string, []interface{}) {
 	sqlArgs, argVals := sqlFunctionArgs(fn, args)
-	sqlPropCols := sqlColList(propCols, fn.Types, false)
+	sqlPropCols := sqlColListFromStringMap(propCols, fn.Types, false)
 	cqlFilter := sqlCqlFilter(param.FilterSql)
 	sqlWhere := sqlWhere(cqlFilter, "", "")
 	sqlOrderBy := sqlOrderBy(param.SortBy)
