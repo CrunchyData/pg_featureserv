@@ -1,7 +1,7 @@
 package conf
 
 /*
- Copyright 2019 Crunchy Data Solutions, Inc.
+ Copyright 2019 - 2024 Crunchy Data Solutions, Inc.
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
@@ -13,7 +13,7 @@ package conf
  limitations under the License.
 */
 
-var setVersion string = "1.3"
+var setVersion string = "1.3.1"
 
 // AppConfiguration is the set of global application configuration constants.
 type AppConfiguration struct {

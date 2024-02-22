@@ -1,7 +1,12 @@
 # pg_featureserv Version History
 
-## Version 1.4
-*Released: ??*
+## Version 1.3.1
+*Released: 2024 Feb 6*
+
+### Improvements
+
+* Container build update (#154)
+* Improve map UI layout (#146)
 
 ### Bug Fixes
 
