@@ -1,5 +1,13 @@
 # pg_featureserv Version History
 
+## Version ??
+*Released: TBD*
+
+### Bug Fixes
+
+* Fix CQL parser to allow multiple AND/OR terms (#162)
+
+
 ## Version 1.3.1
 *Released: 2024 Feb 6*
 
