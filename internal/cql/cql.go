@@ -13,7 +13,7 @@ package cql
  limitations under the License.
 */
 
-// Build grammar with: antlr -Dlanguage=Go -package cql CqlLexer.g4 CQLParser.g4 
+// Build grammar with: antlr -Dlanguage=Go -package cql CqlLexer.g4 CQLParser.g4
 
 import (
 	"fmt"
@@ -79,7 +79,7 @@ func syntaxErrorMsg(input string, col int) string {
 	return msg
 }
 
-//======================================
+// ======================================
 type CqlErrorListener struct {
 	*antlr.DefaultErrorListener
 	errorCount int
@@ -164,7 +164,7 @@ func getNodeText(node antlr.TerminalNode) string {
 	return node.GetText()
 }
 
-//========================================
+// ========================================
 type CqlContext struct {
 	*antlr.BaseParserRuleContext
 	// SQL fragment for the context subtree
@@ -211,38 +211,64 @@ func (l *cqlListener) ExitCqlFilter(ctx *CqlFilterContext) {
 	l.sql = sqlFor(ctx.BooleanExpression())
 }
 
+/*
 func (l *cqlListener) ExitBooleanExpression(ctx *BooleanExpressionContext) {
-	sql := sqlFor(ctx.BooleanTerm(0))
-	if ctx.OR() != nil {
-		term := sqlFor(ctx.BooleanTerm(1))
+	sql := sqlFor(ctx.BooleanFactor())
+	//sql := sqlFor(ctx.BooleanExpression(0))
+	if ctx.OR(0) != nil {
+		term := sqlFor(ctx.BooleanExpression(1))
 		sql = sql + " OR " + term
+	} else if ctx.LEFTPAREN() != nil {
+		sql = "(" + sqlFor(ctx.BooleanExpression(0)) + ")"
+	}
+	ctx.SetSql(sql)
+}
+*/
+
+func (l *cqlListener) ExitBoolExprTerm(ctx *BoolExprTermContext) {
+	sql := sqlFor(ctx.BooleanTerm())
+	ctx.SetSql(sql)
+}
+
+func (l *cqlListener) ExitBoolExprAnd(ctx *BoolExprAndContext) {
+	sql := sqlFor(ctx.left)
+	if ctx.right != nil {
+		sql = sql + " AND " + sqlFor(ctx.right)
 	}
 	ctx.SetSql(sql)
 }
 
+func (l *cqlListener) ExitBoolExprOr(ctx *BoolExprOrContext) {
+	sql := sqlFor(ctx.left)
+	if ctx.right != nil {
+		sql = sql + " OR " + sqlFor(ctx.right)
+	}
+	ctx.SetSql(sql)
+}
+
+func (l *cqlListener) ExitBoolExprParen(ctx *BoolExprParenContext) {
+	sql := "(" + sqlFor(ctx.BooleanExpression()) + ")"
+	ctx.SetSql(sql)
+}
+
+func (l *cqlListener) ExitBoolExprNot(ctx *BoolExprNotContext) {
+	sql := "NOT " + sqlFor(ctx.BooleanExpression())
+	ctx.SetSql(sql)
+}
+
+/*
+	func (l *cqlListener) ExitBooleanTerm(ctx *BooleanTermContext) {
+		sql := sqlFor(ctx.BooleanPrimary())
+		if ctx.NOT() != nil {
+			sql = " NOT " + sql
+		}
+		ctx.SetSql(sql)
+	}
+*/
 func (l *cqlListener) ExitBooleanTerm(ctx *BooleanTermContext) {
-	sql := sqlFor(ctx.BooleanFactor(0))
-	if ctx.AND() != nil {
-		fact := sqlFor(ctx.BooleanFactor(1))
-		sql = sql + " AND " + fact
-	}
-	ctx.SetSql(sql)
-}
-
-func (l *cqlListener) ExitBooleanFactor(ctx *BooleanFactorContext) {
-	sql := sqlFor(ctx.BooleanPrimary())
-	if ctx.NOT() != nil {
-		sql = " NOT " + sql
-	}
-	ctx.SetSql(sql)
-}
-
-func (l *cqlListener) ExitBooleanPrimary(ctx *BooleanPrimaryContext) {
 	var sql string
 	if ctx.BooleanLiteral() != nil {
 		sql = getText(ctx.BooleanLiteral())
-	} else if ctx.LEFTPAREN() != nil {
-		sql = "(" + sqlFor(ctx.BooleanExpression()) + ")"
 	} else {
 		sql = sqlFor(ctx.Predicate())
 	}

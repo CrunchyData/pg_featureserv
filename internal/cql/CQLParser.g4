@@ -16,12 +16,17 @@ options { tokenVocab=CqlLexer; contextSuperClass=CqlContext; }
 #============================================================================*/
 
 cqlFilter : booleanExpression EOF;
-booleanExpression : booleanTerm ( OR booleanTerm )?;
-booleanTerm : booleanFactor ( AND booleanFactor )?;
-booleanFactor : ( NOT )? booleanPrimary;
-booleanPrimary : predicate
+booleanExpression                              
+                : LEFTPAREN booleanExpression RIGHTPAREN            # BoolExprParen
+                | left=booleanExpression AND right=booleanExpression    # BoolExprAnd
+                | left=booleanExpression OR  right=booleanExpression     # BoolExprOr
+                | NOT booleanExpression                             # BoolExprNot
+                | booleanTerm                                       # BoolExprTerm
+                ;
+//booleanFactor : ( NOT )? booleanPrimary;
+booleanTerm : predicate
                 | booleanLiteral
-                | LEFTPAREN booleanExpression RIGHTPAREN;
+                ;
 
 /*============================================================================
 #  CQL supports scalar, spatial, temporal and existence predicates.

@@ -10,17 +10,23 @@ type CQLParserListener interface {
 	// EnterCqlFilter is called when entering the cqlFilter production.
 	EnterCqlFilter(c *CqlFilterContext)
 
-	// EnterBooleanExpression is called when entering the booleanExpression production.
-	EnterBooleanExpression(c *BooleanExpressionContext)
+	// EnterBoolExprParen is called when entering the BoolExprParen production.
+	EnterBoolExprParen(c *BoolExprParenContext)
+
+	// EnterBoolExprAnd is called when entering the BoolExprAnd production.
+	EnterBoolExprAnd(c *BoolExprAndContext)
+
+	// EnterBoolExprNot is called when entering the BoolExprNot production.
+	EnterBoolExprNot(c *BoolExprNotContext)
+
+	// EnterBoolExprTerm is called when entering the BoolExprTerm production.
+	EnterBoolExprTerm(c *BoolExprTermContext)
+
+	// EnterBoolExprOr is called when entering the BoolExprOr production.
+	EnterBoolExprOr(c *BoolExprOrContext)
 
 	// EnterBooleanTerm is called when entering the booleanTerm production.
 	EnterBooleanTerm(c *BooleanTermContext)
-
-	// EnterBooleanFactor is called when entering the booleanFactor production.
-	EnterBooleanFactor(c *BooleanFactorContext)
-
-	// EnterBooleanPrimary is called when entering the booleanPrimary production.
-	EnterBooleanPrimary(c *BooleanPrimaryContext)
 
 	// EnterPredicate is called when entering the predicate production.
 	EnterPredicate(c *PredicateContext)
@@ -115,17 +121,23 @@ type CQLParserListener interface {
 	// ExitCqlFilter is called when exiting the cqlFilter production.
 	ExitCqlFilter(c *CqlFilterContext)
 
-	// ExitBooleanExpression is called when exiting the booleanExpression production.
-	ExitBooleanExpression(c *BooleanExpressionContext)
+	// ExitBoolExprParen is called when exiting the BoolExprParen production.
+	ExitBoolExprParen(c *BoolExprParenContext)
+
+	// ExitBoolExprAnd is called when exiting the BoolExprAnd production.
+	ExitBoolExprAnd(c *BoolExprAndContext)
+
+	// ExitBoolExprNot is called when exiting the BoolExprNot production.
+	ExitBoolExprNot(c *BoolExprNotContext)
+
+	// ExitBoolExprTerm is called when exiting the BoolExprTerm production.
+	ExitBoolExprTerm(c *BoolExprTermContext)
+
+	// ExitBoolExprOr is called when exiting the BoolExprOr production.
+	ExitBoolExprOr(c *BoolExprOrContext)
 
 	// ExitBooleanTerm is called when exiting the booleanTerm production.
 	ExitBooleanTerm(c *BooleanTermContext)
-
-	// ExitBooleanFactor is called when exiting the booleanFactor production.
-	ExitBooleanFactor(c *BooleanFactorContext)
-
-	// ExitBooleanPrimary is called when exiting the booleanPrimary production.
-	ExitBooleanPrimary(c *BooleanPrimaryContext)
 
 	// ExitPredicate is called when exiting the predicate production.
 	ExitPredicate(c *PredicateContext)
