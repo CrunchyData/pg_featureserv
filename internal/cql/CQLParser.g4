@@ -46,13 +46,14 @@ predicate : comparisonPredicate
 # an operator to test if a scalar expression is NULL or not.
 #============================================================================*/
 
-comparisonPredicate : binaryComparisonPredicate
-                    | isLikePredicate
-                    | isBetweenPredicate
-                    | isInListPredicate
-                    | isNullPredicate;
+comparisonPredicate : binaryComparisonPredicate # PredicateBinaryComp
+                    | isLikePredicate           # PredicateLike
+                    | isBetweenPredicate        # PredicateBetween
+                    | isInListPredicate         # PredicateIn
+                    | isNullPredicate           # PredicateIsNull
+                    ;
 
-binaryComparisonPredicate : scalarExpression ComparisonOperator scalarExpression;
+binaryComparisonPredicate : left=scalarExpression op=ComparisonOperator right=scalarExpression;
 
 isLikePredicate :  propertyName (NOT)? ( LIKE | ILIKE ) characterLiteral;
 
@@ -78,16 +79,16 @@ isNullPredicate : propertyName IS (NOT)? NULL;
 # The Postgres parser will provide a final check on the correctness.
 #============================================================================*/
 
-scalarExpression : scalarValue
-                    | LEFTPAREN scalarExpression RIGHTPAREN
-                    | scalarExpression ArithmeticOperator scalarExpression
-                    ;
+scalarExpression : val=scalarValue                                                  # ScalarVal
+            | LEFTPAREN expr=scalarExpression RIGHTPAREN                            # ScalarParen
+            | left=scalarExpression op=ArithmeticOperator right=scalarExpression    # ScalarExpr
+            ;
 
-scalarValue : propertyName
-            | characterLiteral
-            | numericLiteral
-            | booleanLiteral
-            | temporalLiteral
+scalarValue : propertyName      # LiteralName
+            | characterLiteral  # LiteralString
+            | numericLiteral    # LiteralNumeric
+            | booleanLiteral    # LiteralBoolean
+            | temporalLiteral   # LiteralTemporal
 //                   | function
              ;
 

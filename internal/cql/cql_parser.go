@@ -1205,54 +1205,8 @@ func NewComparisonPredicateContext(parser antlr.Parser, parent antlr.ParserRuleC
 
 func (s *ComparisonPredicateContext) GetParser() antlr.Parser { return s.parser }
 
-func (s *ComparisonPredicateContext) BinaryComparisonPredicate() IBinaryComparisonPredicateContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IBinaryComparisonPredicateContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IBinaryComparisonPredicateContext)
-}
-
-func (s *ComparisonPredicateContext) IsLikePredicate() IIsLikePredicateContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IIsLikePredicateContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IIsLikePredicateContext)
-}
-
-func (s *ComparisonPredicateContext) IsBetweenPredicate() IIsBetweenPredicateContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IIsBetweenPredicateContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IIsBetweenPredicateContext)
-}
-
-func (s *ComparisonPredicateContext) IsInListPredicate() IIsInListPredicateContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IIsInListPredicateContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IIsInListPredicateContext)
-}
-
-func (s *ComparisonPredicateContext) IsNullPredicate() IIsNullPredicateContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IIsNullPredicateContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IIsNullPredicateContext)
+func (s *ComparisonPredicateContext) CopyFrom(ctx *ComparisonPredicateContext) {
+	s.BaseParserRuleContext.CopyFrom(ctx.BaseParserRuleContext)
 }
 
 func (s *ComparisonPredicateContext) GetRuleContext() antlr.RuleContext {
@@ -1263,15 +1217,203 @@ func (s *ComparisonPredicateContext) ToStringTree(ruleNames []string, recog antl
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
-func (s *ComparisonPredicateContext) EnterRule(listener antlr.ParseTreeListener) {
+type PredicateBinaryCompContext struct {
+	*ComparisonPredicateContext
+}
+
+func NewPredicateBinaryCompContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *PredicateBinaryCompContext {
+	var p = new(PredicateBinaryCompContext)
+
+	p.ComparisonPredicateContext = NewEmptyComparisonPredicateContext()
+	p.parser = parser
+	p.CopyFrom(ctx.(*ComparisonPredicateContext))
+
+	return p
+}
+
+func (s *PredicateBinaryCompContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *PredicateBinaryCompContext) BinaryComparisonPredicate() IBinaryComparisonPredicateContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IBinaryComparisonPredicateContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IBinaryComparisonPredicateContext)
+}
+
+func (s *PredicateBinaryCompContext) EnterRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(CQLParserListener); ok {
-		listenerT.EnterComparisonPredicate(s)
+		listenerT.EnterPredicateBinaryComp(s)
 	}
 }
 
-func (s *ComparisonPredicateContext) ExitRule(listener antlr.ParseTreeListener) {
+func (s *PredicateBinaryCompContext) ExitRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(CQLParserListener); ok {
-		listenerT.ExitComparisonPredicate(s)
+		listenerT.ExitPredicateBinaryComp(s)
+	}
+}
+
+type PredicateInContext struct {
+	*ComparisonPredicateContext
+}
+
+func NewPredicateInContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *PredicateInContext {
+	var p = new(PredicateInContext)
+
+	p.ComparisonPredicateContext = NewEmptyComparisonPredicateContext()
+	p.parser = parser
+	p.CopyFrom(ctx.(*ComparisonPredicateContext))
+
+	return p
+}
+
+func (s *PredicateInContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *PredicateInContext) IsInListPredicate() IIsInListPredicateContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IIsInListPredicateContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IIsInListPredicateContext)
+}
+
+func (s *PredicateInContext) EnterRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(CQLParserListener); ok {
+		listenerT.EnterPredicateIn(s)
+	}
+}
+
+func (s *PredicateInContext) ExitRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(CQLParserListener); ok {
+		listenerT.ExitPredicateIn(s)
+	}
+}
+
+type PredicateBetweenContext struct {
+	*ComparisonPredicateContext
+}
+
+func NewPredicateBetweenContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *PredicateBetweenContext {
+	var p = new(PredicateBetweenContext)
+
+	p.ComparisonPredicateContext = NewEmptyComparisonPredicateContext()
+	p.parser = parser
+	p.CopyFrom(ctx.(*ComparisonPredicateContext))
+
+	return p
+}
+
+func (s *PredicateBetweenContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *PredicateBetweenContext) IsBetweenPredicate() IIsBetweenPredicateContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IIsBetweenPredicateContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IIsBetweenPredicateContext)
+}
+
+func (s *PredicateBetweenContext) EnterRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(CQLParserListener); ok {
+		listenerT.EnterPredicateBetween(s)
+	}
+}
+
+func (s *PredicateBetweenContext) ExitRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(CQLParserListener); ok {
+		listenerT.ExitPredicateBetween(s)
+	}
+}
+
+type PredicateLikeContext struct {
+	*ComparisonPredicateContext
+}
+
+func NewPredicateLikeContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *PredicateLikeContext {
+	var p = new(PredicateLikeContext)
+
+	p.ComparisonPredicateContext = NewEmptyComparisonPredicateContext()
+	p.parser = parser
+	p.CopyFrom(ctx.(*ComparisonPredicateContext))
+
+	return p
+}
+
+func (s *PredicateLikeContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *PredicateLikeContext) IsLikePredicate() IIsLikePredicateContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IIsLikePredicateContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IIsLikePredicateContext)
+}
+
+func (s *PredicateLikeContext) EnterRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(CQLParserListener); ok {
+		listenerT.EnterPredicateLike(s)
+	}
+}
+
+func (s *PredicateLikeContext) ExitRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(CQLParserListener); ok {
+		listenerT.ExitPredicateLike(s)
+	}
+}
+
+type PredicateIsNullContext struct {
+	*ComparisonPredicateContext
+}
+
+func NewPredicateIsNullContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *PredicateIsNullContext {
+	var p = new(PredicateIsNullContext)
+
+	p.ComparisonPredicateContext = NewEmptyComparisonPredicateContext()
+	p.parser = parser
+	p.CopyFrom(ctx.(*ComparisonPredicateContext))
+
+	return p
+}
+
+func (s *PredicateIsNullContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *PredicateIsNullContext) IsNullPredicate() IIsNullPredicateContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IIsNullPredicateContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IIsNullPredicateContext)
+}
+
+func (s *PredicateIsNullContext) EnterRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(CQLParserListener); ok {
+		listenerT.EnterPredicateIsNull(s)
+	}
+}
+
+func (s *PredicateIsNullContext) ExitRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(CQLParserListener); ok {
+		listenerT.ExitPredicateIsNull(s)
 	}
 }
 
@@ -1299,6 +1441,7 @@ func (p *CQLParser) ComparisonPredicate() (localctx IComparisonPredicateContext)
 	p.GetErrorHandler().Sync(p)
 	switch p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 5, p.GetParserRuleContext()) {
 	case 1:
+		localctx = NewPredicateBinaryCompContext(p, localctx)
 		p.EnterOuterAlt(localctx, 1)
 		{
 			p.SetState(99)
@@ -1306,6 +1449,7 @@ func (p *CQLParser) ComparisonPredicate() (localctx IComparisonPredicateContext)
 		}
 
 	case 2:
+		localctx = NewPredicateLikeContext(p, localctx)
 		p.EnterOuterAlt(localctx, 2)
 		{
 			p.SetState(100)
@@ -1313,6 +1457,7 @@ func (p *CQLParser) ComparisonPredicate() (localctx IComparisonPredicateContext)
 		}
 
 	case 3:
+		localctx = NewPredicateBetweenContext(p, localctx)
 		p.EnterOuterAlt(localctx, 3)
 		{
 			p.SetState(101)
@@ -1320,6 +1465,7 @@ func (p *CQLParser) ComparisonPredicate() (localctx IComparisonPredicateContext)
 		}
 
 	case 4:
+		localctx = NewPredicateInContext(p, localctx)
 		p.EnterOuterAlt(localctx, 4)
 		{
 			p.SetState(102)
@@ -1327,6 +1473,7 @@ func (p *CQLParser) ComparisonPredicate() (localctx IComparisonPredicateContext)
 		}
 
 	case 5:
+		localctx = NewPredicateIsNullContext(p, localctx)
 		p.EnterOuterAlt(localctx, 5)
 		{
 			p.SetState(103)
@@ -1345,6 +1492,24 @@ type IBinaryComparisonPredicateContext interface {
 	// GetParser returns the parser.
 	GetParser() antlr.Parser
 
+	// GetOp returns the op token.
+	GetOp() antlr.Token
+
+	// SetOp sets the op token.
+	SetOp(antlr.Token)
+
+	// GetLeft returns the left rule contexts.
+	GetLeft() IScalarExpressionContext
+
+	// GetRight returns the right rule contexts.
+	GetRight() IScalarExpressionContext
+
+	// SetLeft sets the left rule contexts.
+	SetLeft(IScalarExpressionContext)
+
+	// SetRight sets the right rule contexts.
+	SetRight(IScalarExpressionContext)
+
 	// IsBinaryComparisonPredicateContext differentiates from other interfaces.
 	IsBinaryComparisonPredicateContext()
 }
@@ -1352,6 +1517,9 @@ type IBinaryComparisonPredicateContext interface {
 type BinaryComparisonPredicateContext struct {
 	*CqlContext
 	parser antlr.Parser
+	left   IScalarExpressionContext
+	op     antlr.Token
+	right  IScalarExpressionContext
 }
 
 func NewEmptyBinaryComparisonPredicateContext() *BinaryComparisonPredicateContext {
@@ -1375,6 +1543,18 @@ func NewBinaryComparisonPredicateContext(parser antlr.Parser, parent antlr.Parse
 }
 
 func (s *BinaryComparisonPredicateContext) GetParser() antlr.Parser { return s.parser }
+
+func (s *BinaryComparisonPredicateContext) GetOp() antlr.Token { return s.op }
+
+func (s *BinaryComparisonPredicateContext) SetOp(v antlr.Token) { s.op = v }
+
+func (s *BinaryComparisonPredicateContext) GetLeft() IScalarExpressionContext { return s.left }
+
+func (s *BinaryComparisonPredicateContext) GetRight() IScalarExpressionContext { return s.right }
+
+func (s *BinaryComparisonPredicateContext) SetLeft(v IScalarExpressionContext) { s.left = v }
+
+func (s *BinaryComparisonPredicateContext) SetRight(v IScalarExpressionContext) { s.right = v }
 
 func (s *BinaryComparisonPredicateContext) AllScalarExpression() []IScalarExpressionContext {
 	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*IScalarExpressionContext)(nil)).Elem())
@@ -1446,15 +1626,24 @@ func (p *CQLParser) BinaryComparisonPredicate() (localctx IBinaryComparisonPredi
 	p.EnterOuterAlt(localctx, 1)
 	{
 		p.SetState(106)
-		p.scalarExpression(0)
+
+		var _x = p.scalarExpression(0)
+
+		localctx.(*BinaryComparisonPredicateContext).left = _x
 	}
 	{
 		p.SetState(107)
-		p.Match(CQLParserComparisonOperator)
+
+		var _m = p.Match(CQLParserComparisonOperator)
+
+		localctx.(*BinaryComparisonPredicateContext).op = _m
 	}
 	{
 		p.SetState(108)
-		p.scalarExpression(0)
+
+		var _x = p.scalarExpression(0)
+
+		localctx.(*BinaryComparisonPredicateContext).right = _x
 	}
 
 	return localctx
@@ -2167,21 +2356,52 @@ func NewScalarExpressionContext(parser antlr.Parser, parent antlr.ParserRuleCont
 
 func (s *ScalarExpressionContext) GetParser() antlr.Parser { return s.parser }
 
-func (s *ScalarExpressionContext) ScalarValue() IScalarValueContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IScalarValueContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IScalarValueContext)
+func (s *ScalarExpressionContext) CopyFrom(ctx *ScalarExpressionContext) {
+	s.BaseParserRuleContext.CopyFrom(ctx.BaseParserRuleContext)
 }
 
-func (s *ScalarExpressionContext) LEFTPAREN() antlr.TerminalNode {
-	return s.GetToken(CQLParserLEFTPAREN, 0)
+func (s *ScalarExpressionContext) GetRuleContext() antlr.RuleContext {
+	return s
 }
 
-func (s *ScalarExpressionContext) AllScalarExpression() []IScalarExpressionContext {
+func (s *ScalarExpressionContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
+	return antlr.TreesStringTree(s, ruleNames, recog)
+}
+
+type ScalarExprContext struct {
+	*ScalarExpressionContext
+	left  IScalarExpressionContext
+	op    antlr.Token
+	right IScalarExpressionContext
+}
+
+func NewScalarExprContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *ScalarExprContext {
+	var p = new(ScalarExprContext)
+
+	p.ScalarExpressionContext = NewEmptyScalarExpressionContext()
+	p.parser = parser
+	p.CopyFrom(ctx.(*ScalarExpressionContext))
+
+	return p
+}
+
+func (s *ScalarExprContext) GetOp() antlr.Token { return s.op }
+
+func (s *ScalarExprContext) SetOp(v antlr.Token) { s.op = v }
+
+func (s *ScalarExprContext) GetLeft() IScalarExpressionContext { return s.left }
+
+func (s *ScalarExprContext) GetRight() IScalarExpressionContext { return s.right }
+
+func (s *ScalarExprContext) SetLeft(v IScalarExpressionContext) { s.left = v }
+
+func (s *ScalarExprContext) SetRight(v IScalarExpressionContext) { s.right = v }
+
+func (s *ScalarExprContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *ScalarExprContext) AllScalarExpression() []IScalarExpressionContext {
 	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*IScalarExpressionContext)(nil)).Elem())
 	var tst = make([]IScalarExpressionContext, len(ts))
 
@@ -2194,7 +2414,7 @@ func (s *ScalarExpressionContext) AllScalarExpression() []IScalarExpressionConte
 	return tst
 }
 
-func (s *ScalarExpressionContext) ScalarExpression(i int) IScalarExpressionContext {
+func (s *ScalarExprContext) ScalarExpression(i int) IScalarExpressionContext {
 	var t = s.GetTypedRuleContext(reflect.TypeOf((*IScalarExpressionContext)(nil)).Elem(), i)
 
 	if t == nil {
@@ -2204,31 +2424,117 @@ func (s *ScalarExpressionContext) ScalarExpression(i int) IScalarExpressionConte
 	return t.(IScalarExpressionContext)
 }
 
-func (s *ScalarExpressionContext) RIGHTPAREN() antlr.TerminalNode {
-	return s.GetToken(CQLParserRIGHTPAREN, 0)
-}
-
-func (s *ScalarExpressionContext) ArithmeticOperator() antlr.TerminalNode {
+func (s *ScalarExprContext) ArithmeticOperator() antlr.TerminalNode {
 	return s.GetToken(CQLParserArithmeticOperator, 0)
 }
 
-func (s *ScalarExpressionContext) GetRuleContext() antlr.RuleContext {
-	return s
-}
-
-func (s *ScalarExpressionContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
-	return antlr.TreesStringTree(s, ruleNames, recog)
-}
-
-func (s *ScalarExpressionContext) EnterRule(listener antlr.ParseTreeListener) {
+func (s *ScalarExprContext) EnterRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(CQLParserListener); ok {
-		listenerT.EnterScalarExpression(s)
+		listenerT.EnterScalarExpr(s)
 	}
 }
 
-func (s *ScalarExpressionContext) ExitRule(listener antlr.ParseTreeListener) {
+func (s *ScalarExprContext) ExitRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(CQLParserListener); ok {
-		listenerT.ExitScalarExpression(s)
+		listenerT.ExitScalarExpr(s)
+	}
+}
+
+type ScalarValContext struct {
+	*ScalarExpressionContext
+	val IScalarValueContext
+}
+
+func NewScalarValContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *ScalarValContext {
+	var p = new(ScalarValContext)
+
+	p.ScalarExpressionContext = NewEmptyScalarExpressionContext()
+	p.parser = parser
+	p.CopyFrom(ctx.(*ScalarExpressionContext))
+
+	return p
+}
+
+func (s *ScalarValContext) GetVal() IScalarValueContext { return s.val }
+
+func (s *ScalarValContext) SetVal(v IScalarValueContext) { s.val = v }
+
+func (s *ScalarValContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *ScalarValContext) ScalarValue() IScalarValueContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IScalarValueContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IScalarValueContext)
+}
+
+func (s *ScalarValContext) EnterRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(CQLParserListener); ok {
+		listenerT.EnterScalarVal(s)
+	}
+}
+
+func (s *ScalarValContext) ExitRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(CQLParserListener); ok {
+		listenerT.ExitScalarVal(s)
+	}
+}
+
+type ScalarParenContext struct {
+	*ScalarExpressionContext
+	expr IScalarExpressionContext
+}
+
+func NewScalarParenContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *ScalarParenContext {
+	var p = new(ScalarParenContext)
+
+	p.ScalarExpressionContext = NewEmptyScalarExpressionContext()
+	p.parser = parser
+	p.CopyFrom(ctx.(*ScalarExpressionContext))
+
+	return p
+}
+
+func (s *ScalarParenContext) GetExpr() IScalarExpressionContext { return s.expr }
+
+func (s *ScalarParenContext) SetExpr(v IScalarExpressionContext) { s.expr = v }
+
+func (s *ScalarParenContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *ScalarParenContext) LEFTPAREN() antlr.TerminalNode {
+	return s.GetToken(CQLParserLEFTPAREN, 0)
+}
+
+func (s *ScalarParenContext) RIGHTPAREN() antlr.TerminalNode {
+	return s.GetToken(CQLParserRIGHTPAREN, 0)
+}
+
+func (s *ScalarParenContext) ScalarExpression() IScalarExpressionContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IScalarExpressionContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IScalarExpressionContext)
+}
+
+func (s *ScalarParenContext) EnterRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(CQLParserListener); ok {
+		listenerT.EnterScalarParen(s)
+	}
+}
+
+func (s *ScalarParenContext) ExitRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(CQLParserListener); ok {
+		listenerT.ExitScalarParen(s)
 	}
 }
 
@@ -2269,19 +2575,32 @@ func (p *CQLParser) scalarExpression(_p int) (localctx IScalarExpressionContext)
 
 	switch p.GetTokenStream().LA(1) {
 	case CQLParserBooleanLiteral, CQLParserNumericLiteral, CQLParserIdentifier, CQLParserTemporalLiteral, CQLParserCharacterStringLiteral:
+		localctx = NewScalarValContext(p, localctx)
+		p.SetParserRuleContext(localctx)
+		_prevctx = localctx
+
 		{
 			p.SetState(160)
-			p.ScalarValue()
+
+			var _x = p.ScalarValue()
+
+			localctx.(*ScalarValContext).val = _x
 		}
 
 	case CQLParserLEFTPAREN:
+		localctx = NewScalarParenContext(p, localctx)
+		p.SetParserRuleContext(localctx)
+		_prevctx = localctx
 		{
 			p.SetState(161)
 			p.Match(CQLParserLEFTPAREN)
 		}
 		{
 			p.SetState(162)
-			p.scalarExpression(0)
+
+			var _x = p.scalarExpression(0)
+
+			localctx.(*ScalarParenContext).expr = _x
 		}
 		{
 			p.SetState(163)
@@ -2302,7 +2621,9 @@ func (p *CQLParser) scalarExpression(_p int) (localctx IScalarExpressionContext)
 				p.TriggerExitRuleEvent()
 			}
 			_prevctx = localctx
-			localctx = NewScalarExpressionContext(p, _parentctx, _parentState)
+			localctx = NewScalarExprContext(p, NewScalarExpressionContext(p, _parentctx, _parentState))
+			localctx.(*ScalarExprContext).left = _prevctx
+
 			p.PushNewRecursionContext(localctx, _startState, CQLParserRULE_scalarExpression)
 			p.SetState(167)
 
@@ -2311,11 +2632,17 @@ func (p *CQLParser) scalarExpression(_p int) (localctx IScalarExpressionContext)
 			}
 			{
 				p.SetState(168)
-				p.Match(CQLParserArithmeticOperator)
+
+				var _m = p.Match(CQLParserArithmeticOperator)
+
+				localctx.(*ScalarExprContext).op = _m
 			}
 			{
 				p.SetState(169)
-				p.scalarExpression(2)
+
+				var _x = p.scalarExpression(2)
+
+				localctx.(*ScalarExprContext).right = _x
 			}
 
 		}
@@ -2365,54 +2692,8 @@ func NewScalarValueContext(parser antlr.Parser, parent antlr.ParserRuleContext, 
 
 func (s *ScalarValueContext) GetParser() antlr.Parser { return s.parser }
 
-func (s *ScalarValueContext) PropertyName() IPropertyNameContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IPropertyNameContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IPropertyNameContext)
-}
-
-func (s *ScalarValueContext) CharacterLiteral() ICharacterLiteralContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*ICharacterLiteralContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(ICharacterLiteralContext)
-}
-
-func (s *ScalarValueContext) NumericLiteral() INumericLiteralContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*INumericLiteralContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(INumericLiteralContext)
-}
-
-func (s *ScalarValueContext) BooleanLiteral() IBooleanLiteralContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IBooleanLiteralContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IBooleanLiteralContext)
-}
-
-func (s *ScalarValueContext) TemporalLiteral() ITemporalLiteralContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*ITemporalLiteralContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(ITemporalLiteralContext)
+func (s *ScalarValueContext) CopyFrom(ctx *ScalarValueContext) {
+	s.BaseParserRuleContext.CopyFrom(ctx.BaseParserRuleContext)
 }
 
 func (s *ScalarValueContext) GetRuleContext() antlr.RuleContext {
@@ -2423,15 +2704,203 @@ func (s *ScalarValueContext) ToStringTree(ruleNames []string, recog antlr.Recogn
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
-func (s *ScalarValueContext) EnterRule(listener antlr.ParseTreeListener) {
+type LiteralTemporalContext struct {
+	*ScalarValueContext
+}
+
+func NewLiteralTemporalContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *LiteralTemporalContext {
+	var p = new(LiteralTemporalContext)
+
+	p.ScalarValueContext = NewEmptyScalarValueContext()
+	p.parser = parser
+	p.CopyFrom(ctx.(*ScalarValueContext))
+
+	return p
+}
+
+func (s *LiteralTemporalContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *LiteralTemporalContext) TemporalLiteral() ITemporalLiteralContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*ITemporalLiteralContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(ITemporalLiteralContext)
+}
+
+func (s *LiteralTemporalContext) EnterRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(CQLParserListener); ok {
-		listenerT.EnterScalarValue(s)
+		listenerT.EnterLiteralTemporal(s)
 	}
 }
 
-func (s *ScalarValueContext) ExitRule(listener antlr.ParseTreeListener) {
+func (s *LiteralTemporalContext) ExitRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(CQLParserListener); ok {
-		listenerT.ExitScalarValue(s)
+		listenerT.ExitLiteralTemporal(s)
+	}
+}
+
+type LiteralNumericContext struct {
+	*ScalarValueContext
+}
+
+func NewLiteralNumericContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *LiteralNumericContext {
+	var p = new(LiteralNumericContext)
+
+	p.ScalarValueContext = NewEmptyScalarValueContext()
+	p.parser = parser
+	p.CopyFrom(ctx.(*ScalarValueContext))
+
+	return p
+}
+
+func (s *LiteralNumericContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *LiteralNumericContext) NumericLiteral() INumericLiteralContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*INumericLiteralContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(INumericLiteralContext)
+}
+
+func (s *LiteralNumericContext) EnterRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(CQLParserListener); ok {
+		listenerT.EnterLiteralNumeric(s)
+	}
+}
+
+func (s *LiteralNumericContext) ExitRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(CQLParserListener); ok {
+		listenerT.ExitLiteralNumeric(s)
+	}
+}
+
+type LiteralStringContext struct {
+	*ScalarValueContext
+}
+
+func NewLiteralStringContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *LiteralStringContext {
+	var p = new(LiteralStringContext)
+
+	p.ScalarValueContext = NewEmptyScalarValueContext()
+	p.parser = parser
+	p.CopyFrom(ctx.(*ScalarValueContext))
+
+	return p
+}
+
+func (s *LiteralStringContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *LiteralStringContext) CharacterLiteral() ICharacterLiteralContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*ICharacterLiteralContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(ICharacterLiteralContext)
+}
+
+func (s *LiteralStringContext) EnterRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(CQLParserListener); ok {
+		listenerT.EnterLiteralString(s)
+	}
+}
+
+func (s *LiteralStringContext) ExitRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(CQLParserListener); ok {
+		listenerT.ExitLiteralString(s)
+	}
+}
+
+type LiteralNameContext struct {
+	*ScalarValueContext
+}
+
+func NewLiteralNameContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *LiteralNameContext {
+	var p = new(LiteralNameContext)
+
+	p.ScalarValueContext = NewEmptyScalarValueContext()
+	p.parser = parser
+	p.CopyFrom(ctx.(*ScalarValueContext))
+
+	return p
+}
+
+func (s *LiteralNameContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *LiteralNameContext) PropertyName() IPropertyNameContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IPropertyNameContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IPropertyNameContext)
+}
+
+func (s *LiteralNameContext) EnterRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(CQLParserListener); ok {
+		listenerT.EnterLiteralName(s)
+	}
+}
+
+func (s *LiteralNameContext) ExitRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(CQLParserListener); ok {
+		listenerT.ExitLiteralName(s)
+	}
+}
+
+type LiteralBooleanContext struct {
+	*ScalarValueContext
+}
+
+func NewLiteralBooleanContext(parser antlr.Parser, ctx antlr.ParserRuleContext) *LiteralBooleanContext {
+	var p = new(LiteralBooleanContext)
+
+	p.ScalarValueContext = NewEmptyScalarValueContext()
+	p.parser = parser
+	p.CopyFrom(ctx.(*ScalarValueContext))
+
+	return p
+}
+
+func (s *LiteralBooleanContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *LiteralBooleanContext) BooleanLiteral() IBooleanLiteralContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IBooleanLiteralContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IBooleanLiteralContext)
+}
+
+func (s *LiteralBooleanContext) EnterRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(CQLParserListener); ok {
+		listenerT.EnterLiteralBoolean(s)
+	}
+}
+
+func (s *LiteralBooleanContext) ExitRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(CQLParserListener); ok {
+		listenerT.ExitLiteralBoolean(s)
 	}
 }
 
@@ -2460,6 +2929,7 @@ func (p *CQLParser) ScalarValue() (localctx IScalarValueContext) {
 
 	switch p.GetTokenStream().LA(1) {
 	case CQLParserIdentifier:
+		localctx = NewLiteralNameContext(p, localctx)
 		p.EnterOuterAlt(localctx, 1)
 		{
 			p.SetState(175)
@@ -2467,6 +2937,7 @@ func (p *CQLParser) ScalarValue() (localctx IScalarValueContext) {
 		}
 
 	case CQLParserCharacterStringLiteral:
+		localctx = NewLiteralStringContext(p, localctx)
 		p.EnterOuterAlt(localctx, 2)
 		{
 			p.SetState(176)
@@ -2474,6 +2945,7 @@ func (p *CQLParser) ScalarValue() (localctx IScalarValueContext) {
 		}
 
 	case CQLParserNumericLiteral:
+		localctx = NewLiteralNumericContext(p, localctx)
 		p.EnterOuterAlt(localctx, 3)
 		{
 			p.SetState(177)
@@ -2481,6 +2953,7 @@ func (p *CQLParser) ScalarValue() (localctx IScalarValueContext) {
 		}
 
 	case CQLParserBooleanLiteral:
+		localctx = NewLiteralBooleanContext(p, localctx)
 		p.EnterOuterAlt(localctx, 4)
 		{
 			p.SetState(178)
@@ -2488,6 +2961,7 @@ func (p *CQLParser) ScalarValue() (localctx IScalarValueContext) {
 		}
 
 	case CQLParserTemporalLiteral:
+		localctx = NewLiteralTemporalContext(p, localctx)
 		p.EnterOuterAlt(localctx, 5)
 		{
 			p.SetState(179)

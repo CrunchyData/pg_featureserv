@@ -211,20 +211,6 @@ func (l *cqlListener) ExitCqlFilter(ctx *CqlFilterContext) {
 	l.sql = sqlFor(ctx.BooleanExpression())
 }
 
-/*
-func (l *cqlListener) ExitBooleanExpression(ctx *BooleanExpressionContext) {
-	sql := sqlFor(ctx.BooleanFactor())
-	//sql := sqlFor(ctx.BooleanExpression(0))
-	if ctx.OR(0) != nil {
-		term := sqlFor(ctx.BooleanExpression(1))
-		sql = sql + " OR " + term
-	} else if ctx.LEFTPAREN() != nil {
-		sql = "(" + sqlFor(ctx.BooleanExpression(0)) + ")"
-	}
-	ctx.SetSql(sql)
-}
-*/
-
 func (l *cqlListener) ExitBoolExprTerm(ctx *BoolExprTermContext) {
 	sql := sqlFor(ctx.BooleanTerm())
 	ctx.SetSql(sql)
@@ -256,15 +242,6 @@ func (l *cqlListener) ExitBoolExprNot(ctx *BoolExprNotContext) {
 	ctx.SetSql(sql)
 }
 
-/*
-	func (l *cqlListener) ExitBooleanTerm(ctx *BooleanTermContext) {
-		sql := sqlFor(ctx.BooleanPrimary())
-		if ctx.NOT() != nil {
-			sql = " NOT " + sql
-		}
-		ctx.SetSql(sql)
-	}
-*/
 func (l *cqlListener) ExitBooleanTerm(ctx *BooleanTermContext) {
 	var sql string
 	if ctx.BooleanLiteral() != nil {
@@ -289,58 +266,79 @@ func (l *cqlListener) ExitPredicate(ctx *PredicateContext) {
 	ctx.SetSql(sql)
 }
 
-func (l *cqlListener) ExitComparisonPredicate(ctx *ComparisonPredicateContext) {
-	var sql string
-	if ctx.BinaryComparisonPredicate() != nil {
-		sql = sqlFor(ctx.BinaryComparisonPredicate())
-	} else if ctx.IsLikePredicate() != nil {
-		sql = sqlFor(ctx.IsLikePredicate())
-	} else if ctx.IsBetweenPredicate() != nil {
-		sql = sqlFor(ctx.IsBetweenPredicate())
-	} else if ctx.IsNullPredicate() != nil {
-		sql = sqlFor(ctx.IsNullPredicate())
-	} else if ctx.IsInListPredicate() != nil {
-		sql = sqlFor(ctx.IsInListPredicate())
-	}
+func (l *cqlListener) ExitPredicateBinaryComp(ctx *PredicateBinaryCompContext) {
+	sql := sqlFor(ctx.BinaryComparisonPredicate())
+	ctx.SetSql(sql)
+}
+
+func (l *cqlListener) ExitPredicateBetween(ctx *PredicateBetweenContext) {
+	sql := sqlFor(ctx.IsBetweenPredicate())
+	ctx.SetSql(sql)
+}
+
+func (l *cqlListener) ExitPredicateLike(ctx *PredicateLikeContext) {
+	sql := sqlFor(ctx.IsLikePredicate())
+	ctx.SetSql(sql)
+}
+
+func (l *cqlListener) ExitPredicateIn(ctx *PredicateInContext) {
+	sql := sqlFor(ctx.IsInListPredicate())
+	ctx.SetSql(sql)
+}
+
+func (l *cqlListener) ExitPredicateIsNull(ctx *PredicateIsNullContext) {
+	sql := sqlFor(ctx.IsNullPredicate())
 	ctx.SetSql(sql)
 }
 
 func (l *cqlListener) ExitBinaryComparisonPredicate(ctx *BinaryComparisonPredicateContext) {
-	expr1 := sqlFor(ctx.ScalarExpression(0))
-	expr2 := sqlFor(ctx.ScalarExpression(1))
-	op := getNodeText(ctx.ComparisonOperator())
+	expr1 := sqlFor(ctx.left)
+	expr2 := sqlFor(ctx.right)
+	op := ctx.op.GetText()
 	sql := expr1 + " " + op + " " + expr2
 	ctx.SetSql(sql)
 }
 
-func (l *cqlListener) ExitScalarValue(ctx *ScalarValueContext) {
-	var sql string
-	if ctx.PropertyName() != nil {
-		sql = quotedName(getText(ctx.PropertyName()))
-	} else if ctx.CharacterLiteral() != nil {
-		sql = quotedText(getText(ctx.CharacterLiteral()))
-	} else if ctx.NumericLiteral() != nil {
-		sql = getText(ctx.NumericLiteral())
-	} else if ctx.BooleanLiteral() != nil {
-		sql = getText(ctx.BooleanLiteral())
-	} else if ctx.TemporalLiteral() != nil {
-		sql = sqlFor(ctx.TemporalLiteral())
-	}
+func (l *cqlListener) ExitLiteralName(ctx *LiteralNameContext) {
+	sql := quotedName(getText(ctx.PropertyName()))
 	ctx.SetSql(sql)
 }
 
-func (l *cqlListener) ExitScalarExpression(ctx *ScalarExpressionContext) {
-	var sql string
-	if ctx.LEFTPAREN() != nil {
-		sql = "(" + sqlFor(ctx.ScalarExpression(0)) + ")"
-	} else if ctx.ArithmeticOperator() != nil {
-		expr1 := sqlFor(ctx.ScalarExpression(0))
-		expr2 := sqlFor(ctx.ScalarExpression(1))
-		op := getNodeText(ctx.ArithmeticOperator())
-		sql = expr1 + " " + op + " " + expr2
-	} else {
-		sql = sqlFor(ctx.ScalarValue())
-	}
+func (l *cqlListener) ExitLiteralString(ctx *LiteralStringContext) {
+	sql := quotedText(getText(ctx.CharacterLiteral()))
+	ctx.SetSql(sql)
+}
+
+func (l *cqlListener) ExitLiteralNumeric(ctx *LiteralNumericContext) {
+	sql := getText(ctx.NumericLiteral())
+	ctx.SetSql(sql)
+}
+
+func (l *cqlListener) ExitLiteralBoolean(ctx *LiteralBooleanContext) {
+	sql := getText(ctx.BooleanLiteral())
+	ctx.SetSql(sql)
+}
+
+func (l *cqlListener) ExitLiteralTemporal(ctx *LiteralTemporalContext) {
+	sql := sqlFor(ctx.TemporalLiteral())
+	ctx.SetSql(sql)
+}
+
+func (l *cqlListener) ExitScalarVal(ctx *ScalarValContext) {
+	sql := sqlFor(ctx.val)
+	ctx.SetSql(sql)
+}
+
+func (l *cqlListener) ExitScalarParen(ctx *ScalarParenContext) {
+	sql := "(" + sqlFor(ctx.expr) + ")"
+	ctx.SetSql(sql)
+}
+
+func (l *cqlListener) ExitScalarExpr(ctx *ScalarExprContext) {
+	expr1 := sqlFor(ctx.left)
+	expr2 := sqlFor(ctx.right)
+	op := ctx.op.GetText()
+	sql := expr1 + " " + op + " " + expr2
 	ctx.SetSql(sql)
 }
 
