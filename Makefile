@@ -16,7 +16,7 @@ CONTAINER ?= pramsey/$(PROGRAM)
 DATE ?= $(shell date +%Y%m%d)
 BASE_REGISTRY ?= registry.access.redhat.com
 BASE_IMAGE ?= ubi8-micro
-SYSTEMARCH = $(shell uname -i)
+SYSTEMARCH = $(shell uname -m)
 
 ifeq ($(SYSTEMARCH), x86_64)
 TARGETARCH ?= amd64
@@ -54,7 +54,7 @@ docs:   ##               Generate docs
 
 build: $(PROGRAM)  ##              Build a local binary using APPVERSION parameter or CI as default
 
-$(PROGRAM): $(GOFILES) 
+$(PROGRAM): $(GOFILES)
 	go build -v -ldflags "-s -w -X github.com/CrunchyData/pg_featureserv/conf.setVersion=$(APPVERSION)"
 
 bin-for-docker: $(GOFILES)  ##     Build a local binary using APPVERSION parameter or CI as default (to be used in docker image)
