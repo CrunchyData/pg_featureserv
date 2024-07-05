@@ -89,3 +89,10 @@ http://localhost:9000/collections/pgfs_test.test_crs/items.html?filter=intersect
 ```
 http://localhost:9000/functions/postgisftw.countries_name/items.json?name_prefix=C&filter=continent%20ILIKE%20%27%25america%27
 ```
+
+## Catalog handling
+
+### Handle all column names
+```
+http://localhost:9000/collections/pgfs_test.test_names/items.json?properties=id,colCamelCase
+```

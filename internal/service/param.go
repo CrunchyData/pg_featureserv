@@ -332,8 +332,8 @@ func normalizePropNames(requestNames []string, colNames []string) []string {
 func toNameSet(strs []string) map[string]bool {
 	set := make(map[string]bool)
 	for _, s := range strs {
-		sLow := strings.ToLower(s)
-		set[sLow] = true
+		// keep case of property column names
+		set[s] = true
 	}
 	return set
 }

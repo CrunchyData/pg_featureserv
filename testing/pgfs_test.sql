@@ -85,6 +85,9 @@ VALUES
   (2, 'SRID=4326;LINESTRING(1 1, 2 2)', 'bbb');
 
 --=====================================================================
+
+-- test array handling
+
 CREATE TABLE pgfs_test.test_arr
 (
     id integer primary key,
@@ -103,6 +106,25 @@ INSERT INTO pgfs_test.test_arr
             '{ 1, 2, 3 }',
             '{ 1.1, 2.2, 3.3 }',
             '{ "a", "bb", "ccc" }' );
+
+--=====================================================================
+
+-- test column name handling
+
+CREATE TABLE pgfs_test.test_names
+(
+    id integer primary key,
+    geom geometry(point, 4326),
+    "colCamelCase" integer
+);
+
+-- DROP TABLE pgfs_test.test_names;
+
+INSERT INTO pgfs_test.test_names
+    VALUES 
+        (1, 'SRID=4326;POINT(1 1)', 1 ),
+        (2, 'SRID=4326;POINT(2 2)', 2 );
+
 
 --=====================================================================
 -- Test functions
