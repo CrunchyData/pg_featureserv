@@ -84,7 +84,7 @@ Without `go` installed, you can build `pg_featureserv` in a docker image:
   ```
 
 * This creates a `pg_featureserv` executable in the application directory
-* (Optional) Run the unit tests using `go test`
+* (Optional) Run the unit tests using `go test ./...`
 
 ### Docker image of `pg_featureserv`
 
