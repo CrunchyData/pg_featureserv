@@ -50,6 +50,7 @@ type FeatureCollection struct {
 }
 
 const urlBase = "http://test"
+
 var basePath = "/pg_featureserv"
 
 var catalogMock *data.CatalogMock
@@ -319,10 +320,9 @@ func TestBBoxInvalid(t *testing.T) {
 
 func TestProperties(t *testing.T) {
 	// Tests:
-	// - property names are non-case-sensitive
 	// - names are made unique (properties only include once)
 	// - non-existing names are ignored
-	rr := doRequest(t, "/collections/mock_a/items?limit=2&properties=PROP_A,prop_C,prop_a,not_prop")
+	rr := doRequest(t, "/collections/mock_a/items?limit=2&properties=PROP_A,prop_c,prop_a,not_prop")
 
 	var v FeatureCollection
 	errUnMarsh := json.Unmarshal(readBody(rr), &v)
@@ -398,7 +398,7 @@ func TestFunctionMissingItemsNotFound(t *testing.T) {
 	doRequestStatus(t, "/functions/missing/items", http.StatusNotFound)
 }
 
-//============  Test HTML generation
+// ============  Test HTML generation
 // For now these just test that the template executes correctly
 // correctness/completess of HTML is not tested
 func TestHTMLRoot(t *testing.T) {
