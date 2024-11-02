@@ -42,6 +42,7 @@ const (
 	PGTypeBool      = "bool"
 	PGTypeNumeric   = "numeric"
 	PGTypeJSON      = "json"
+	PGTypeJSONB     = "jsonb"
 	PGTypeGeometry  = "geometry"
 	PGTypeTextArray = "_text"
 )
@@ -538,6 +539,8 @@ func toJSONTypeFromPG(pgType string) string {
 	case PGTypeBool:
 		return JSONTypeBoolean
 	case PGTypeJSON:
+		return JSONTypeJSON
+	case PGTypeJSONB:
 		return JSONTypeJSON
 	case PGTypeTextArray:
 		return JSONTypeStringArray
