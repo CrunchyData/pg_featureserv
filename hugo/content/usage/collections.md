@@ -72,8 +72,7 @@ explicitly set the SRID of the created geometry.
 #### *Example of a spatial view definition*
 ```sql
 CREATE VIEW my_points AS
-  SELECT ST_SetSRID(
-           ST_MakePoint( lon, lat ), 4326)::geometry(Point, 4326) AS geom
+  SELECT ST_Point( lon, lat, 4326)::geometry(Point, 4326) AS geom
   FROM my_geo_table AS t;
 ```
 
