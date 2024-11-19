@@ -143,7 +143,7 @@ BEGIN
     SELECT c.name::text, c.abbrev::text, c.postal::text
     FROM ne.admin_0_countries c
     WHERE ST_Intersects(c.geom,
-            ST_SetSRID( ST_MakePoint(lon, lat), 4326))
+            ST_Point(lon, lat, 4326))
     LIMIT 1;
 END;
 $$
@@ -167,7 +167,7 @@ BEGIN
     SELECT n.name::text, n.geom
     FROM (SELECT c.geom FROM ne.admin_0_countries c
           WHERE ST_Intersects(c.geom,
-            ST_SetSRID( ST_MakePoint(lon, lat), 4326))
+            ST_Point(lon, lat, 4326))
           LIMIT 1) AS t
     JOIN LATERAL (SELECT * FROM ne.admin_0_countries n
       WHERE ST_Touches(t.geom, n.geom)) AS n ON true;
@@ -188,7 +188,7 @@ RETURNS TABLE(name text, dist double precision, geom geometry)
 AS $$
 BEGIN
 	RETURN QUERY
-    SELECT gn.name, gn.geom <-> ST_SetSRID( ST_MakePoint(pt_lon, pt_lat), 4326) AS dist, gn.geom
+    SELECT gn.name, gn.geom <-> ST_Point(pt_lon, pt_lat, 4326) AS dist, gn.geom
     FROM geonames gn
     ORDER BY dist LIMIT k;
 END;

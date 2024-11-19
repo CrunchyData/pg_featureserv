@@ -25,7 +25,7 @@ BEGIN
    SELECT c.name::text, c.abbrev::text, c.postal::text
    FROM ne.countries c
    WHERE ST_Intersects(c.geom,
-            ST_SetSRID(ST_MakePoint(lon, lat), 4326))
+            ST_Point(lon, lat, 4326))
    LIMIT 1;
 END;
 $$
@@ -37,7 +37,7 @@ IS 'Finds the country at a geographic location';
 
 Notes:
 
-* The function generates a [Point](https://postgis.net/docs/ST_MakePoint.html) based on the longitude and latitude values provided in the parameters.
+* The function generates a [Point](https://postgis.net/docs/ST_Point.html) based on the longitude and latitude values provided in the parameters.
 * The `ne.countries` table is filtered based on whether the point [intersects](https://postgis.net/docs/ST_Intersects.html) a country polygon.
 * It's possible that a point lies exactly on the boundary between two countries. Both country records will be included in the query result set, but `LIMIT 1` restricts the result to a single record.
 
