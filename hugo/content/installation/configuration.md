@@ -45,9 +45,10 @@ export DATABASE_URL="host=localhost user=postgres"
 
 Other parameters in the configuration file can be over-ridden in the environment.
 Prepend the upper-cased parameter name with `PGFS_section_` to set the value.
-For example, to change the HTTP port and service title:
+For example, to change the HTTP port, function schemas, and service title:
 ```bash
 export PGFS_SERVER_HTTPPORT=8889
+export PGFS_DATABASE_FUNCTIONINCLUDES="postgisftw,my_funs"
 export PGFS_METADATA_TITLE="My PGFS"
 ```
 

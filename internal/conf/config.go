@@ -179,4 +179,5 @@ func DumpConfig() {
 	log.Debugf("  TableIncludes = %v", Configuration.Database.TableIncludes)
 	log.Debugf("  TableExcludes = %v", Configuration.Database.TableExcludes)
 	log.Debugf("  FunctionIncludes = %v", Configuration.Database.FunctionIncludes)
+	log.Debugf("  TransformFunctions = %v", Configuration.Server.TransformFunctions)
 }
