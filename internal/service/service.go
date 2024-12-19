@@ -13,7 +13,6 @@ import (
 	"github.com/CrunchyData/pg_featureserv/internal/conf"
 	"github.com/CrunchyData/pg_featureserv/internal/data"
 	"github.com/gorilla/handlers"
-	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -31,7 +30,6 @@ import (
 */
 
 var catalogInstance data.Catalog
-var router *mux.Router
 var server *http.Server
 var isTLSEnabled bool
 var serverTLS *http.Server
@@ -55,7 +53,7 @@ func createServers() {
 	}
 	log.Infof("CORS Allowed Origins: %v\n", conf.Configuration.Server.CORSOrigins)
 
-	router = initRouter(confServ.BasePath)
+	router := InitRouter(confServ.BasePath)
 
 	// writeTimeout is slighlty longer than request timeout to allow writing error response
 	timeoutSecRequest := conf.Configuration.Server.WriteTimeoutSec
@@ -97,6 +95,11 @@ func createServers() {
 			},
 		}
 	}
+}
+
+// Set catalog instance
+func SetCatalogInstance(catalog data.Catalog) {
+	catalogInstance = catalog
 }
 
 // Serve starts the web service

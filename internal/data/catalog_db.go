@@ -17,6 +17,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"sort"
 	"strings"
 	"time"
@@ -26,6 +27,7 @@ import (
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/log/logrusadapter"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/paulmach/orb/geojson"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -154,8 +156,8 @@ func (cat *catalogDB) Tables() ([]*Table, error) {
 }
 
 func (cat *catalogDB) TableReload(name string) {
-	tbl, ok := cat.tableMap[name]
-	if !ok {
+	tbl, err := cat.TableByName(name)
+	if err != nil {
 		return
 	}
 	// load extent (which may change over time
@@ -195,7 +197,11 @@ func (cat *catalogDB) TableByName(name string) (*Table, error) {
 	cat.refreshTables(false)
 	tbl, ok := cat.tableMap[name]
 	if !ok {
-		return nil, nil
+		tbl, ok := cat.tableMap["public."+name]
+		if !ok {
+			return nil, nil
+		}
+		return tbl, nil
 	}
 	return tbl, nil
 }
@@ -233,6 +239,63 @@ func (cat *catalogDB) TableFeature(ctx context.Context, name string, id string, 
 		return "", err
 	}
 	return features[0], nil
+}
+
+func (cat *catalogDB) AddTableFeature(ctx context.Context, tableName string, jsonData []byte) (int64, error) {
+	var schemaObject geojsonFeatureData
+	err := json.Unmarshal(jsonData, &schemaObject)
+	if err != nil {
+		return -9999, err
+	}
+	var columnStr string
+	var placementStr string
+	var values []interface{}
+
+	tbl, err := cat.TableByName(tableName)
+	if err != nil {
+		return -9999, err
+	}
+	var i = 0
+	for c, t := range tbl.DbTypes {
+		if c == tbl.IDColumn {
+			continue // ignore id column
+		}
+
+		i++
+		columnStr += c
+		placementStr += fmt.Sprintf("$%d", i)
+		if t.Type == "int4" {
+			values = append(values, int(schemaObject.Props[c].(float64)))
+		} else {
+			values = append(values, schemaObject.Props[c])
+		}
+
+		if i < len(tbl.Columns)-1 {
+			columnStr += ", "
+			placementStr += ", "
+		}
+
+	}
+
+	i++
+	columnStr += ", " + tbl.GeometryColumn
+	placementStr += fmt.Sprintf(", ST_GeomFromGeoJSON($%d)", i)
+	geomJson, _ := schemaObject.Geom.MarshalJSON()
+	values = append(values, geomJson)
+
+	sqlStatement := fmt.Sprintf(`
+		INSERT INTO %s (%s)
+		VALUES (%s)
+		RETURNING %s`,
+		tbl.ID, columnStr, placementStr, tbl.IDColumn)
+
+	var id int64 = -1
+	err = cat.dbconn.QueryRow(ctx, sqlStatement, values...).Scan(&id)
+	if err != nil {
+		return -9999, err
+	}
+
+	return id, nil
 }
 
 func (cat *catalogDB) refreshTables(force bool) {
@@ -341,7 +404,7 @@ func scanTable(rows pgx.Rows) *Table {
 	// Since Go map order is random, list columns in array
 	columns := make([]string, arrLen)
 	jsontypes := make([]string, arrLen)
-	datatypes := make(map[string]string)
+	datatypes := make(map[string]Column)
 	colDesc := make([]string, arrLen)
 
 	for i := arrStart; i < arrLen; i++ {
@@ -349,7 +412,8 @@ func scanTable(rows pgx.Rows) *Table {
 		name := props.Elements[elmPos].String
 		datatype := props.Elements[elmPos+1].String
 		columns[i] = name
-		datatypes[name] = datatype
+		// TODO must find a way to compute IsRequired
+		datatypes[name] = Column{Index: i, Type: datatype, IsRequired: true}
 		jsontypes[i] = toJSONTypeFromPG(datatype)
 		colDesc[i] = props.Elements[elmPos+2].String
 	}
@@ -385,7 +449,6 @@ func readFeatures(ctx context.Context, db *pgxpool.Pool, sql string, idColIndex 
 	return readFeaturesWithArgs(ctx, db, sql, nil, idColIndex, propCols)
 }
 
-//nolint:unused
 func readFeaturesWithArgs(ctx context.Context, db *pgxpool.Pool, sql string, args []interface{}, idColIndex int, propCols []string) ([]string, error) {
 	start := time.Now()
 	rows, err := db.Query(ctx, sql, args...)
@@ -427,34 +490,41 @@ func scanFeatures(ctx context.Context, rows pgx.Rows, idColIndex int, propCols [
 }
 
 func scanFeature(rows pgx.Rows, idColIndex int, propNames []string) string {
-	var id, geom string
+	var id string
+
 	vals, err := rows.Values()
 	if err != nil {
 		log.Warnf("Error scanning row for Feature: %v", err)
 		return ""
 	}
 	//fmt.Println(vals)
-	//--- geom value is expected to be a GeoJSON string
-	//--- convert NULL to an empty string
-	if vals[0] != nil {
-		geom = vals[0].(string)
-	} else {
-		geom = ""
-	}
 
 	propOffset := 1
 	if idColIndex >= 0 {
 		id = fmt.Sprintf("%v", vals[idColIndex+propOffset])
 	}
 
-	//fmt.Println(geom)
-	props := extractProperties(vals, propOffset, propNames)
-	return makeFeatureJSON(id, geom, props)
+	props := extractProperties(vals, idColIndex, propOffset, propNames)
+
+	//--- geom value is expected to be a GeoJSON string or geojson object
+	//--- convert NULL to an empty string
+	if vals[0] != nil {
+		if "string" == reflect.TypeOf(vals[0]).String() {
+			return makeFeatureJSON(id, vals[0].(string), props)
+		} else {
+			return makeGeojsonFeatureJSON(id, vals[0].(geojson.Geometry), props)
+		}
+	} else {
+		return makeFeatureJSON(id, "", props)
+	}
 }
 
-func extractProperties(vals []interface{}, propOffset int, propNames []string) map[string]interface{} {
+func extractProperties(vals []interface{}, idColIndex int, propOffset int, propNames []string) map[string]interface{} {
 	props := make(map[string]interface{})
 	for i, name := range propNames {
+		if i == idColIndex {
+			continue
+		}
 		// offset vals index by 2 to skip geom, id
 		props[name] = toJSONValue(vals[i+propOffset])
 		//fmt.Printf("%v: %v\n", name, val)
@@ -571,6 +641,32 @@ func makeFeatureJSON(id string, geom string, props map[string]interface{}) strin
 		Type:  "Feature",
 		ID:    id,
 		Geom:  &geomRaw,
+		Props: props,
+	}
+	json, err := json.Marshal(featData)
+	if err != nil {
+		log.Errorf("Error marshalling feature into JSON: %v", err)
+		return ""
+	}
+	jsonStr := string(json)
+	//fmt.Println(jsonStr)
+	return jsonStr
+}
+
+// TODO should be exported in catalog.go
+type geojsonFeatureData struct {
+	Type  string                 `json:"type"`
+	ID    string                 `json:"id,omitempty"`
+	Geom  *geojson.Geometry      `json:"geometry"`
+	Props map[string]interface{} `json:"properties"`
+}
+
+// TODO should be exported in catalog.go
+func makeGeojsonFeatureJSON(id string, geom geojson.Geometry, props map[string]interface{}) string {
+	featData := geojsonFeatureData{
+		Type:  "Feature",
+		ID:    id,
+		Geom:  &geom,
 		Props: props,
 	}
 	json, err := json.Marshal(featData)

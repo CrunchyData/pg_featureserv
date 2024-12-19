@@ -91,8 +91,13 @@ func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		// log error here?
 		// should log attached error?
 		// panic on severe error?
-		log.Debugf("Request processing error: %v (%v)\n", e.Message, e.Code)
-		http.Error(w, e.Message, e.Code)
+		if e.Error == nil {
+			log.Debugf("Request processing error: %v (%v)\n", e.Message, e.Code)
+			http.Error(w, e.Message, e.Code)
+		} else {
+			log.Debugf("Request processing error: %v (%v).\n\tCaused by: %v\n", e.Message, e.Code, e.Error)
+			http.Error(w, fmt.Sprintf("%s\n\tCaused by: %v", e.Message, e.Error), e.Code)
+		}
 	}
 	close(handlerDone)
 }
