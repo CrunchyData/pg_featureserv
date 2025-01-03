@@ -282,6 +282,6 @@ func scanDataRow(rows pgx.Rows, hasID bool, propNames []string) map[string]inter
 	//fmt.Println(vals)
 
 	//fmt.Println(geom)
-	props := extractProperties(vals, 0, propNames)
+	props := extractProperties(vals, -1, 0, propNames)
 	return props
 }

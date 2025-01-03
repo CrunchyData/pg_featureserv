@@ -16,26 +16,23 @@ package service
 import (
 	"fmt"
 	"testing"
+
+	"github.com/CrunchyData/pg_featureserv/util"
 )
 
 func TestRootEmptyBasePath(t *testing.T) {
-	basePath = ""
-	setup(basePath)
+	hTestBadPath := util.MakeHttpTesting("http://test", "", InitRouter(""))
 	Initialize()
 
 	testCases := []string{
-        "/",
+		"/",
 		"/index.html",
-
-    }
+	}
 	for _, tc := range testCases {
-        t.Run(fmt.Sprintf("%s route works with empty base path", tc), func(t *testing.T) {
-            resp := doRequest(t, tc)
-			assert(t, resp.Code == 200, "Status must be 200")
-        })
-    }
+		t.Run(fmt.Sprintf("%s route works with empty base path", tc), func(t *testing.T) {
+			resp := hTestBadPath.DoRequest(t, tc)
+			util.Assert(t, resp.Code == 200, "Status must be 200")
+		})
+	}
 
-	basePath = "/pg_featureserv"
-	setup(basePath)
-	Initialize()
 }

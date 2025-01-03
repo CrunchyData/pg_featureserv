@@ -405,7 +405,7 @@ func parseTransformFun(def string) data.TransformFunction {
 }
 
 // parseFilter creates a filter list from applicable query parameters
-func parseFilter(paramMap map[string]string, colNameMap map[string]string) []*data.PropertyFilter {
+func parseFilter(paramMap map[string]string, colNameMap map[string]data.Column) []*data.PropertyFilter {
 	var conds []*data.PropertyFilter
 	for name, val := range paramMap {
 		//log.Debugf("testing request param %v", name)

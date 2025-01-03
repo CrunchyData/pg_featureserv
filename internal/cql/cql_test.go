@@ -15,11 +15,10 @@ package cql
 
 import (
 	"fmt"
-	"path/filepath"
-	"reflect"
-	"runtime"
 	"strings"
 	"testing"
+
+	"github.com/CrunchyData/pg_featureserv/util"
 )
 
 func TestDebug(t *testing.T) {
@@ -169,7 +168,7 @@ func checkCQL(t *testing.T, cqlStr string, sql string) {
 		t.FailNow()
 	}
 	actual = strings.TrimSpace(actual)
-	equals(t, sql, actual, "")
+	util.Equals(t, sql, actual, "")
 }
 
 func checkCQLWithSRID(t *testing.T, cqlStr string, filterSRID int, sourceSRID int, sql string) {
@@ -179,28 +178,10 @@ func checkCQLWithSRID(t *testing.T, cqlStr string, filterSRID int, sourceSRID in
 		t.FailNow()
 	}
 	actual = strings.TrimSpace(actual)
-	equals(t, sql, actual, "")
+	util.Equals(t, sql, actual, "")
 }
 
 func checkCQLError(t *testing.T, cqlStr string) {
 	_, err := TranspileToSQL(cqlStr, 4326, 4326)
-	isError(t, err, "")
-}
-
-// equals fails the test if exp is not equal to act.
-func equals(tb testing.TB, exp, act interface{}, msg string) {
-	if !reflect.DeepEqual(exp, act) {
-		_, file, line, _ := runtime.Caller(1)
-		fmt.Printf("%s:%d: %s - expected: %#v; got: %#v\n", filepath.Base(file), line, msg, exp, act)
-		tb.FailNow()
-	}
-}
-
-// isError fails the test if err is nil
-func isError(tb testing.TB, err error, msg string) {
-	if err == nil {
-		_, file, line, _ := runtime.Caller(1)
-		fmt.Printf("%s:%d: %s - expected error\n", filepath.Base(file), line, msg)
-		tb.FailNow()
-	}
+	util.AssertIsError(t, err, "")
 }

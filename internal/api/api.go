@@ -45,6 +45,7 @@ const (
 	ParamProperties = "properties"
 	ParamSortBy     = "sortby"
 	ParamTransform  = "transform"
+	ParamType       = "type"
 
 	OrderByDirSep = ":"
 	OrderByDirD   = "d"
@@ -70,20 +71,22 @@ const (
 )
 
 const (
-	ErrMsgEncoding              = "Error encoding response"
-	ErrMsgLoadCollections       = "Unable to access Collections"
-	ErrMsgCollectionNotFound    = "Collection not found: %v"
-	ErrMsgCollectionAccess      = "Unable to access Collection: %v"
-	ErrMsgFeatureNotFound       = "Feature not found: %v"
-	ErrMsgLoadFunctions         = "Unable to access Functions"
-	ErrMsgFunctionNotFound      = "Function not found: %v"
-	ErrMsgFunctionAccess        = "Unable to access Function: %v"
-	ErrMsgInvalidParameterValue = "Invalid value for parameter %v: %v"
-	ErrMsgInvalidQuery          = "Invalid query parameters"
-	ErrMsgDataReadError         = "Unable to read data from: %v"
-	ErrMsgDataWriteError        = "Unable to write data to: %v"
-	ErrMsgNoDataRead            = "No data read from: %v"
-	ErrMsgRequestTimeout        = "Maximum time exceeded.  Request cancelled."
+	ErrMsgEncoding                = "Error encoding response"
+	ErrMsgLoadCollections         = "Unable to access Collections"
+	ErrMsgCollectionNotFound      = "Collection not found: %v"
+	ErrMsgCollectionAccess        = "Unable to access Collection: %v"
+	ErrMsgFeatureNotFound         = "Feature not found: %v"
+	ErrMsgCreateFeatureNotConform = "Unable to create new feature in Collection - data does not respect schema: %v"
+	ErrMsgCreateFeatureInCatalog  = "Unable to create new feature in Collection - catalog error: %v"
+	ErrMsgLoadFunctions           = "Unable to access Functions"
+	ErrMsgFunctionNotFound        = "Function not found: %v"
+	ErrMsgFunctionAccess          = "Unable to access Function: %v"
+	ErrMsgInvalidParameterValue   = "Invalid value for parameter %v: %v"
+	ErrMsgInvalidQuery            = "Invalid query parameters"
+	ErrMsgDataReadError           = "Unable to read data from: %v"
+	ErrMsgDataWriteError          = "Unable to write data to: %v"
+	ErrMsgNoDataRead              = "No data read from: %v"
+	ErrMsgRequestTimeout          = "Maximum time exceeded.  Request cancelled."
 )
 
 const (
@@ -638,4 +641,11 @@ func PathFunctionItems(name string) string {
 
 func PathItem(name string, fid string) string {
 	return fmt.Sprintf("%v/%v/%v/%v", TagCollections, name, TagItems, fid)
+}
+
+var Db2OpenapiFormatMap = map[string]string{
+	"int":  "integer",
+	"int4": "integer",
+	"long": "int64",
+	"text": "string",
 }
