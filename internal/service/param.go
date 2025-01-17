@@ -26,6 +26,15 @@ import (
 	"github.com/CrunchyData/pg_featureserv/internal/data"
 )
 
+func getCharsAfterLastSlash(input string) (result string) {
+	if lastSlashIndex := strings.LastIndex(input, "/"); lastSlashIndex != -1 && lastSlashIndex < len(input)-1 {
+		result = input[lastSlashIndex+1:]
+	} else {
+		result = input
+	}
+	return result
+}
+
 func parseRequestParams(r *http.Request) (api.RequestParam, error) {
 	queryValues := r.URL.Query()
 	paramValues := extractSingleArgs(queryValues)
@@ -145,6 +154,7 @@ func parseString(values api.NameValMap, key string) string {
 
 func parseInt(values api.NameValMap, key string, minVal int, maxVal int, defaultVal int) (int, error) {
 	valStr := values[key]
+	valStr = getCharsAfterLastSlash(valStr)
 	// key not present or missing value
 	if len(valStr) < 1 {
 		return defaultVal, nil
