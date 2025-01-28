@@ -195,7 +195,7 @@ var ParameterSchema openapi3.Schema = openapi3.Schema{
 // Bbox for extent
 type Bbox struct {
 	Crs    string    `json:"crs"`
-	Extent []float64 `json:"bbox"`
+	Extent [][]float64 `json:"bbox"`
 }
 
 // Extent OAPIF Extent structure (partial)
@@ -490,7 +490,7 @@ func toBbox(cc *data.Table) *Bbox {
 	crs := "http://www.opengis.net/def/crs/EPSG/0/4326"
 	return &Bbox{
 		Crs:    crs,
-		Extent: []float64{cc.Extent.Minx, cc.Extent.Miny, cc.Extent.Maxx, cc.Extent.Maxy},
+		Extent: [][]float64{{cc.Extent.Minx, cc.Extent.Miny, cc.Extent.Maxx, cc.Extent.Maxy}},
 	}
 }
 
