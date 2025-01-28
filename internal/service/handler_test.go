@@ -142,6 +142,11 @@ func TestCollectionResponse(t *testing.T) {
 	equals(t, tbl.ID, v.Name, "Name")
 	equals(t, tbl.Title, v.Title, "Title")
 	equals(t, tbl.Description, v.Description, "Description")
+	equals(t, tbl.Extent.Minx, v.Extent.Spatial.Extent[0][0], "Extent Minxx")
+	equals(t, tbl.Extent.Miny, v.Extent.Spatial.Extent[0][1], "Extent Minxy")
+	equals(t, tbl.Extent.Maxx, v.Extent.Spatial.Extent[0][2], "Extent Maxx")
+	equals(t, tbl.Extent.Maxy, v.Extent.Spatial.Extent[0][3], "Extent Maxy")
+	equals(t, "http://www.opengis.net/def/crs/EPSG/0/4326", v.Extent.Spatial.Crs, "Extent Crs")
 	// check properties
 	equals(t, len(tbl.Columns), len(v.Properties), "Properties len")
 	for i := 0; i < len(v.Properties); i++ {
