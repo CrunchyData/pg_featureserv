@@ -1,0 +1,43 @@
+# pg_featureserv Docker Compose example setup.
+# To run: docker compose up -d --build
+
+services:
+  db:
+    image: postgis/postgis:16-3.5
+    platform: linux/amd64
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+    #   - ./demodata:/var/lib/postgresql/data
+      - ./initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  pg_featureserv:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      target: multi-stage
+      args:
+        GOLANG_VERSION: "1.21.6"
+        TARGETARCH: "amd64"
+        PLATFORM: "amd64"
+        BASE_REGISTRY: "registry.access.redhat.com"
+        BASE_IMAGE: "ubi8-micro"
+        VERSION: "dev"
+    image: pg_featureserv:dev-amd64
+    restart: unless-stopped
+    platform: linux/amd64
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db/postgres
+      PGFS_DATABASE_FUNCTIONINCLUDES: postgisftw
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "9000:9000"

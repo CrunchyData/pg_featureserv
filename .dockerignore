@@ -1,0 +1,9 @@
+*
+.*
+
+!go.mod
+!go.sum
+!*.go
+!cql
+!assets
+!internal
