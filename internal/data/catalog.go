@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 )
 
 /*
@@ -91,6 +92,19 @@ type QueryParam struct {
 	SortBy        []Sorting
 	Precision     int
 	TransformFuns []TransformFunction
+	DateTime      *TimeRange
+}
+
+// TimeRange restricts results to a temporal interval for a specific column
+type TimeRange struct {
+	Column         string
+	StartColumn    string
+	EndColumn      string
+	ColumnType     string
+	Start          *time.Time
+	End            *time.Time
+	StartInclusive bool
+	EndInclusive   bool
 }
 
 // Table holds metadata for table/view objects

@@ -19,6 +19,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/CrunchyData/pg_featureserv/internal/api"
 	"github.com/CrunchyData/pg_featureserv/internal/conf"
@@ -77,6 +78,9 @@ func parseRequestParams(r *http.Request) (api.RequestParam, error) {
 
 	// --- filter parameter
 	param.Filter = parseString(paramValues, api.ParamFilter)
+
+	// --- datetime parameter
+	param.DateTime = parseString(paramValues, api.ParamDateTime)
 
 	// --- filter-crs parameter
 	filterCrs, err := parseInt(paramValues, api.ParamFilterCrs, 0, 99999999, data.SRID_4326)
@@ -422,7 +426,7 @@ func parseFilter(paramMap map[string]string, colNameMap map[string]string) []*da
 }
 
 // createQueryParams applies any cross-parameter logic
-func createQueryParams(param *api.RequestParam, colNames []string, sourceSRID int) (*data.QueryParam, error) {
+func createQueryParams(param *api.RequestParam, colNames []string, colTypes map[string]string, sourceSRID int) (*data.QueryParam, error) {
 	query := data.QueryParam{
 		Crs:           param.Crs,
 		Limit:         param.Limit,
@@ -458,5 +462,261 @@ func createQueryParams(param *api.RequestParam, colNames []string, sourceSRID in
 	}
 	query.FilterSql = sql
 
+	dtFilter, err := buildDateTimeFilter(param.DateTime, colNames, colTypes)
+	if err != nil {
+		return &query, err
+	}
+	query.DateTime = dtFilter
+
 	return &query, nil
+}
+
+func buildDateTimeFilter(value string, colNames []string, colTypes map[string]string) (*data.TimeRange, error) {
+	if strings.TrimSpace(value) == "" {
+		return nil, nil
+	}
+	instantColumn, startColumn, endColumn := findTemporalColumns(colNames, colTypes)
+	column := instantColumn
+	if column == "" {
+		column = selectTemporalColumnByType(colNames, colTypes)
+	}
+	if startColumn != "" && endColumn != "" {
+		column = ""
+	}
+	if column == "" && (startColumn == "" || endColumn == "") {
+		return nil, nil
+	}
+	rng, err := parseDateTimeRange(value)
+	if err != nil {
+		return nil, err
+	}
+	if rng == nil {
+		return nil, nil
+	}
+	if startColumn != "" && endColumn != "" {
+		rng.StartColumn = startColumn
+		rng.EndColumn = endColumn
+		if colTypes != nil {
+			if typ, ok := colTypes[startColumn]; ok {
+				rng.ColumnType = typ
+			} else if typ, ok := colTypes[strings.ToLower(startColumn)]; ok {
+				rng.ColumnType = typ
+			}
+		}
+		return rng, nil
+	}
+	rng.Column = column
+	if colTypes != nil {
+		if typ, ok := colTypes[column]; ok {
+			rng.ColumnType = typ
+		} else if typ, ok := colTypes[strings.ToLower(column)]; ok {
+			rng.ColumnType = typ
+		}
+	}
+	return rng, nil
+}
+
+func findTemporalColumns(colNames []string, colTypes map[string]string) (string, string, string) {
+	if len(colTypes) == 0 {
+		return "", "", ""
+	}
+	actualNames := make(map[string]string)
+	for _, name := range colNames {
+		actualNames[strings.ToLower(name)] = name
+	}
+	for name := range colTypes {
+		actualNames[strings.ToLower(name)] = name
+	}
+	lookup := func(candidate string) (string, bool) {
+		if candidate == "" {
+			return "", false
+		}
+		if col, ok := actualNames[strings.ToLower(candidate)]; ok {
+			return col, true
+		}
+		return "", false
+	}
+	var instant string
+	for _, cand := range conf.Configuration.Temporal.InstantColumns {
+		if col, ok := lookup(cand); ok {
+			if typ, ok := columnType(colTypes, col); ok && isTemporalType(typ) {
+				instant = col
+				break
+			}
+		}
+	}
+	var start string
+	for _, cand := range conf.Configuration.Temporal.StartColumns {
+		if col, ok := lookup(cand); ok {
+			if typ, ok := columnType(colTypes, col); ok && isTemporalType(typ) {
+				start = col
+				break
+			}
+		}
+	}
+	var end string
+	for _, cand := range conf.Configuration.Temporal.EndColumns {
+		if col, ok := lookup(cand); ok {
+			if typ, ok := columnType(colTypes, col); ok && isTemporalType(typ) {
+				end = col
+				break
+			}
+		}
+	}
+	return instant, start, end
+}
+
+func columnType(colTypes map[string]string, name string) (string, bool) {
+	if typ, ok := colTypes[name]; ok {
+		return typ, true
+	}
+	if typ, ok := colTypes[strings.ToLower(name)]; ok {
+		return typ, true
+	}
+	return "", false
+}
+
+func selectTemporalColumnByType(colNames []string, colTypes map[string]string) string {
+	if len(colTypes) == 0 {
+		return ""
+	}
+	for _, name := range colNames {
+		typ, ok := colTypes[name]
+		if !ok {
+			typ, ok = colTypes[strings.ToLower(name)]
+		}
+		if !ok {
+			continue
+		}
+		if isTemporalType(typ) {
+			return name
+		}
+	}
+	for name, typ := range colTypes {
+		if isTemporalType(typ) {
+			return name
+		}
+	}
+	return ""
+}
+
+func isTemporalType(pgType string) bool {
+	typeLow := strings.ToLower(pgType)
+	return typeLow == "timestamp" || typeLow == "timestamptz"
+}
+
+func parseDateTimeRange(value string) (*data.TimeRange, error) {
+	trimmed := strings.TrimSpace(value)
+	if trimmed == "" {
+		return nil, nil
+	}
+	if !strings.Contains(trimmed, "/") {
+		inst, err := parseDateTimeInstant(trimmed)
+		if err != nil {
+			return nil, err
+		}
+		if inst == nil {
+			return nil, nil
+		}
+		rng := &data.TimeRange{StartInclusive: true, EndInclusive: true}
+		start := copyTime(inst.Time)
+		rng.Start = &start
+		if inst.DateOnly {
+			end := start.Add(24 * time.Hour)
+			rng.End = &end
+			rng.EndInclusive = false
+		} else {
+			end := copyTime(inst.Time)
+			rng.End = &end
+		}
+		return rng, nil
+	}
+	parts := strings.SplitN(trimmed, "/", 2)
+	if len(parts) != 2 {
+		return nil, fmt.Errorf(api.ErrMsgInvalidParameterValue, api.ParamDateTime, value)
+	}
+	startInst, err := parseDateTimeInstant(parts[0])
+	if err != nil {
+		return nil, err
+	}
+	endInst, err := parseDateTimeInstant(parts[1])
+	if err != nil {
+		return nil, err
+	}
+	if startInst == nil && endInst == nil {
+		return nil, nil
+	}
+	rng := &data.TimeRange{StartInclusive: true, EndInclusive: true}
+	if startInst != nil {
+		start := copyTime(startInst.Time)
+		rng.Start = &start
+	}
+	if endInst != nil {
+		end := copyTime(endInst.Time)
+		rng.End = &end
+	}
+	if startInst != nil && startInst.DateOnly {
+		// already normalized to midnight
+		rng.StartInclusive = true
+	}
+	if endInst != nil && endInst.DateOnly {
+		endAdj := rng.End.Add(24 * time.Hour)
+		rng.End = &endAdj
+		rng.EndInclusive = false
+	}
+	if rng.Start != nil && rng.End != nil {
+		if rng.EndInclusive {
+			if rng.Start.After(*rng.End) {
+				return nil, fmt.Errorf(api.ErrMsgInvalidParameterValue, api.ParamDateTime, value)
+			}
+		} else {
+			if !rng.Start.Before(*rng.End) {
+				return nil, fmt.Errorf(api.ErrMsgInvalidParameterValue, api.ParamDateTime, value)
+			}
+		}
+	}
+	return rng, nil
+}
+
+type parsedInstant struct {
+	Time     time.Time
+	DateOnly bool
+}
+
+func parseDateTimeInstant(value string) (*parsedInstant, error) {
+	trimmed := strings.TrimSpace(value)
+	if trimmed == "" || trimmed == ".." {
+		return nil, nil
+	}
+	tm, isDateOnly, err := parseDateTimeLiteral(trimmed)
+	if err != nil {
+		return nil, err
+	}
+	return &parsedInstant{Time: tm.UTC(), DateOnly: isDateOnly}, nil
+}
+
+func parseDateTimeLiteral(value string) (time.Time, bool, error) {
+	layouts := []string{time.RFC3339Nano, time.RFC3339}
+	for _, layout := range layouts {
+		tm, err := time.Parse(layout, value)
+		if err == nil {
+			return tm.UTC(), false, nil
+		}
+	}
+	nonZoneLayouts := []string{"2006-01-02T15:04:05", "2006-01-02T15:04"}
+	for _, layout := range nonZoneLayouts {
+		tm, err := time.ParseInLocation(layout, value, time.UTC)
+		if err == nil {
+			return tm.UTC(), false, nil
+		}
+	}
+	tm, err := time.Parse("2006-01-02", value)
+	if err == nil {
+		return tm.UTC(), true, nil
+	}
+	return time.Time{}, false, fmt.Errorf(api.ErrMsgInvalidParameterValue, api.ParamDateTime, value)
+}
+
+func copyTime(t time.Time) time.Time {
+	return t.UTC()
 }

@@ -134,7 +134,9 @@ func sqlFeatures(tbl *Table, param *QueryParam) (string, []interface{}) {
 	bboxFilter := sqlBBoxFilter(tbl.GeometryColumn, tbl.Srid, param.Bbox, param.BboxCrs)
 	attrFilter, attrVals := sqlAttrFilter(param.Filter)
 	cqlFilter := sqlCqlFilter(param.FilterSql)
-	sqlWhere := sqlWhere(bboxFilter, attrFilter, cqlFilter)
+	timeFilter, timeVals := sqlDateTimeFilter(param.DateTime, len(attrVals)+1)
+	attrVals = append(attrVals, timeVals...)
+	sqlWhere := sqlWhere(bboxFilter, attrFilter, cqlFilter, timeFilter)
 	sqlGroupBy := sqlGroupBy(param.GroupBy)
 	sqlOrderBy := sqlOrderBy(param.SortBy)
 	sqlLimitOffset := sqlLimitOffset(param.Limit, param.Offset)
@@ -199,16 +201,12 @@ func sqlCqlFilter(sql string) string {
 	return "(" + sql + ")"
 }
 
-func sqlWhere(cond1 string, cond2 string, cond3 string) string {
+func sqlWhere(conditions ...string) string {
 	var condList []string
-	if len(cond1) > 0 {
-		condList = append(condList, cond1)
-	}
-	if len(cond2) > 0 {
-		condList = append(condList, cond2)
-	}
-	if len(cond3) > 0 {
-		condList = append(condList, cond3)
+	for _, cond := range conditions {
+		if len(cond) > 0 {
+			condList = append(condList, cond)
+		}
 	}
 	where := strings.Join(condList, " AND ")
 	if len(where) > 0 {
@@ -227,6 +225,59 @@ func sqlAttrFilter(filterConds []*PropertyFilter) (string, []interface{}) {
 	}
 	sql := strings.Join(exprItems, " AND ")
 	return sql, vals
+}
+
+func sqlDateTimeFilter(rng *TimeRange, startIndex int) (string, []interface{}) {
+	if rng == nil {
+		return "", nil
+	}
+	idx := startIndex
+	var exprItems []string
+	var vals []interface{}
+	if rng.StartColumn != "" && rng.EndColumn != "" {
+		colStart := strconv.Quote(rng.StartColumn)
+		colEnd := strconv.Quote(rng.EndColumn)
+		if rng.Start != nil {
+			exprItems = append(exprItems, fmt.Sprintf("(%s IS NULL OR %s >= $%d)", colEnd, colEnd, idx))
+			vals = append(vals, *rng.Start)
+			idx++
+		}
+		if rng.End != nil {
+			op := "<="
+			if !rng.EndInclusive {
+				op = "<"
+			}
+			exprItems = append(exprItems, fmt.Sprintf("(%s IS NULL OR %s %s $%d)", colStart, colStart, op, idx))
+			vals = append(vals, *rng.End)
+			idx++
+		}
+		if len(exprItems) == 0 {
+			return "", nil
+		}
+		filter := strings.Join(exprItems, " AND ")
+		return filter, vals
+	}
+	col := strconv.Quote(rng.Column)
+	if rng.Start != nil {
+		exprItems = append(exprItems, fmt.Sprintf("%s >= $%d", col, idx))
+		vals = append(vals, *rng.Start)
+		idx++
+	}
+	if rng.End != nil {
+		op := "<="
+		if !rng.EndInclusive {
+			op = "<"
+		}
+		exprItems = append(exprItems, fmt.Sprintf("%s %s $%d", col, op, idx))
+		vals = append(vals, *rng.End)
+		idx++
+	}
+	if len(exprItems) == 0 {
+		return "", nil
+	}
+	inner := strings.Join(exprItems, " AND ")
+	filter := fmt.Sprintf("(%s IS NULL OR (%s))", col, inner)
+	return filter, vals
 }
 
 const sqlFmtBBoxTransformFilter = ` ST_Intersects("%v", ST_Transform( ST_MakeEnvelope(%v, %v, %v, %v, %v), %v)) `
@@ -332,7 +383,9 @@ func sqlGeomFunction(fn *Function, args map[string]string, propCols []string, pa
 	//-- SRS of function output is unknown, so have to assume 4326
 	bboxFilter := sqlBBoxFilter(fn.GeometryColumn, SRID_4326, param.Bbox, param.BboxCrs)
 	cqlFilter := sqlCqlFilter(param.FilterSql)
-	sqlWhere := sqlWhere(bboxFilter, cqlFilter, "")
+	timeFilter, timeVals := sqlDateTimeFilter(param.DateTime, len(argVals)+1)
+	argVals = append(argVals, timeVals...)
+	sqlWhere := sqlWhere(bboxFilter, cqlFilter, timeFilter)
 	sqlOrderBy := sqlOrderBy(param.SortBy)
 	sqlLimitOffset := sqlLimitOffset(param.Limit, param.Offset)
 	sql := fmt.Sprintf(sqlFmtGeomFunction, sqlGeomCol, sqlPropCols, fn.Schema, fn.Name, sqlArgs, sqlWhere, sqlOrderBy, sqlLimitOffset)
@@ -345,7 +398,9 @@ func sqlFunction(fn *Function, args map[string]string, propCols []string, param 
 	sqlArgs, argVals := sqlFunctionArgs(fn, args)
 	sqlPropCols := sqlColList(propCols, fn.Types, false)
 	cqlFilter := sqlCqlFilter(param.FilterSql)
-	sqlWhere := sqlWhere(cqlFilter, "", "")
+	timeFilter, timeVals := sqlDateTimeFilter(param.DateTime, len(argVals)+1)
+	argVals = append(argVals, timeVals...)
+	sqlWhere := sqlWhere(cqlFilter, timeFilter)
 	sqlOrderBy := sqlOrderBy(param.SortBy)
 	sqlLimitOffset := sqlLimitOffset(param.Limit, param.Offset)
 	sql := fmt.Sprintf(sqlFmtFunction, sqlPropCols, fn.Schema, fn.Name, sqlArgs, sqlWhere, sqlOrderBy, sqlLimitOffset)

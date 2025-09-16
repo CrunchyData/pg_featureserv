@@ -39,6 +39,7 @@ const (
 	ParamBboxCrs    = "bbox-crs"
 	ParamFilter     = "filter"
 	ParamFilterCrs  = "filter-crs"
+	ParamDateTime   = "datetime"
 	ParamGroupBy    = "groupby"
 	ParamOrderBy    = "orderby"
 	ParamPrecision  = "precision"
@@ -98,6 +99,7 @@ var ParamReservedNames = []string{
 	ParamBbox,
 	ParamBboxCrs,
 	ParamFilter,
+	ParamDateTime,
 	ParamGroupBy,
 	ParamOrderBy,
 	ParamPrecision,
@@ -245,6 +247,7 @@ type RequestParam struct {
 	Properties    []string
 	Filter        string
 	FilterCrs     int
+	DateTime      string
 	GroupBy       []string
 	SortBy        []data.Sorting
 	Precision     int
