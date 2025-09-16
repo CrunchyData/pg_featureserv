@@ -600,6 +600,18 @@ func selectTemporalColumnByType(colNames []string, colTypes map[string]string) s
 	return ""
 }
 
+func hasTemporalQuerySupport(colNames []string, colTypes map[string]string) bool {
+	instant, start, end := findTemporalColumns(colNames, colTypes)
+	if start != "" && end != "" {
+		return true
+	}
+	if instant != "" {
+		return true
+	}
+	col := selectTemporalColumnByType(colNames, colTypes)
+	return col != ""
+}
+
 func isTemporalType(pgType string) bool {
 	typeLow := strings.ToLower(pgType)
 	return typeLow == "timestamp" || typeLow == "timestamptz"

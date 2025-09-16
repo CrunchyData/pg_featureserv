@@ -304,6 +304,7 @@ func writeItemsHTML(w http.ResponseWriter, tbl *data.Table, name string, query s
 	context.Title = tbl.Title
 	context.IDColumn = tbl.IDColumn
 	context.ShowFeatureLink = true
+	context.HasDateTime = hasTemporalQuerySupport(tbl.Columns, tbl.DbTypes)
 
 	// features are not needed for items page (page queries for them)
 	return writeHTML(w, nil, context, ui.PageItems())
@@ -637,6 +638,7 @@ func writeFunItemsHTML(w http.ResponseWriter, name string, query string, urlBase
 	context.Title = fn.ID
 	context.Function = fn
 	context.IDColumn = data.FunctionIDColumnName
+	context.HasDateTime = hasTemporalQuerySupport(fn.OutNames, fn.Types)
 
 	// features are not needed for items page (page queries for them)
 	return writeHTML(w, nil, context, ui.PageFunctionItems())
