@@ -262,7 +262,7 @@ func tablesSorted(tableMap map[string]*Table) []*Table {
 
 func (cat *catalogDB) readTables(db *pgxpool.Pool) map[string]*Table {
 	log.Debugf("Load table catalog:\n%v", sqlTables)
-	rows, err := db.Query(context.Background(), sqlTables)
+	rows, err := db.Query(context.Background(), sqlTables, conf.Configuration.Database.IdColumn)
 	if err != nil {
 		log.Fatal(err)
 	}
