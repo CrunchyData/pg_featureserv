@@ -51,7 +51,7 @@ func setDefaultConfig() {
 	viper.SetDefault("Metadata.Title", "pg-featureserv")
 	viper.SetDefault("Metadata.Description", "Crunchy Data Feature Server for PostGIS")
 
-	viper.SetDefault("Website.BasemapUrl", "")
+	viper.SetDefault("Website.BasemapUrl", "https://{a-d}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png")
 }
 
 // Config for system
