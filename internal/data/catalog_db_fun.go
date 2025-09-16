@@ -26,7 +26,6 @@ import (
 )
 
 // FunctionIDColumnName is the name for a function-supplied ID
-const FunctionIDColumnName = "id"
 
 const SchemaPostGISFTW = "postgisftw"
 

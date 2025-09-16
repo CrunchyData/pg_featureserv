@@ -636,7 +636,7 @@ func writeFunItemsHTML(w http.ResponseWriter, name string, query string, urlBase
 	context.Group = "Functions"
 	context.Title = fn.ID
 	context.Function = fn
-	context.IDColumn = data.FunctionIDColumnName
+	context.IDColumn = conf.Configuration.Database.IdColumn
 
 	// features are not needed for items page (page queries for them)
 	return writeHTML(w, nil, context, ui.PageFunctionItems())
