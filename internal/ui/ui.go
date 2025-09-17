@@ -45,7 +45,7 @@ type PageData struct {
 	Function        *data.Function
 	FeatureID       string
 	ShowFeatureLink bool
-	HasDateTime     bool
+	HasTemporal     bool
 }
 
 var htmlTemp struct {

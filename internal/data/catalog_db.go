@@ -169,6 +169,11 @@ func (cat *catalogDB) TableReload(name string) {
 		sqlExtentExact := sqlExtentExact(tbl)
 		cat.loadExtent(sqlExtentExact, tbl)
 	}
+	// load temporal extent (which may change over time)
+	if tbl.StartTimeColumn != "" {
+		sqlTemporalExtent := sqlTemporalExtentExact(tbl)
+		cat.loadTemporalExtent(sqlTemporalExtent, tbl)
+	}
 }
 
 func (cat *catalogDB) loadExtent(sql string, tbl *Table) bool {
@@ -191,6 +196,25 @@ func (cat *catalogDB) loadExtent(sql string, tbl *Table) bool {
 	tbl.Extent.Miny = ymin.Float
 	tbl.Extent.Maxx = xmax.Float
 	tbl.Extent.Maxy = ymax.Float
+	return true
+}
+
+func (cat *catalogDB) loadTemporalExtent(sql string, tbl *Table) bool {
+	var (
+		start pgtype.Timestamptz
+		end   pgtype.Timestamptz
+	)
+	log.Debug("Temporal extent query: " + sql)
+	err := cat.dbconn.QueryRow(context.Background(), sql).Scan(&start, &end)
+	if err != nil {
+		log.Debugf("Error querying Temporal Extent for %s: %v", tbl.ID, err)
+	}
+	// no extent was read (perhaps a view...)
+	if start.Status == pgtype.Null {
+		return false
+	}
+	tbl.TemporalExtent.Start = start.Time
+	tbl.TemporalExtent.End = end.Time
 	return true
 }
 
@@ -364,20 +388,24 @@ func scanTable(rows pgx.Rows) *Table {
 		description = fmt.Sprintf("Data for table %v", id)
 	}
 
+	startTimeColumn, endTimeColumn := temporalColumns(columns, datatypes)
+
 	return &Table{
-		ID:             id,
-		Schema:         schema,
-		Table:          table,
-		Title:          title,
-		Description:    description,
-		GeometryColumn: geometryCol,
-		Srid:           srid,
-		GeometryType:   geometryType,
-		IDColumn:       idColumn,
-		Columns:        columns,
-		DbTypes:        datatypes,
-		JSONTypes:      jsontypes,
-		ColDesc:        colDesc,
+		ID:              id,
+		Schema:          schema,
+		Table:           table,
+		Title:           title,
+		Description:     description,
+		GeometryColumn:  geometryCol,
+		Srid:            srid,
+		GeometryType:    geometryType,
+		IDColumn:        idColumn,
+		StartTimeColumn: startTimeColumn,
+		EndTimeColumn:   endTimeColumn,
+		Columns:         columns,
+		DbTypes:         datatypes,
+		JSONTypes:       jsontypes,
+		ColDesc:         colDesc,
 	}
 }
 
@@ -694,4 +722,32 @@ func indexOfName(names []string, name string) int {
 		}
 	}
 	return -1
+}
+func temporalColumns(names []string, types map[string]string) (string, string) {
+	actualNames := make(map[string]string, len(names))
+	for _, name := range names {
+		actualNames[strings.ToLower(name)] = name
+	}
+	lookup := func(candidates []string) string {
+		for _, cand := range candidates {
+			if cand == "" {
+				continue
+			}
+			if col, ok := actualNames[strings.ToLower(cand)]; ok {
+				if types[col] == PGTypeTimestamp || types[col] == PGTypeTimestamptz {
+					return col
+				}
+			}
+		}
+		return ""
+	}
+	// QUESTION: preference of time columns? instant vs start/end?
+	instant := lookup(conf.Configuration.Temporal.InstantColumns)
+	start := lookup(conf.Configuration.Temporal.StartColumns)
+	end := lookup(conf.Configuration.Temporal.EndColumns)
+	if instant != "" && (start == "" || end == "") {
+		start = instant
+		end = instant
+	}
+	return start, end
 }

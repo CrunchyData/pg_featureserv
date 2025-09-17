@@ -126,6 +126,21 @@ func sqlExtentExact(tbl *Table) string {
 	return fmt.Sprintf(sqlFmtExtentExact, tbl.GeometryColumn, tbl.Srid, tbl.Schema, tbl.Table)
 }
 
+// const sqlFmtTemporalExtentExact = `SELECT MIN(%s) AS start, MAX(%s) AS "end" FROM "%s"."%s";`
+const sqlFmtTemporalExtentExact = `
+SELECT
+  (SELECT %s FROM "%s"."%s" WHERE %s IS NOT NULL ORDER BY %s ASC  LIMIT 1) AS start,
+  (SELECT %s FROM "%s"."%s" WHERE %s IS NOT NULL ORDER BY %s DESC LIMIT 1) AS "end";
+`
+
+func sqlTemporalExtentExact(tbl *Table) string {
+
+	return fmt.Sprintf(
+		sqlFmtTemporalExtentExact,
+		tbl.StartTimeColumn, tbl.Schema, tbl.Table, tbl.StartTimeColumn, tbl.StartTimeColumn,
+		tbl.EndTimeColumn, tbl.Schema, tbl.Table, tbl.EndTimeColumn, tbl.EndTimeColumn)
+}
+
 const sqlFmtFeatures = "SELECT %v %v FROM \"%s\".\"%s\" %v %v %v %s;"
 
 func sqlFeatures(tbl *Table, param *QueryParam) (string, []interface{}) {
@@ -134,7 +149,7 @@ func sqlFeatures(tbl *Table, param *QueryParam) (string, []interface{}) {
 	bboxFilter := sqlBBoxFilter(tbl.GeometryColumn, tbl.Srid, param.Bbox, param.BboxCrs)
 	attrFilter, attrVals := sqlAttrFilter(param.Filter)
 	cqlFilter := sqlCqlFilter(param.FilterSql)
-	timeFilter, timeVals := sqlDateTimeFilter(param.DateTime, len(attrVals)+1)
+	timeFilter, timeVals := sqlDateTimeFilter(tbl.StartTimeColumn, tbl.EndTimeColumn, param.DateTime, len(attrVals)+1)
 	attrVals = append(attrVals, timeVals...)
 	sqlWhere := sqlWhere(bboxFilter, attrFilter, cqlFilter, timeFilter)
 	sqlGroupBy := sqlGroupBy(param.GroupBy)
@@ -227,18 +242,28 @@ func sqlAttrFilter(filterConds []*PropertyFilter) (string, []interface{}) {
 	return sql, vals
 }
 
-func sqlDateTimeFilter(rng *TimeRange, startIndex int) (string, []interface{}) {
+func sqlDateTimeFilter(StartColumn string, EndColumn string, rng *TimeRange, startIndex int) (string, []interface{}) {
 	if rng == nil {
+		return "", nil
+	}
+	if StartColumn == "" {
 		return "", nil
 	}
 	idx := startIndex
 	var exprItems []string
 	var vals []interface{}
-	if rng.StartColumn != "" && rng.EndColumn != "" {
-		colStart := strconv.Quote(rng.StartColumn)
-		colEnd := strconv.Quote(rng.EndColumn)
+
+	colStart := strconv.Quote(StartColumn)
+	colEnd := strconv.Quote(EndColumn)
+
+	if StartColumn == EndColumn {
+		//-- single column time range
 		if rng.Start != nil {
-			exprItems = append(exprItems, fmt.Sprintf("(%s IS NULL OR %s >= $%d)", colEnd, colEnd, idx))
+			op := ">="
+			if !rng.StartInclusive {
+				op = ">"
+			}
+			exprItems = append(exprItems, fmt.Sprintf("%s %s $%d", colStart, op, idx))
 			vals = append(vals, *rng.Start)
 			idx++
 		}
@@ -247,7 +272,7 @@ func sqlDateTimeFilter(rng *TimeRange, startIndex int) (string, []interface{}) {
 			if !rng.EndInclusive {
 				op = "<"
 			}
-			exprItems = append(exprItems, fmt.Sprintf("(%s IS NULL OR %s %s $%d)", colStart, colStart, op, idx))
+			exprItems = append(exprItems, fmt.Sprintf("%s %s $%d", colEnd, op, idx))
 			vals = append(vals, *rng.End)
 			idx++
 		}
@@ -255,11 +280,16 @@ func sqlDateTimeFilter(rng *TimeRange, startIndex int) (string, []interface{}) {
 			return "", nil
 		}
 		filter := strings.Join(exprItems, " AND ")
+		filter = fmt.Sprintf("(%s IS NULL OR (%s))", colStart, filter)
 		return filter, vals
 	}
-	col := strconv.Quote(rng.Column)
+
 	if rng.Start != nil {
-		exprItems = append(exprItems, fmt.Sprintf("%s >= $%d", col, idx))
+		op := ">="
+		if !rng.StartInclusive {
+			op = ">"
+		}
+		exprItems = append(exprItems, fmt.Sprintf("(%s IS NULL OR %s %s $%d)", colEnd, colEnd, op, idx))
 		vals = append(vals, *rng.Start)
 		idx++
 	}
@@ -268,15 +298,14 @@ func sqlDateTimeFilter(rng *TimeRange, startIndex int) (string, []interface{}) {
 		if !rng.EndInclusive {
 			op = "<"
 		}
-		exprItems = append(exprItems, fmt.Sprintf("%s %s $%d", col, op, idx))
+		exprItems = append(exprItems, fmt.Sprintf("(%s IS NULL OR %s %s $%d)", colStart, colStart, op, idx))
 		vals = append(vals, *rng.End)
 		idx++
 	}
 	if len(exprItems) == 0 {
 		return "", nil
 	}
-	inner := strings.Join(exprItems, " AND ")
-	filter := fmt.Sprintf("(%s IS NULL OR (%s))", col, inner)
+	filter := strings.Join(exprItems, " AND ")
 	return filter, vals
 }
 
@@ -383,7 +412,7 @@ func sqlGeomFunction(fn *Function, args map[string]string, propCols []string, pa
 	//-- SRS of function output is unknown, so have to assume 4326
 	bboxFilter := sqlBBoxFilter(fn.GeometryColumn, SRID_4326, param.Bbox, param.BboxCrs)
 	cqlFilter := sqlCqlFilter(param.FilterSql)
-	timeFilter, timeVals := sqlDateTimeFilter(param.DateTime, len(argVals)+1)
+	timeFilter, timeVals := sqlDateTimeFilter(fn.StartTimeColumn, fn.EndTimeColumn, param.DateTime, len(argVals)+1)
 	argVals = append(argVals, timeVals...)
 	sqlWhere := sqlWhere(bboxFilter, cqlFilter, timeFilter)
 	sqlOrderBy := sqlOrderBy(param.SortBy)
@@ -398,7 +427,7 @@ func sqlFunction(fn *Function, args map[string]string, propCols []string, param 
 	sqlArgs, argVals := sqlFunctionArgs(fn, args)
 	sqlPropCols := sqlColList(propCols, fn.Types, false)
 	cqlFilter := sqlCqlFilter(param.FilterSql)
-	timeFilter, timeVals := sqlDateTimeFilter(param.DateTime, len(argVals)+1)
+	timeFilter, timeVals := sqlDateTimeFilter(fn.StartTimeColumn, fn.EndTimeColumn, param.DateTime, len(argVals)+1)
 	argVals = append(argVals, timeVals...)
 	sqlWhere := sqlWhere(cqlFilter, timeFilter)
 	sqlOrderBy := sqlOrderBy(param.SortBy)

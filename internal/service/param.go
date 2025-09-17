@@ -426,7 +426,7 @@ func parseFilter(paramMap map[string]string, colNameMap map[string]string) []*da
 }
 
 // createQueryParams applies any cross-parameter logic
-func createQueryParams(param *api.RequestParam, colNames []string, colTypes map[string]string, sourceSRID int) (*data.QueryParam, error) {
+func createQueryParams(param *api.RequestParam, colNames []string, sourceSRID int) (*data.QueryParam, error) {
 	query := data.QueryParam{
 		Crs:           param.Crs,
 		Limit:         param.Limit,
@@ -462,159 +462,13 @@ func createQueryParams(param *api.RequestParam, colNames []string, colTypes map[
 	}
 	query.FilterSql = sql
 
-	dtFilter, err := buildDateTimeFilter(param.DateTime, colNames, colTypes)
+	dtRange, err := parseDateTimeRange(param.DateTime)
 	if err != nil {
 		return &query, err
 	}
-	query.DateTime = dtFilter
+	query.DateTime = dtRange
 
 	return &query, nil
-}
-
-func buildDateTimeFilter(value string, colNames []string, colTypes map[string]string) (*data.TimeRange, error) {
-	if strings.TrimSpace(value) == "" {
-		return nil, nil
-	}
-	instantColumn, startColumn, endColumn := findTemporalColumns(colNames, colTypes)
-	column := instantColumn
-	if column == "" {
-		column = selectTemporalColumnByType(colNames, colTypes)
-	}
-	if startColumn != "" && endColumn != "" {
-		column = ""
-	}
-	if column == "" && (startColumn == "" || endColumn == "") {
-		return nil, nil
-	}
-	rng, err := parseDateTimeRange(value)
-	if err != nil {
-		return nil, err
-	}
-	if rng == nil {
-		return nil, nil
-	}
-	if startColumn != "" && endColumn != "" {
-		rng.StartColumn = startColumn
-		rng.EndColumn = endColumn
-		if colTypes != nil {
-			if typ, ok := colTypes[startColumn]; ok {
-				rng.ColumnType = typ
-			} else if typ, ok := colTypes[strings.ToLower(startColumn)]; ok {
-				rng.ColumnType = typ
-			}
-		}
-		return rng, nil
-	}
-	rng.Column = column
-	if colTypes != nil {
-		if typ, ok := colTypes[column]; ok {
-			rng.ColumnType = typ
-		} else if typ, ok := colTypes[strings.ToLower(column)]; ok {
-			rng.ColumnType = typ
-		}
-	}
-	return rng, nil
-}
-
-func findTemporalColumns(colNames []string, colTypes map[string]string) (string, string, string) {
-	if len(colTypes) == 0 {
-		return "", "", ""
-	}
-	actualNames := make(map[string]string)
-	for _, name := range colNames {
-		actualNames[strings.ToLower(name)] = name
-	}
-	for name := range colTypes {
-		actualNames[strings.ToLower(name)] = name
-	}
-	lookup := func(candidate string) (string, bool) {
-		if candidate == "" {
-			return "", false
-		}
-		if col, ok := actualNames[strings.ToLower(candidate)]; ok {
-			return col, true
-		}
-		return "", false
-	}
-	var instant string
-	for _, cand := range conf.Configuration.Temporal.InstantColumns {
-		if col, ok := lookup(cand); ok {
-			if typ, ok := columnType(colTypes, col); ok && isTemporalType(typ) {
-				instant = col
-				break
-			}
-		}
-	}
-	var start string
-	for _, cand := range conf.Configuration.Temporal.StartColumns {
-		if col, ok := lookup(cand); ok {
-			if typ, ok := columnType(colTypes, col); ok && isTemporalType(typ) {
-				start = col
-				break
-			}
-		}
-	}
-	var end string
-	for _, cand := range conf.Configuration.Temporal.EndColumns {
-		if col, ok := lookup(cand); ok {
-			if typ, ok := columnType(colTypes, col); ok && isTemporalType(typ) {
-				end = col
-				break
-			}
-		}
-	}
-	return instant, start, end
-}
-
-func columnType(colTypes map[string]string, name string) (string, bool) {
-	if typ, ok := colTypes[name]; ok {
-		return typ, true
-	}
-	if typ, ok := colTypes[strings.ToLower(name)]; ok {
-		return typ, true
-	}
-	return "", false
-}
-
-func selectTemporalColumnByType(colNames []string, colTypes map[string]string) string {
-	if len(colTypes) == 0 {
-		return ""
-	}
-	for _, name := range colNames {
-		typ, ok := colTypes[name]
-		if !ok {
-			typ, ok = colTypes[strings.ToLower(name)]
-		}
-		if !ok {
-			continue
-		}
-		if isTemporalType(typ) {
-			return name
-		}
-	}
-	for name, typ := range colTypes {
-		if isTemporalType(typ) {
-			return name
-		}
-	}
-	return ""
-}
-
-func hasTemporalQuerySupport(colNames []string, colTypes map[string]string) bool {
-	instant, start, end := findTemporalColumns(colNames, colTypes)
-	if start != "" && end != "" {
-		return true
-	}
-	if instant != "" {
-		return true
-	}
-	col := selectTemporalColumnByType(colNames, colTypes)
-	return col != ""
-}
-
-func isTemporalType(pgType string) bool {
-	typeLow := strings.ToLower(pgType)
-	return typeLow == "timestamp" || typeLow == "timestamptz"
 }
 
 func parseDateTimeRange(value string) (*data.TimeRange, error) {

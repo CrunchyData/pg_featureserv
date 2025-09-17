@@ -274,7 +274,7 @@ func handleCollectionItems(w http.ResponseWriter, r *http.Request) *appError {
 	if tbl == nil {
 		return appErrorNotFoundFmt(err1, api.ErrMsgCollectionNotFound, name)
 	}
-	param, err := createQueryParams(&reqParam, tbl.Columns, tbl.DbTypes, tbl.Srid)
+	param, err := createQueryParams(&reqParam, tbl.Columns, tbl.Srid)
 	if err != nil {
 		return appErrorBadRequest(err, err.Error())
 	}
@@ -304,7 +304,7 @@ func writeItemsHTML(w http.ResponseWriter, tbl *data.Table, name string, query s
 	context.Title = tbl.Title
 	context.IDColumn = tbl.IDColumn
 	context.ShowFeatureLink = true
-	context.HasDateTime = hasTemporalQuerySupport(tbl.Columns, tbl.DbTypes)
+	context.HasTemporal = tbl.StartTimeColumn != ""
 
 	// features are not needed for items page (page queries for them)
 	return writeHTML(w, nil, context, ui.PageItems())
@@ -358,7 +358,7 @@ func handleItem(w http.ResponseWriter, r *http.Request) *appError {
 	if tbl == nil {
 		return appErrorNotFoundFmt(err1, api.ErrMsgCollectionNotFound, name)
 	}
-	param, errQuery := createQueryParams(&reqParam, tbl.Columns, tbl.DbTypes, tbl.Srid)
+	param, errQuery := createQueryParams(&reqParam, tbl.Columns, tbl.Srid)
 
 	if errQuery == nil {
 		ctx := r.Context()
@@ -594,7 +594,7 @@ func handleFunctionItems(w http.ResponseWriter, r *http.Request) *appError {
 	if fn == nil && err == nil {
 		return appErrorNotFoundFmt(err, api.ErrMsgFunctionNotFound, name)
 	}
-	param, err := createQueryParams(&reqParam, fn.OutNames, fn.Types, data.SRID_4326)
+	param, err := createQueryParams(&reqParam, fn.OutNames, data.SRID_4326)
 	if err != nil {
 		return appErrorBadRequest(err, err.Error())
 	}
@@ -638,7 +638,7 @@ func writeFunItemsHTML(w http.ResponseWriter, name string, query string, urlBase
 	context.Title = fn.ID
 	context.Function = fn
 	context.IDColumn = data.FunctionIDColumnName
-	context.HasDateTime = hasTemporalQuerySupport(fn.OutNames, fn.Types)
+	context.HasTemporal = fn.StartTimeColumn != ""
 
 	// features are not needed for items page (page queries for them)
 	return writeHTML(w, nil, context, ui.PageFunctionItems())
