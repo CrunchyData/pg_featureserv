@@ -3,18 +3,9 @@ package service
 import (
 	"testing"
 	"time"
-
-	"github.com/CrunchyData/pg_featureserv/internal/conf"
 )
 
-func setTemporalConfig() {
-	conf.Configuration.Temporal.InstantColumns = []string{"observed_at"}
-	conf.Configuration.Temporal.StartColumns = []string{"start_time"}
-	conf.Configuration.Temporal.EndColumns = []string{"end_time"}
-}
-
 func TestParseDateTimeRangeInstant(t *testing.T) {
-	setTemporalConfig()
 	rng, err := parseDateTimeRange("2018-02-12T23:20:52Z")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -34,7 +25,6 @@ func TestParseDateTimeRangeInstant(t *testing.T) {
 }
 
 func TestParseDateTimeRangeDate(t *testing.T) {
-	setTemporalConfig()
 	rng, err := parseDateTimeRange("2018-02-12")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -59,7 +49,6 @@ func TestParseDateTimeRangeDate(t *testing.T) {
 }
 
 func TestParseDateTimeRangeInterval(t *testing.T) {
-	setTemporalConfig()
 	rng, err := parseDateTimeRange("2018-02-12T00:00:00Z/2018-03-18T12:31:12Z")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -73,7 +62,6 @@ func TestParseDateTimeRangeInterval(t *testing.T) {
 }
 
 func TestParseDateTimeRangeOpen(t *testing.T) {
-	setTemporalConfig()
 	rng, err := parseDateTimeRange("../2018-03-18T12:31:12Z")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -90,7 +78,6 @@ func TestParseDateTimeRangeOpen(t *testing.T) {
 }
 
 func TestParseDateTimeRangeInvalid(t *testing.T) {
-	setTemporalConfig()
 	if _, err := parseDateTimeRange("not-a-date"); err == nil {
 		t.Fatalf("expected error for invalid input")
 	}

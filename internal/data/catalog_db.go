@@ -742,9 +742,9 @@ func temporalColumns(names []string, types map[string]string) (string, string) {
 		return ""
 	}
 	// QUESTION: preference of time columns? instant vs start/end?
-	instant := lookup(conf.Configuration.Temporal.InstantColumns)
-	start := lookup(conf.Configuration.Temporal.StartColumns)
-	end := lookup(conf.Configuration.Temporal.EndColumns)
+	instant := lookup(conf.Configuration.Database.TimeColumns)
+	start := lookup(conf.Configuration.Database.StartTimeColumns)
+	end := lookup(conf.Configuration.Database.EndTimeColumns)
 	if instant != "" && (start == "" || end == "") {
 		start = instant
 		end = instant

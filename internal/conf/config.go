@@ -44,10 +44,9 @@ func setDefaultConfig() {
 	viper.SetDefault("Database.TableIncludes", []string{})
 	viper.SetDefault("Database.TableExcludes", []string{})
 	viper.SetDefault("Database.FunctionIncludes", []string{"postgisftw"})
-
-	viper.SetDefault("Temporal.InstantColumns", []string{"time"})
-	viper.SetDefault("Temporal.StartColumns", []string{"start_time"})
-	viper.SetDefault("Temporal.EndColumns", []string{"end_time"})
+	viper.SetDefault("Database.TimeColumns", []string{"time"})
+	viper.SetDefault("Database.StartTimeColumns", []string{"start_time"})
+	viper.SetDefault("Database.EndTimeColumns", []string{"end_time"})
 
 	viper.SetDefault("Paging.LimitDefault", 10)
 	viper.SetDefault("Paging.LimitMax", 1000)
@@ -65,7 +64,6 @@ type Config struct {
 	Metadata Metadata
 	Database Database
 	Website  Website
-	Temporal Temporal
 }
 
 // Server config
@@ -99,6 +97,9 @@ type Database struct {
 	TableIncludes         []string
 	TableExcludes         []string
 	FunctionIncludes      []string
+	TimeColumns           []string
+	StartTimeColumns      []string
+	EndTimeColumns        []string
 }
 
 // Metadata config
@@ -109,12 +110,6 @@ type Metadata struct {
 
 type Website struct {
 	BasemapUrl string
-}
-
-type Temporal struct {
-	InstantColumns []string
-	StartColumns   []string
-	EndColumns     []string
 }
 
 // IsHTTPSEnabled tests whether HTTPS is enabled
@@ -191,7 +186,7 @@ func DumpConfig() {
 	log.Debugf("  TableExcludes = %v", Configuration.Database.TableExcludes)
 	log.Debugf("  FunctionIncludes = %v", Configuration.Database.FunctionIncludes)
 	log.Debugf("  TransformFunctions = %v", Configuration.Server.TransformFunctions)
-	log.Debugf("  Temporal.InstantColumns = %v", Configuration.Temporal.InstantColumns)
-	log.Debugf("  Temporal.StartColumns = %v", Configuration.Temporal.StartColumns)
-	log.Debugf("  Temporal.EndColumns = %v", Configuration.Temporal.EndColumns)
+	log.Debugf("  TimeColumns = %v", Configuration.Database.TimeColumns)
+	log.Debugf("  StartTimeColumns = %v", Configuration.Database.StartTimeColumns)
+	log.Debugf("  EndTimeColumns = %v", Configuration.Database.EndTimeColumns)
 }
