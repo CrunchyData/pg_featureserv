@@ -37,7 +37,7 @@ It includes [*OGC API - Features*](http://docs.opengeospatial.org/is/17-069r3/17
 - [x] `bbox=x1,y1,x2,y2`
 - [ ] `bbox` (6 numbers)
 - [x] `bbox-crs=srid`
-- [ ] `datetime`
+- [x] `datetime`
 - [x] `properties` list
   - restricts properties included in response
 - [x] `sortby` to sort output by a property

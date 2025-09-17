@@ -76,6 +76,11 @@ Path: `/collections/{cid}/items`
   Multiple property filters are ANDed together.
 * `filter=cql-expr` - filters features via a CQL expression
 * `filter-crs=SRID` - specifies the CRS for geometry values in the CQL filter
+* `datetime=INSTANT | INTERVAL` - specify a time range to filter the data by (must have a datetime column configured. see [Temporal](config/pg_featureserv.toml.example) section of config)
+   * exact match: `datetime=2025-01-02T00:00:00Z`
+   * between: `datetime=2025-01-02T00:00:00Z/2025-02-02T00:00:00Z`
+   * before: `datetime=../2025-01-02T00:00:00Z`
+   * after: `datetime=2025-01-02T00:00:00Z/..`
 * `transform=fun1[,args][|fun2,args...]` - transform the feature geometry by a geometry function pipeline.
 * `groupby=PROP-NAME` - group results on a property.
 Usually used with an aggregate `transform` function.
