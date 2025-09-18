@@ -38,7 +38,7 @@ const (
 	JSONTypeBooleanArray = "boolean[]"
 	JSONTypeStringArray  = "string[]"
 	JSONTypeNumberArray  = "number[]"
-	JSONTypeDatetime     = "datetime"
+	JSONTypeDatetime     = "date"
 
 	PGTypeBool        = "bool"
 	PGTypeNumeric     = "numeric"
