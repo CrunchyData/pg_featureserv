@@ -304,6 +304,7 @@ func writeItemsHTML(w http.ResponseWriter, tbl *data.Table, name string, query s
 	context.Title = tbl.Title
 	context.IDColumn = tbl.IDColumn
 	context.ShowFeatureLink = true
+	context.TimeAware = tbl.StartTimeColumn != ""
 
 	// features are not needed for items page (page queries for them)
 	return writeHTML(w, nil, context, ui.PageItems())
@@ -637,6 +638,7 @@ func writeFunItemsHTML(w http.ResponseWriter, name string, query string, urlBase
 	context.Title = fn.ID
 	context.Function = fn
 	context.IDColumn = data.FunctionIDColumnName
+	context.TimeAware = fn.StartTimeColumn != ""
 
 	// features are not needed for items page (page queries for them)
 	return writeHTML(w, nil, context, ui.PageFunctionItems())

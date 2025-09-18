@@ -98,6 +98,17 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 			AllowEmptyValue: false,
 		},
 	}
+	paramDateTime := openapi3.ParameterRef{
+		Value: &openapi3.Parameter{
+			Name:        "datetime",
+			Description: "Temporal filter (RFC 3339 instant or interval).",
+			In:          "query",
+			Required:    false,
+			Style:       "form",
+			Explode:     openapi3.BoolPtr(false),
+			Schema:      &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+		},
+	}
 	paramFilterCrs := openapi3.ParameterRef{
 		Value: &openapi3.Parameter{
 			Name:        "filter-crs",
@@ -319,6 +330,7 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 						&paramBbox,
 						&paramBboxCrs,
 						&paramFilter,
+						&paramDateTime,
 						&paramFilterCrs,
 						&paramTransform,
 						&paramProperties,
@@ -441,6 +453,7 @@ func GetOpenAPIContent(urlBase string) *openapi3.Swagger {
 						&paramBbox,
 						&paramBboxCrs,
 						&paramFilter,
+						&paramDateTime,
 						&paramFilterCrs,
 						&paramTransform,
 						&paramProperties,

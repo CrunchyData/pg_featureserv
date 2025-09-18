@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 )
 
 /*
@@ -91,24 +92,36 @@ type QueryParam struct {
 	SortBy        []Sorting
 	Precision     int
 	TransformFuns []TransformFunction
+	DateTime      *TimeRange
+}
+
+// TimeRange restricts results to a temporal interval for a specific column
+type TimeRange struct {
+	Start          *time.Time
+	End            *time.Time
+	StartInclusive bool
+	EndInclusive   bool
 }
 
 // Table holds metadata for table/view objects
 type Table struct {
-	ID             string
-	Schema         string
-	Table          string
-	Title          string
-	Description    string
-	GeometryType   string
-	GeometryColumn string
-	IDColumn       string
-	Srid           int
-	Extent         Extent
-	Columns        []string
-	DbTypes        map[string]string
-	JSONTypes      []string
-	ColDesc        []string
+	ID              string
+	Schema          string
+	Table           string
+	Title           string
+	Description     string
+	GeometryType    string
+	GeometryColumn  string
+	IDColumn        string
+	StartTimeColumn string
+	EndTimeColumn   string
+	Srid            int
+	Extent          Extent
+	TemporalExtent  TemporalExtent
+	Columns         []string
+	DbTypes         map[string]string
+	JSONTypes       []string
+	ColDesc         []string
 }
 
 // Extent of a table
@@ -116,23 +129,30 @@ type Extent struct {
 	Minx, Miny, Maxx, Maxy float64
 }
 
+type TemporalExtent struct {
+	Start time.Time
+	End   time.Time
+}
+
 // Function tbd
 type Function struct {
-	ID             string
-	Schema         string
-	Name           string
-	Description    string
-	InNames        []string
-	InDbTypes      []string
-	InTypeMap      map[string]string
-	InDefaults     []string
-	NumNoDefault   int
-	OutNames       []string
-	OutDbTypes     []string
-	OutJSONTypes   []string
-	Types          map[string]string
-	GeometryColumn string
-	IDColumn       string
+	ID              string
+	Schema          string
+	Name            string
+	Description     string
+	InNames         []string
+	InDbTypes       []string
+	InTypeMap       map[string]string
+	InDefaults      []string
+	NumNoDefault    int
+	OutNames        []string
+	OutDbTypes      []string
+	OutJSONTypes    []string
+	Types           map[string]string
+	GeometryColumn  string
+	IDColumn        string
+	StartTimeColumn string
+	EndTimeColumn   string
 }
 
 func (fun *Function) IsGeometryFunction() bool {

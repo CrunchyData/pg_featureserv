@@ -38,13 +38,16 @@ const (
 	JSONTypeBooleanArray = "boolean[]"
 	JSONTypeStringArray  = "string[]"
 	JSONTypeNumberArray  = "number[]"
+	JSONTypeDatetime     = "date"
 
-	PGTypeBool      = "bool"
-	PGTypeNumeric   = "numeric"
-	PGTypeJSON      = "json"
-	PGTypeJSONB     = "jsonb"
-	PGTypeGeometry  = "geometry"
-	PGTypeTextArray = "_text"
+	PGTypeBool        = "bool"
+	PGTypeNumeric     = "numeric"
+	PGTypeJSON        = "json"
+	PGTypeJSONB       = "jsonb"
+	PGTypeGeometry    = "geometry"
+	PGTypeTextArray   = "_text"
+	PGTypeTimestamp   = "timestamp"
+	PGTypeTimestamptz = "timestamptz"
 )
 
 type catalogDB struct {
@@ -166,6 +169,11 @@ func (cat *catalogDB) TableReload(name string) {
 		sqlExtentExact := sqlExtentExact(tbl)
 		cat.loadExtent(sqlExtentExact, tbl)
 	}
+	// load temporal extent (which may change over time)
+	if tbl.StartTimeColumn != "" {
+		sqlTemporalExtent := sqlTemporalExtentExact(tbl)
+		cat.loadTemporalExtent(sqlTemporalExtent, tbl)
+	}
 }
 
 func (cat *catalogDB) loadExtent(sql string, tbl *Table) bool {
@@ -188,6 +196,25 @@ func (cat *catalogDB) loadExtent(sql string, tbl *Table) bool {
 	tbl.Extent.Miny = ymin.Float
 	tbl.Extent.Maxx = xmax.Float
 	tbl.Extent.Maxy = ymax.Float
+	return true
+}
+
+func (cat *catalogDB) loadTemporalExtent(sql string, tbl *Table) bool {
+	var (
+		start pgtype.Timestamptz
+		end   pgtype.Timestamptz
+	)
+	log.Debug("Temporal extent query: " + sql)
+	err := cat.dbconn.QueryRow(context.Background(), sql).Scan(&start, &end)
+	if err != nil {
+		log.Debugf("Error querying Temporal Extent for %s: %v", tbl.ID, err)
+	}
+	// no extent was read (perhaps a view...)
+	if start.Status == pgtype.Null {
+		return false
+	}
+	tbl.TemporalExtent.Start = start.Time
+	tbl.TemporalExtent.End = end.Time
 	return true
 }
 
@@ -361,20 +388,24 @@ func scanTable(rows pgx.Rows) *Table {
 		description = fmt.Sprintf("Data for table %v", id)
 	}
 
+	startTimeColumn, endTimeColumn := temporalColumns(columns, datatypes)
+
 	return &Table{
-		ID:             id,
-		Schema:         schema,
-		Table:          table,
-		Title:          title,
-		Description:    description,
-		GeometryColumn: geometryCol,
-		Srid:           srid,
-		GeometryType:   geometryType,
-		IDColumn:       idColumn,
-		Columns:        columns,
-		DbTypes:        datatypes,
-		JSONTypes:      jsontypes,
-		ColDesc:        colDesc,
+		ID:              id,
+		Schema:          schema,
+		Table:           table,
+		Title:           title,
+		Description:     description,
+		GeometryColumn:  geometryCol,
+		Srid:            srid,
+		GeometryType:    geometryType,
+		IDColumn:        idColumn,
+		StartTimeColumn: startTimeColumn,
+		EndTimeColumn:   endTimeColumn,
+		Columns:         columns,
+		DbTypes:         datatypes,
+		JSONTypes:       jsontypes,
+		ColDesc:         colDesc,
 	}
 }
 
@@ -466,6 +497,41 @@ func extractProperties(vals []interface{}, propOffset int, propNames []string) m
 func toJSONValue(value interface{}) interface{} {
 	//fmt.Printf("toJSONValue: %v\n", reflect.TypeOf(value))
 	switch v := value.(type) {
+	case time.Time:
+		return formatDateTime(v)
+	case *time.Time:
+		if v == nil {
+			return nil
+		}
+		return formatDateTime(*v)
+	case pgtype.Timestamp:
+		if v.Status != pgtype.Present {
+			return nil
+		}
+		return formatDateTime(v.Time)
+	case *pgtype.Timestamp:
+		if v == nil || v.Status != pgtype.Present {
+			return nil
+		}
+		return formatDateTime(v.Time)
+	case pgtype.Timestamptz:
+		if v.Status != pgtype.Present {
+			return nil
+		}
+		return formatDateTime(v.Time)
+	case *pgtype.Timestamptz:
+		if v == nil || v.Status != pgtype.Present {
+			return nil
+		}
+		return formatDateTime(v.Time)
+	case pgtype.TimestampArray:
+		return formatTimestampArray(&v)
+	case *pgtype.TimestampArray:
+		return formatTimestampArray(v)
+	case pgtype.TimestamptzArray:
+		return formatTimestamptzArray(&v)
+	case *pgtype.TimestamptzArray:
+		return formatTimestamptzArray(v)
 	case *pgtype.Numeric:
 		var num float64
 		// TODO: handle error
@@ -514,6 +580,65 @@ func toJSONValue(value interface{}) interface{} {
 	return value
 }
 
+func formatDateTime(t time.Time) string {
+	return t.Format(time.RFC3339Nano)
+}
+
+func formatTimestampArray(arr *pgtype.TimestampArray) []string {
+	if arr == nil || arr.Status == pgtype.Null {
+		return nil
+	}
+	var times []time.Time
+	if err := arr.AssignTo(&times); err == nil {
+		return formatDateTimeSlice(times)
+	}
+	return formatTimestampElements(arr.Elements)
+}
+
+func formatTimestamptzArray(arr *pgtype.TimestamptzArray) []string {
+	if arr == nil || arr.Status == pgtype.Null {
+		return nil
+	}
+	var times []time.Time
+	if err := arr.AssignTo(&times); err == nil {
+		return formatDateTimeSlice(times)
+	}
+	return formatTimestamptzElements(arr.Elements)
+}
+
+func formatDateTimeSlice(times []time.Time) []string {
+	if times == nil {
+		return nil
+	}
+	result := make([]string, len(times))
+	for i, tm := range times {
+		result[i] = formatDateTime(tm)
+	}
+	return result
+}
+
+func formatTimestampElements(elements []pgtype.Timestamp) []string {
+	result := make([]string, len(elements))
+	for i, elem := range elements {
+		if elem.Status != pgtype.Present {
+			continue
+		}
+		result[i] = formatDateTime(elem.Time)
+	}
+	return result
+}
+
+func formatTimestamptzElements(elements []pgtype.Timestamptz) []string {
+	result := make([]string, len(elements))
+	for i, elem := range elements {
+		if elem.Status != pgtype.Present {
+			continue
+		}
+		result[i] = formatDateTime(elem.Time)
+	}
+	return result
+}
+
 func toJSONTypeFromPGArray(pgTypes []string) []string {
 	jsonTypes := make([]string, len(pgTypes))
 	for i, pgType := range pgTypes {
@@ -533,6 +658,9 @@ func toJSONTypeFromPG(pgType string) string {
 	if strings.HasPrefix(pgType, "_bool") {
 		return JSONTypeBooleanArray
 	}
+	if strings.HasPrefix(pgType, "_timestamp") || strings.HasPrefix(pgType, "_timestamptz") {
+		return JSONTypeStringArray
+	}
 	switch pgType {
 	case PGTypeNumeric:
 		return JSONTypeNumber
@@ -544,6 +672,8 @@ func toJSONTypeFromPG(pgType string) string {
 		return JSONTypeJSON
 	case PGTypeTextArray:
 		return JSONTypeStringArray
+	case PGTypeTimestamp, PGTypeTimestamptz:
+		return JSONTypeDatetime
 	// hack to allow displaying geometry type
 	case PGTypeGeometry:
 		return PGTypeGeometry
@@ -592,4 +722,32 @@ func indexOfName(names []string, name string) int {
 		}
 	}
 	return -1
+}
+func temporalColumns(names []string, types map[string]string) (string, string) {
+	actualNames := make(map[string]string, len(names))
+	for _, name := range names {
+		actualNames[strings.ToLower(name)] = name
+	}
+	lookup := func(candidates []string) string {
+		for _, cand := range candidates {
+			if cand == "" {
+				continue
+			}
+			if col, ok := actualNames[strings.ToLower(cand)]; ok {
+				if types[col] == PGTypeTimestamp || types[col] == PGTypeTimestamptz {
+					return col
+				}
+			}
+		}
+		return ""
+	}
+	// QUESTION: preference of time columns? instant vs start/end?
+	instant := lookup(conf.Configuration.Database.TimeColumns)
+	start := lookup(conf.Configuration.Database.StartTimeColumns)
+	end := lookup(conf.Configuration.Database.EndTimeColumns)
+	if instant != "" && (start == "" || end == "") {
+		start = instant
+		end = instant
+	}
+	return start, end
 }

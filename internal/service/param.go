@@ -19,6 +19,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/CrunchyData/pg_featureserv/internal/api"
 	"github.com/CrunchyData/pg_featureserv/internal/conf"
@@ -77,6 +78,9 @@ func parseRequestParams(r *http.Request) (api.RequestParam, error) {
 
 	// --- filter parameter
 	param.Filter = parseString(paramValues, api.ParamFilter)
+
+	// --- datetime parameter
+	param.DateTime = parseString(paramValues, api.ParamDateTime)
 
 	// --- filter-crs parameter
 	filterCrs, err := parseInt(paramValues, api.ParamFilterCrs, 0, 99999999, data.SRID_4326)
@@ -458,5 +462,127 @@ func createQueryParams(param *api.RequestParam, colNames []string, sourceSRID in
 	}
 	query.FilterSql = sql
 
+	dtRange, err := parseDateTimeRange(param.DateTime)
+	if err != nil {
+		return &query, err
+	}
+	query.DateTime = dtRange
+
 	return &query, nil
+}
+
+func parseDateTimeRange(value string) (*data.TimeRange, error) {
+	trimmed := strings.TrimSpace(value)
+	if trimmed == "" {
+		return nil, nil
+	}
+	if !strings.Contains(trimmed, "/") {
+		inst, err := parseDateTimeInstant(trimmed)
+		if err != nil {
+			return nil, err
+		}
+		if inst == nil {
+			return nil, nil
+		}
+		rng := &data.TimeRange{StartInclusive: true, EndInclusive: true}
+		start := copyTime(inst.Time)
+		rng.Start = &start
+		if inst.DateOnly {
+			end := start.Add(24 * time.Hour)
+			rng.End = &end
+			rng.EndInclusive = false
+		} else {
+			end := copyTime(inst.Time)
+			rng.End = &end
+		}
+		return rng, nil
+	}
+	parts := strings.SplitN(trimmed, "/", 2)
+	if len(parts) != 2 {
+		return nil, fmt.Errorf(api.ErrMsgInvalidParameterValue, api.ParamDateTime, value)
+	}
+	startInst, err := parseDateTimeInstant(parts[0])
+	if err != nil {
+		return nil, err
+	}
+	endInst, err := parseDateTimeInstant(parts[1])
+	if err != nil {
+		return nil, err
+	}
+	if startInst == nil && endInst == nil {
+		return nil, nil
+	}
+	rng := &data.TimeRange{StartInclusive: true, EndInclusive: true}
+	if startInst != nil {
+		start := copyTime(startInst.Time)
+		rng.Start = &start
+	}
+	if endInst != nil {
+		end := copyTime(endInst.Time)
+		rng.End = &end
+	}
+	if startInst != nil && startInst.DateOnly {
+		// already normalized to midnight
+		rng.StartInclusive = true
+	}
+	if endInst != nil && endInst.DateOnly {
+		endAdj := rng.End.Add(24 * time.Hour)
+		rng.End = &endAdj
+		rng.EndInclusive = false
+	}
+	if rng.Start != nil && rng.End != nil {
+		if rng.EndInclusive {
+			if rng.Start.After(*rng.End) {
+				return nil, fmt.Errorf(api.ErrMsgInvalidParameterValue, api.ParamDateTime, value)
+			}
+		} else {
+			if !rng.Start.Before(*rng.End) {
+				return nil, fmt.Errorf(api.ErrMsgInvalidParameterValue, api.ParamDateTime, value)
+			}
+		}
+	}
+	return rng, nil
+}
+
+type parsedInstant struct {
+	Time     time.Time
+	DateOnly bool
+}
+
+func parseDateTimeInstant(value string) (*parsedInstant, error) {
+	trimmed := strings.TrimSpace(value)
+	if trimmed == "" || trimmed == ".." {
+		return nil, nil
+	}
+	tm, isDateOnly, err := parseDateTimeLiteral(trimmed)
+	if err != nil {
+		return nil, err
+	}
+	return &parsedInstant{Time: tm.UTC(), DateOnly: isDateOnly}, nil
+}
+
+func parseDateTimeLiteral(value string) (time.Time, bool, error) {
+	layouts := []string{time.RFC3339Nano, time.RFC3339}
+	for _, layout := range layouts {
+		tm, err := time.Parse(layout, value)
+		if err == nil {
+			return tm.UTC(), false, nil
+		}
+	}
+	nonZoneLayouts := []string{"2006-01-02T15:04:05", "2006-01-02T15:04"}
+	for _, layout := range nonZoneLayouts {
+		tm, err := time.ParseInLocation(layout, value, time.UTC)
+		if err == nil {
+			return tm.UTC(), false, nil
+		}
+	}
+	tm, err := time.Parse("2006-01-02", value)
+	if err == nil {
+		return tm.UTC(), true, nil
+	}
+	return time.Time{}, false, fmt.Errorf(api.ErrMsgInvalidParameterValue, api.ParamDateTime, value)
+}
+
+func copyTime(t time.Time) time.Time {
+	return t.UTC()
 }

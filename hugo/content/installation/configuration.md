@@ -119,6 +119,15 @@ WriteTimeoutSec = 30
 # Publish functions from these schemas (default is publish postgisftw)
 # FunctionIncludes = [ "postgisftw", "schema2" ]
 
+# Assign time columns for tables with temporal data
+# These should be timestamp or timestamptz columns in the table
+# Columns to be used for feature start and end of time intervals
+# StartTimeColumns = [ "start_time" ]
+# EndTimeColumns = [ "end_time" ]
+# Columns to be used for (instantaneous) feature timestamps
+# TimeColumns = [ "time" ]
+
+
 [Paging]
 # The default number of features in a response
 LimitDefault = 20
@@ -242,6 +251,24 @@ Overrides items specified in `TableIncludes`.
 
 A list of the schemas to publish functions from.
 The default is to publish functions in the `postgisftw` schema.
+
+#### StartTimeColumns
+
+Specifies the column(s) that represent the start time for temporal features.
+Use this to identify when a feature becomes active or relevant.
+The first found column is used.
+
+#### EndTimeColumns
+
+Specifies the column(s) that represent the end time for temporal features.
+Use this to indicate when a feature is no longer active or relevant.
+The first found column is used.
+
+#### TimeColumns
+
+Specifies the column(s) that contain time or timestamp information for features.
+Useful for filtering or querying features based on specific time values.
+The first found column is used.
 
 #### LimitDefault
 

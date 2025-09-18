@@ -115,22 +115,26 @@ func scanFunctionDef(rows pgx.Rows) *Function {
 	}
 
 	geomCol := geometryColumn(outNames, datatypes)
+	startTimeColumn, endTimeColumn := temporalColumns(outNames, datatypes)
 
 	funDef := Function{
-		ID:             id,
-		Schema:         schema,
-		Name:           name,
-		Description:    description,
-		InNames:        inNames,
-		InDbTypes:      inTypes,
-		InTypeMap:      inTypeMap,
-		InDefaults:     inDefaults,
-		NumNoDefault:   numNoDefault,
-		OutNames:       outNames,
-		OutDbTypes:     outTypes,
-		OutJSONTypes:   outJSONTypes,
-		Types:          datatypes,
-		GeometryColumn: geomCol,
+		ID:              id,
+		Schema:          schema,
+		Name:            name,
+		Description:     description,
+		InNames:         inNames,
+		InDbTypes:       inTypes,
+		InTypeMap:       inTypeMap,
+		InDefaults:      inDefaults,
+		NumNoDefault:    numNoDefault,
+		OutNames:        outNames,
+		OutDbTypes:      outTypes,
+		OutJSONTypes:    outJSONTypes,
+		Types:           datatypes,
+		GeometryColumn:  geomCol,
+		IDColumn:        FunctionIDColumnName,
+		StartTimeColumn: startTimeColumn,
+		EndTimeColumn:   endTimeColumn,
 	}
 	//fmt.Printf("DEBUG: Function definitions: %v\n", funDef)
 	return &funDef

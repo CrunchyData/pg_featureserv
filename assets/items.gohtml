@@ -37,6 +37,23 @@
 <input type='checkbox' id='chk-bbox'>
 </td>
 </tr>
+{{if .context.TimeAware}}
+<tr>
+<td class='param-title' title='Filter results to a single timestamp'>Datetime</td>
+<td>
+<input type='datetime-local' id='datetime-instant' placeholder='Instant (UTC)'>
+</td>
+</tr>
+<tr>
+<td class='param-title' title='Filter results to a start/end interval'>Datetime range</td>
+<td>
+<input type='datetime-local' id='datetime-start' placeholder='Start (UTC)'>
+<span style='margin: 0 4px;'>to</span>
+<input type='datetime-local' id='datetime-end' placeholder='End (UTC)'>
+<div style='font-size: 10px; font-style: italic;'>Leave a field blank for an open interval.</div>
+</td>
+</tr>
+{{end}}
 {{template "funArgs" .}}
 </table>
 </div>
@@ -78,20 +95,24 @@ function onMapLoad() {
     document.getElementById('feature-count').innerHTML = numFeat;
 
 }
+populateDatetimeControls();
 function doQuery() {
 	var url = window.location.pathname;
 	var newUrl = addFunctionArgs(url);
 
 	var select = document.getElementById('item-limit');
 	var lim = select.options[select.selectedIndex].value;
-	newurl = addQueryParam(newUrl, 'limit', lim);
+	newUrl = addQueryParam(newUrl, 'limit', lim);
+
+	var datetimeVal = buildDatetimeParam();
+	newUrl = addQueryParam(newUrl, 'datetime', datetimeVal);
 
 	var useBbox = document.getElementById('chk-bbox').checked;
 	if (useBbox) {
 		var bbox = bboxStr(5);
-		newurl = addQueryParam(newurl, 'bbox', bbox);
+		newUrl = addQueryParam(newUrl, 'bbox', bbox);
 	}
-	window.location.assign(newurl);
+	window.location.assign(newUrl);
 }
 function addQueryParam(url, name, value) {
 	if (! value || value.length <= 0) return url;
@@ -99,6 +120,100 @@ function addQueryParam(url, name, value) {
 	let  delim = hasQuery ? '&' : '?';
 	let  newUrl = `${url}${delim}${name}=${value}`;
 	return newUrl;
+}
+
+function buildDatetimeParam() {
+	var instantRaw = document.getElementById('datetime-instant').value;
+	var startRaw = document.getElementById('datetime-start').value;
+	var endRaw = document.getElementById('datetime-end').value;
+
+	var instant = toIsoString(instantRaw);
+	var start = toIsoString(startRaw);
+	var end = toIsoString(endRaw);
+
+	if (instant) {
+		return instant;
+	}
+	if (!start && !end) {
+		return '';
+	}
+	var startPart = start ? start : '..';
+	var endPart = end ? end : '..';
+	if (startPart === '..' && endPart === '..') {
+		return '';
+	}
+	return `${startPart}/${endPart}`;
+}
+
+function toIsoString(value) {
+	if (!value) {
+		return '';
+	}
+	var dt = new Date(value);
+	if (Number.isNaN(dt.getTime())) {
+		return '';
+	}
+	return dt.toISOString();
+}
+
+function populateDatetimeControls() {
+	var params = new URL(window.location.href).searchParams;
+	var value = params.get('datetime');
+	if (!value) {
+		return;
+	}
+	if (value.indexOf('/') >= 0) {
+		var parts = value.split('/');
+		if (parts.length === 2) {
+			if (parts[0] && parts[0] !== '..') {
+				setDatetimeInput('datetime-start', parts[0]);
+			}
+			if (parts[1] && parts[1] !== '..') {
+				setDatetimeInput('datetime-end', parts[1]);
+			}
+		}
+	} else {
+		setDatetimeInput('datetime-instant', value);
+	}
+}
+
+function setDatetimeInput(id, value) {
+	var input = document.getElementById(id);
+	if (!input) {
+		return;
+	}
+	var dt = parseDateTime(value);
+	if (!dt) {
+		return;
+	}
+	input.value = formatForInput(dt);
+}
+
+function parseDateTime(value) {
+	if (!value) {
+		return null;
+	}
+	var dt = new Date(value);
+	if (Number.isNaN(dt.getTime())) {
+		return null;
+	}
+	return dt;
+}
+
+function formatForInput(date) {
+	var pad = function(num) {
+		return String(num).padStart(2, '0');
+	};
+	var yyyy = date.getFullYear();
+	var mm = pad(date.getMonth() + 1);
+	var dd = pad(date.getDate());
+	var hh = pad(date.getHours());
+	var min = pad(date.getMinutes());
+	var sec = pad(date.getSeconds());
+	if (sec === '00') {
+		return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+	}
+	return `${yyyy}-${mm}-${dd}T${hh}:${min}:${sec}`;
 }
 </script>
 {{ end }}

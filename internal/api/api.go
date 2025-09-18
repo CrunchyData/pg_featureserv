@@ -39,6 +39,7 @@ const (
 	ParamBboxCrs    = "bbox-crs"
 	ParamFilter     = "filter"
 	ParamFilterCrs  = "filter-crs"
+	ParamDateTime   = "datetime"
 	ParamGroupBy    = "groupby"
 	ParamOrderBy    = "orderby"
 	ParamPrecision  = "precision"
@@ -98,6 +99,7 @@ var ParamReservedNames = []string{
 	ParamBbox,
 	ParamBboxCrs,
 	ParamFilter,
+	ParamDateTime,
 	ParamGroupBy,
 	ParamOrderBy,
 	ParamPrecision,
@@ -194,13 +196,19 @@ var ParameterSchema openapi3.Schema = openapi3.Schema{
 
 // Bbox for extent
 type Bbox struct {
-	Crs    string    `json:"crs"`
+	Crs    string      `json:"crs"`
 	Extent [][]float64 `json:"bbox"`
+}
+
+type TemporalExtent struct {
+	Trs      string    `json:"trs"`
+	Interval []*string `json:"interval"`
 }
 
 // Extent OAPIF Extent structure (partial)
 type Extent struct {
-	Spatial *Bbox `json:"spatial"`
+	Spatial  *Bbox           `json:"spatial"`
+	Temporal *TemporalExtent `json:"temporal,omitempty"`
 }
 
 // --- @See https://raw.githubusercontent.com/opengeospatial/WFS_FES/master/core/openapi/schemas/bbox.yaml
@@ -245,6 +253,7 @@ type RequestParam struct {
 	Properties    []string
 	Filter        string
 	FilterCrs     int
+	DateTime      string
 	GroupBy       []string
 	SortBy        []data.Sorting
 	Precision     int
@@ -494,6 +503,28 @@ func toBbox(cc *data.Table) *Bbox {
 	}
 }
 
+func toTemporalExtent(cc *data.Table) *TemporalExtent {
+	if cc.TemporalExtent.Start.IsZero() && cc.TemporalExtent.End.IsZero() {
+		return nil
+	}
+	var startStr, endStr *string
+	if !cc.TemporalExtent.Start.IsZero() {
+		s := cc.TemporalExtent.Start.Format(time.RFC3339)
+		startStr = &s
+	}
+	if !cc.TemporalExtent.End.IsZero() {
+		e := cc.TemporalExtent.End.Format(time.RFC3339)
+		endStr = &e
+	}
+	interval := make([]*string, 2)
+	interval[0] = startStr
+	interval[1] = endStr
+	return &TemporalExtent{
+		Trs:      "http://www.opengis.net/def/uom/ISO-8601/0/Gregorian",
+		Interval: interval,
+	}
+}
+
 func NewLink(href string, rel string, conType string, title string) *Link {
 	return &Link{
 		Href:  href,
@@ -525,7 +556,8 @@ func NewCollectionInfo(tbl *data.Table) *CollectionInfo {
 		Title:       tbl.Title,
 		Description: tbl.Description,
 		Extent: &Extent{
-			Spatial: toBbox(tbl),
+			Spatial:  toBbox(tbl),
+			Temporal: toTemporalExtent(tbl),
 		},
 	}
 	return &doc
