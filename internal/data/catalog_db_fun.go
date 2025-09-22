@@ -115,6 +115,13 @@ func scanFunctionDef(rows pgx.Rows) *Function {
 
 	geomCol := geometryColumn(outNames, datatypes)
 
+	idColumn := ""
+	if conf.Configuration.Database.IdColumn != "" {
+		if _, ok := datatypes[conf.Configuration.Database.IdColumn]; ok {
+			idColumn = conf.Configuration.Database.IdColumn
+		}
+	}
+
 	funDef := Function{
 		ID:             id,
 		Schema:         schema,
@@ -130,6 +137,7 @@ func scanFunctionDef(rows pgx.Rows) *Function {
 		OutJSONTypes:   outJSONTypes,
 		Types:          datatypes,
 		GeometryColumn: geomCol,
+		IDColumn:       idColumn,
 	}
 	//fmt.Printf("DEBUG: Function definitions: %v\n", funDef)
 	return &funDef
@@ -190,7 +198,7 @@ func (cat *catalogDB) FunctionFeatures(ctx context.Context, name string, args ma
 		return nil, errArg
 	}
 	propCols := removeNames(param.Columns, fn.GeometryColumn, "")
-	idColIndex := indexOfName(propCols, conf.Configuration.Database.IdColumn)
+	idColIndex := indexOfName(propCols, fn.IDColumn)
 	sql, argValues := sqlGeomFunction(fn, args, propCols, param)
 	log.Debugf("Function features query: %v", sql)
 	log.Debugf("Function %v Args: %v", name, argValues)
