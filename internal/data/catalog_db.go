@@ -262,7 +262,7 @@ func tablesSorted(tableMap map[string]*Table) []*Table {
 
 func (cat *catalogDB) readTables(db *pgxpool.Pool) map[string]*Table {
 	log.Debugf("Load table catalog:\n%v", sqlTables)
-	rows, err := db.Query(context.Background(), sqlTables, conf.Configuration.Database.IdColumn)
+	rows, err := db.Query(context.Background(), sqlTables)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -352,6 +352,13 @@ func scanTable(rows pgx.Rows) *Table {
 		datatypes[name] = datatype
 		jsontypes[i] = toJSONTypeFromPG(datatype)
 		colDesc[i] = props.Elements[elmPos+2].String
+	}
+
+	// default ID column if primary key not defined. check if conf.Configuration.Database.IdColumn is among columns
+	if idColumn == "" && conf.Configuration.Database.IdColumn != "" {
+		if _, ok := datatypes[conf.Configuration.Database.IdColumn]; ok {
+			idColumn = conf.Configuration.Database.IdColumn
+		}
 	}
 
 	// Synthesize a title for now
