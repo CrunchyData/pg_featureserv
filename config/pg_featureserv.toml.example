@@ -68,6 +68,9 @@ WriteTimeoutSec = 30
 # Publish functions from these schemas (default is publish postgisftw)
 # FunctionIncludes = [ "postgisftw", "schema2" ]
 
+# Designate a column as the feature ID (where primary key is not available e.g. views/functions)
+# IDColumn = "id"
+
 [Paging]
 # The default number of features in a response
 LimitDefault = 20

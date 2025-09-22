@@ -354,6 +354,13 @@ func scanTable(rows pgx.Rows) *Table {
 		colDesc[i] = props.Elements[elmPos+2].String
 	}
 
+	// detect ID column if primary key not defined.
+	if idColumn == "" && conf.Configuration.Database.IDColumn != "" {
+		if _, ok := datatypes[conf.Configuration.Database.IDColumn]; ok {
+			idColumn = conf.Configuration.Database.IDColumn
+		}
+	}
+
 	// Synthesize a title for now
 	title := id
 	// synthesize a description if none provided
