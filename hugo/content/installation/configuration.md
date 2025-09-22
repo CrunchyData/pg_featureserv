@@ -120,7 +120,7 @@ WriteTimeoutSec = 30
 # FunctionIncludes = [ "postgisftw", "schema2" ]
 
 # Designate a column as the feature ID (where primary key is not available e.g. views/functions)
-IdColumn = "id"
+# IdColumn = "id"
 
 [Paging]
 # The default number of features in a response
