@@ -355,9 +355,9 @@ func scanTable(rows pgx.Rows) *Table {
 	}
 
 	// detect ID column if primary key not defined.
-	if idColumn == "" && conf.Configuration.Database.IdColumn != "" {
-		if _, ok := datatypes[conf.Configuration.Database.IdColumn]; ok {
-			idColumn = conf.Configuration.Database.IdColumn
+	if idColumn == "" && conf.Configuration.Database.IDColumn != "" {
+		if _, ok := datatypes[conf.Configuration.Database.IDColumn]; ok {
+			idColumn = conf.Configuration.Database.IDColumn
 		}
 	}
 

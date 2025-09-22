@@ -44,7 +44,7 @@ func setDefaultConfig() {
 	viper.SetDefault("Database.TableIncludes", []string{})
 	viper.SetDefault("Database.TableExcludes", []string{})
 	viper.SetDefault("Database.FunctionIncludes", []string{"postgisftw"})
-	viper.SetDefault("Database.IdColumn", "id")
+	viper.SetDefault("Database.IDColumn", "id")
 
 	viper.SetDefault("Paging.LimitDefault", 10)
 	viper.SetDefault("Paging.LimitMax", 1000)
@@ -95,7 +95,7 @@ type Database struct {
 	TableIncludes         []string
 	TableExcludes         []string
 	FunctionIncludes      []string
-	IdColumn              string
+	IDColumn              string
 }
 
 // Metadata config

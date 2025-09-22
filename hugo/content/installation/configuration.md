@@ -120,7 +120,7 @@ WriteTimeoutSec = 30
 # FunctionIncludes = [ "postgisftw", "schema2" ]
 
 # Designate a column as the feature ID (where primary key is not available e.g. views/functions)
-# IdColumn = "id"
+# IDColumn = "id"
 
 [Paging]
 # The default number of features in a response
@@ -246,7 +246,7 @@ Overrides items specified in `TableIncludes`.
 A list of the schemas to publish functions from.
 The default is to publish functions in the `postgisftw` schema.
 
-#### IdColumn
+#### IDColumn
 
 The column to use as the feature ID in cases where a primary key is not available. The default is `id`.
 

@@ -116,9 +116,9 @@ func scanFunctionDef(rows pgx.Rows) *Function {
 	geomCol := geometryColumn(outNames, datatypes)
 
 	idColumn := ""
-	if conf.Configuration.Database.IdColumn != "" {
-		if _, ok := datatypes[conf.Configuration.Database.IdColumn]; ok {
-			idColumn = conf.Configuration.Database.IdColumn
+	if conf.Configuration.Database.IDColumn != "" {
+		if _, ok := datatypes[conf.Configuration.Database.IDColumn]; ok {
+			idColumn = conf.Configuration.Database.IDColumn
 		}
 	}
 
