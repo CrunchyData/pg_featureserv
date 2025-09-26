@@ -235,6 +235,78 @@ func (cat *catalogDB) TableFeature(ctx context.Context, name string, id string, 
 	return features[0], nil
 }
 
+func (cat *catalogDB) CreateTableFeature(ctx context.Context, name string, feature Feature) (string, error) {
+	tbl, err := cat.TableByName(name)
+	if err != nil {
+		return "", err
+	}
+	sql, argValues, err := sqlCreateFeature(tbl, feature)
+	log.Debug("Create feature query: " + sql)
+	row := cat.dbconn.QueryRow(ctx, sql, argValues...)
+	var featureId string
+
+	err = row.Scan(&featureId)
+
+	if err != nil {
+		return "", err
+	}
+	return featureId, err
+}
+
+func (cat *catalogDB) ReplaceTableFeature(ctx context.Context, name string, id string, feature Feature) error {
+	tbl, err := cat.TableByName(name)
+	if err != nil {
+		return err
+	}
+	sql, argValues, err := sqlReplaceFeature(tbl, id, feature)
+	log.Debug("Replace feature query: " + sql)
+	result, err := cat.dbconn.Exec(ctx, sql, argValues...)
+	if err != nil {
+		return err
+	}
+	rows := result.RowsAffected()
+	if rows != 1 {
+		return fmt.Errorf("expected to affect 1 row, affected %d", rows)
+	}
+	return nil
+}
+
+func (cat *catalogDB) UpdateTableFeature(ctx context.Context, name string, id string, feature Feature) error {
+	tbl, err := cat.TableByName(name)
+	if err != nil {
+		return err
+	}
+	sql, argValues, err := sqlUpdateFeature(tbl, id, feature)
+	log.Debug("Update feature query: " + sql)
+	result, err := cat.dbconn.Exec(ctx, sql, argValues...)
+	if err != nil {
+		return err
+	}
+	rows := result.RowsAffected()
+	if rows != 1 {
+		return fmt.Errorf("expected to affect 1 row, affected %d", rows)
+	}
+	return nil
+}
+
+func (cat *catalogDB) DeleteTableFeature(ctx context.Context, name string, id string) error {
+	tbl, err := cat.TableByName(name)
+	if err != nil {
+		return err
+	}
+	sql, argValues := sqlDeleteFeature(tbl, id)
+	log.Debug("Delete feature query: " + sql)
+	result, err := cat.dbconn.Exec(ctx, sql, argValues...)
+	if err != nil {
+		return err
+	}
+	rows := result.RowsAffected()
+	if rows != 1 {
+		return fmt.Errorf("expected to affect 1 row, affected %d", rows)
+	}
+	return nil
+}
+
 func (cat *catalogDB) refreshTables(force bool) {
 	// TODO: refresh on timed basis?
 	if force || isStartup {
