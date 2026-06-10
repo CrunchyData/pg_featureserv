@@ -38,6 +38,7 @@ func setDefaultConfig() {
 	viper.SetDefault("Server.AssetsPath", "./assets")
 	viper.SetDefault("Server.ReadTimeoutSec", 5)
 	viper.SetDefault("Server.WriteTimeoutSec", 30)
+	viper.SetDefault("Server.TransformFunctions", []string{})
 
 	viper.SetDefault("Database.DbPoolMaxConnLifeTime", "1h")
 	viper.SetDefault("Database.DbPoolMaxConns", 4)
