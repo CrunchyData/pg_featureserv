@@ -101,6 +101,8 @@ GeoJSON document containing the features resulting from the request query.
 
 ## Feature
 
+Produces an item from a dataset (as GeoJSON)
+
 ### Request
 Path: `/collections/{cid}/items/{fid}`
 
