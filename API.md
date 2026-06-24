@@ -112,6 +112,8 @@ Path: `/collections/{cid}/items/{fid}`
 
 ### Response
 
+JSON document listing feature.
+
 #### Links
 * self - `/collections/{cid}/items/{fid}.json` - This document as JSON
 * alternate - `/collections/{cid}/items/{fid}.html` - This document as HTML
@@ -140,6 +142,8 @@ Provides metadata about a function
 Path: `/functions/{fnid}`
 
 ### Response
+
+JSON document listing metadata.
 
 #### Links
 * self - `/functions/{fnid}.json` - This document as JSON
