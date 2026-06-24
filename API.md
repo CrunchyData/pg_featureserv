@@ -101,6 +101,8 @@ GeoJSON document containing the features resulting from the request query.
 
 ## Feature
 
+Produces an item from a dataset (as GeoJSON)
+
 ### Request
 Path: `/collections/{cid}/items/{fid}`
 
@@ -109,6 +111,8 @@ Path: `/collections/{cid}/items/{fid}`
 * `transform` - transform the feature geometry by the given geometry function pipeline
 
 ### Response
+
+JSON document listing feature.
 
 #### Links
 * self - `/collections/{cid}/items/{fid}.json` - This document as JSON
@@ -138,6 +142,8 @@ Provides metadata about a function
 Path: `/functions/{fnid}`
 
 ### Response
+
+JSON document listing metadata.
 
 #### Links
 * self - `/functions/{fnid}.json` - This document as JSON
